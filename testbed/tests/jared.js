@@ -14,7 +14,7 @@ youtube.src = "youtube.png";
 var instagram = new Image();
 instagram.src = "instagram.png";
 var text = new Image();
-text.src = "Text.png";
+text.src = "text.png";
 
 const rgbaColors = [
   [54, 74, 211],  
