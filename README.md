@@ -114,10 +114,17 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
+- [ ] Redirect buttons on home page
+- [ ] More Pages
+    - [ ] About Me
+    - [ ] Blog
+    - [ ] Projects
+    - [ ] Contact
+- [ ] CMS + DB for blog page
+    - [ ] Look into PHP?
+- [ ] Navbar?
+- [ ] UI animations
+    - [ ] Skeleton for nicer loading animations
 
 See the [open issues](https://github.com/jear-bear/jear-bear.github.io/issues) for a full list of proposed features (and known issues).
 
