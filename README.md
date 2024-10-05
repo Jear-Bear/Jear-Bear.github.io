@@ -169,7 +169,8 @@ Project Link: [https://github.com/jear-bear/jear-bear.github.io](https://github.
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
-* [](f)
+* [Thanks to the LiquidFun team at Google for their open-source 2D physics engine, which has greatly enhanced the realism of my project.
+For more details, visit the LiquidFun GitHub repository.](https://github.com/google/liquidfun)
 * []()
 * []()
 
