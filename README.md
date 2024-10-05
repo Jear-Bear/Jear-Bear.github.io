@@ -85,7 +85,7 @@
 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 
-Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `jear-bear`, `jear-bear.github.io`, `jdoabeats`, `jaredperlmutter`, `gmail`, `jperlmutter1`, `Portfolio Website`, `This repository contains my personal portfolio website, showcasing my skills, projects, and professional background through an interactive and responsive interface. Built with React, Babylon.js, and LiquidFun, the site features dynamic page transitions and engaging animations, allowing visitors to explore my work seamlessly. Visit the live version at jear-bear.github.io.`
+Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `jear-bear`, `jear-bear.github.io`, `jodabeats`, `jaredperlmutter`, `gmail`, `jperlmutter1`, `Portfolio Website`, `This repository contains my personal portfolio website, showcasing my skills, projects, and professional background through an interactive and responsive interface. Built with React, Babylon.js, and LiquidFun, the site features dynamic page transitions and engaging animations, allowing visitors to explore my work seamlessly. Visit the live version at jear-bear.github.io.`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -206,7 +206,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@jdoabeats](https://twitter.com/jdoabeats) - jperlmutter1@gmail.com
+Your Name - [@jodabeats](https://twitter.com/jodabeats) - jperlmutter1@gmail.com
 
 Project Link: [https://github.com/jear-bear/jear-bear.github.io](https://github.com/jear-bear/jear-bear.github.io)
 
