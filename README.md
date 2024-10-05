@@ -22,7 +22,7 @@
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
+[![MIT License][license-shield]][https://github.com/Jear-Bear/Jear-Bear.github.io/blame/main/LICENSE]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
 
