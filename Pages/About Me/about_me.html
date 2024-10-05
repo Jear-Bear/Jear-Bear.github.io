@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Me</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #f0f0f0, #d3d3d3);
+            color: black;
+            overflow: hidden;
+            margin: 0;
+            position: relative;
+        }
+
+        .container {
+            position: relative;
+            width: 80%;
+            max-width: 700px;
+            height: 340px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .back-button {
+            font-family: 'Poppins', sans-serif;
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background-color: transparent;
+            color: #666;
+            border: 2px solid #000;
+            border-radius: 5px;
+            border-color: #666
+            padding: 5px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+            z-index: 10; /* Ensure button is above other elements */
+            will-change: transform; /* Optimize for smooth scaling */
+        }
+
+        .back-button:hover {
+            transform: scale(1.1); /* Scale the button to 110% of its original size */
+        }
+
+
+        .instruction {
+            position: absolute;
+            top: -75px;
+            width: 100%;
+            text-align: center;
+            font-size: 18px;
+            color: #666;
+            line-height: 1.5;
+            padding: 20px 0; /* Adjust padding as needed */
+        }
+
+        .card {
+            background-color: white;
+            width: 100%;
+            padding: 40px;
+            margin: 10px 0;
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
+            position: absolute;
+            text-align: left;
+            height: 280px;
+            z-index: 1;
+            border-radius: 10px;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .card.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .card.swipe {
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .card.next-card {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .hexagon {
+            width: 250px;
+            height: 250px;
+            position: absolute;
+            top: -60px;
+            left: -60px;
+            clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+            background-color: #fff;
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.1s ease;
+            will-change: transform;
+            overflow: hidden;
+        }
+
+        .hexagon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            clip-path: inherit;
+        }
+        
+        .text-content {
+            padding-left: 160px;
+        }
+
+        h1 {
+            font-size: 36px;
+            margin-bottom: 16px;
+            font-weight: bold;
+        }
+
+        p {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 14px;
+            color: #777;
+            background: rgba(0, 0, 0, .0);
+            padding: 10px 0;
+        }
+
+        .swipe-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        .swipe-overlay.active {
+            opacity: 1;
+            animation: swipeAnimation 1.5s ease-in-out;
+        }
+
+        @keyframes swipeAnimation {
+            0% { opacity: 0; }
+            100% { opacity: 0.2; }
+        }
+
+        .arrows-img {
+            width: 50px; /* Adjust width based on the size of your image */
+            vertical-align: bottom; /* Aligns image with the text */
+            margin: -6px 0px; /* Adds space between the text and the image */
+            opacity: .78;
+        }
+        
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="window.location.href='index.html';">&larr; Back</button>
+    <div class="container">
+        <div class="instruction">Swipe or use <img src="arrows.png" alt="Arrow Keys" class="arrows-img"> to see more</div>
+        <div class="card active" id="card1">
+            <div class="hexagon">
+                <img src="https://avatars.githubusercontent.com/u/14828078?v=4" alt="Headshot">
+            </div>
+            <div class="text-content">
+                <h1>About Me</h1>
+                <p>
+                    Hi, I'm Jared. I'm a developer with a passion for creating engaging and innovative web experiences. 
+                    My journey in the tech world has been driven by a love for learning and a curiosity about how things work.
+                </p>
+            </div>
+        </div>
+
+        <div class="card" id="card2">
+            <h2>Skills</h2>
+            <ul>
+                <li>JavaScript</li>
+                <li>HTML & CSS</li>
+                <li>React</li>
+                <li>Node.js</li>
+                <li>Babylon.js</li>
+            </ul>
+        </div>
+
+        <div class="card" id="card3">
+            <h2>Projects</h2>
+            <p>Coming soon...</p>
+        </div>
+
+        <div class="card" id="card4">
+            <h2>Contact</h2>
+            <p>Feel free to reach out to me via <a href="mailto:jared@example.com">email</a>.</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Jared Perlmutter. All rights reserved.</p>
+    </footer>
+
+    <script>
+        let currentCard = 1;
+        const totalCards = 4;
+        const pressedKeys = new Set();
+        let startX, startY;
+
+        function showCard(cardNumber) {
+            document.querySelectorAll('.card').forEach(card => {
+                card.classList.remove('active', 'next-card');
+            });
+
+            const activeCard = document.getElementById(`card${cardNumber}`);
+            activeCard.classList.add('active');
+        }
+
+        function swipeCard(xOffset, yOffset) {
+            const currentCardElement = document.getElementById(`card${currentCard}`);
+            const nextCardNumber = currentCard < totalCards ? currentCard + 1 : 1;
+            const nextCardElement = document.getElementById(`card${nextCardNumber}`);
+
+            const transformValue = `translate(${xOffset}%, ${yOffset}%)`;
+
+            currentCardElement.style.transform = `${transformValue} scale(0.95)`;
+            currentCardElement.style.opacity = 0;
+
+            nextCardElement.style.opacity = 1;
+            nextCardElement.style.transform = 'scale(1)';
+
+            setTimeout(() => {
+                currentCardElement.classList.remove('active');
+                currentCardElement.style.transform = '';
+                currentCardElement.style.opacity = '';
+
+                currentCard = nextCardNumber;
+                showCard(currentCard);
+            }, 300); // Matches the transition duration
+        }
+
+        function getSwipeDirection() {
+            let xOffset = 0;
+            let yOffset = 0;
+
+            if (pressedKeys.has('ArrowUp')) {
+                yOffset = -100;
+            } else if (pressedKeys.has('ArrowDown')) {
+                yOffset = 100;
+            }
+
+            if (pressedKeys.has('ArrowLeft')) {
+                xOffset = -100;
+            } else if (pressedKeys.has('ArrowRight')) {
+                xOffset = 100;
+            }
+
+            return { xOffset, yOffset };
+        }
+
+        function handleSwipe() {
+            const { xOffset, yOffset } = getSwipeDirection();
+            if (xOffset !== 0 || yOffset !== 0) {
+                swipeCard(xOffset, yOffset);
+            }
+        }
+
+        document.addEventListener('touchstart', function (event) {
+            startX = event.touches[0].clientX;
+            startY = event.touches[0].clientY;
+        });
+
+        document.addEventListener('touchend', function (event) {
+            const endX = event.changedTouches[0].clientX;
+            const endY = event.changedTouches[0].clientY;
+
+            const deltaX = endX - startX;
+            const deltaY = endY - startY;
+
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                if (deltaX < -50) { // Swipe left
+                    swipeCard(-100, 0);
+                } else if (deltaX > 50) { // Swipe right
+                    swipeCard(100, 0);
+                }
+            } else {
+                if (deltaY < -50) { // Swipe up
+                    swipeCard(0, -100);
+                } else if (deltaY > 50) { // Swipe down
+                    swipeCard(0, 100);
+                }
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            pressedKeys.add(event.key);
+            handleSwipe();
+        });
+
+        document.addEventListener('keyup', function (event) {
+            pressedKeys.delete(event.key);
+            handleSwipe();
+        });
+
+        showCard(currentCard);
+    </script>
+</body>
+</html>
