@@ -30,7 +30,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/jear-bear/jear-bear.github.io">
+  <a href="https://avatars.githubusercontent.com/u/14828078?v=4">
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
