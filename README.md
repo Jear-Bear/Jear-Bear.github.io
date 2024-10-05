@@ -31,7 +31,7 @@
 <br />
 <div align="center">
   <a href="https://avatars.githubusercontent.com/u/14828078?v=4">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+    <img src="https://avatars.githubusercontent.com/u/14828078?v=4" alt="Logo" width="80" height="80">
   </a>
 
 <h3 align="center">Portfolio Website</h3>
@@ -42,7 +42,7 @@
     <a href="https://github.com/jear-bear/jear-bear.github.io"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/jear-bear/jear-bear.github.io">View Demo</a>
+    <a href="https://jear-bear.github.io">View Demo</a>
     ·
     <a href="https://github.com/jear-bear/jear-bear.github.io/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     ·
