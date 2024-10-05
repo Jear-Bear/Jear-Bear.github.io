@@ -115,6 +115,11 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 ## Roadmap
 
 - [ ] Redirect buttons on home page
+- [ ] Dynamic liquidfun walls/boundaries based on screen dimensions
+- [ ] Mobile support
+    - [ ] Support mobile phone screens
+    - [ ] Track swipes to interact with liquidfun sandbox
+    - [ ] Mobile-friendly UI
 - [ ] More Pages
     - [ ] About Me
     - [ ] Blog
