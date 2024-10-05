@@ -236,7 +236,7 @@ Project Link: [https://github.com/jear-bear/jear-bear.github.io](https://github.
 [issues-shield]: https://img.shields.io/github/issues/jear-bear/jear-bear.github.io.svg?style=for-the-badge
 [issues-url]: https://github.com/jear-bear/jear-bear.github.io/issues
 [license-shield]: https://img.shields.io/github/license/jear-bear/jear-bear.github.io.svg?style=for-the-badge
-[license-url]: https://github.com/jear-bear/jear-bear.github.io/blob/master/LICENSE.txt
+[license-url]: https://github.com/Jear-Bear/Jear-Bear.github.io/blob/main/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/jaredperlmutter
 [product-screenshot]: images/screenshot.png
