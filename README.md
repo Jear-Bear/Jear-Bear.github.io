@@ -192,7 +192,7 @@ Project Link: [https://github.com/jear-bear/jear-bear.github.io](https://github.
 
 * Thanks to the LiquidFun team at Google for their open-source 2D physics engine, which has greatly enhanced the realism of my project.
 For more details, visit the [LiquidFun GitHub repository](https://github.com/google/liquidfun).
-* Special thanks to the Babylon.js team for their powerful and versatile rendering engine, which has been essential for creating immersive graphics in my project.
+* Special thanks to the Babylon.js team for their powerful and versatile game engine, which has been essential for creating immersive graphics in my project.
 For more information, visit the [Babylon.js website](https://www.babylonjs.com).
 * A big thanks to Andy Beaulieu, who used babylon.js and liquidfun in conjunction for sprite rendering--I was tearing my hair out trying to build a sprite library from the ground up before I found your [blog post](http://www.spritehand.com/2016/01/fluid-simulation-using-babylonjs-and.html).
 
