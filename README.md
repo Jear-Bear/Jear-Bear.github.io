@@ -121,7 +121,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - [ ] Mobile support
     - [ ] Support mobile phone screens
     - [ ] Track swipes to interact with liquidfun sandbox
-    - [ ] Mobile-friendly UI
+    - [ ] Mobile-friendly UI (especially for the landing page)
 - [ ] More Pages
     - [ ] About Me
     - [ ] Blog
