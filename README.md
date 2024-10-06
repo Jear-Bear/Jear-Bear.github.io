@@ -127,9 +127,10 @@ _For more examples, please refer to the [Documentation](https://example.com)_
     - [ ] Blog
     - [ ] Projects
     - [ ] Contact
-- [ ] CMS + DB for blog page
+- [ ] CMS + DB for blog page and project page
     - [ ] Look into PHP?
-- [ ] Navbar?
+- [ ] Navbar for pages other than the landing page?
+    - [ ] Breadcrumbs?
 - [ ] UI animations
     - [ ] Skeleton for nicer loading animations
 
