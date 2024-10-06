@@ -332,10 +332,10 @@ function TestParticles() {
 	
 	var shape1 = new b2PolygonShape();
 	var vertices = shape1.vertices;
-	vertices.push(new b2Vec2(-10, -1.6));
-	vertices.push(new b2Vec2(10, -1.6));
-	vertices.push(new b2Vec2(10, -1.4));
-	vertices.push(new b2Vec2(-10, -1.4));
+	vertices.push(new b2Vec2(-20, -1.6));
+	vertices.push(new b2Vec2(20, -1.6));
+	vertices.push(new b2Vec2(20, -1.4));
+	vertices.push(new b2Vec2(-20, -1.4));
 	ground.CreateFixtureFromShape(shape1, 0);
 	
 	var shape2 = new b2PolygonShape();
@@ -356,10 +356,10 @@ function TestParticles() {
 	
 	var shape4 = new b2PolygonShape();
 	var vertices = shape4.vertices;
-	vertices.push(new b2Vec2(-10, 10));
-	vertices.push(new b2Vec2(10, 10));
-	vertices.push(new b2Vec2(10, 9.4));
-	vertices.push(new b2Vec2(-10, 9.4));
+	vertices.push(new b2Vec2(-20, 10));
+	vertices.push(new b2Vec2(20, 10));
+	vertices.push(new b2Vec2(20, 9.4));
+	vertices.push(new b2Vec2(-20, 9.4));
 	ground.CreateFixtureFromShape(shape4, 0);
 	
 	var psd = new b2ParticleSystemDef();
@@ -498,11 +498,11 @@ function TestParticles() {
 	isClickInPolygon();
 	}
 	
-	
+
 	function getMouseCoords() {
 	var mouse = new THREE.Vector3();
-	mouse.x = (event.clientX / windowWidth) * 2 - 1;
-	mouse.y = -(event.clientY / windowHeight) * 2 + 1;
+	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+	mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 	mouse.z = 0.5;
 	
 	projector.unprojectVector(mouse, camera);
@@ -516,43 +516,39 @@ function TestParticles() {
     // Function to print pentagon coordinates to console
     function isClickInPolygon()
     {
-        let i = 0;
-        
-        while (i < pentagons.length)
-        {
-            // Assuming `pentagon` is a valid b2_dynamicBody object
-            var position = pentagons[i].GetPosition(); // Call GetPosition() method to retrieve position
-
-            var x = position.x; // Access x coordinate
-            var y = position.y; // Access y coordinate
-						
-						var coords = getMouseCoords();
-					
-            var a = coords.x - x;
-            var b = coords.y - y;
-					
-						var c = Math.sqrt( a*a + b*b );
-            
-            if (c < .75 && clickDuration < 300)
-            {
-                switch(i)
-                {
-                    case 0:
-                        window.open("https://www.linkedin.com/in/jaredperlmutter/");
-                        break;
-                    case 1:
-                        window.open("https://github.com/Jear-Bear");
-                        break;
-                    case 2:
-                        window.open("https://www.youtube.com/@Jareddddddddddddddddd");
-                        break;
-                    case 3:
-                        window.open("https://www.instagram.com/j_earbear/");
-                        break;
-                }   
-            }
-            i++;
-        }
+	let i = 0;
+	
+	while (i < pentagons.length)
+	{
+		// Assuming `pentagon` is a valid b2_dynamicBody object
+		var position = pentagons[i].GetPosition(); // Call GetPosition() method to retrieve position
+		var x = position.x; // Access x coordinate
+		var y = position.y; // Access y coordinate			
+		var coords = getMouseCoords();		
+		var a = coords.x - x;
+		var b = coords.y - y;			
+		var c = Math.sqrt( a*a + b*b );
+		
+			if (c < .75 && clickDuration < 300)
+			{
+				switch(i)
+				{
+				    case 0:
+					window.open("https://www.linkedin.com/in/jaredperlmutter/");
+					break;
+				    case 1:
+					window.open("https://github.com/Jear-Bear");
+					break;
+				    case 2:
+					window.open("https://www.youtube.com/@Jareddddddddddddddddd");
+					break;
+				    case 3:
+					window.open("https://www.instagram.com/j_earbear/");
+					break;
+				}   
+			}
+		i++;
+	}
     }
 
 var width = window.innerWidth, height = window.innerHeight;
