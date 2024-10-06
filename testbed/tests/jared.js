@@ -297,7 +297,7 @@ function createPentagon(name, textureSrc, scene, scale = 1.25) { // Added scale 
     material.diffuseTexture.uScale = 1; // Keep U scale as default
     material.diffuseTexture.vScale = 1; // Keep V scale as default
 
-    return pentagon;
+    return pentagon;e
 }
 
   let bd, ground, particleSystem;
@@ -332,10 +332,11 @@ function TestParticles() {
 
 	var stretch_walls_ratio = $(window).width()/1386;
 
-	console.log("inner width: " + window.innerWidth);
-	console.log("jQuery width: " + $(window).width());
-
-	console.log("ratios (in order): " + window.innerWidth/1386 + ", " + stretch_walls_ratio);
+	if (stretch_walls_ratio != 1) 
+	{
+		stretch_walls_ratio -= 1;
+		stretch_wals_ratio = 1/stretch_walls_ratio;
+	}
 	
 	var shape1 = new b2PolygonShape();
 	var vertices = shape1.vertices;
