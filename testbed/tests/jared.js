@@ -330,11 +330,37 @@ function TestParticles() {
 	
 	createLine();
 
-	// Calculate how much wider the window is compared to the original width
-	var canvasWidth = 1386;
-	var windowWidth = $(window).width();
-	var widthDifference = (windowWidth - canvasWidth) / 2; // Distribute the shift evenly to both sides
+	// Define original canvas width in pixels
+	var ORIGINAL_CANVAS_WIDTH_PX = 1386;
 	
+	// Current window width in pixels
+	var windowWidthPx = $(window).width();
+	
+	// Calculate the stretch ratio for wall positioning
+	var stretch_walls_ratio = windowWidthPx / ORIGINAL_CANVAS_WIDTH_PX;
+	
+	// Define wall positions based on the stretch ratio
+	var leftWallX = -10 * stretch_walls_ratio; // Adjust as needed
+	var rightWallX = 10 * stretch_walls_ratio; // Adjust as needed
+	
+	// Create left wall
+	var shapeLeft = new b2PolygonShape();
+	var verticesLeft = shapeLeft.vertices;
+	verticesLeft.push(new b2Vec2(leftWallX + 0.7, -1.4));  // Shifted slightly right
+	verticesLeft.push(new b2Vec2(leftWallX, -1.4));         // Exact left wall position
+	verticesLeft.push(new b2Vec2(leftWallX, 9.4));
+	verticesLeft.push(new b2Vec2(leftWallX + 0.7, 9.4));    // Matching the top width
+	ground.CreateFixtureFromShape(shapeLeft, 0);
+	
+	// Create right wall
+	var shapeRight = new b2PolygonShape();
+	var verticesRight = shapeRight.vertices;
+	verticesRight.push(new b2Vec2(rightWallX, -1.4));       // Right wall position
+	verticesRight.push(new b2Vec2(rightWallX - 0.7, -1.4)); // Shifted slightly left
+	verticesRight.push(new b2Vec2(rightWallX - 0.7, 9.4));  // Matching the top width
+	verticesRight.push(new b2Vec2(rightWallX, 9.4));
+	ground.CreateFixtureFromShape(shapeRight, 0);
+
 	// Create ground and walls
 	var shape1 = new b2PolygonShape();
 	var vertices1 = shape1.vertices;
@@ -343,24 +369,6 @@ function TestParticles() {
 	vertices1.push(new b2Vec2(20, -1.4));
 	vertices1.push(new b2Vec2(-20, -1.4));
 	ground.CreateFixtureFromShape(shape1, 0);
-	
-	// Left wall, adjust x positions based on width difference
-	var shape2 = new b2PolygonShape();
-	var vertices2 = shape2.vertices;
-	vertices2.push(new b2Vec2(-9.3 + widthDifference / canvasWidth * 9.3, -1.4));  // Shifted left wall
-	vertices2.push(new b2Vec2(-10 + widthDifference / canvasWidth * 10, -1.4));
-	vertices2.push(new b2Vec2(-10 + widthDifference / canvasWidth * 10, 9.4));
-	vertices2.push(new b2Vec2(-9.3 + widthDifference / canvasWidth * 9.3, 9.4));
-	ground.CreateFixtureFromShape(shape2, 0);
-	
-	// Right wall, adjust x positions based on width difference
-	var shape3 = new b2PolygonShape();
-	var vertices3 = shape3.vertices;
-	vertices3.push(new b2Vec2(9.3 + widthDifference / canvasWidth * 9.3, -1.4));   // Shifted right wall
-	vertices3.push(new b2Vec2(10 + widthDifference / canvasWidth * 10, -1.4));
-	vertices3.push(new b2Vec2(10 + widthDifference / canvasWidth * 10, 9.4));
-	vertices3.push(new b2Vec2(9.3 + widthDifference / canvasWidth * 9.3, 9.4));
-	ground.CreateFixtureFromShape(shape3, 0);
 	
 	// Ground ceiling, no scaling needed here
 	var shape4 = new b2PolygonShape();
