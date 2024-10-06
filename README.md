@@ -32,12 +32,13 @@
 
 
 
-<!-- PROJECT LOGO -->
+<!-- PROJECT LOGO 
 <br />
 <div align="center">
   <a href="https://avatars.githubusercontent.com/u/14828078?v=4">
     <img src="https://avatars.githubusercontent.com/u/14828078?v=4" alt="Logo" width="80" height="80">
   </a>
+-->
 
 <h3 align="center">Portfolio Website</h3>
 
