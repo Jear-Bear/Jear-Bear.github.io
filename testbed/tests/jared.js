@@ -340,26 +340,27 @@ function TestParticles() {
 	var stretch_walls_ratio = windowWidthPx / ORIGINAL_CANVAS_WIDTH_PX;
 	
 	// Define wall positions based on the stretch ratio
-	var leftWallX = -10 * stretch_walls_ratio; // Adjust as needed
-	var rightWallX = 10 * stretch_walls_ratio; // Adjust as needed
+	var leftWallX = -10 * stretch_walls_ratio; // Adjusted for the left wall
+	var rightWallX = 10 * stretch_walls_ratio; // Adjusted for the right wall
 	
 	// Create left wall
 	var shapeLeft = new b2PolygonShape();
 	var verticesLeft = shapeLeft.vertices;
-	verticesLeft.push(new b2Vec2(leftWallX + 0.7, -1.4));  // Shifted slightly right
+	verticesLeft.push(new b2Vec2(leftWallX + 1, -1.4));  // Shifted slightly right
 	verticesLeft.push(new b2Vec2(leftWallX, -1.4));         // Exact left wall position
 	verticesLeft.push(new b2Vec2(leftWallX, 9.4));
-	verticesLeft.push(new b2Vec2(leftWallX + 0.7, 9.4));    // Matching the top width
+	verticesLeft.push(new b2Vec2(leftWallX + 1, 9.4));    // Matching the top width
 	ground.CreateFixtureFromShape(shapeLeft, 0);
 	
 	// Create right wall
 	var shapeRight = new b2PolygonShape();
 	var verticesRight = shapeRight.vertices;
-	verticesRight.push(new b2Vec2(rightWallX, -1.4));       // Right wall position
-	verticesRight.push(new b2Vec2(rightWallX - 0.7, -1.4)); // Shifted slightly left
-	verticesRight.push(new b2Vec2(rightWallX - 0.7, 9.4));  // Matching the top width
-	verticesRight.push(new b2Vec2(rightWallX, 9.4));
+	verticesRight.push(new b2Vec2(rightWallX - 1, -1.4));  // Shifted slightly left
+	verticesRight.push(new b2Vec2(rightWallX, -1.4));        // Right wall position
+	verticesRight.push(new b2Vec2(rightWallX, 9.4));         
+	verticesRight.push(new b2Vec2(rightWallX - 1, 9.4));     // Matching the top width
 	ground.CreateFixtureFromShape(shapeRight, 0);
+	
 
 	// Create ground and walls
 	var shape1 = new b2PolygonShape();
