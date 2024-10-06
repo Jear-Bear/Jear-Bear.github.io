@@ -280,8 +280,9 @@ function onWindowResize() {
 
 function getMouseCoords(event) {
   var mouse = new THREE.Vector3();
-  mouse.x = (event.clientX / windowWidth) * 2 - 1;
-  mouse.y = -(event.clientY / windowHeight) * 2 + 1;
+  
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
   mouse.z = 0.5;
 
   projector.unprojectVector(mouse, camera);
@@ -291,3 +292,4 @@ function getMouseCoords(event) {
   var p = new b2Vec2(pos.x, pos.y);
   return p;
 }
+
