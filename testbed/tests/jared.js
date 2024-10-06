@@ -330,19 +330,24 @@ function TestParticles() {
 	
 	createLine();
 
-	// Define original canvas width in pixels
-	var ORIGINAL_CANVAS_WIDTH_PX = 1386;
-	
+	// Define the original canvas width and target width where walls align
+	var ORIGINAL_CANVAS_WIDTH_PX = 1386; // where the walls align perfectly
+	var TARGET_ALIGN_WIDTH_PX = 2260; // the width that resulted in desired alignment
+
+	// Define target wall positions at the original width
+	var LEFT_WALL_ORIGINAL_POSITION = -10;  // Desired position for the left wall
+	var RIGHT_WALL_ORIGINAL_POSITION = 10;   // Desired position for the right wall
+
 	// Current window width in pixels
 	var windowWidthPx = $(window).width();
-	
-	// Calculate the stretch ratio for wall positioning
-	var stretch_walls_ratio = windowWidthPx / ORIGINAL_CANVAS_WIDTH_PX;
-	
-	// Define wall positions based on the stretch ratio
-	var leftWallX = -10 * stretch_walls_ratio; // Adjusted for the left wall
-	var rightWallX = 10 * stretch_walls_ratio; // Adjusted for the right wall
-	
+
+	// Calculate the scaling factor based on the target alignment width
+	var scale = windowWidthPx / TARGET_ALIGN_WIDTH_PX;
+
+	// Calculate wall positions based on the scale
+	var leftWallX = LEFT_WALL_ORIGINAL_POSITION * scale; 
+	var rightWallX = RIGHT_WALL_ORIGINAL_POSITION * scale; 
+
 	// Create left wall
 	var shapeLeft = new b2PolygonShape();
 	var verticesLeft = shapeLeft.vertices;
@@ -351,7 +356,7 @@ function TestParticles() {
 	verticesLeft.push(new b2Vec2(leftWallX, 9.4));
 	verticesLeft.push(new b2Vec2(leftWallX + 1, 9.4));    // Matching the top width
 	ground.CreateFixtureFromShape(shapeLeft, 0);
-	
+
 	// Create right wall
 	var shapeRight = new b2PolygonShape();
 	var verticesRight = shapeRight.vertices;
@@ -360,7 +365,9 @@ function TestParticles() {
 	verticesRight.push(new b2Vec2(rightWallX, 9.4));         
 	verticesRight.push(new b2Vec2(rightWallX - 1, 9.4));     // Matching the top width
 	ground.CreateFixtureFromShape(shapeRight, 0);
-	
+
+
+		
 
 	// Create ground and walls
 	var shape1 = new b2PolygonShape();
