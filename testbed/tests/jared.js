@@ -897,8 +897,8 @@ function createE()
 	var secondSlopeVertices = secondSlope.vertices;
 	secondSlopeVertices.push(new b2Vec2(2.5, 6.09));
 	secondSlopeVertices.push(new b2Vec2(2.65, 6.15));
-	secondSlopeVertices.push(new b2Vec2(2.9, 6.07));
-	secondSlopeVertices.push(new b2Vec2(2.9, 6.13));
+	secondSlopeVertices.push(new b2Vec2(2.9, 6.05));
+	secondSlopeVertices.push(new b2Vec2(2.9, 6.11));
 	secondSlopeVertices.push(new b2Vec2(2.65, 6.18));
 	secondSlopeVertices.push(new b2Vec2(2.55, 6.12));
 	ground.CreateFixtureFromShape(secondSlope, 0);
