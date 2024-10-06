@@ -330,7 +330,7 @@ function TestParticles() {
 	
 	createLine();
 
-	var stretch_walls_ratio = window.innerWidth/1386;
+	var stretch_walls_ratio = $(window).width()/1386;
 	
 	var shape1 = new b2PolygonShape();
 	var vertices = shape1.vertices;
