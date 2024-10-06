@@ -329,6 +329,8 @@ function TestParticles() {
 	createPeriod();
 	
 	createLine();
+
+	var stretch_walls_ratio = window.innerWidth/1386;
 	
 	var shape1 = new b2PolygonShape();
 	var vertices = shape1.vertices;
@@ -340,18 +342,18 @@ function TestParticles() {
 	
 	var shape2 = new b2PolygonShape();
 	var vertices = shape2.vertices;
-	vertices.push(new b2Vec2(-9.3, -1.4));
-	vertices.push(new b2Vec2(-10, -1.4));
-	vertices.push(new b2Vec2(-10, 9.4));
-	vertices.push(new b2Vec2(-9.3, 9.4));
+	vertices.push(new b2Vec2(-9.3 * stretch_walls_ratio, -1.4));
+	vertices.push(new b2Vec2(-10 * stretch_walls_ratio, -1.4));
+	vertices.push(new b2Vec2(-10 * stretch_walls_ratio, 9.4));
+	vertices.push(new b2Vec2(-9.3 * stretch_walls_ratio, 9.4));
 	ground.CreateFixtureFromShape(shape2, 0);
 	
 	var shape3 = new b2PolygonShape();
 	var vertices = shape3.vertices;
-	vertices.push(new b2Vec2(9.3, -1.4));
-	vertices.push(new b2Vec2(10, -1.4));
-	vertices.push(new b2Vec2(10, 9.4));
-	vertices.push(new b2Vec2(9.3, 9.4));
+	vertices.push(new b2Vec2(9.3 * stretch_walls_ratio, -1.4));
+	vertices.push(new b2Vec2(10 * stretch_walls_ratio, -1.4));
+	vertices.push(new b2Vec2(10 * stretch_walls_ratio, 9.4));
+	vertices.push(new b2Vec2(9.3 * stretch_walls_ratio, 9.4));
 	ground.CreateFixtureFromShape(shape3, 0);
 	
 	var shape4 = new b2PolygonShape();
