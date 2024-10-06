@@ -896,13 +896,13 @@ function createE()
         leftBarVertices.push(new b2Vec2(2.92, 5.65));
         ground.CreateFixtureFromShape(leftBarShape, 0);
     
-	// top curve of a
+	// top curve of d
 	var secondSlope = new b2PolygonShape();
 	var secondSlopeVertices = secondSlope.vertices;
 	secondSlopeVertices.push(new b2Vec2(2.5, 6.09));
 	secondSlopeVertices.push(new b2Vec2(2.65, 6.15));
-	secondSlopeVertices.push(new b2Vec2(2.9, 6.1));
-	secondSlopeVertices.push(new b2Vec2(2.9, 6.16));
+	secondSlopeVertices.push(new b2Vec2(2.9, 6.07));
+	secondSlopeVertices.push(new b2Vec2(2.9, 6.13));
 	secondSlopeVertices.push(new b2Vec2(2.65, 6.18));
 	secondSlopeVertices.push(new b2Vec2(2.55, 6.12));
 	ground.CreateFixtureFromShape(secondSlope, 0);
@@ -931,79 +931,79 @@ function createE()
 	ground.CreateFixtureFromShape(rightBarShape, 0);
     }
     
-		function createPeriod()
-		{
-				//create vertical part of D
-				var leftBarShape = new b2PolygonShape();
-				var leftBarVertices = leftBarShape.vertices;
-				leftBarVertices.push(new b2Vec2(3.2, 5.65));
-				leftBarVertices.push(new b2Vec2(3.2, 5.76));
-				leftBarVertices.push(new b2Vec2(3.14, 5.76));
-				leftBarVertices.push(new b2Vec2(3.14, 5.65));
-				ground.CreateFixtureFromShape(leftBarShape, 0);
-		}
-
-		function createLine()
-		{
-				// Create the first vertical bar of "m"
-				var leftBarShape = new b2PolygonShape();
-				var leftBarVertices = leftBarShape.vertices;
-				leftBarVertices.push(new b2Vec2(-4.1, 5.33));
-				leftBarVertices.push(new b2Vec2(-4.1, 5.39));
-				leftBarVertices.push(new b2Vec2(4.1, 5.39));
-				leftBarVertices.push(new b2Vec2(4.1, 5.33));
-				ground.CreateFixtureFromShape(leftBarShape, 0);
-		}
+function createPeriod()
+{
+	//create vertical part of D
+	var leftBarShape = new b2PolygonShape();
+	var leftBarVertices = leftBarShape.vertices;
+	leftBarVertices.push(new b2Vec2(3.2, 5.65));
+	leftBarVertices.push(new b2Vec2(3.2, 5.76));
+	leftBarVertices.push(new b2Vec2(3.14, 5.76));
+	leftBarVertices.push(new b2Vec2(3.14, 5.65));
+	ground.CreateFixtureFromShape(leftBarShape, 0);
 }
 
-	// Function to create an elastic box within the newly created particle system
-	function createElasticBox() {
-		var color = rgbaColors[getRandomInt(6)];
-		var box = new b2PolygonShape();
-		var pgd = new b2ParticleGroupDef();
-		box.SetAsBoxXY(0.5, .5);
-		pgd.flags = b2_elasticParticle;
-		pgd.groupFlags = b2_solidParticleGroup;
-		pgd.position.Set(1, 4);
-		pgd.angle = -0.5;
-		pgd.angularVelocity = 2;
-		pgd.shape = box;
-		pgd.color.Set(color[0], color[1], color[2], 200);
-		var particleGroup = particleSystem.CreateParticleGroup(pgd);
-		jellies.push(particleGroup);
-	}
+function createLine()
+{
+	// Create the first vertical bar of "m"
+	var leftBarShape = new b2PolygonShape();
+	var leftBarVertices = leftBarShape.vertices;
+	leftBarVertices.push(new b2Vec2(-4.1, 5.33));
+	leftBarVertices.push(new b2Vec2(-4.1, 5.39));
+	leftBarVertices.push(new b2Vec2(4.1, 5.39));
+	leftBarVertices.push(new b2Vec2(4.1, 5.33));
+	ground.CreateFixtureFromShape(leftBarShape, 0);
+}
+}
+
+// Function to create an elastic box within the newly created particle system
+function createElasticBox() {
+	var color = rgbaColors[getRandomInt(6)];
+	var box = new b2PolygonShape();
+	var pgd = new b2ParticleGroupDef();
+	box.SetAsBoxXY(0.5, .5);
+	pgd.flags = b2_elasticParticle;
+	pgd.groupFlags = b2_solidParticleGroup;
+	pgd.position.Set(1, 4);
+	pgd.angle = -0.5;
+	pgd.angularVelocity = 2;
+	pgd.shape = box;
+	pgd.color.Set(color[0], color[1], color[2], 200);
+	var particleGroup = particleSystem.CreateParticleGroup(pgd);
+	jellies.push(particleGroup);
+}
 	
-	function createSmallElasticBox() {
-		var color = rgbaColors[getRandomInt(6)];
-				var box = new b2PolygonShape();
-			var pgd = new b2ParticleGroupDef();
-			box.SetAsBoxXY(0.2, .2);
-			pgd.flags = b2_elasticParticle;
-			pgd.groupFlags = b2_solidParticleGroup;
-			pgd.position.Set(-7, 6);
-			pgd.angle = -0.5;
-			pgd.angularVelocity = 2;
-			pgd.shape = box;
-			pgd.color.Set(color[0], color[1], color[2], 200);
-			var particleGroup = particleSystem.CreateParticleGroup(pgd);
-			jellies.push(particleGroup);
-	}
+function createSmallElasticBox() {
+	var color = rgbaColors[getRandomInt(6)];
+	var box = new b2PolygonShape();
+	var pgd = new b2ParticleGroupDef();
+	box.SetAsBoxXY(0.2, .2);
+	pgd.flags = b2_elasticParticle;
+	pgd.groupFlags = b2_solidParticleGroup;
+	pgd.position.Set(-7, 6);
+	pgd.angle = -0.5;
+	pgd.angularVelocity = 2;
+	pgd.shape = box;
+	pgd.color.Set(color[0], color[1], color[2], 200);
+	var particleGroup = particleSystem.CreateParticleGroup(pgd);
+	jellies.push(particleGroup);
+}
 	
-	function createElasticRod() {
-		var color = rgbaColors[getRandomInt(6)];
-			var box = new b2PolygonShape();
-			var pgd = new b2ParticleGroupDef();
-			box.SetAsBoxXY(0.1, 2);
-			pgd.flags = b2_elasticParticle;
-			pgd.groupFlags = b2_solidParticleGroup;
-			pgd.position.Set(-7, 7);
-			pgd.angle = -0.5;
-			pgd.angularVelocity = 2;
-			pgd.shape = box;
-			pgd.color.Set(color[0], color[1], color[2], 200);
-			var particleGroup = particleSystem.CreateParticleGroup(pgd);
-			jellies.push(particleGroup);
-	}
+function createElasticRod() {
+	var color = rgbaColors[getRandomInt(6)];
+	var box = new b2PolygonShape();
+	var pgd = new b2ParticleGroupDef();
+	box.SetAsBoxXY(0.1, 2);
+	pgd.flags = b2_elasticParticle;
+	pgd.groupFlags = b2_solidParticleGroup;
+	pgd.position.Set(-7, 7);
+	pgd.angle = -0.5;
+	pgd.angularVelocity = 2;
+	pgd.shape = box;
+	pgd.color.Set(color[0], color[1], color[2], 200);
+	var particleGroup = particleSystem.CreateParticleGroup(pgd);
+	jellies.push(particleGroup);
+}
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * max);
@@ -1027,7 +1027,7 @@ function buttonClicked() {
 	result = getRandomInt(3);
 	switch (result){
 		case 0:
-				createElasticBox();
+			createElasticBox();
 			break;
 		case 1:
 			createSmallElasticBox();
@@ -1039,20 +1039,20 @@ function buttonClicked() {
 }
 
 function clearButtonClicked() {
-    var clearButton = document.getElementById("clearButton");
-
-    // Hide the clear button when it's clicked
-    clearButton.style.display = "none";
-    
-    // Ensure jellies is defined and contains particles
-    if (Array.isArray(jellies) && jellies.length > 0) {
-        // Loop backwards to safely remove particles
-        for (var i = jellies.length - 1; i >= 0; i--) {
-            if (jellies[i]) {
-                jellies[i].DestroyParticles(true); // Ensure this method is correct
-            }
-        }
-    } else {
-        console.log('No jellies to destroy');
-    }
+	var clearButton = document.getElementById("clearButton");
+	
+	// Hide the clear button when it's clicked
+	clearButton.style.display = "none";
+	
+	// Ensure jellies is defined and contains particles
+	if (Array.isArray(jellies) && jellies.length > 0) {
+		// Loop backwards to safely remove particles
+		for (var i = jellies.length - 1; i >= 0; i--) {
+		    if (jellies[i]) {
+			jellies[i].DestroyParticles(true); // Ensure this method is correct
+		    }
+		}
+	} else {
+		console.log('No jellies to destroy');
+	}
 }
