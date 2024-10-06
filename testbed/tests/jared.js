@@ -332,10 +332,10 @@ function TestParticles() {
 
 	var stretch_walls_ratio = $(window).width()/1386;
 
-	console.log("inner width: " + window.innerWidth());
+	console.log("inner width: " + window.innerWidth);
 	console.log("jQuery width: " + $(window).width());
 
-	console.log("ratios (in order): " + window.innerWidth()/1386 + ", " + stretch_walls_ratio);
+	console.log("ratios (in order): " + window.innerWidth/1386 + ", " + stretch_walls_ratio);
 	
 	var shape1 = new b2PolygonShape();
 	var vertices = shape1.vertices;
