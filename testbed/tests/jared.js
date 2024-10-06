@@ -330,20 +330,23 @@ function TestParticles() {
 	
 	createLine();
 
-	// Define original wall positions based on a width of 1386
-	var LEFT_WALL_ORIGINAL_POSITION = -10;  // Desired position for the left wall
-	var RIGHT_WALL_ORIGINAL_POSITION = 10;   // Desired position for the right wall
+	// Define the original width for perfect alignment
+	var ORIGINAL_CANVAS_WIDTH_PX = 1386; // Original width for wall alignment
+	var SPACING_BUFFER = 10; // Adjust as needed for spacing
+	
+	// Define fixed positions for the walls at the original width
+	var LEFT_WALL_ORIGINAL_POSITION = -10;  // Position for left wall
+	var RIGHT_WALL_ORIGINAL_POSITION = 10;   // Position for right wall
 	
 	// Current window width in pixels
 	var windowWidthPx = $(window).width();
 	
-	// Calculate scaling factor from 1386 (the original width)
-	var scale = windowWidthPx / 1386;
+	// Calculate the ratio of the current width to the original width
+	var ratio = windowWidthPx / ORIGINAL_CANVAS_WIDTH_PX;
 	
-	// Calculate wall positions based on the scaling factor with an offset
-	// Adjust these values to fine-tune the positioning
-	var leftWallX = LEFT_WALL_ORIGINAL_POSITION * scale + (scale - 1) * 10;  // Adjust to maintain spacing
-	var rightWallX = RIGHT_WALL_ORIGINAL_POSITION * scale - (scale - 1) * 10; // Adjust to maintain spacing
+	// Calculate wall positions based on the fixed original positions adjusted by the ratio
+	var leftWallX = LEFT_WALL_ORIGINAL_POSITION * ratio - SPACING_BUFFER * (ratio - 1);
+	var rightWallX = RIGHT_WALL_ORIGINAL_POSITION * ratio + SPACING_BUFFER * (ratio - 1);
 	
 	// Create left wall
 	var shapeLeft = new b2PolygonShape();
@@ -363,6 +366,7 @@ function TestParticles() {
 	verticesRight.push(new b2Vec2(rightWallX - 1, 9.4));     // Matching the top width
 	ground.CreateFixtureFromShape(shapeRight, 0);
 	
+		
 	// Create ground and walls
 	var shape1 = new b2PolygonShape();
 	var vertices1 = shape1.vertices;
