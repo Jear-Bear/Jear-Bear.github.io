@@ -303,214 +303,214 @@ function createPentagon(name, textureSrc, scene, scale = 1.25) { // Added scale 
   let bd, ground, particleSystem;
 
 function TestParticles() {
-  console.log(window.innerWidth + ", " + window.innerHeight);
-  document.getElementById('textCanvas').getContext("2d").scale(window.innerWidth/1386, window.innerHeight/818);
-  camera.position.y = 4;
-  camera.position.z = 8;
+	console.log(window.innerWidth + ", " + window.innerHeight);
+	document.getElementById('textCanvas').getContext("2d").scale(window.innerWidth/1386, window.innerHeight/818);
+	camera.position.y = 4;
+	camera.position.z = 8;
 	bd = new b2BodyDef();
-  ground = world.CreateBody(bd);  
+	ground = world.CreateBody(bd);  
 		
 	initBabylon();
-  createLetterH();
-  createLetterI();
-
-  createComma();
-    
-  createUpperLetterI();
-  createApostrophe();
-  createM();
-    
-  createJ();
-  createA();
-  createR();
-  createE();
-  createD();
-    
-  createPeriod();
-    
-  createLine();
-    
-  var shape1 = new b2PolygonShape();
-  var vertices = shape1.vertices;
-  vertices.push(new b2Vec2(-10, -1.6));
-  vertices.push(new b2Vec2(10, -1.6));
-  vertices.push(new b2Vec2(10, -1.4));
-  vertices.push(new b2Vec2(-10, -1.4));
-  ground.CreateFixtureFromShape(shape1, 0);
-
-  var shape2 = new b2PolygonShape();
-  var vertices = shape2.vertices;
-  vertices.push(new b2Vec2(-9.3, -1.4));
-  vertices.push(new b2Vec2(-10, -1.4));
-  vertices.push(new b2Vec2(-10, 10));
-  vertices.push(new b2Vec2(-9.3, 10));
-  ground.CreateFixtureFromShape(shape2, 0);
-
-  var shape3 = new b2PolygonShape();
-  var vertices = shape3.vertices;
-  vertices.push(new b2Vec2(9.3, -1.4));
-  vertices.push(new b2Vec2(10, -1.4));
-  vertices.push(new b2Vec2(10, 10));
-  vertices.push(new b2Vec2(9.3, 10));
-  ground.CreateFixtureFromShape(shape3, 0);
-    
-  var shape4 = new b2PolygonShape();
-  var vertices = shape4.vertices;
-  vertices.push(new b2Vec2(-9.3, 10));
-  vertices.push(new b2Vec2(9.3, 10));
-  vertices.push(new b2Vec2(9.3, 9.4));
-  vertices.push(new b2Vec2(-9.3, 9.4));
-  ground.CreateFixtureFromShape(shape4, 0);
-
-  var psd = new b2ParticleSystemDef();
-  psd.radius = 0.0575;
-  particleSystem = world.CreateParticleSystem(psd);
+	createLetterH();
+	createLetterI();
 	
-  // one group
-  var circle = new b2CircleShape();
-  circle.position.Set(0, 3);
-  circle.radius = 2.1;
-  var pgd = new b2ParticleGroupDef();
-  pgd.shape = circle;
-  pgd.color.Set(51, 197, 255, 255);
-  particleSystem.CreateParticleGroup(pgd);
-    
-  var circle1 = new b2CircleShape();
-  circle1.position.Set(-6, 3);
-  circle1.radius = 2.1;
-  var pgd1 = new b2ParticleGroupDef();
-  pgd1.shape = circle1;
-  pgd1.color.Set(51, 197, 255, 255);
-  particleSystem.CreateParticleGroup(pgd1);
-    
-  var circle2 = new b2CircleShape();
-  circle2.position.Set(6, 3);
-  circle2.radius = 2.1;
-  var pgd2 = new b2ParticleGroupDef();
-  pgd2.shape = circle2;
-  pgd2.color.Set(51, 197, 255, 255);
-  particleSystem.CreateParticleGroup(pgd2);
-    	
-    // Define a dynamic body
-    bd = new b2BodyDef();
-    bd.position.Set(-6, 0);
-    bd.type = b2_dynamicBody;
-    var body = world.CreateBody(bd);
-    window.pentagons.push(body);
-
-    bd1 = new b2BodyDef();
-    bd1.position.Set(-2, 0);
-    bd1.type = b2_dynamicBody;
-    var body1 = world.CreateBody(bd1);
-    window.pentagons.push(body1);
-
-    bd2 = new b2BodyDef();
-    bd2.position.Set(2, 0);
-    bd2.type = b2_dynamicBody;
-    var body2 = world.CreateBody(bd2);
-    window.pentagons.push(body2);
-
-    bd3 = new b2BodyDef();
-    bd3.position.Set(6, 0);
-    bd3.type = b2_dynamicBody;
-    var body3 = world.CreateBody(bd3);
-    window.pentagons.push(body3);
-
-    // Create a pentagon shape
-    var pentagon = new b2PolygonShape();
-    var vertices = pentagon.vertices;
-
-    // Define the vertices for a pentagon (5 sides)
-    var angle = (2 * Math.PI) / 5; // 72 degrees for a regular pentagon
-    for (var i = 0; i < 5; i++) {
-        var x = .7 * Math.cos(i * angle); // 0.5 is the desired radius
-        var y = .7 * Math.sin(i * angle);
-        vertices.push(new b2Vec2(x, y));
-    }
-
-    // Create the fixture for the body using the pentagon shape
-    body.CreateFixtureFromShape(pentagon, 0.5); // 0.5 is the density
-    body1.CreateFixtureFromShape(pentagon, 0.5); // 0.5 is the density
-    body2.CreateFixtureFromShape(pentagon, 0.5); // 0.5 is the density
-    body3.CreateFixtureFromShape(pentagon, 0.5); // 0.5 is the density
-
-    // Capture mouse click events and send coordinates to your JS file
-        document.getElementById('canvas').addEventListener('click', function(event) {
-            const rectang = textCanvas.getBoundingClientRect();
-            const mouseTextX = event.clientX - rectang.left;
-            const mouseTextY = event.clientY - rectang.top;
-            
-            var i = 0;
-            
-            // Check if click is within any button area
-            buttonAreas.forEach(area => {
-                if (mouseTextX >= area.x && mouseTextX <= area.x + area.width &&
-                    mouseTextY >= area.y && mouseTextY <= area.y + area.height) {
-                    switch(i)
-                    {
-                        case 0:
-                            window.location.href = "about_me.html";
-                            break;
-                        case 1:
-                            window.location.href = "blog.html";
-                            break;
-                        case 2:
-                            window.location.href = "projects.html";
-                            break;
-                        case 3:
-                            window.location.href = "contact.html";
-                            break;
-                    }
-                    
-                }
-                i++
-            });
-            
-            var rect = this.getBoundingClientRect();
-            var mouseX = event.clientX - rect.left;
-            var mouseY = event.clientY - rect.top;
-                        
-            // Call your function with the mouse coordinates
-            handleMouseClick(mouseX, mouseY);
-        });
-    
-    // Listen for the mousedown event (when the mouse button is pressed)
-        document.getElementById('canvas').addEventListener('mousedown', function(event) {
-            if (event.button === 0) { // Check if it's the left mouse button (button === 0)
-                clickStartTime = new Date().getTime(); // Record the time when the mouse button is pressed
-            }
-        });
-
-        // Listen for the mouseup event (when the mouse button is released)
-        document.getElementById('canvas').addEventListener('mouseup', function(event) {
-            if (event.button === 0 && clickStartTime) { // Check if it's the left mouse button and if the click started
-                const clickEndTime = new Date().getTime(); // Record the time when the mouse button is released
-                clickDuration = clickEndTime - clickStartTime; // Calculate the duration
-                clickStartTime = null; // Reset the click start time
-            }
-        });
-
-    // Function to handle mouse clicks and check for pentagon intersections
-    function handleMouseClick(mouseX, mouseY) {
-        // Example usage:
-        clickX = ((mouseX - 695)/1360)*18.6;
-        clickY = (((Math.abs(mouseY - 800) - 392.5)/789)*10.8 + 4);
-        isClickInPolygon();
-    }
-
+	createComma();
+	
+	createUpperLetterI();
+	createApostrophe();
+	createM();
+	
+	createJ();
+	createA();
+	createR();
+	createE();
+	createD();
+	
+	createPeriod();
+	
+	createLine();
+	
+	var shape1 = new b2PolygonShape();
+	var vertices = shape1.vertices;
+	vertices.push(new b2Vec2(-10, -1.6));
+	vertices.push(new b2Vec2(10, -1.6));
+	vertices.push(new b2Vec2(10, -1.4));
+	vertices.push(new b2Vec2(-10, -1.4));
+	ground.CreateFixtureFromShape(shape1, 0);
+	
+	var shape2 = new b2PolygonShape();
+	var vertices = shape2.vertices;
+	vertices.push(new b2Vec2(-9.3, -1.4));
+	vertices.push(new b2Vec2(-10, -1.4));
+	vertices.push(new b2Vec2(-10, 9.4));
+	vertices.push(new b2Vec2(-9.3, 9.4));
+	ground.CreateFixtureFromShape(shape2, 0);
+	
+	var shape3 = new b2PolygonShape();
+	var vertices = shape3.vertices;
+	vertices.push(new b2Vec2(9.3, -1.4));
+	vertices.push(new b2Vec2(10, -1.4));
+	vertices.push(new b2Vec2(10, 9.4));
+	vertices.push(new b2Vec2(9.3, 9.4));
+	ground.CreateFixtureFromShape(shape3, 0);
+	
+	var shape4 = new b2PolygonShape();
+	var vertices = shape4.vertices;
+	vertices.push(new b2Vec2(-10, 10));
+	vertices.push(new b2Vec2(10, 10));
+	vertices.push(new b2Vec2(10, 9.4));
+	vertices.push(new b2Vec2(-10, 9.4));
+	ground.CreateFixtureFromShape(shape4, 0);
+	
+	var psd = new b2ParticleSystemDef();
+	psd.radius = 0.0575;
+	particleSystem = world.CreateParticleSystem(psd);
+	
+	// one group
+	var circle = new b2CircleShape();
+	circle.position.Set(0, 3);
+	circle.radius = 2.1;
+	var pgd = new b2ParticleGroupDef();
+	pgd.shape = circle;
+	pgd.color.Set(51, 197, 255, 255);
+	particleSystem.CreateParticleGroup(pgd);
+	
+	var circle1 = new b2CircleShape();
+	circle1.position.Set(-6, 3);
+	circle1.radius = 2.1;
+	var pgd1 = new b2ParticleGroupDef();
+	pgd1.shape = circle1;
+	pgd1.color.Set(51, 197, 255, 255);
+	particleSystem.CreateParticleGroup(pgd1);
+	
+	var circle2 = new b2CircleShape();
+	circle2.position.Set(6, 3);
+	circle2.radius = 2.1;
+	var pgd2 = new b2ParticleGroupDef();
+	pgd2.shape = circle2;
+	pgd2.color.Set(51, 197, 255, 255);
+	particleSystem.CreateParticleGroup(pgd2);
+	
+	// Define a dynamic body
+	bd = new b2BodyDef();
+	bd.position.Set(-6, 0);
+	bd.type = b2_dynamicBody;
+	var body = world.CreateBody(bd);
+	window.pentagons.push(body);
+	
+	bd1 = new b2BodyDef();
+	bd1.position.Set(-2, 0);
+	bd1.type = b2_dynamicBody;
+	var body1 = world.CreateBody(bd1);
+	window.pentagons.push(body1);
+	
+	bd2 = new b2BodyDef();
+	bd2.position.Set(2, 0);
+	bd2.type = b2_dynamicBody;
+	var body2 = world.CreateBody(bd2);
+	window.pentagons.push(body2);
+	
+	bd3 = new b2BodyDef();
+	bd3.position.Set(6, 0);
+	bd3.type = b2_dynamicBody;
+	var body3 = world.CreateBody(bd3);
+	window.pentagons.push(body3);
+	
+	// Create a pentagon shape
+	var pentagon = new b2PolygonShape();
+	var vertices = pentagon.vertices;
+	
+	// Define the vertices for a pentagon (5 sides)
+	var angle = (2 * Math.PI) / 5; // 72 degrees for a regular pentagon
+	for (var i = 0; i < 5; i++) {
+	var x = .7 * Math.cos(i * angle); // 0.5 is the desired radius
+	var y = .7 * Math.sin(i * angle);
+	vertices.push(new b2Vec2(x, y));
+	}
+	
+	// Create the fixture for the body using the pentagon shape
+	body.CreateFixtureFromShape(pentagon, 0.5); // 0.5 is the density
+	body1.CreateFixtureFromShape(pentagon, 0.5); // 0.5 is the density
+	body2.CreateFixtureFromShape(pentagon, 0.5); // 0.5 is the density
+	body3.CreateFixtureFromShape(pentagon, 0.5); // 0.5 is the density
+	
+	// Capture mouse click events and send coordinates to your JS file
+	document.getElementById('canvas').addEventListener('click', function(event) {
+	    const rectang = textCanvas.getBoundingClientRect();
+	    const mouseTextX = event.clientX - rectang.left;
+	    const mouseTextY = event.clientY - rectang.top;
+	    
+	    var i = 0;
+	    
+	    // Check if click is within any button area
+	    buttonAreas.forEach(area => {
+		if (mouseTextX >= area.x && mouseTextX <= area.x + area.width &&
+		    mouseTextY >= area.y && mouseTextY <= area.y + area.height) {
+		    switch(i)
+		    {
+			case 0:
+			    window.location.href = "about_me.html";
+			    break;
+			case 1:
+			    window.location.href = "blog.html";
+			    break;
+			case 2:
+			    window.location.href = "projects.html";
+			    break;
+			case 3:
+			    window.location.href = "contact.html";
+			    break;
+		    }
+		    
+		}
+		i++
+	    });
+	    
+	    var rect = this.getBoundingClientRect();
+	    var mouseX = event.clientX - rect.left;
+	    var mouseY = event.clientY - rect.top;
+			
+	    // Call your function with the mouse coordinates
+	    handleMouseClick(mouseX, mouseY);
+	});
+	
+	// Listen for the mousedown event (when the mouse button is pressed)
+	document.getElementById('canvas').addEventListener('mousedown', function(event) {
+	    if (event.button === 0) { // Check if it's the left mouse button (button === 0)
+		clickStartTime = new Date().getTime(); // Record the time when the mouse button is pressed
+	    }
+	});
+	
+	// Listen for the mouseup event (when the mouse button is released)
+	document.getElementById('canvas').addEventListener('mouseup', function(event) {
+	    if (event.button === 0 && clickStartTime) { // Check if it's the left mouse button and if the click started
+		const clickEndTime = new Date().getTime(); // Record the time when the mouse button is released
+		clickDuration = clickEndTime - clickStartTime; // Calculate the duration
+		clickStartTime = null; // Reset the click start time
+	    }
+	});
+	
+	// Function to handle mouse clicks and check for pentagon intersections
+	function handleMouseClick(mouseX, mouseY) {
+	// Example usage:
+	clickX = ((mouseX - 695)/1360)*18.6;
+	clickY = (((Math.abs(mouseY - 800) - 392.5)/789)*10.8 + 4);
+	isClickInPolygon();
+	}
+	
 	
 	function getMouseCoords() {
-  var mouse = new THREE.Vector3();
-  mouse.x = (event.clientX / windowWidth) * 2 - 1;
-  mouse.y = -(event.clientY / windowHeight) * 2 + 1;
-  mouse.z = 0.5;
-
-  projector.unprojectVector(mouse, camera);
-  var dir = mouse.sub(camera.position).normalize();
-  var distance = -camera.position.z / dir.z;
-  var pos = camera.position.clone().add(dir.multiplyScalar(distance));
-  var p = new b2Vec2(pos.x, pos.y);
-  return p;
+	var mouse = new THREE.Vector3();
+	mouse.x = (event.clientX / windowWidth) * 2 - 1;
+	mouse.y = -(event.clientY / windowHeight) * 2 + 1;
+	mouse.z = 0.5;
+	
+	projector.unprojectVector(mouse, camera);
+	var dir = mouse.sub(camera.position).normalize();
+	var distance = -camera.position.z / dir.z;
+	var pos = camera.position.clone().add(dir.multiplyScalar(distance));
+	var p = new b2Vec2(pos.x, pos.y);
+	return p;
 }
 	
     // Function to print pentagon coordinates to console
