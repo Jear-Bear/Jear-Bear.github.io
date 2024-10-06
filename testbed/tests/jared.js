@@ -896,39 +896,39 @@ function createE()
         leftBarVertices.push(new b2Vec2(2.92, 5.65));
         ground.CreateFixtureFromShape(leftBarShape, 0);
     
-				// top curve of a
-				var secondSlope = new b2PolygonShape();
-				var secondSlopeVertices = secondSlope.vertices;
-				secondSlopeVertices.push(new b2Vec2(2.5, 6.09));
-				secondSlopeVertices.push(new b2Vec2(2.65, 6.15));
-				secondSlopeVertices.push(new b2Vec2(2.8, 6.1));
-				secondSlopeVertices.push(new b2Vec2(2.8, 6.16));
-				secondSlopeVertices.push(new b2Vec2(2.65, 6.18));
-				secondSlopeVertices.push(new b2Vec2(2.55, 6.12));
-				ground.CreateFixtureFromShape(secondSlope, 0);
+	// top curve of a
+	var secondSlope = new b2PolygonShape();
+	var secondSlopeVertices = secondSlope.vertices;
+	secondSlopeVertices.push(new b2Vec2(2.5, 6.09));
+	secondSlopeVertices.push(new b2Vec2(2.65, 6.15));
+	secondSlopeVertices.push(new b2Vec2(2.9, 6.1));
+	secondSlopeVertices.push(new b2Vec2(2.9, 6.16));
+	secondSlopeVertices.push(new b2Vec2(2.65, 6.18));
+	secondSlopeVertices.push(new b2Vec2(2.55, 6.12));
+	ground.CreateFixtureFromShape(secondSlope, 0);
 
-				//bottom curve of e
-				var slope2 = new b2PolygonShape();
-				var slope2Vertices = slope2.vertices;
-				slope2Vertices.push(new b2Vec2(2.5, 5.74));
-				slope2Vertices.push(new b2Vec2(2.65, 5.64));
-				slope2Vertices.push(new b2Vec2(2.8, 5.67));
-				slope2Vertices.push(new b2Vec2(2.9, 5.75));
-				slope2Vertices.push(new b2Vec2(2.8, 5.7));
-				slope2Vertices.push(new b2Vec2(2.65, 5.67));
-				slope2Vertices.push(new b2Vec2(2.55, 5.67));
-				ground.CreateFixtureFromShape(slope2, 0);
+	//bottom curve of e
+	var slope2 = new b2PolygonShape();
+	var slope2Vertices = slope2.vertices;
+	slope2Vertices.push(new b2Vec2(2.5, 5.74));
+	slope2Vertices.push(new b2Vec2(2.65, 5.64));
+	slope2Vertices.push(new b2Vec2(2.8, 5.67));
+	slope2Vertices.push(new b2Vec2(2.9, 5.75));
+	slope2Vertices.push(new b2Vec2(2.8, 5.7));
+	slope2Vertices.push(new b2Vec2(2.65, 5.67));
+	slope2Vertices.push(new b2Vec2(2.55, 5.67));
+	ground.CreateFixtureFromShape(slope2, 0);
 
 
 
-				// Create the first vertical bar of "m"
-				var rightBarShape = new b2PolygonShape();
-				var rightBarShapeVertices = rightBarShape.vertices;
-				rightBarShapeVertices.push(new b2Vec2(2.5, 5.7));
-				rightBarShapeVertices.push(new b2Vec2(2.5, 6.13));
-				rightBarShapeVertices.push(new b2Vec2(2.44, 6));
-				rightBarShapeVertices.push(new b2Vec2(2.44, 6));
-				ground.CreateFixtureFromShape(rightBarShape, 0);
+	// Create the first vertical bar of "m"
+	var rightBarShape = new b2PolygonShape();
+	var rightBarShapeVertices = rightBarShape.vertices;
+	rightBarShapeVertices.push(new b2Vec2(2.5, 5.7));
+	rightBarShapeVertices.push(new b2Vec2(2.5, 6.13));
+	rightBarShapeVertices.push(new b2Vec2(2.44, 6));
+	rightBarShapeVertices.push(new b2Vec2(2.44, 6));
+	ground.CreateFixtureFromShape(rightBarShape, 0);
     }
     
 		function createPeriod()
