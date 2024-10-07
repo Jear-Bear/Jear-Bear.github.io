@@ -5,16 +5,16 @@ var clickY = 0;
 let clickStartTime;
 let clickDuration;
 var linkedin = new Image();
-linkedin.src = "linkedin.png";
+linkedin.src = "images/linkedin.png";
 var git = new Image();
-git.src = "github.png";
+git.src = "images/github.png";
 var image = new Image();
 var youtube = new Image();
-youtube.src = "youtube.png";
+youtube.src = "images/youtube.png";
 var instagram = new Image();
-instagram.src = "instagram.png";
+instagram.src = "images/instagram.png";
 var text = new Image();
-text.src = "text.png";
+text.src = "images/text.png";
 
 const rgbaColors = [
   [54, 74, 211],  
