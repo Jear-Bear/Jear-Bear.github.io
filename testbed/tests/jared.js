@@ -330,59 +330,39 @@ function TestParticles() {
 	
 	createLine();
 
-	// Define the original width for perfect alignment
-	var ORIGINAL_CANVAS_WIDTH_PX = 1386; // Original width for wall alignment
-	var SPACING_BUFFER = 10; // Adjust as needed for spacing
-	
-	// Define fixed positions for the walls at the original width
-	var LEFT_WALL_ORIGINAL_POSITION = -10;  // Position for left wall
-	var RIGHT_WALL_ORIGINAL_POSITION = 10;   // Position for right wall
-	
-	// Current window width in pixels
-	var windowWidthPx = $(window).width();
-	
-	// Calculate the ratio of the current width to the original width
-	var ratio = windowWidthPx / ORIGINAL_CANVAS_WIDTH_PX;
-	
-	// Calculate wall positions based on the fixed original positions adjusted by the ratio
-	var leftWallX = LEFT_WALL_ORIGINAL_POSITION * ratio - SPACING_BUFFER * (ratio - 1);
-	var rightWallX = RIGHT_WALL_ORIGINAL_POSITION * ratio + SPACING_BUFFER * (ratio - 1);
-	
-	// Create left wall
-	var shapeLeft = new b2PolygonShape();
-	var verticesLeft = shapeLeft.vertices;
-	verticesLeft.push(new b2Vec2(leftWallX + 1, -1.4));  // Shifted slightly right
-	verticesLeft.push(new b2Vec2(leftWallX, -1.4));         // Exact left wall position
-	verticesLeft.push(new b2Vec2(leftWallX, 9.4));
-	verticesLeft.push(new b2Vec2(leftWallX + 1, 9.4));    // Matching the top width
-	ground.CreateFixtureFromShape(shapeLeft, 0);
-	
-	// Create right wall
-	var shapeRight = new b2PolygonShape();
-	var verticesRight = shapeRight.vertices;
-	verticesRight.push(new b2Vec2(rightWallX - 1, -1.4));  // Shifted slightly left
-	verticesRight.push(new b2Vec2(rightWallX, -1.4));        // Right wall position
-	verticesRight.push(new b2Vec2(rightWallX, 9.4));         
-	verticesRight.push(new b2Vec2(rightWallX - 1, 9.4));     // Matching the top width
-	ground.CreateFixtureFromShape(shapeRight, 0);
-	
-		
-	// Create ground and walls
+	var stretch_walls_ratio = window.innerWidth/1386;
+	var stretch_walls_ratio = $(window).width()/1386;
+
 	var shape1 = new b2PolygonShape();
-	var vertices1 = shape1.vertices;
-	vertices1.push(new b2Vec2(-20, -1.6)); // Ground, no scaling
-	vertices1.push(new b2Vec2(20, -1.6));
-	vertices1.push(new b2Vec2(20, -1.4));
-	vertices1.push(new b2Vec2(-20, -1.4));
+	var vertices = shape1.vertices;
+	vertices.push(new b2Vec2(-20, -1.6));
+	vertices.push(new b2Vec2(20, -1.6));
+	vertices.push(new b2Vec2(20, -1.4));
+	vertices.push(new b2Vec2(-20, -1.4));
 	ground.CreateFixtureFromShape(shape1, 0);
-	
-	// Ground ceiling, no scaling needed here
+
+	var shape2 = new b2PolygonShape();
+	var vertices = shape2.vertices;
+	vertices.push(new b2Vec2(-9.3, -1.4));
+	vertices.push(new b2Vec2(-10, -1.4));
+	vertices.push(new b2Vec2(-10, 9.4));
+	vertices.push(new b2Vec2(-9.3, 9.4));
+	ground.CreateFixtureFromShape(shape2, 0);
+
+	var shape3 = new b2PolygonShape();
+	var vertices = shape3.vertices;
+	vertices.push(new b2Vec2(9.3, -1.4));
+	vertices.push(new b2Vec2(10, -1.4));
+	vertices.push(new b2Vec2(10, 9.4));
+	vertices.push(new b2Vec2(9.3, 9.4));
+	ground.CreateFixtureFromShape(shape3, 0);
+
 	var shape4 = new b2PolygonShape();
-	var vertices4 = shape4.vertices;
-	vertices4.push(new b2Vec2(-20, 10));
-	vertices4.push(new b2Vec2(20, 10));
-	vertices4.push(new b2Vec2(20, 9.4));
-	vertices4.push(new b2Vec2(-20, 9.4));
+	var vertices = shape4.vertices;
+	vertices.push(new b2Vec2(-20, 10));
+	vertices.push(new b2Vec2(20, 10));
+	vertices.push(new b2Vec2(20, 9.4));
+	vertices.push(new b2Vec2(-20, 9.4));
 	ground.CreateFixtureFromShape(shape4, 0);
 	
 	var psd = new b2ParticleSystemDef();
