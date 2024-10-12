@@ -209,60 +209,35 @@ function Testbed(obj) {
     }
   });
 
-//responsible for dragging objects
+// Simulate mousedown with touchstart
 document.addEventListener('touchstart', function(event) {
-  event.preventDefault(); // Prevents default browser behavior
-  var p = getTouchCoords(event.touches[0]); // Handle the first touch point
-  var aabb = new b2AABB;
-  var d = new b2Vec2;
+  var p = getTouchCoords(event.touches[0]); // Get touch coordinates
+  var mouseEvent = new MouseEvent('mousedown', {
+    clientX: p.x,
+    clientY: p.y
+  });
+  document.dispatchEvent(mouseEvent); // Dispatch mousedown event
+}, { passive: false });
 
-  d.Set(0.01, 0.01);
-  b2Vec2.Sub(aabb.lowerBound, p, d);
-  b2Vec2.Add(aabb.upperBound, p, d);
-
-  var queryCallback = new QueryCallback(p);
-  world.QueryAABB(queryCallback, aabb);
-
-  if (queryCallback.fixture) {
-    var body = queryCallback.fixture.body;
-    var md = new b2MouseJointDef;
-    md.bodyA = g_groundBody;
-    md.bodyB = body;
-    md.target = p;
-    md.maxForce = 1000 * body.GetMass();
-    that.mouseJoint = world.CreateJoint(md);
-    body.SetAwake(true);
-  }
-  if (test.MouseDown !== undefined) {
-    test.MouseDown(p);
-  }
-}, { passive: false }); // Add passive: false
-
-//objects follow touch on drag
+// Simulate mousemove with touchmove
 document.addEventListener('touchmove', function(event) {
-  event.preventDefault(); // Prevents default browser behavior
-  var p = getTouchCoords(event.touches[0]); // Handle the first touch point
-  if (that.mouseJoint) {
-    that.mouseJoint.SetTarget(p);
-  }
-  if (test.MouseMove !== undefined) {
-    test.MouseMove(p);
-  }
-}, { passive: false }); // Add passive: false
+  var p = getTouchCoords(event.touches[0]); // Get touch coordinates
+  var mouseEvent = new MouseEvent('mousemove', {
+    clientX: p.x,
+    clientY: p.y
+  });
+  document.dispatchEvent(mouseEvent); // Dispatch mousemove event
+}, { passive: false });
 
-//objects stop following on touch release
+// Simulate mouseup with touchend
 document.addEventListener('touchend', function(event) {
-  event.preventDefault(); // Prevents default browser behavior
-  if (that.mouseJoint) {
-    world.DestroyJoint(that.mouseJoint);
-    that.mouseJoint = null;
-  }
-  if (test.MouseUp !== undefined) {
-    test.MouseUp(getTouchCoords(event.changedTouches[0])); // Handle the first touch point
-  }
-}, { passive: false }); // Add passive: false
-
-
+  var p = getTouchCoords(event.changedTouches[0]); // Get touch coordinates
+  var mouseEvent = new MouseEvent('mouseup', {
+    clientX: p.x,
+    clientY: p.y
+  });
+  document.dispatchEvent(mouseEvent); // Dispatch mouseup event
+}, { passive: false });
 
   window.addEventListener( 'resize', onWindowResize, false );
 
