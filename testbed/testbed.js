@@ -209,6 +209,55 @@ function Testbed(obj) {
     }
   });
 
+	    //responsible for dragging objects
+  document.addEventListener('touchstart', function(event) {
+    var p = getMouseCoords(event);
+    var aabb = new b2AABB;
+    var d = new b2Vec2;
+
+    d.Set(0.01, 0.01);
+    b2Vec2.Sub(aabb.lowerBound, p, d);
+    b2Vec2.Add(aabb.upperBound, p, d);
+
+    var queryCallback = new QueryCallback(p);
+    world.QueryAABB(queryCallback, aabb);
+
+    if (queryCallback.fixture) {
+      var body = queryCallback.fixture.body;
+      var md = new b2MouseJointDef;
+      md.bodyA = g_groundBody;
+      md.bodyB = body;
+      md.target = p;
+      md.maxForce = 1000 * body.GetMass();
+      that.mouseJoint = world.CreateJoint(md);
+      body.SetAwake(true);
+    }
+    if (test.MouseDown !== undefined) {
+      test.MouseDown(p);
+    }
+  });
+
+    //objects follow mouse on drag
+  document.addEventListener('touchmove', function(event) {
+    var p = getMouseCoords(event);
+    if (that.mouseJoint) {
+      that.mouseJoint.SetTarget(p);
+    }
+    if (test.MouseMove !== undefined) {
+      test.MouseMove(p);
+    }
+  });
+
+    //objects stop following on mouse release <-- potentially handle link opening here, track shapes via array
+  document.addEventListener('touchend', function(event) {
+    if (that.mouseJoint) {
+      world.DestroyJoint(that.mouseJoint);
+      that.mouseJoint = null;
+		}
+    if (test.MouseUp !== undefined) {
+      test.MouseUp(getMouseCoords(event));
+    }
+  });
 
   window.addEventListener( 'resize', onWindowResize, false );
 
