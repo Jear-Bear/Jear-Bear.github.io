@@ -211,33 +211,40 @@ function Testbed(obj) {
 
 // Simulate mousedown with touchstart
 document.addEventListener('touchstart', function(event) {
-  var p = getTouchCoords(event.touches[0]); // Get touch coordinates
   var mouseEvent = new MouseEvent('mousedown', {
-    clientX: p.x,
-    clientY: p.y
+    bubbles: true,
+    cancelable: true,
+    clientX: event.touches[0].clientX,  // Use touch screen coordinates
+    clientY: event.touches[0].clientY
   });
+
   document.dispatchEvent(mouseEvent); // Dispatch mousedown event
 });
 
 // Simulate mousemove with touchmove
 document.addEventListener('touchmove', function(event) {
-  var p = getTouchCoords(event.touches[0]); // Get touch coordinates
   var mouseEvent = new MouseEvent('mousemove', {
-    clientX: p.x,
-    clientY: p.y
+    bubbles: true,
+    cancelable: true,
+    clientX: event.touches[0].clientX,  // Use touch screen coordinates
+    clientY: event.touches[0].clientY
   });
+
   document.dispatchEvent(mouseEvent); // Dispatch mousemove event
 });
 
 // Simulate mouseup with touchend
 document.addEventListener('touchend', function(event) {
-  var p = getTouchCoords(event.changedTouches[0]); // Get touch coordinates
   var mouseEvent = new MouseEvent('mouseup', {
-    clientX: p.x,
-    clientY: p.y
+    bubbles: true,
+    cancelable: true,
+    clientX: event.changedTouches[0].clientX,  // Use touch screen coordinates
+    clientY: event.changedTouches[0].clientY
   });
+
   document.dispatchEvent(mouseEvent); // Dispatch mouseup event
 });
+
 
   window.addEventListener( 'resize', onWindowResize, false );
 
@@ -322,6 +329,7 @@ function getMouseCoords(event) {
   return p;
 }
 
+/*
 function getTouchCoords(event)
 {
 	var finger = new THREE.Vector3();
@@ -337,4 +345,5 @@ function getTouchCoords(event)
   var p = new b2Vec2(pos.x, pos.y);
   return p;
 }
+*/
 
