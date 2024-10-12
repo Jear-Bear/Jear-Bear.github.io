@@ -345,7 +345,7 @@ function getMouseCoords(event) {
 function getTouchCoords(event)
 {
 	var finger = new THREE.Vector3();
-	var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
+	var touch = event.originalEvent.touches[0] || event.originalEvent.changedTouches[0];
 	finger.x = (touch.pageX / window.innerWidth) * 2 - 1;
 	finger.y = -(touch.pageY / window.innerWidth) * 2 + 1;
 	finger.z = 0.5;
