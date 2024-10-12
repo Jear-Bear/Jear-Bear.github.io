@@ -217,7 +217,7 @@ document.addEventListener('touchstart', function(event) {
     clientY: p.y
   });
   document.dispatchEvent(mouseEvent); // Dispatch mousedown event
-}, { passive: false });
+});
 
 // Simulate mousemove with touchmove
 document.addEventListener('touchmove', function(event) {
@@ -227,7 +227,7 @@ document.addEventListener('touchmove', function(event) {
     clientY: p.y
   });
   document.dispatchEvent(mouseEvent); // Dispatch mousemove event
-}, { passive: false });
+});
 
 // Simulate mouseup with touchend
 document.addEventListener('touchend', function(event) {
@@ -237,7 +237,7 @@ document.addEventListener('touchend', function(event) {
     clientY: p.y
   });
   document.dispatchEvent(mouseEvent); // Dispatch mouseup event
-}, { passive: false });
+});
 
   window.addEventListener( 'resize', onWindowResize, false );
 
