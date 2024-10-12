@@ -126,8 +126,8 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - [ ] Redirect buttons on home page
 - [ ] Dynamic liquidfun walls/boundaries based on screen dimensions
 - [ ] Mobile support
-    - [ ] Support mobile phone screens
-    - [ ] Track swipes to interact with liquidfun sandbox
+    - [x] Support mobile phone screens
+    - [x] Track swipes to interact with liquidfun sandbox
     - [ ] Mobile-friendly UI (especially for the landing page)
 - [ ] More Pages
     - [ ] About Me
@@ -135,7 +135,8 @@ _For more examples, please refer to the [Documentation](https://example.com)_
     - [ ] Projects
     - [ ] Contact
 - [ ] CMS + DB for blog page and project page
-    - [ ] Look into PHP?
+    - [ ] Setup DB
+    - [ ] Test article import using markdown format
 - [ ] Navbar for pages other than the landing page?
     - [ ] Breadcrumbs?
 - [ ] UI animations
