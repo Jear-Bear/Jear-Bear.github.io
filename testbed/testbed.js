@@ -77,7 +77,7 @@ function createSlider() {
         // Format the value to one decimal place
         const formattedGravityValue = gravityValue.toFixed(1);
 				
-				updateGravity(gravityValue);
+	updateGravity(gravityValue);
 			
         label.innerHTML = `Gravity: ${formattedGravityValue} m/s&sup2;`;
     });
@@ -211,7 +211,7 @@ function Testbed(obj) {
 
 	    //responsible for dragging objects
   document.addEventListener('touchstart', function(event) {
-    var p = getMouseCoords(event);
+    var p = getTouchCoords(event);
     var aabb = new b2AABB;
     var d = new b2Vec2;
 
@@ -239,7 +239,7 @@ function Testbed(obj) {
 
     //objects follow mouse on drag
   document.addEventListener('touchmove', function(event) {
-    var p = getMouseCoords(event);
+    var p = getTouchCoords(event);
     if (that.mouseJoint) {
       that.mouseJoint.SetTarget(p);
     }
@@ -255,7 +255,7 @@ function Testbed(obj) {
       that.mouseJoint = null;
 		}
     if (test.MouseUp !== undefined) {
-      test.MouseUp(getMouseCoords(event));
+      test.MouseUp(getTouchCoords(event));
     }
   });
 
@@ -336,6 +336,22 @@ function getMouseCoords(event) {
 
   projector.unprojectVector(mouse, camera);
   var dir = mouse.sub(camera.position).normalize();
+  var distance = -camera.position.z / dir.z;
+  var pos = camera.position.clone().add(dir.multiplyScalar(distance));
+  var p = new b2Vec2(pos.x, pos.y);
+  return p;
+}
+
+function getTouchCoords(event)
+{
+	var finger = new THREE.Vector3();
+	var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
+	finger.x = (touch.pageX / window.innerWidth) * 2 - 1;
+	finger.y = -(touch.pageY / window.innerWidth) * 2 + 1;
+	finger.z = 0.5;
+
+  projector.unprojectVector(finger, camera);
+  var dir = finger.sub(camera.position).normalize();
   var distance = -camera.position.z / dir.z;
   var pos = camera.position.clone().add(dir.multiplyScalar(distance));
   var p = new b2Vec2(pos.x, pos.y);
