@@ -236,7 +236,7 @@ document.addEventListener('touchstart', function(event) {
   if (test.MouseDown !== undefined) {
     test.MouseDown(p);
   }
-});
+}, { passive: false }); // Add passive: false
 
 //objects follow touch on drag
 document.addEventListener('touchmove', function(event) {
@@ -248,7 +248,7 @@ document.addEventListener('touchmove', function(event) {
   if (test.MouseMove !== undefined) {
     test.MouseMove(p);
   }
-});
+}, { passive: false }); // Add passive: false
 
 //objects stop following on touch release
 document.addEventListener('touchend', function(event) {
@@ -260,7 +260,8 @@ document.addEventListener('touchend', function(event) {
   if (test.MouseUp !== undefined) {
     test.MouseUp(getTouchCoords(event.changedTouches[0])); // Handle the first touch point
   }
-});
+}, { passive: false }); // Add passive: false
+
 
 
   window.addEventListener( 'resize', onWindowResize, false );
