@@ -211,6 +211,11 @@ function Testbed(obj) {
 
 // Simulate mousedown with touchstart
 document.addEventListener('touchstart', function(event) {
+	if(event.touches.length > 1){
+		//the event is multi-touch
+		//you can then prevent the behavior
+		event.preventDefault()
+	}
   var mouseEvent = new MouseEvent('mousedown', {
     bubbles: true,
     cancelable: true,
@@ -223,6 +228,11 @@ document.addEventListener('touchstart', function(event) {
 
 // Simulate mousemove with touchmove
 document.addEventListener('touchmove', function(event) {
+	if(event.touches.length > 1){
+		//the event is multi-touch
+		//you can then prevent the behavior
+		event.preventDefault()
+	}
   var mouseEvent = new MouseEvent('mousemove', {
     bubbles: true,
     cancelable: true,
@@ -235,6 +245,11 @@ document.addEventListener('touchmove', function(event) {
 
 // Simulate mouseup with touchend
 document.addEventListener('touchend', function(event) {
+	if(event.touches.length > 1){
+		//the event is multi-touch
+		//you can then prevent the behavior
+		event.preventDefault()
+	}
   var mouseEvent = new MouseEvent('mouseup', {
     bubbles: true,
     cancelable: true,
