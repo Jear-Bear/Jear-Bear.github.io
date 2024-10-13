@@ -344,18 +344,18 @@ function TestParticles() {
 
 	var shape2 = new b2PolygonShape();
 	var vertices = shape2.vertices;
-	vertices.push(new b2Vec2((wall_x * -1) + .3, -1.4));
+	vertices.push(new b2Vec2((wall_x * -1) + .5, -1.4));
 	vertices.push(new b2Vec2(wall_x * -1, -1.4));
 	vertices.push(new b2Vec2(wall_x * -1, 9.4));
-	vertices.push(new b2Vec2((wall_x * -1) + .3, 9.4));
+	vertices.push(new b2Vec2((wall_x * -1) + .5, 9.4));
 	ground.CreateFixtureFromShape(shape2, 0);
 
 	var shape3 = new b2PolygonShape();
 	var vertices = shape3.vertices;
-	vertices.push(new b2Vec2(wall_x - .3, -1.4));
+	vertices.push(new b2Vec2(wall_x - .5, -1.4));
 	vertices.push(new b2Vec2(wall_x, -1.4));
 	vertices.push(new b2Vec2(wall_x, 9.4));
-	vertices.push(new b2Vec2(wall_x - .3, 9.4));
+	vertices.push(new b2Vec2(wall_x - .5, 9.4));
 	ground.CreateFixtureFromShape(shape3, 0);
 
 	var shape4 = new b2PolygonShape();
