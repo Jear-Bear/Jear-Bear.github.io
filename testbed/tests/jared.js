@@ -41,7 +41,6 @@ window.onload = function() {
 // Function to update mesh positions based on pentagons array
 function updateMeshPositions() {
     const aspectRatio = canvas.width / canvas.height;
-	console.log(aspectRatio);
     for (var i = 0; i < window.pentagons.length; i++) {
         var position = window.pentagons[i].GetPosition();
         var x = position.x;
@@ -304,6 +303,8 @@ function createPentagon(name, textureSrc, scene, scale = 1.25) { // Added scale 
 
 function TestParticles() {
 	var aspect_ratio = window.innerWidth / window.innerHeight;
+	console.log(aspect_ratio);
+	
 	var wall_x_gap = 11.4 * aspect_ratio;
 	var wall_x = wall_x_gap / 2;
 	var part_x = wall_x_gap / 4;
@@ -317,24 +318,24 @@ function TestParticles() {
 	ground = world.CreateBody(bd);  
 		
 	initBabylon();
-	createLetterH(1);
-	createLetterI(1);
+	createLetterH(.5);
+	createLetterI(.5);
 	
-	createComma(1);
+	createComma(.5);
 	
-	createUpperLetterI(1);
-	createApostrophe(1);
-	createM(1);
+	createUpperLetterI(.5);
+	createApostrophe(.5);
+	createM(.5);
 	
-	createJ(1);
-	createA(1);
-	createR(1);
-	createE(1);
-	createD(1);
+	createJ(.5);
+	createA(.5);
+	createR(.5);
+	createE(.5);
+	createD(.5);
 	
-	createPeriod(1);
+	createPeriod(.5);
 	
-	createLine(1);
+	createLine(.5);
 
 	var shape1 = new b2PolygonShape();
 	var vertices = shape1.vertices;
