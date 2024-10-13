@@ -303,7 +303,7 @@ function createPentagon(name, textureSrc, scene, scale = 1.25) { // Added scale 
   let bd, ground, particleSystem;
 
 function TestParticles() {
-	var aspect_ratio = window.innerWidth / window.innerHeight();
+	var aspect_ratio = window.innerWidth / window.innerHeight;
 	var wall_x_gap = 11.4 * aspect_ratio;
 	var wall_x = wall_x_gap / 2;
 		
