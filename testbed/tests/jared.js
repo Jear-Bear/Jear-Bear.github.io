@@ -411,7 +411,7 @@ function TestParticles() {
 	window.pentagons.push(body1);
 	
 	bd2 = new b2BodyDef();
-	bd2.position.Set(pent_x * 2 9);
+	bd2.position.Set(pent_x * 2, 9);
 	bd2.type = b2_dynamicBody;
 	var body2 = world.CreateBody(bd2);
 	window.pentagons.push(body2);
