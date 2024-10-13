@@ -399,25 +399,25 @@ function TestParticles() {
 	
 	// Define a dynamic body
 	bd = new b2BodyDef();
-	bd.position.Set(pent_x * -2, 1);
+	bd.position.Set(pent_x * -2, 7);
 	bd.type = b2_dynamicBody;
 	var body = world.CreateBody(bd);
 	window.pentagons.push(body);
 	
 	bd1 = new b2BodyDef();
-	bd1.position.Set(pent_x * -1, 1);
+	bd1.position.Set(pent_x * -2, 9);
 	bd1.type = b2_dynamicBody;
 	var body1 = world.CreateBody(bd1);
 	window.pentagons.push(body1);
 	
 	bd2 = new b2BodyDef();
-	bd2.position.Set(pent_x, 1);
+	bd2.position.Set(pent_x * 2 9);
 	bd2.type = b2_dynamicBody;
 	var body2 = world.CreateBody(bd2);
 	window.pentagons.push(body2);
 	
 	bd3 = new b2BodyDef();
-	bd3.position.Set(pent_x * 2, 1);
+	bd3.position.Set(pent_x * 2, 7);
 	bd3.type = b2_dynamicBody;
 	var body3 = world.CreateBody(bd3);
 	window.pentagons.push(body3);
