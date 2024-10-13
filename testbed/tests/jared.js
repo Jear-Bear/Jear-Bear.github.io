@@ -17,8 +17,8 @@ var text = new Image();
 text.src = "images/text.png";
 
 const rgbaColors = [
-  [54, 74, 211],  
-	[144, 204, 76, 1],    // Color 1: (144, 204, 76)
+    [54, 74, 211],  
+    [144, 204, 76, 1],    // Color 1: (144, 204, 76)
     [118, 205, 126, 1],    // Color 2: (238, 196, 79)
     [244, 93, 84, 1],     // Color 3: (244, 93, 84)
     [251, 130, 72, 1],    // Color 4: (243, 227, 71)
@@ -344,18 +344,18 @@ function TestParticles() {
 
 	var shape2 = new b2PolygonShape();
 	var vertices = shape2.vertices;
-	vertices.push(new b2Vec2((wall_x * -1) + .5, -1.4));
+	vertices.push(new b2Vec2((wall_x * -1) + .4, -1.4));
 	vertices.push(new b2Vec2(wall_x * -1, -1.4));
 	vertices.push(new b2Vec2(wall_x * -1, 9.4));
-	vertices.push(new b2Vec2((wall_x * -1) + .5, 9.4));
+	vertices.push(new b2Vec2((wall_x * -1) + .4, 9.4));
 	ground.CreateFixtureFromShape(shape2, 0);
 
 	var shape3 = new b2PolygonShape();
 	var vertices = shape3.vertices;
-	vertices.push(new b2Vec2(wall_x - .5, -1.4));
+	vertices.push(new b2Vec2(wall_x - .4, -1.4));
 	vertices.push(new b2Vec2(wall_x, -1.4));
 	vertices.push(new b2Vec2(wall_x, 9.4));
-	vertices.push(new b2Vec2(wall_x - .5, 9.4));
+	vertices.push(new b2Vec2(wall_x - .4, 9.4));
 	ground.CreateFixtureFromShape(shape3, 0);
 
 	var shape4 = new b2PolygonShape();
