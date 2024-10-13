@@ -124,7 +124,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 ## Roadmap
 
 - [ ] Redirect buttons on home page
-- [ ] Dynamic liquidfun walls/boundaries based on screen dimensions
+- [x] Dynamic liquidfun walls/boundaries based on screen dimensions
 - [ ] Mobile support
     - [x] Support mobile phone screens
     - [x] Track swipes to interact with liquidfun sandbox
