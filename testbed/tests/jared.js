@@ -41,7 +41,7 @@ window.onload = function() {
 // Function to update mesh positions based on pentagons array
 function updateMeshPositions() {
     const aspectRatio = canvas.width / canvas.height;
-
+	console.log(aspectRatio);
     for (var i = 0; i < window.pentagons.length; i++) {
         var position = window.pentagons[i].GetPosition();
         var x = position.x;
