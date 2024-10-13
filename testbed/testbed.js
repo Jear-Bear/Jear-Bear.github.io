@@ -153,11 +153,16 @@ function Testbed(obj) {
       test.Keyboard(String.fromCharCode(event.which) );
     }
   });
+	
   document.addEventListener('keyup', function(event) {
     if (test.KeyboardUp !== undefined) {
       test.KeyboardUp(String.fromCharCode(event.which) );
     }
   });
+
+document.addEventListener('gesturestart', function(event) {
+	e.preventDefault;
+});
 
     //responsible for dragging objects
   document.addEventListener('mousedown', function(event) {
