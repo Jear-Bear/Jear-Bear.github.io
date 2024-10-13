@@ -318,24 +318,24 @@ function TestParticles() {
 	ground = world.CreateBody(bd);  
 		
 	initBabylon();
-	createLetterH(.5);
-	createLetterI(.5);
+	createLetterH(1);
+	createLetterI(1);
 	
-	createComma(.5);
+	createComma(1);
 	
-	createUpperLetterI(.5);
-	createApostrophe(.5);
-	createM(.5);
+	createUpperLetterI(1);
+	createApostrophe(1);
+	createM(1);
 	
-	createJ(.5);
-	createA(.5);
-	createR(.5);
-	createE(.5);
-	createD(.5);
+	createJ(1);
+	createA(1);
+	createR(1);
+	createE(1);
+	createD(1);
 	
-	createPeriod(.5);
+	createPeriod(1);
 	
-	createLine(.5);
+	createLine(1);
 
 	var shape1 = new b2PolygonShape();
 	var vertices = shape1.vertices;
