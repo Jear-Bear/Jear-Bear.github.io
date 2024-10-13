@@ -306,6 +306,8 @@ function TestParticles() {
 	var aspect_ratio = window.innerWidth / window.innerHeight;
 	var wall_x_gap = 11.4 * aspect_ratio;
 	var wall_x = wall_x_gap / 2;
+	var part_x = wall_x_gap / 4;
+	var pent_x = wall_x_gap / 5;
 		
 	console.log(window.innerWidth + ", " + window.innerHeight);
 	document.getElementById('textCanvas').getContext("2d").scale(window.innerWidth/1386, window.innerHeight/818);
@@ -380,7 +382,7 @@ function TestParticles() {
 	particleSystem.CreateParticleGroup(pgd);
 	
 	var circle1 = new b2CircleShape();
-	circle1.position.Set(-6, 3);
+	circle1.position.Set(part_x * -1, 3);
 	circle1.radius = 2.1;
 	var pgd1 = new b2ParticleGroupDef();
 	pgd1.shape = circle1;
@@ -388,7 +390,7 @@ function TestParticles() {
 	particleSystem.CreateParticleGroup(pgd1);
 	
 	var circle2 = new b2CircleShape();
-	circle2.position.Set(6, 3);
+	circle2.position.Set(part_x, 3);
 	circle2.radius = 2.1;
 	var pgd2 = new b2ParticleGroupDef();
 	pgd2.shape = circle2;
@@ -397,25 +399,25 @@ function TestParticles() {
 	
 	// Define a dynamic body
 	bd = new b2BodyDef();
-	bd.position.Set(-6, 0);
+	bd.position.Set(pent_x * -2, 0);
 	bd.type = b2_dynamicBody;
 	var body = world.CreateBody(bd);
 	window.pentagons.push(body);
 	
 	bd1 = new b2BodyDef();
-	bd1.position.Set(-2, 0);
+	bd1.position.Set(pent_x * -1, 0);
 	bd1.type = b2_dynamicBody;
 	var body1 = world.CreateBody(bd1);
 	window.pentagons.push(body1);
 	
 	bd2 = new b2BodyDef();
-	bd2.position.Set(2, 0);
+	bd2.position.Set(pent_x, 0);
 	bd2.type = b2_dynamicBody;
 	var body2 = world.CreateBody(bd2);
 	window.pentagons.push(body2);
 	
 	bd3 = new b2BodyDef();
-	bd3.position.Set(6, 0);
+	bd3.position.Set(pent_x * 2, 0);
 	bd3.type = b2_dynamicBody;
 	var body3 = world.CreateBody(bd3);
 	window.pentagons.push(body3);
