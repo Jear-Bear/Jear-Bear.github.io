@@ -303,6 +303,10 @@ function createPentagon(name, textureSrc, scene, scale = 1.25) { // Added scale 
   let bd, ground, particleSystem;
 
 function TestParticles() {
+	var aspect_ratio = window.innerWidth / window.innerHeight();
+	var wall_x_gap = 11.4 * aspect_ratio;
+	var wall_x = wall_x_gap / 2;
+		
 	console.log(window.innerWidth + ", " + window.innerHeight);
 	document.getElementById('textCanvas').getContext("2d").scale(window.innerWidth/1386, window.innerHeight/818);
 	camera.position.y = 4;
@@ -330,9 +334,6 @@ function TestParticles() {
 	
 	createLine();
 
-	var stretch_walls_ratio = window.innerWidth/1386;
-	var stretch_walls_ratio = $(window).width()/1386;
-
 	var shape1 = new b2PolygonShape();
 	var vertices = shape1.vertices;
 	vertices.push(new b2Vec2(-20, -1.6));
@@ -343,18 +344,18 @@ function TestParticles() {
 
 	var shape2 = new b2PolygonShape();
 	var vertices = shape2.vertices;
-	vertices.push(new b2Vec2(-9.3, -1.4));
-	vertices.push(new b2Vec2(-10, -1.4));
-	vertices.push(new b2Vec2(-10, 9.4));
-	vertices.push(new b2Vec2(-9.3, 9.4));
+	vertices.push(new b2Vec2((wall_x * -1) + .7, -1.4));
+	vertices.push(new b2Vec2(wall_x * -1, -1.4));
+	vertices.push(new b2Vec2(wall_x * -1, 9.4));
+	vertices.push(new b2Vec2((wall_x * -1) + .7, 9.4));
 	ground.CreateFixtureFromShape(shape2, 0);
 
 	var shape3 = new b2PolygonShape();
 	var vertices = shape3.vertices;
-	vertices.push(new b2Vec2(9.3, -1.4));
-	vertices.push(new b2Vec2(10, -1.4));
-	vertices.push(new b2Vec2(10, 9.4));
-	vertices.push(new b2Vec2(9.3, 9.4));
+	vertices.push(new b2Vec2(wall_x - .7, -1.4));
+	vertices.push(new b2Vec2(wall_x, -1.4));
+	vertices.push(new b2Vec2(wall_x, 9.4));
+	vertices.push(new b2Vec2(wall_x - .7, 9.4));
 	ground.CreateFixtureFromShape(shape3, 0);
 
 	var shape4 = new b2PolygonShape();
