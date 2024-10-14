@@ -1050,14 +1050,14 @@ function createLine(width = 3) {
 	
 	if (width == 1)
 	{
-			trim_sides = 2.6;
-			y_adjustment = 0.05;
+		trim_sides = 2.6;
+		y_adjustment = 0.04;
 	}
 	
 	else if (width == 2)
 	{
-			trim_sides = 1.1;
-			y_adjustment = -.01;
+		trim_sides = 1.1;
+		y_adjustment = -.01;
 	}
 	
     // Create the horizontal line
