@@ -739,8 +739,8 @@ function createM(width = 3) {
 	var y_offset = 0;
 	if (width == 1)
 	{
-			y_offset = 1.03;
-			x_offset = .97;
+		y_offset = 1.03;
+		x_offset = .98;
 	}
 	
 	else if (width == 2) x_offset = -.84;
