@@ -15,6 +15,7 @@ var instagram = new Image();
 instagram.src = "images/instagram.png";
 var text = new Image();
 text.src = "images/text.png";
+var text_width = 3;
 
 const rgbaColors = [
     [54, 74, 211],  
@@ -72,6 +73,8 @@ function updateMeshPositions() {
 }
 
 function initBabylon() {
+	var aspect_ratio = window.innerWidth / window.innerHeight;
+	
     // Initialize Babylon.js
     const canvas = document.getElementById('highResCanvas');
     const engine = new BABYLON.Engine(canvas, true);
@@ -86,9 +89,22 @@ function initBabylon() {
 		const pentagon3 = createPentagon("pentagon3", youtube, babylonScene);
 		const pentagon4 = createPentagon("pentagon4", instagram, babylonScene);
 
-		//Create text plane
-		const textPlane = createTexturedPlane("textPlane", text, babylonScene);
+	if (aspect_ratio >= 0.9 && aspect_ratio <= 1) {
+		text.src = "images/text_compressed.png";
+		console.log("tinyish");
+		text_width = 2;
+	} 
+	else if (aspect_ratio > 1) {
+		text.src = "images/text.png";
+		console.log("not tiny");
+	} 
+	else {
+		text.src = "images/text_super_compressed.png";
+		console.log("quite tiny");
+		text_width = 1;
+	}
 	
+	const textPlane = createTexturedPlane("textPlane", text, babylonScene);
 	
     // Create an orthographic camera for a 2D view
     const orthographicCamera = new BABYLON.FreeCamera("orthographicCamera", new BABYLON.Vector3(0, 0, -10), babylonScene);
@@ -318,24 +334,37 @@ function TestParticles() {
 	ground = world.CreateBody(bd);  
 		
 	initBabylon();
-	createLetterH(1);
-	createLetterI(1);
 	
-	createComma(1);
+	if (aspect_ratio >= 0.9 && aspect_ratio <= 1) {
+		text_width = 2;
+	} 
+	else if (aspect_ratio > 1) {
+		createLetterH();
+		createLetterI();
+		createComma();
+	} 
+	else {
+		text_width = 1;
+	}
 	
-	createUpperLetterI(1);
-	createApostrophe(1);
-	createM(1);
+	//Draw everything after "Hi,"
+	//I'm
+	createUpperLetterI(text_width);
+	createApostrophe(text_width);
+	createM(text_width);
 	
-	createJ(1);
-	createA(1);
-	createR(1);
-	createE(1);
-	createD(1);
+	//Jared
+	createJ(text_width);
+	createA(text_width);
+	createR(text_width);
+	createE(text_width);
+	createD(text_width);
 	
-	createPeriod(1);
+	//.
+	createPeriod(text_width);
 	
-	createLine(1);
+	//__________
+	createLine(text_width);
 
 	var shape1 = new b2PolygonShape();
 	var vertices = shape1.vertices;
@@ -589,370 +618,455 @@ textContext.scale(2, 2);
 // Store clickable areas for buttons
 const buttonAreas = [];
 	
-function createLetterH(scale = 1) {
+function createLetterH() {
     // Create the left vertical bar of "H"
     var leftBarShape = new b2PolygonShape();
     var leftBarVertices = leftBarShape.vertices;
-    leftBarVertices.push(new b2Vec2(-3.22 * scale, 5.65 * scale));
-    leftBarVertices.push(new b2Vec2(-3.22 * scale, 6.38 * scale));
-    leftBarVertices.push(new b2Vec2(-3.16 * scale, 6.38 * scale));
-    leftBarVertices.push(new b2Vec2(-3.16 * scale, 5.65 * scale));
+    leftBarVertices.push(new b2Vec2(-3.22, 5.65));
+    leftBarVertices.push(new b2Vec2(-3.22, 5.65 + 0.73));
+    leftBarVertices.push(new b2Vec2(-3.16, 5.65 + 0.73));
+    leftBarVertices.push(new b2Vec2(-3.16 , 5.65));
     ground.CreateFixtureFromShape(leftBarShape, 0);
 
     // Create the right vertical bar of "H"
     var rightBarShape = new b2PolygonShape();
     var rightBarVertices = rightBarShape.vertices;
-    rightBarVertices.push(new b2Vec2(-2.64 * scale, 5.65 * scale));
-    rightBarVertices.push(new b2Vec2(-2.64 * scale, 6.38 * scale));
-    rightBarVertices.push(new b2Vec2(-2.70 * scale, 6.38 * scale));
-    rightBarVertices.push(new b2Vec2(-2.70 * scale, 5.65 * scale));
+    rightBarVertices.push(new b2Vec2(-2.64, 5.65));
+    rightBarVertices.push(new b2Vec2(-2.64, 5.65 + 0.73));
+    rightBarVertices.push(new b2Vec2(-2.70, 5.65 + 0.73));
+    rightBarVertices.push(new b2Vec2(-2.70, 5.65));
     ground.CreateFixtureFromShape(rightBarShape, 0);
 
     // Create the horizontal bar of "H"
     var horizontalBarShape = new b2PolygonShape();
     var horizontalBarVertices = horizontalBarShape.vertices;
-    horizontalBarVertices.push(new b2Vec2(-3.11 * scale, 6.06 * scale));
-    horizontalBarVertices.push(new b2Vec2(-3.11 * scale, 6.00 * scale));
-    horizontalBarVertices.push(new b2Vec2(-2.70 * scale, 6.00 * scale));
-    horizontalBarVertices.push(new b2Vec2(-2.70 * scale, 6.06 * scale));
+    horizontalBarVertices.push(new b2Vec2(-3.11, 5.65 + 0.41));
+    horizontalBarVertices.push(new b2Vec2(-3.11, 5.65 + 0.35));
+    horizontalBarVertices.push(new b2Vec2(-2.70, 5.65 + 0.35));
+    horizontalBarVertices.push(new b2Vec2(-2.70, 5.65 + 0.41));
     ground.CreateFixtureFromShape(horizontalBarShape, 0);
 }
 
-function createLetterI(scale = 1) {
+
+function createLetterI() {
     // Create the vertical bar of "i"
     var leftBarShape = new b2PolygonShape();
     var leftBarVertices = leftBarShape.vertices;
-    leftBarVertices.push(new b2Vec2(-2.44 * scale, 5.65 * scale));
-    leftBarVertices.push(new b2Vec2(-2.44 * scale, 6.18 * scale));
-    leftBarVertices.push(new b2Vec2(-2.38 * scale, 6.18 * scale));
-    leftBarVertices.push(new b2Vec2(-2.38 * scale, 5.65 * scale));
+    leftBarVertices.push(new b2Vec2(-2.44, 5.65));
+    leftBarVertices.push(new b2Vec2(-2.44, 6.18));
+    leftBarVertices.push(new b2Vec2(-2.38, 6.18));
+    leftBarVertices.push(new b2Vec2(-2.38, 5.65));
     ground.CreateFixtureFromShape(leftBarShape, 0);
 
     // Create the dot of "i"
     var rightBarShape = new b2PolygonShape();
     var rightBarVertices = rightBarShape.vertices;
-    rightBarVertices.push(new b2Vec2(-2.44 * scale, 6.38 * scale));
-    rightBarVertices.push(new b2Vec2(-2.44 * scale, 6.28 * scale));
-    rightBarVertices.push(new b2Vec2(-2.38 * scale, 6.28 * scale));
-    rightBarVertices.push(new b2Vec2(-2.38 * scale, 6.38 * scale));
+    rightBarVertices.push(new b2Vec2(-2.44, 6.38));
+    rightBarVertices.push(new b2Vec2(-2.44, 6.28));
+    rightBarVertices.push(new b2Vec2(-2.38, 6.28));
+    rightBarVertices.push(new b2Vec2(-2.38, 6.38));
     ground.CreateFixtureFromShape(rightBarShape, 0);
 }
 
-function createComma(scale = 1) {
+function createComma() {
     // Create the comma dot
     var rightBarShape = new b2PolygonShape();
     var rightBarVertices = rightBarShape.vertices;
-    rightBarVertices.push(new b2Vec2(-2.17 * scale, 5.65 * scale));
-    rightBarVertices.push(new b2Vec2(-2.17 * scale, 5.76 * scale));
-    rightBarVertices.push(new b2Vec2(-2.11 * scale, 5.76 * scale));
-    rightBarVertices.push(new b2Vec2(-2.11 * scale, 5.65 * scale));
+    rightBarVertices.push(new b2Vec2(-2.17, 5.65));
+    rightBarVertices.push(new b2Vec2(-2.17, 5.76));
+    rightBarVertices.push(new b2Vec2(-2.11, 5.76));
+    rightBarVertices.push(new b2Vec2(-2.11, 5.65));
     ground.CreateFixtureFromShape(rightBarShape, 0);
 
     // Create the slant of the comma
     var leftBarShape = new b2PolygonShape();
     var leftBarVertices = leftBarShape.vertices;
-    leftBarVertices.push(new b2Vec2(-2.19 * scale, 5.54 * scale));
-    leftBarVertices.push(new b2Vec2(-2.12 * scale, 5.58 * scale));
-    leftBarVertices.push(new b2Vec2(-2.1 * scale, 5.65 * scale));
-    leftBarVertices.push(new b2Vec2(-2.06 * scale, 5.65 * scale));
-    leftBarVertices.push(new b2Vec2(-2.13 * scale, 5.53 * scale));
+    leftBarVertices.push(new b2Vec2(-2.19, 5.54));
+    leftBarVertices.push(new b2Vec2(-2.12, 5.58));
+    leftBarVertices.push(new b2Vec2(-2.1, 5.65));
+    leftBarVertices.push(new b2Vec2(-2.06, 5.65));
+    leftBarVertices.push(new b2Vec2(-2.13, 5.53));
     ground.CreateFixtureFromShape(leftBarShape, 0);
 }
 
-function createUpperLetterI(scale = 1) {
-    // Create the uppercase "i"
-    var leftBarShape = new b2PolygonShape();
-    var leftBarVertices = leftBarShape.vertices;
-    leftBarVertices.push(new b2Vec2(-1.59 * scale, 5.65 * scale));
-    leftBarVertices.push(new b2Vec2(-1.59 * scale, 6.38 * scale));
-    leftBarVertices.push(new b2Vec2(-1.53 * scale, 6.38 * scale));
-    leftBarVertices.push(new b2Vec2(-1.53 * scale, 5.65 * scale));
-    ground.CreateFixtureFromShape(leftBarShape, 0);
+function createUpperLetterI(width = 3) {
+	var x_offset = 0;
+	var y_offset = 0;
+	if (width == 1)
+	{
+			y_offset = 1.03;
+			x_offset = .97;
+	}
+	
+	else if (width == 2) x_offset = -.83;
+	else if (width == 3) x_offset = 0;
+	
+	// Create the uppercase "i"
+	var leftBarShape = new b2PolygonShape();
+	var leftBarVertices = leftBarShape.vertices;
+	leftBarVertices.push(new b2Vec2((-1.59) + x_offset, 5.65 + y_offset));
+	leftBarVertices.push(new b2Vec2((-1.59) + x_offset, 6.38 + y_offset));
+	leftBarVertices.push(new b2Vec2((-1.53) + x_offset, 6.38 + y_offset));
+	leftBarVertices.push(new b2Vec2((-1.53) + x_offset, 5.65 + y_offset));
+	ground.CreateFixtureFromShape(leftBarShape, 0);
 }
 
-function createApostrophe(scale = 1) {
+function createApostrophe(width = 3) {
+	var x_offset = 0;
+	var y_offset = 0;
+	if (width == 1)
+	{
+			y_offset = 1.03;
+			x_offset = .97;
+	}
+	
+	else if (width == 2) x_offset = -.83;
+	else if (width == 3) x_offset = 0;
+	
     // Create the apostrophe
     var leftBarShape = new b2PolygonShape();
     var leftBarVertices = leftBarShape.vertices;
-    leftBarVertices.push(new b2Vec2(-1.32 * scale, 6.15 * scale));
-    leftBarVertices.push(new b2Vec2(-1.34 * scale, 6.38 * scale));
-    leftBarVertices.push(new b2Vec2(-1.29 * scale, 6.38 * scale));
-    leftBarVertices.push(new b2Vec2(-1.28 * scale, 6.15 * scale));
+    leftBarVertices.push(new b2Vec2(-1.32 + x_offset, 6.15 + y_offset));
+    leftBarVertices.push(new b2Vec2(-1.34 + x_offset, 6.38 + y_offset));
+    leftBarVertices.push(new b2Vec2(-1.29 + x_offset, 6.38 + y_offset));
+    leftBarVertices.push(new b2Vec2(-1.28 + x_offset, 6.15 + y_offset));
     ground.CreateFixtureFromShape(leftBarShape, 0);
 }
 
 // Refactored function to create letter "M"
-function createM(scale = 1) {
+function createM(width = 3) {
+	var x_offset = 0;
+	var y_offset = 0;
+	if (width == 1)
+	{
+			y_offset = 1.03;
+			x_offset = .97;
+	}
+	
+	else if (width == 2) x_offset = -.84;
+	else if (width == 3) x_offset = 0;
+	
     // Create the first vertical bar of "m"
     var leftBarShape = new b2PolygonShape();
     var leftBarVertices = leftBarShape.vertices;
-    leftBarVertices.push(new b2Vec2(-1.1 * scale, 5.65 * scale));
-    leftBarVertices.push(new b2Vec2(-1.1 * scale, 6.18 * scale));
-    leftBarVertices.push(new b2Vec2(-1.04 * scale, 6.18 * scale));
-    leftBarVertices.push(new b2Vec2(-1.04 * scale, 5.65 * scale));
+    leftBarVertices.push(new b2Vec2(-1.1 + x_offset, 5.65 + y_offset));
+    leftBarVertices.push(new b2Vec2(-1.1 + x_offset, 6.18 + y_offset));
+    leftBarVertices.push(new b2Vec2(-1.04 + x_offset, 6.18 + y_offset));
+    leftBarVertices.push(new b2Vec2(-1.04 + x_offset, 5.65 + y_offset));
     ground.CreateFixtureFromShape(leftBarShape, 0);
 
     // Create the second vertical bar of "m"
     var midBarShape = new b2PolygonShape();
     var midBarVertices = midBarShape.vertices;
-    midBarVertices.push(new b2Vec2(-0.7 * scale, 5.65 * scale));
-    midBarVertices.push(new b2Vec2(-0.7 * scale, 6.15 * scale));
-    midBarVertices.push(new b2Vec2(-0.76 * scale, 6.15 * scale));
-    midBarVertices.push(new b2Vec2(-0.76 * scale, 5.65 * scale));
+    midBarVertices.push(new b2Vec2(-0.7 + x_offset, 5.65 + y_offset));
+    midBarVertices.push(new b2Vec2(-0.7 + x_offset, 6.15 + y_offset));
+    midBarVertices.push(new b2Vec2(-0.76 + x_offset, 6.15 + y_offset));
+    midBarVertices.push(new b2Vec2(-0.76 + x_offset, 5.65 + y_offset));
     ground.CreateFixtureFromShape(midBarShape, 0);
     
     // Create the third vertical bar of "m"
     var rightBarShape = new b2PolygonShape();
     var rightBarVertices = rightBarShape.vertices;
-    rightBarVertices.push(new b2Vec2(-0.39 * scale, 5.65 * scale));
-    rightBarVertices.push(new b2Vec2(-0.39 * scale, 6.15 * scale));
-    rightBarVertices.push(new b2Vec2(-0.33 * scale, 6.15 * scale));
-    rightBarVertices.push(new b2Vec2(-0.33 * scale, 5.65 * scale));
+    rightBarVertices.push(new b2Vec2(-0.39 + x_offset, 5.65 + y_offset));
+    rightBarVertices.push(new b2Vec2(-0.39 + x_offset, 6.15 + y_offset));
+    rightBarVertices.push(new b2Vec2(-0.33 + x_offset, 6.15 + y_offset));
+    rightBarVertices.push(new b2Vec2(-0.33 + x_offset, 5.65 + y_offset));
     ground.CreateFixtureFromShape(rightBarShape, 0);
     
     // Create the slanted line between bars 1 and 2
     var firstSlope = new b2PolygonShape();
     var firstSlopeVertices = firstSlope.vertices;
-    firstSlopeVertices.push(new b2Vec2(-1.04 * scale, 5.99 * scale));
-    firstSlopeVertices.push(new b2Vec2(-1.04 * scale, 6.06 * scale));
-    firstSlopeVertices.push(new b2Vec2(-0.91 * scale, 6.13 * scale));
-    firstSlopeVertices.push(new b2Vec2(-0.84 * scale, 6.16 * scale));
-    firstSlopeVertices.push(new b2Vec2(-0.76 * scale, 6.15 * scale));
-    firstSlopeVertices.push(new b2Vec2(-0.76 * scale, 6.08 * scale));
-    firstSlopeVertices.push(new b2Vec2(-0.84 * scale, 6.14 * scale));
+    firstSlopeVertices.push(new b2Vec2(-1.04 + x_offset, 5.99 + y_offset));
+    firstSlopeVertices.push(new b2Vec2(-1.04 + x_offset, 6.06 + y_offset));
+    firstSlopeVertices.push(new b2Vec2(-0.91 + x_offset, 6.13 + y_offset));
+    firstSlopeVertices.push(new b2Vec2(-0.84 + x_offset, 6.16 + y_offset));
+    firstSlopeVertices.push(new b2Vec2(-0.76 + x_offset, 6.15 + y_offset));
+    firstSlopeVertices.push(new b2Vec2(-0.76 + x_offset, 6.08 + y_offset));
+    firstSlopeVertices.push(new b2Vec2(-0.84 + x_offset, 6.14 + y_offset));
     ground.CreateFixtureFromShape(firstSlope, 0);
     
     // Create the slanted line between bars 2 and 3
     var secondSlope = new b2PolygonShape();
     var secondSlopeVertices = secondSlope.vertices;
-    secondSlopeVertices.push(new b2Vec2(-0.7 * scale, 5.99 * scale));
-    secondSlopeVertices.push(new b2Vec2(-0.7 * scale, 6.06 * scale));
-    secondSlopeVertices.push(new b2Vec2(-0.57 * scale, 6.13 * scale));
-    secondSlopeVertices.push(new b2Vec2(-0.47 * scale, 6.16 * scale));
-    secondSlopeVertices.push(new b2Vec2(-0.39 * scale, 6.15 * scale));
-    secondSlopeVertices.push(new b2Vec2(-0.39 * scale, 6.08 * scale));
-    secondSlopeVertices.push(new b2Vec2(-0.5 * scale, 6.14 * scale));
+    secondSlopeVertices.push(new b2Vec2(-0.7 + x_offset, 5.99 + y_offset));
+    secondSlopeVertices.push(new b2Vec2(-0.7 + x_offset, 6.06 + y_offset));
+    secondSlopeVertices.push(new b2Vec2(-0.57 + x_offset, 6.13 + y_offset));
+    secondSlopeVertices.push(new b2Vec2(-0.47 + x_offset, 6.16 + y_offset));
+    secondSlopeVertices.push(new b2Vec2(-0.39 + x_offset, 6.15 + y_offset));
+    secondSlopeVertices.push(new b2Vec2(-0.39 + x_offset, 6.08 + y_offset));
+    secondSlopeVertices.push(new b2Vec2(-0.5 + x_offset, 6.14 + y_offset));
     ground.CreateFixtureFromShape(secondSlope, 0);
 }
 
 // Refactored function to create letter "J"
-function createJ(scale = 1) {
+function createJ(width = 3) {
+	var x_offset = 0;
+	
+	if (width == 1) x_offset = -1.7;
+	else if (width == 2) x_offset = -.81;
+	else if (width == 3) x_offset = 0;
+	
     // Create vertical part of J
     var leftBarShape = new b2PolygonShape();
     var leftBarVertices = leftBarShape.vertices;
-    leftBarVertices.push(new b2Vec2(0.54 * scale, 5.75 * scale));
-    leftBarVertices.push(new b2Vec2(0.54 * scale, 6.38 * scale));
-    leftBarVertices.push(new b2Vec2(0.48 * scale, 6.38 * scale));
-    leftBarVertices.push(new b2Vec2(0.48 * scale, 5.7 * scale));
+    leftBarVertices.push(new b2Vec2(0.54 + x_offset, 5.75));
+    leftBarVertices.push(new b2Vec2(0.54 + x_offset, 6.38));
+    leftBarVertices.push(new b2Vec2(0.48 + x_offset, 6.38));
+    leftBarVertices.push(new b2Vec2(0.48 + x_offset, 5.7));
     ground.CreateFixtureFromShape(leftBarShape, 0);
     
     // Create arc for J
     var rightBarShape = new b2PolygonShape();
     var rightBarVertices = rightBarShape.vertices;
-    rightBarVertices.push(new b2Vec2(0.48 * scale, 5.65 * scale));
-    rightBarVertices.push(new b2Vec2(0.48 * scale, 5.7 * scale));
-    rightBarVertices.push(new b2Vec2(0.32 * scale, 5.72 * scale));
-    rightBarVertices.push(new b2Vec2(0.18 * scale, 5.78 * scale));
-    rightBarVertices.push(new b2Vec2(0.2 * scale, 5.7 * scale));
+    rightBarVertices.push(new b2Vec2(0.48 + x_offset, 5.65));
+    rightBarVertices.push(new b2Vec2(0.48 + x_offset, 5.7));
+    rightBarVertices.push(new b2Vec2(0.32 + x_offset, 5.72));
+    rightBarVertices.push(new b2Vec2(0.18 + x_offset, 5.78));
+    rightBarVertices.push(new b2Vec2(0.2 + x_offset, 5.7));
     ground.CreateFixtureFromShape(rightBarShape, 0);
 }
 
 // Refactored function to create letter "A"
-function createA(scale = 1) {
+function createA(width = 3) {
+	var x_offset = 0;
+	
+	if (width == 1) x_offset = -1.7;
+	else if (width == 2) x_offset = -.84;
+	else if (width == 3) x_offset = 0;
+	
     // Create vertical part of "A"
     var leftBarShape = new b2PolygonShape();
     var leftBarVertices = leftBarShape.vertices;
-    leftBarVertices.push(new b2Vec2(1.17 * scale, 5.64 * scale));
-    leftBarVertices.push(new b2Vec2(1.17 * scale, 6.1 * scale));
-    leftBarVertices.push(new b2Vec2(1.11 * scale, 6.1 * scale));
-    leftBarVertices.push(new b2Vec2(1.11 * scale, 5.64 * scale));
+    leftBarVertices.push(new b2Vec2(1.17 + x_offset, 5.64));
+    leftBarVertices.push(new b2Vec2(1.17 + x_offset, 6.1));
+    leftBarVertices.push(new b2Vec2(1.11 + x_offset, 6.1));
+    leftBarVertices.push(new b2Vec2(1.11 + x_offset, 5.64));
     ground.CreateFixtureFromShape(leftBarShape, 0);
     
     // Top curve of "A"
     var secondSlope = new b2PolygonShape();
     var secondSlopeVertices = secondSlope.vertices;
-    secondSlopeVertices.push(new b2Vec2(0.8 * scale, 6.09 * scale));
-    secondSlopeVertices.push(new b2Vec2(0.95 * scale, 6.15 * scale));
-    secondSlopeVertices.push(new b2Vec2(1.1 * scale, 6.1 * scale));
-    secondSlopeVertices.push(new b2Vec2(1.1 * scale, 6.15 * scale));
-    secondSlopeVertices.push(new b2Vec2(0.95 * scale, 6.18 * scale));
-    secondSlopeVertices.push(new b2Vec2(0.85 * scale, 6.12 * scale));
+    secondSlopeVertices.push(new b2Vec2(0.8 + x_offset, 6.09));
+    secondSlopeVertices.push(new b2Vec2(0.95 + x_offset, 6.15));
+    secondSlopeVertices.push(new b2Vec2(1.1 + x_offset, 6.1));
+    secondSlopeVertices.push(new b2Vec2(1.1 + x_offset, 6.15));
+    secondSlopeVertices.push(new b2Vec2(0.95 + x_offset, 6.18));
+    secondSlopeVertices.push(new b2Vec2(0.85 + x_offset, 6.12));
     ground.CreateFixtureFromShape(secondSlope, 0);
     
     // Main curve of "A" part 1
     var slope = new b2PolygonShape();
     var slopeVertices = slope.vertices;
-    slopeVertices.push(new b2Vec2(0.8 * scale, 5.85 * scale));
-    slopeVertices.push(new b2Vec2(0.95 * scale, 5.93 * scale));
-    slopeVertices.push(new b2Vec2(1.1 * scale, 5.9 * scale));
-    slopeVertices.push(new b2Vec2(1.1 * scale, 5.96 * scale));
-    slopeVertices.push(new b2Vec2(0.95 * scale, 5.96 * scale));
-    slopeVertices.push(new b2Vec2(0.85 * scale, 5.92 * scale));
+    slopeVertices.push(new b2Vec2(0.8 + x_offset, 5.85));
+    slopeVertices.push(new b2Vec2(0.95 + x_offset, 5.93));
+    slopeVertices.push(new b2Vec2(1.1 + x_offset, 5.9));
+    slopeVertices.push(new b2Vec2(1.1 + x_offset, 5.96));
+    slopeVertices.push(new b2Vec2(0.95 + x_offset, 5.96));
+    slopeVertices.push(new b2Vec2(0.85 + x_offset, 5.92));
     ground.CreateFixtureFromShape(slope, 0);
     
     // Main curve of "A" part 2
     var slope2 = new b2PolygonShape();
     var slope2Vertices = slope2.vertices;
-    slope2Vertices.push(new b2Vec2(0.8 * scale, 5.67 * scale));
-    slope2Vertices.push(new b2Vec2(0.95 * scale, 5.64 * scale));
-    slope2Vertices.push(new b2Vec2(1.1 * scale, 5.71 * scale));
-    slope2Vertices.push(new b2Vec2(1.1 * scale, 5.76 * scale));
-    slope2Vertices.push(new b2Vec2(0.95 * scale, 5.67 * scale));
-    slope2Vertices.push(new b2Vec2(0.85 * scale, 5.67 * scale));
+    slope2Vertices.push(new b2Vec2(0.8 + x_offset, 5.67));
+    slope2Vertices.push(new b2Vec2(0.95 + x_offset, 5.64));
+    slope2Vertices.push(new b2Vec2(1.1 + x_offset, 5.71));
+    slope2Vertices.push(new b2Vec2(1.1 + x_offset, 5.76));
+    slope2Vertices.push(new b2Vec2(0.95 + x_offset, 5.67));
+    slope2Vertices.push(new b2Vec2(0.85 + x_offset, 5.67));
     ground.CreateFixtureFromShape(slope2, 0);
     
     // Last little block for "A"
     var bloc = new b2PolygonShape();
     var blocVertices = bloc.vertices;
-    blocVertices.push(new b2Vec2(0.85 * scale, 5.87 * scale));
-    blocVertices.push(new b2Vec2(0.85 * scale, 5.67 * scale));
-    blocVertices.push(new b2Vec2(0.82 * scale, 5.67 * scale));
-    blocVertices.push(new b2Vec2(0.76 * scale, 5.77 * scale));
-    blocVertices.push(new b2Vec2(0.79 * scale, 5.87 * scale));
+    blocVertices.push(new b2Vec2(0.85 + x_offset, 5.87));
+    blocVertices.push(new b2Vec2(0.85 + x_offset, 5.67));
+    blocVertices.push(new b2Vec2(0.82 + x_offset, 5.67));
+    blocVertices.push(new b2Vec2(0.76 + x_offset, 5.77));
+    blocVertices.push(new b2Vec2(0.79 + x_offset, 5.87));
     ground.CreateFixtureFromShape(bloc, 0);
 }
 
 // Refactored function to create letter "R"
-function createR(scale = 1) {
+function createR(width = 3) {
+	var x_offset = 0;
+	
+	if (width == 1) x_offset = -1.7;
+	else if (width == 2) x_offset = -.81;
+	else if (width == 3) x_offset = 0;
+	
     // Create the first vertical bar of "R"
     var leftBarShape = new b2PolygonShape();
     var leftBarVertices = leftBarShape.vertices;
-    leftBarVertices.push(new b2Vec2(1.42 * scale, 5.65 * scale));
-    leftBarVertices.push(new b2Vec2(1.42 * scale, 6.18 * scale));
-    leftBarVertices.push(new b2Vec2(1.36 * scale, 6.18 * scale));
-    leftBarVertices.push(new b2Vec2(1.36 * scale, 5.65 * scale));
+    leftBarVertices.push(new b2Vec2(1.42 + x_offset, 5.65));
+    leftBarVertices.push(new b2Vec2(1.42 + x_offset, 6.18));
+    leftBarVertices.push(new b2Vec2(1.36 + x_offset, 6.18));
+    leftBarVertices.push(new b2Vec2(1.36 + x_offset, 5.65));
     ground.CreateFixtureFromShape(leftBarShape, 0);
     
     // Create the slant of "R"
     var secondSlope = new b2PolygonShape();
     var secondSlopeVertices = secondSlope.vertices;
-    secondSlopeVertices.push(new b2Vec2(1.4 * scale, 5.9 * scale));
-    secondSlopeVertices.push(new b2Vec2(1.55 * scale, 6.15 * scale));
-    secondSlopeVertices.push(new b2Vec2(1.7 * scale, 6.1 * scale));
-    secondSlopeVertices.push(new b2Vec2(1.7 * scale, 6.16 * scale));
-    secondSlopeVertices.push(new b2Vec2(1.45 * scale, 6.1 * scale));
-    secondSlopeVertices.push(new b2Vec2(1.45 * scale, 6.12 * scale));
+    secondSlopeVertices.push(new b2Vec2(1.4 + x_offset, 5.9));
+    secondSlopeVertices.push(new b2Vec2(1.55 + x_offset, 6.15));
+    secondSlopeVertices.push(new b2Vec2(1.7 + x_offset, 6.1));
+    secondSlopeVertices.push(new b2Vec2(1.7 + x_offset, 6.16));
+    secondSlopeVertices.push(new b2Vec2(1.45 + x_offset, 6.1));
+    secondSlopeVertices.push(new b2Vec2(1.45 + x_offset, 6.12));
     ground.CreateFixtureFromShape(secondSlope, 0);
 }
 
 // Refactored function to create letter "E"
-function createE(scale = 1) {
+function createE(width = 3) {
+	var x_offset = 0;
+	
+	if (width == 1) x_offset = -1.7;
+	else if (width == 2) x_offset = -.84;
+	else if (width == 3) x_offset = 0;
+	
     // Create the horizontal bar of "E"
     var horizontalBarShape = new b2PolygonShape();
     var horizontalBarVertices = horizontalBarShape.vertices;
-    horizontalBarVertices.push(new b2Vec2(2.21 * scale, 5.96 * scale));
-    horizontalBarVertices.push(new b2Vec2(2.21 * scale, 5.9 * scale));
-    horizontalBarVertices.push(new b2Vec2(1.8 * scale, 5.9 * scale));
-    horizontalBarVertices.push(new b2Vec2(1.8 * scale, 5.96 * scale));
+    horizontalBarVertices.push(new b2Vec2(2.21 + x_offset, 5.96));
+    horizontalBarVertices.push(new b2Vec2(2.21 + x_offset, 5.9));
+    horizontalBarVertices.push(new b2Vec2(1.8 + x_offset, 5.9));
+    horizontalBarVertices.push(new b2Vec2(1.8 + x_offset, 5.96));
     ground.CreateFixtureFromShape(horizontalBarShape, 0);
     
     // Top curve of "E"
     var secondSlope = new b2PolygonShape();
     var secondSlopeVertices = secondSlope.vertices;
-    secondSlopeVertices.push(new b2Vec2(1.9 * scale, 6.09 * scale));
-    secondSlopeVertices.push(new b2Vec2(2.05 * scale, 6.15 * scale));
-    secondSlopeVertices.push(new b2Vec2(2.2 * scale, 6.1 * scale));
-    secondSlopeVertices.push(new b2Vec2(2.2 * scale, 6.16 * scale));
-    secondSlopeVertices.push(new b2Vec2(2.05 * scale, 6.18 * scale));
-    secondSlopeVertices.push(new b2Vec2(1.95 * scale, 6.12 * scale));
+    secondSlopeVertices.push(new b2Vec2(1.9 + x_offset, 6.09));
+    secondSlopeVertices.push(new b2Vec2(2.05 + x_offset, 6.15));
+    secondSlopeVertices.push(new b2Vec2(2.2 + x_offset, 6.1));
+    secondSlopeVertices.push(new b2Vec2(2.2 + x_offset, 6.16));
+    secondSlopeVertices.push(new b2Vec2(2.05 + x_offset, 6.18));
+    secondSlopeVertices.push(new b2Vec2(1.95 + x_offset, 6.12));
     ground.CreateFixtureFromShape(secondSlope, 0);
     
     // Bottom curve of "E"
     var slope2 = new b2PolygonShape();
     var slope2Vertices = slope2.vertices;
-    slope2Vertices.push(new b2Vec2(1.9 * scale, 5.74 * scale));
-    slope2Vertices.push(new b2Vec2(2.05 * scale, 5.64 * scale));
-    slope2Vertices.push(new b2Vec2(2.2 * scale, 5.67 * scale));
-    slope2Vertices.push(new b2Vec2(2.3 * scale, 5.75 * scale));
-    slope2Vertices.push(new b2Vec2(2.2 * scale, 5.7 * scale));
-    slope2Vertices.push(new b2Vec2(2.05 * scale, 5.67 * scale));
-    slope2Vertices.push(new b2Vec2(1.95 * scale, 5.67 * scale));
+    slope2Vertices.push(new b2Vec2(1.9 + x_offset, 5.74));
+    slope2Vertices.push(new b2Vec2(2.05 + x_offset, 5.64));
+    slope2Vertices.push(new b2Vec2(2.2 + x_offset, 5.67));
+    slope2Vertices.push(new b2Vec2(2.3 + x_offset, 5.75));
+    slope2Vertices.push(new b2Vec2(2.2 + x_offset, 5.7));
+    slope2Vertices.push(new b2Vec2(2.05 + x_offset, 5.67));
+    slope2Vertices.push(new b2Vec2(1.95 + x_offset, 5.67));
     ground.CreateFixtureFromShape(slope2, 0);
     
     // Create the first vertical bar of "E"
     var leftBarShape = new b2PolygonShape();
     var leftBarVertices = leftBarShape.vertices;
-    leftBarVertices.push(new b2Vec2(1.88 * scale, 5.7 * scale));
-    leftBarVertices.push(new b2Vec2(1.88 * scale, 6.13 * scale));
-    leftBarVertices.push(new b2Vec2(1.82 * scale, 6 * scale));
-    leftBarVertices.push(new b2Vec2(1.82 * scale, 6 * scale));
+    leftBarVertices.push(new b2Vec2(1.88 + x_offset, 5.7));
+    leftBarVertices.push(new b2Vec2(1.88 + x_offset, 6.13));
+    leftBarVertices.push(new b2Vec2(1.82 + x_offset, 6));
+    leftBarVertices.push(new b2Vec2(1.82 + x_offset, 6));
     ground.CreateFixtureFromShape(leftBarShape, 0);
     
     // Create the second vertical bar of "E"
     var midBarShape = new b2PolygonShape();
     var midBarVertices = midBarShape.vertices;
-    midBarVertices.push(new b2Vec2(2.21 * scale, 5.9 * scale));
-    midBarVertices.push(new b2Vec2(2.21 * scale, 6.15 * scale));
-    midBarVertices.push(new b2Vec2(2.27 * scale, 6 * scale));
-    midBarVertices.push(new b2Vec2(2.27 * scale, 5.9 * scale));
+    midBarVertices.push(new b2Vec2(2.21 + x_offset, 5.9));
+    midBarVertices.push(new b2Vec2(2.21 + x_offset, 6.15));
+    midBarVertices.push(new b2Vec2(2.27 + x_offset, 6));
+    midBarVertices.push(new b2Vec2(2.27 + x_offset, 5.9));
     ground.CreateFixtureFromShape(midBarShape, 0);
 }
 
 // Refactored function to create letter "D"
-function createD(scale = 1) {
+function createD(width = 3) {
+	var x_offset = 0;
+	
+	if (width == 1) x_offset = -1.7;
+	else if (width == 2) x_offset = -.81;
+	else if (width == 3) x_offset = 0;
+	
     // Create vertical part of "D"
     var leftBarShape = new b2PolygonShape();
     var leftBarVertices = leftBarShape.vertices;
-    leftBarVertices.push(new b2Vec2(2.86 * scale, 5.65 * scale));
-    leftBarVertices.push(new b2Vec2(2.86 * scale, 6.38 * scale));
-    leftBarVertices.push(new b2Vec2(2.92 * scale, 6.38 * scale));
-    leftBarVertices.push(new b2Vec2(2.92 * scale, 5.65 * scale));
+    leftBarVertices.push(new b2Vec2(2.86 + x_offset, 5.65));
+    leftBarVertices.push(new b2Vec2(2.86 + x_offset, 6.38));
+    leftBarVertices.push(new b2Vec2(2.92 + x_offset, 6.38));
+    leftBarVertices.push(new b2Vec2(2.92 + x_offset, 5.65));
     ground.CreateFixtureFromShape(leftBarShape, 0);
     
     // Top curve of "D"
     var secondSlope = new b2PolygonShape();
     var secondSlopeVertices = secondSlope.vertices;
-    secondSlopeVertices.push(new b2Vec2(2.5 * scale, 6.09 * scale));
-    secondSlopeVertices.push(new b2Vec2(2.65 * scale, 6.15 * scale));
-    secondSlopeVertices.push(new b2Vec2(2.9 * scale, 6.05 * scale));
-    secondSlopeVertices.push(new b2Vec2(2.9 * scale, 6.11 * scale));
-    secondSlopeVertices.push(new b2Vec2(2.65 * scale, 6.18 * scale));
-    secondSlopeVertices.push(new b2Vec2(2.55 * scale, 6.12 * scale));
+    secondSlopeVertices.push(new b2Vec2(2.5 + x_offset, 6.09));
+    secondSlopeVertices.push(new b2Vec2(2.65 + x_offset, 6.15));
+    secondSlopeVertices.push(new b2Vec2(2.9 + x_offset, 6.05));
+    secondSlopeVertices.push(new b2Vec2(2.9 + x_offset, 6.11));
+    secondSlopeVertices.push(new b2Vec2(2.65 + x_offset, 6.18));
+    secondSlopeVertices.push(new b2Vec2(2.55 + x_offset, 6.12));
     ground.CreateFixtureFromShape(secondSlope, 0);
 
     // Bottom curve of "D"
     var slope2 = new b2PolygonShape();
     var slope2Vertices = slope2.vertices;
-    slope2Vertices.push(new b2Vec2(2.5 * scale, 5.74 * scale));
-    slope2Vertices.push(new b2Vec2(2.65 * scale, 5.64 * scale));
-    slope2Vertices.push(new b2Vec2(2.8 * scale, 5.67 * scale));
-    slope2Vertices.push(new b2Vec2(2.9 * scale, 5.75 * scale));
-    slope2Vertices.push(new b2Vec2(2.8 * scale, 5.7 * scale));
-    slope2Vertices.push(new b2Vec2(2.65 * scale, 5.67 * scale));
-    slope2Vertices.push(new b2Vec2(2.55 * scale, 5.67 * scale));
+    slope2Vertices.push(new b2Vec2(2.5 + x_offset, 5.74));
+    slope2Vertices.push(new b2Vec2(2.65 + x_offset, 5.64));
+    slope2Vertices.push(new b2Vec2(2.8 + x_offset, 5.67));
+    slope2Vertices.push(new b2Vec2(2.9 + x_offset, 5.75));
+    slope2Vertices.push(new b2Vec2(2.8 + x_offset, 5.7));
+    slope2Vertices.push(new b2Vec2(2.65 + x_offset, 5.67));
+    slope2Vertices.push(new b2Vec2(2.55 + x_offset, 5.67));
     ground.CreateFixtureFromShape(slope2, 0);
 
     // Create the first vertical bar of "D"
     var rightBarShape = new b2PolygonShape();
     var rightBarShapeVertices = rightBarShape.vertices;
-    rightBarShapeVertices.push(new b2Vec2(2.5 * scale, 5.7 * scale));
-    rightBarShapeVertices.push(new b2Vec2(2.5 * scale, 6.13 * scale));
-    rightBarShapeVertices.push(new b2Vec2(2.44 * scale, 6 * scale));
-    rightBarShapeVertices.push(new b2Vec2(2.44 * scale, 6 * scale));
+    rightBarShapeVertices.push(new b2Vec2(2.5 + x_offset, 5.7));
+    rightBarShapeVertices.push(new b2Vec2(2.5 + x_offset, 6.13));
+    rightBarShapeVertices.push(new b2Vec2(2.44 + x_offset, 6));
+    rightBarShapeVertices.push(new b2Vec2(2.44 + x_offset, 6));
     ground.CreateFixtureFromShape(rightBarShape, 0);
 }
 
 // Refactored function to create a period "."
-function createPeriod(scale = 1) {
+function createPeriod(width = 3) {
+	var x_offset = 0;
+	
+	if (width == 1) x_offset = -1.7;
+	else if (width == 2) x_offset = -.81;
+	else if (width == 3) x_offset = 0;
+	
     // Create the period dot
     var periodShape = new b2PolygonShape();
     var periodVertices = periodShape.vertices;
-    periodVertices.push(new b2Vec2(3.2 * scale, 5.65 * scale));
-    periodVertices.push(new b2Vec2(3.2 * scale, 5.76 * scale));
-    periodVertices.push(new b2Vec2(3.14 * scale, 5.76 * scale));
-    periodVertices.push(new b2Vec2(3.14 * scale, 5.65 * scale));
+    periodVertices.push(new b2Vec2(3.2 + x_offset, 5.65));
+    periodVertices.push(new b2Vec2(3.2 + x_offset, 5.76));
+    periodVertices.push(new b2Vec2(3.14 + x_offset, 5.76));
+    periodVertices.push(new b2Vec2(3.14 + x_offset, 5.65));
     ground.CreateFixtureFromShape(periodShape, 0);
 }
 
 // Refactored function to create a horizontal line
-function createLine(scale = 1) {
+function createLine(width = 3) {
+	var trim_sides = 0;
+	var y_adjustment = 0;
+	
+	if (width == 1)
+	{
+			trim_sides = 2.2;
+			y_adjustment = 0.05;
+	}
+	
+	else if (width == 2)
+	{
+			trim_sides = 1.1;
+			y_adjustment = -.01;
+	}
+	
     // Create the horizontal line
     var lineShape = new b2PolygonShape();
     var lineVertices = lineShape.vertices;
-    lineVertices.push(new b2Vec2(-4.1 * scale, 5.33 * scale));
-    lineVertices.push(new b2Vec2(-4.1 * scale, 5.39 * scale));
-    lineVertices.push(new b2Vec2(4.1 * scale, 5.39 * scale));
-    lineVertices.push(new b2Vec2(4.1 * scale, 5.33 * scale));
+    lineVertices.push(new b2Vec2((-4.1) + trim_sides, (5.33) + y_adjustment));
+    lineVertices.push(new b2Vec2((-4.1) + trim_sides, (5.39) + y_adjustment));
+    lineVertices.push(new b2Vec2((4.1) - trim_sides, (5.39) + y_adjustment));
+    lineVertices.push(new b2Vec2((4.1) - trim_sides, (5.33) + y_adjustment));
     ground.CreateFixtureFromShape(lineShape, 0);
 }
 
