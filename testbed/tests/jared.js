@@ -1051,7 +1051,7 @@ function createLine(width = 3) {
 	if (width == 1)
 	{
 		trim_sides = 2.6;
-		y_adjustment = 0.04;
+		y_adjustment = 0.07;
 	}
 	
 	else if (width == 2)
