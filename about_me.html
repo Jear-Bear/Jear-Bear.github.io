@@ -3,324 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Me</title>
+    <title>Image Overlay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet"> <!-- Poppins font -->
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: linear-gradient(135deg, #f0f0f0, #d3d3d3);
-            color: black;
-            overflow: hidden;
+        body, html {
             margin: 0;
-            position: relative;
-        }
-
-        .container {
-            position: relative;
-            width: 80%;
-            max-width: 700px;
-            height: 340px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .back-button {
-            font-family: 'Poppins', sans-serif;
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            background-color: transparent;
-            color: #666;
-            border: 2px solid #000;
-            border-radius: 5px;
-            border-color: #666
-            padding: 5px 20px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
-            z-index: 10; /* Ensure button is above other elements */
-            will-change: transform; /* Optimize for smooth scaling */
-        }
-
-        .back-button:hover {
-            transform: scale(1.1); /* Scale the button to 110% of its original size */
-        }
-
-
-        .instruction {
-            position: absolute;
-            top: -75px;
-            width: 100%;
-            text-align: center;
-            font-size: 18px;
-            color: #666;
-            line-height: 1.5;
-            padding: 20px 0; /* Adjust padding as needed */
-        }
-
-        .card {
-            background-color: white;
-            width: 100%;
-            padding: 40px;
-            margin: 10px 0;
-            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
-            position: absolute;
-            text-align: left;
-            height: 280px;
-            z-index: 1;
-            border-radius: 10px;
-            opacity: 0;
-            transform: scale(0.95);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-
-        .card.active {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .card.swipe {
-            transition: transform 0.3s ease, opacity 0.3s ease;
-        }
-
-        .card.next-card {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .hexagon {
-            width: 250px;
-            height: 250px;
-            position: absolute;
-            top: -60px;
-            left: -60px;
-            clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
-            background-color: #fff;
-            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: transform 0.1s ease;
-            will-change: transform;
-            overflow: hidden;
-        }
-
-        .hexagon img {
-            width: 100%;
+            padding: 0;
             height: 100%;
-            object-fit: cover;
-            clip-path: inherit;
+            overflow: hidden; /* Disable scrolling */
+            font-family: Arial, sans-serif;
         }
-        
-        .text-content {
-            padding-left: 160px;
+        .navbar {
+            background-color: #BE797A; /* Navbar color matches the top section */
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 3; /* Ensure the navbar is above other content */
         }
-
-        h1 {
-            font-size: 36px;
-            margin-bottom: 16px;
+        .navbar .logo {
+            display: flex; /* Use flexbox to align logo and text */
+            align-items: center; /* Center vertically */
+        }
+        .navbar img {
+            height: 50px;
+        }
+        .navbar .logo-text {
+            margin-left: 10px;
+            color: white;
+            font-size: 20px;
             font-weight: bold;
         }
-
-        p {
-            font-size: 18px;
-            line-height: 1.6;
-            margin-bottom: 20px;
-            color: #333;
+        .navbar ul {
+            list-style: none;
+            display: flex;
+            margin: 0;
+            padding: 0;
         }
-
-        footer {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            text-align: center;
-            font-size: 14px;
-            color: #777;
-            background: rgba(0, 0, 0, .0);
-            padding: 10px 0;
+        .navbar ul li {
+            margin-left: 30px;
         }
-
-        .swipe-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.2);
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            opacity: 0;
+        .navbar ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
         }
-
-        .swipe-overlay.active {
-            opacity: 1;
-            animation: swipeAnimation 1.5s ease-in-out;
+        .navbar ul li a:hover {
+            text-decoration: underline;
         }
-
-        @keyframes swipeAnimation {
-            0% { opacity: 0; }
-            100% { opacity: 0.2; }
+        .container {
+            height: calc(100vh - 100px); /* Full height minus the navbar */
+            display: flex;
+            flex-direction: column; /* Stack sections vertically */
+            position: relative; /* Positioning context for absolute children */
         }
-
-        .arrows-img {
-            width: 50px; /* Adjust width based on the size of your image */
-            vertical-align: bottom; /* Aligns image with the text */
-            margin: -6px 0px; /* Adds space between the text and the image */
-            opacity: .78;
+        .section {
+            flex: 1; /* Allow sections to take equal space */
+            position: relative; /* Positioning context for the image */
+        }
+        .red-section {
+            background-color: #BE797A; /* Red rectangle */
+            height: 50%; /* Make it half the viewport height */
+            display: flex; /* Use flexbox for alignment */
+            align-items: center; /* Center items vertically */
+            padding: 20px; /* Padding around the red section */
+            position: relative; /* Positioning context for absolute positioning */
+        }
+        .white-section {
+            background-color: #F2F2F2; /* White rectangle */
+            height: 50%; /* Make it half the viewport height */
+        }
+        .image-container {
+            width: 500px; /* Fixed width */
+            height: auto; /* Auto height to prevent cropping */
+            z-index: 2; /* Ensure the image is above the sections */
+            display: flex;
+            flex-direction: column; /* Stack title and image vertically */
+            align-items: flex-start; /* Align items to the start of the container */
+            margin-right: 20px; /* Margin between image and text */
+        }
+        .title-text {
+            margin-top: 290px;
+            color: #f2f2f2; /* White color */
+            font-family: 'Poppins', sans-serif; /* Use Poppins font */
+            font-size: 70px; /* Increased font size */
+            font-weight: bold; /* Bold font */
+            z-index: 3; /* Ensure the title is above the image */
+            text-align: left; /* Align text to the left */
+            margin-bottom: 0px; /* Add space between the title and the image */
+        }
+        .overlay-image {
+            width: 100%; /* Image takes full width of the container */
+            height: auto; /* Maintain aspect ratio */
         }
         
+        .text-container {
+            font-family: 'Libre Franklin', sans-serif; /* Use Libre Franklin font */
+            color: #F2F2F2; /* White text color */
+            font-size: 20px; /* Font size for text */
+            line-height: 1.5; /* Spacing between lines */
+            position: absolute; /* Position the text absolutely */
+            top: 70%; /* Center it vertically */
+            left: calc(500px + 40px); /* Position to the right of the image */
+            transform: translateY(-50%); /* Center vertically based on its height */
+            width: 50%; /* Adjust width based on image width and margin */
+            margin-left: 5%;
+            z-index: 2; /* Ensure text is above the image */
+        }
+
+        /* Mobile view styles */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 10px 20px; /* Add padding */
+            }
+            .image-container {
+                width: calc(100% - 40px); /* Take full width minus padding */
+                left: 50%; /* Center horizontally */
+                transform: translateX(-50%); /* Offset to center */
+                padding: 0 20px; /* Add side padding */
+                align-items: center; /* Center items */
+            }
+            .title-text {
+                font-size: 32px; /* Larger font size for mobile */
+                margin-bottom: 10px; /* Smaller margin */
+                text-align: center; /* Center text for mobile */
+            }
+            .red-section {
+                flex-direction: column; /* Stack image and text vertically on mobile */
+                align-items: center; /* Center items */
+            }
+            .text-container {
+                text-align: center; /* Center text on mobile */
+                margin-top: 20px; /* Space between image and text */
+                top: auto; /* Reset top positioning */
+                left: auto; /* Reset left positioning */
+                width: 100%; /* Full width on mobile */
+            }
+            .bold-l {
+                font-weight: bold; /* Makes the letter L bold */
+                font-size: 28px; /* Custom font size for the letter L */
+                color: #F2F2F2; /* Match the text color */
+            }
+        }
     </style>
 </head>
 <body>
-    <button class="back-button" onclick="window.location.href='index.html';">&larr; Back</button>
-    <div class="container">
-        <div class="instruction">Swipe or use <img src="arrows.png" alt="Arrow Keys" class="arrows-img"> to see more</div>
-        <div class="card active" id="card1">
-            <div class="hexagon">
-                <img src="https://avatars.githubusercontent.com/u/14828078?v=4" alt="Headshot">
-            </div>
-            <div class="text-content">
-                <h1>About Me</h1>
-                <p>
-                    Hi, I'm Jared. I'm a developer with a passion for creating engaging and innovative web experiences. 
-                    My journey in the tech world has been driven by a love for learning and a curiosity about how things work.
-                </p>
-            </div>
+    <div class="navbar">
+        <div class="logo">
+            <img src="https://github.com/Jear-Bear/Jear-Bear.github.io/blob/b7769460d7fea76491da4b9a26bbecaea342d06b/images/logo.png?raw=true" alt="Logo">
+            <div class="logo-text">Home</div>
         </div>
-
-        <div class="card" id="card2">
-            <h2>Skills</h2>
-            <ul>
-                <li>JavaScript</li>
-                <li>HTML & CSS</li>
-                <li>React</li>
-                <li>Node.js</li>
-                <li>Babylon.js</li>
-            </ul>
-        </div>
-
-        <div class="card" id="card3">
-            <h2>Projects</h2>
-            <p>Coming soon...</p>
-        </div>
-
-        <div class="card" id="card4">
-            <h2>Contact</h2>
-            <p>Feel free to reach out to me via <a href="mailto:jared@example.com">email</a>.</p>
-        </div>
+        <ul>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Projects</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Contact</a></li>
+        </ul>
     </div>
 
-    <footer>
-        <p>&copy; 2024 Jared Perlmutter. All rights reserved.</p>
-    </footer>
-
-    <script>
-        let currentCard = 1;
-        const totalCards = 4;
-        const pressedKeys = new Set();
-        let startX, startY;
-
-        function showCard(cardNumber) {
-            document.querySelectorAll('.card').forEach(card => {
-                card.classList.remove('active', 'next-card');
-            });
-
-            const activeCard = document.getElementById(`card${cardNumber}`);
-            activeCard.classList.add('active');
-        }
-
-        function swipeCard(xOffset, yOffset) {
-            const currentCardElement = document.getElementById(`card${currentCard}`);
-            const nextCardNumber = currentCard < totalCards ? currentCard + 1 : 1;
-            const nextCardElement = document.getElementById(`card${nextCardNumber}`);
-
-            const transformValue = `translate(${xOffset}%, ${yOffset}%)`;
-
-            currentCardElement.style.transform = `${transformValue} scale(0.95)`;
-            currentCardElement.style.opacity = 0;
-
-            nextCardElement.style.opacity = 1;
-            nextCardElement.style.transform = 'scale(1)';
-
-            setTimeout(() => {
-                currentCardElement.classList.remove('active');
-                currentCardElement.style.transform = '';
-                currentCardElement.style.opacity = '';
-
-                currentCard = nextCardNumber;
-                showCard(currentCard);
-            }, 300); // Matches the transition duration
-        }
-
-        function getSwipeDirection() {
-            let xOffset = 0;
-            let yOffset = 0;
-
-            if (pressedKeys.has('ArrowUp')) {
-                yOffset = -100;
-            } else if (pressedKeys.has('ArrowDown')) {
-                yOffset = 100;
-            }
-
-            if (pressedKeys.has('ArrowLeft')) {
-                xOffset = -100;
-            } else if (pressedKeys.has('ArrowRight')) {
-                xOffset = 100;
-            }
-
-            return { xOffset, yOffset };
-        }
-
-        function handleSwipe() {
-            const { xOffset, yOffset } = getSwipeDirection();
-            if (xOffset !== 0 || yOffset !== 0) {
-                swipeCard(xOffset, yOffset);
-            }
-        }
-
-        document.addEventListener('touchstart', function (event) {
-            startX = event.touches[0].clientX;
-            startY = event.touches[0].clientY;
-        });
-
-        document.addEventListener('touchend', function (event) {
-            const endX = event.changedTouches[0].clientX;
-            const endY = event.changedTouches[0].clientY;
-
-            const deltaX = endX - startX;
-            const deltaY = endY - startY;
-
-            if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                if (deltaX < -50) { // Swipe left
-                    swipeCard(-100, 0);
-                } else if (deltaX > 50) { // Swipe right
-                    swipeCard(100, 0);
-                }
-            } else {
-                if (deltaY < -50) { // Swipe up
-                    swipeCard(0, -100);
-                } else if (deltaY > 50) { // Swipe down
-                    swipeCard(0, 100);
-                }
-            }
-        });
-
-        document.addEventListener('keydown', function (event) {
-            pressedKeys.add(event.key);
-            handleSwipe();
-        });
-
-        document.addEventListener('keyup', function (event) {
-            pressedKeys.delete(event.key);
-            handleSwipe();
-        });
-
-        showCard(currentCard);
-    </script>
+    <div class="container">
+        <div class="section red-section">
+            <div class="image-container">
+                <div class="title-text">ABOUT ME</div> <!-- Title Text -->
+                <img class="overlay-image" src="https://github.com/Jear-Bear/Jear-Bear.github.io/blob/18e766834f57ec4a81b4566ea0bdff816260d13d/images/fukuoka_shrine.png?raw=true" alt="Fukuoka Shrine">
+            </div>
+            <div class="text-container">
+                <p><span class="bold-l" style="font-weight: bold; font-size: 28px; color: #F2F2F2;">L</span>orem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet.</p>
+                <p>Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla.</p>
+            </div>
+        </div>
+        <div class="section white-section"></div>
+    </div>
 </body>
 </html>
