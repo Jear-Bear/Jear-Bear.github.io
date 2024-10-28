@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Overlay</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet"> <!-- Poppins font -->
-    <style>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300&display=swap" rel="stylesheet">
+	<style>
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
             overflow: hidden; /* Disable scrolling */
-            font-family: Arial, sans-serif;
+			background-color: #F2F2F2;
         }
         .navbar {
             background-color: #BE797A; /* Navbar color matches the top section */
@@ -70,84 +71,376 @@
             padding: 20px; /* Padding around the red section */
             position: relative; /* Positioning context for absolute positioning */
         }
-        .white-section {
-            background-color: #F2F2F2; /* White rectangle */
-            height: 50%; /* Make it half the viewport height */
-        }
-        .image-container {
-            width: 500px; /* Fixed width */
-            height: auto; /* Auto height to prevent cropping */
-            z-index: 2; /* Ensure the image is above the sections */
-            display: flex;
-            flex-direction: column; /* Stack title and image vertically */
-            align-items: flex-start; /* Align items to the start of the container */
-            margin-right: 20px; /* Margin between image and text */
-        }
+		.white-section {
+			display: flex; /* Ensure it can take height with flexbox */
+			flex-direction: column; /* Stack children vertically */
+			align-items: center; /* Center children */
+			justify-content: flex-start; /* Align children to the start */
+			min-height: calc(100vh - [height_of_red_section]); /* Adjust according to red-section height */
+			background-color: #F2F2F2; /* Ensure background is white */
+			padding: 20px; /* Example padding */
+			box-sizing: border-box; /* Include padding and border in height calculations */
+			width: 100%; /* Full width */
+		}
+		.image-container {
+			width: 850px; /* Fixed width */
+			height: auto; /* Auto height to prevent cropping */
+			z-index: 2; /* Ensure the image is above the sections */
+			display: flex;
+			flex-direction: column; /* Stack title and image vertically */
+			align-items: flex-start; /* Align items to the start of the container */
+			margin: 300px 20px 0; /* Margin: top 300px, right 20px, bottom 0, left 20px */
+		}
         .title-text {
-            margin-top: 290px;
+            margin-top: 290px; /* Adjust based on your design */
             color: #f2f2f2; /* White color */
             font-family: 'Poppins', sans-serif; /* Use Poppins font */
-            font-size: 70px; /* Increased font size */
+            font-size: 90px; /* Increased font size */
             font-weight: bold; /* Bold font */
             z-index: 3; /* Ensure the title is above the image */
             text-align: left; /* Align text to the left */
             margin-bottom: 0px; /* Add space between the title and the image */
+			animation: fadeIn 2s forwards; /* Fade in animation */	
         }
-        .overlay-image {
-            width: 100%; /* Image takes full width of the container */
-            height: auto; /* Maintain aspect ratio */
-        }
+		.overlay-image {
+			width: 100%; /* Image takes full width of the container */
+			height: auto; /* Maintain aspect ratio */
+			opacity: 0; /* Start with the image hidden */
+			animation: fadeIn 2s forwards; /* Fade in animation */
+			animation-delay: 0.5s; /* Delay before starting the animation */
+			transition: opacity 0.5s ease-in; /* Smooth transition for opacity */
+		}
         
-        .text-container {
-            font-family: 'Libre Franklin', sans-serif; /* Use Libre Franklin font */
-            color: #F2F2F2; /* White text color */
-            font-size: 20px; /* Font size for text */
-            line-height: 1.5; /* Spacing between lines */
-            position: absolute; /* Position the text absolutely */
-            top: 70%; /* Center it vertically */
-            left: calc(500px + 40px); /* Position to the right of the image */
-            transform: translateY(-50%); /* Center vertically based on its height */
-            width: 50%; /* Adjust width based on image width and margin */
-            margin-left: 5%;
-            z-index: 2; /* Ensure text is above the image */
-        }
+		/* Keyframes for fade-in effect */
+		@keyframes fadeIn {
+			from {
+				opacity: 0; /* Start invisible */
+			}
+			to {
+				opacity: 1; /* Fully visible */
+			}
+		}
 
-        /* Mobile view styles */
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 10px 20px; /* Add padding */
-            }
-            .image-container {
-                width: calc(100% - 40px); /* Take full width minus padding */
-                left: 50%; /* Center horizontally */
-                transform: translateX(-50%); /* Offset to center */
-                padding: 0 20px; /* Add side padding */
-                align-items: center; /* Center items */
-            }
-            .title-text {
-                font-size: 32px; /* Larger font size for mobile */
-                margin-bottom: 10px; /* Smaller margin */
-                text-align: center; /* Center text for mobile */
-            }
-            .red-section {
-                flex-direction: column; /* Stack image and text vertically on mobile */
-                align-items: center; /* Center items */
-            }
-            .text-container {
-                text-align: center; /* Center text on mobile */
-                margin-top: 20px; /* Space between image and text */
-                top: auto; /* Reset top positioning */
-                left: auto; /* Reset left positioning */
-                width: 100%; /* Full width on mobile */
-            }
-            .bold-l {
-                font-weight: bold; /* Makes the letter L bold */
-                font-size: 28px; /* Custom font size for the letter L */
-                color: #F2F2F2; /* Match the text color */
-            }
-        }
+		.text-container {
+			height: 73%;
+			font-family: 'Libre Franklin', sans-serif; /* Use Libre Franklin font */
+			font-weight: 300;             /* Use a numeric weight for light */
+			color: #F2F2F2; /* White text color */
+			font-size: 33px; /* Font size for text */
+			line-height: 1.5; /* Spacing between lines */
+			position: absolute; /* Position the text absolutely */
+			bottom: 0px; /* 25px above the white rectangle */
+			left: calc(870px + 20px); /* Align text container to the right of the image */
+			width: calc(100% - (870px + 20px)); /* Fill the remaining space */
+			z-index: 2; /* Ensure text is above the image */
+			padding: 20px 6%; /* Add padding: 20px top/bottom, 6% left/right */
+			box-sizing: border-box; /* Include padding in the width and height calculations */
+			display: flex; /* Enable flexbox */
+			flex-direction: column; /* Stack items vertically */
+			justify-content: center; /* Center content vertically */
+			align-items: center; /* Center content horizontally */
+			text-align: left; /* Center text horizontally */
+			opacity: 0; /* Start fully invisible */
+			transition: opacity 2s; /* Smooth transition for opacity */
+			animation: fadeIn 2s forwards; /* Fade-in animation */
+			animation-delay: 1s; /* Delay before starting the animation */
+		}
+
+		/* Class to trigger fade-in effect */
+		.fade-in {
+			opacity: 1; /* Fully visible when class is added */
+			animation: fadeIn 2s forwards; /* Apply the fade-in animation */
+		}
+		
+		.bold-l {
+			font-weight: bold;
+			font-size: 46px;
+			color: #F2F2F2; /* Default color */
+		}
+		
+		.skills-section {
+			display: flex;
+			flex-direction: column;
+			align-items: center; /* Align items to the start */
+			position: absolute; /* Position absolutely */
+			left: calc(870px + 16px);
+			width: calc(100% - (870px + 20px)); /* Fill the remaining space to the right */
+		}
+
+		/* Tablet view styles */
+		@media (max-width: 1900px) {
+			.navbar {
+				padding: 10px 20px; /* Add padding */
+			}
+			.red-section {
+				flex-direction: column; /* Stack elements vertically */
+				align-items: center; /* Center items */
+				padding-bottom: 0; /* Remove any padding from the bottom */
+			}
+			.white-section {
+				flex-direction: column; /* Ensure the white section stacks vertically */
+				align-items: center; /* Center items */
+				padding-bottom: 0; /* Remove any padding from the bottom */
+			}
+			.bold-l {
+				color: #BE797A; /* Change color to red when media query is triggered */
+			}
+
+			.title-text {
+				font-size: 90px; /* Adjusted font size for mobile */
+				text-align: center; /* Center text for mobile */
+				margin-bottom: -20px; /* Fine-tuned margin */
+				opacity: 0; /* Start with hidden title */
+				animation: fadeIn 2s forwards; /* Fade in animation */
+				transition: opacity 0.5s ease; /* Smooth transition for opacity */
+			}
+
+			.image-container {
+				width: 500px; /* Lock image width for mobile */
+				padding: 0 20px; /* Add side padding */
+				align-items: center; /* Center items */
+				margin-top: -300px; /* Adjusted margin to be closer to the title */
+				transition: margin-top 0.5s ease; /* Smooth transition for margin-top */
+			}
+
+			.overlay-image {
+				width: 100%; /* Full width relative to its container */
+				height: auto; /* Maintain aspect ratio */
+			}
+
+			.text-container {
+				color: #000; /* Change text color to black */
+				text-align: center; /* Center text */
+				position: relative; /* Change to relative positioning */
+				width: calc(100% - 40px); /* Full width minus padding */
+				margin: 0 auto; /* Center container horizontally */
+				margin-top: 20px; /* Reset top margin */
+				left: 0;
+				opacity: 0; /* Start with hidden text */
+				animation: fadeIn 2s forwards; /* Fade in animation */
+				transition: opacity 0.5s ease; /* Smooth transition for opacity */
+				animation-delay: 0.5s; /* Delay the text container fade-in */
+				top: -10%;
+			}
+
+		  .skills-section {
+			display: grid;
+			position: relative;
+			left: 2%;
+			
+			grid-template-columns: repeat(2, 1fr); /* Two columns */
+			grid-template-rows: repeat(2, auto);   /* Two rows */
+			gap: 20px; /* Add spacing between the grid items if needed */
+			width: 100%; /* Full width in mobile view */
+			margin: 0 auto; /* Center align the skills section */
+			top: 50%;
+		  }
+
+		  .skill-item {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 10px; /* Adjust padding if needed */
+		  }
+		}
+		
+/* Mobile view styles */
+@media (max-width: 1500px) {
+	/* Ensure the body allows scrolling */
+	body {
+		overflow-y: auto; /* Enable vertical scrolling */
+	}
+
+	.navbar {
+		padding: 10px 20px; /* Add padding */
+	}
+	.red-section {
+		flex-direction: column; /* Stack elements vertically */
+		align-items: center; /* Center items */
+		padding-bottom: 0; /* Remove any padding from the bottom */
+	}
+	.white-section {
+		flex-direction: column; /* Ensure the white section stacks vertically */
+		align-items: center; /* Center items */
+		padding-bottom: 0; /* Remove any padding from the bottom */
+	}
+	.bold-l {
+		color: #BE797A; /* Change color to red when media query is triggered */
+	}
+
+	.title-text {
+		font-size: 90px; /* Adjusted font size for mobile */
+		text-align: center; /* Center text for mobile */
+		margin-bottom: -20px; /* Fine-tuned margin */
+		opacity: 0; /* Start with hidden title */
+		animation: fadeIn 2s forwards; /* Fade in animation */
+		transition: opacity 0.5s ease; /* Smooth transition for opacity */
+	}
+
+	.image-container {
+		width: 500px; /* Lock image width for mobile */
+		padding: 0 20px; /* Add side padding */
+		align-items: center; /* Center items */
+		margin-top: -300px; /* Adjusted margin to be closer to the title */
+		transition: margin-top 0.5s ease; /* Smooth transition for margin-top */
+	}
+
+	.overlay-image {
+		width: 100%; /* Full width relative to its container */
+		height: auto; /* Maintain aspect ratio */
+	}
+
+	.text-container {
+		color: #000; /* Change text color to black */
+		text-align: center; /* Center text */
+		position: relative; /* Change to relative positioning */
+		width: calc(100% - 40px); /* Full width minus padding */
+		margin: 0 auto; /* Center container horizontally */
+		margin-top: 20px; /* Reset top margin */
+		left: 0;
+		opacity: 0; /* Start with hidden text */
+		animation: fadeIn 2s forwards; /* Fade in animation */
+		transition: opacity 0.5s ease; /* Smooth transition for opacity */
+		animation-delay: 0.5s; /* Delay the text container fade-in */
+		top: 2%;
+	}
+
+	.skills-section {
+		display: grid;
+		position: relative;
+		grid-template-columns: 1fr; /* Single column for mobile */
+		grid-template-rows: repeat(4, auto); /* Four rows */
+		gap: 20px; /* Add spacing between the grid items if needed */
+		width: 80%; /* Full width in mobile view */
+		margin: 0 auto; /* Center align the skills section */
+		top: 80%;
+	}
+
+	.skill-item {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 10px; /* Adjust padding if needed */
+	}
+}
+
+		/* Keyframes for fade-in effect */
+		@keyframes fadeIn {
+			to {
+				opacity: 1; /* Fully visible */
+			}
+		}
+		.image-container,
+		.red-section,
+		.skills-section,
+		.text-container {
+			transition: all 0.5s ease; /* Apply transition to all properties with a duration of 0.5 seconds */
+		}
+		.container {
+			display: flex; /* Use flexbox for layout */
+			justify-content: space-between; /* Space between image and skills section */
+		}
+
+		.skills-row {
+			display: flex;
+			align-items: right; /* Align items vertically */
+			margin: 30px 0; /* Space between rows */
+			width: 83%; /* Make the row take the full width */
+			height: 70px;
+		}
+
+		.skills-header {
+			display: flex;                /* Enable Flexbox */
+			align-items: center;          /* Center vertically */
+			justify-content: left;        /* Align text to the left (change to center if needed) */
+			width: 300px;                 /* Fixed width for headers */
+			font-family: 'Libre Franklin', sans-serif; /* Use Libre Franklin font */
+			font-weight: 300;             /* Use a numeric weight for light */
+			font-size: 30px;              /* Font size */
+			color: black;                 /* Text color */
+			height: 66px;                 /* Set a height to see vertical centering */
+		}
+
+		.skills-items {
+			display: flex; /* Horizontal layout for icons */
+			flex: 1; /* Allow this to fill the remaining space */
+			justify-content: flex-start; /* Align items to the start */
+		}
+
+		.skills-item {
+			margin-right: 20px; /* Space between icons */
+			height: 66px;
+			width: auto;
+		}
+
+.skills-item img {
+    width: auto; /* Adjust size as needed */
+    height: 100%; /* Maintain aspect ratio */
+    transition: transform 0.3s ease, opacity 0.8s ease, box-shadow 0.3s ease; /* Smooth transitions for transform, opacity, and shadow */
+    border-radius: 15px; /* Adjust this value for rounded corners */
+    box-shadow: none; /* No shadow on load */
+}
+
+.skills-item img:hover {
+    transform: scale(1.1); /* Slightly enlarge the image on hover */
+    box-shadow: -10px 10px 20px rgba(0, 0, 0, 0.7); /* Exaggerated shadow offset to the left and down */
+}
+
+
     </style>
+<script>
+	const overlayImage = document.querySelector('.overlay-image');
+
+	// Wait for the image to load
+	overlayImage.addEventListener('load', () => {
+		overlayImage.style.opacity = 1; // Set opacity to 1 to trigger the fade-in
+	});
+
+	// Optionally handle errors
+	overlayImage.addEventListener('error', () => {
+		console.error('Image failed to load.');
+	});
+</script>
 </head>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const skillsItems = document.querySelectorAll('.skills-item img');
+
+        skillsItems.forEach((img, index) => {
+            // Set initial opacity and transition properties
+            img.style.opacity = 0;
+            img.style.transition = 'opacity 0.8s ease, transform 0.3s ease, box-shadow 0.3s ease'; // Set transition for opacity, transform, and shadow
+
+            // Wait for each image to load
+            img.addEventListener('load', () => {
+                setTimeout(() => {
+                    img.style.opacity = 1; // Trigger fade-in by changing opacity
+                }, index * 70); // Delay of 70ms per item
+            });
+
+            // Optionally handle errors
+            img.addEventListener('error', () => {
+                console.error(`Image failed to load: ${img.alt}`);
+            });
+
+            // Add hover effect
+            img.addEventListener('mouseenter', () => {
+                img.style.transform = 'scale(1.1)'; // Scale up the image on hover
+                img.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.3)'; // Add shadow effect
+            });
+
+            img.addEventListener('mouseleave', () => {
+                img.style.transform = 'scale(1)'; // Scale back to original size when not hovered
+                img.style.boxShadow = 'none'; // Remove shadow effect
+            });
+        });
+    });
+</script>
+
+
+
+
+
 <body>
     <div class="navbar">
         <div class="logo">
@@ -163,17 +456,101 @@
     </div>
 
     <div class="container">
-        <div class="section red-section">
-            <div class="image-container">
-                <div class="title-text">ABOUT ME</div> <!-- Title Text -->
-                <img class="overlay-image" src="https://github.com/Jear-Bear/Jear-Bear.github.io/blob/18e766834f57ec4a81b4566ea0bdff816260d13d/images/fukuoka_shrine.png?raw=true" alt="Fukuoka Shrine">
-            </div>
-            <div class="text-container">
-                <p><span class="bold-l" style="font-weight: bold; font-size: 28px; color: #F2F2F2;">L</span>orem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet.</p>
-                <p>Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla.</p>
-            </div>
+    <div class="section red-section">
+        <div class="image-container">
+            <div class="title-text">ABOUT ME</div> <!-- Title Text -->
+            <img class="overlay-image" src="https://github.com/Jear-Bear/Jear-Bear.github.io/blob/18e766834f57ec4a81b4566ea0bdff816260d13d/images/fukuoka_shrine.png?raw=true" alt="Fukuoka Shrine">
         </div>
-        <div class="section white-section"></div>
+        <div class="text-container">
+            <p>
+                <span class="bold-l">L</span>et me introduce myself—I'm Jared Perlmutter, a student at the Naveen Jindal School of Management at UTDallas. I’m passionate about creating interactive web applications that enhance user experiences. In my spare time, I dive into new technologies and work on personal projects, always eager to learn and grow.
+            </p>
+        </div>
     </div>
+    
+	<div class="section white-section">
+		<div class="skills-section">
+			<div class="skills-row">
+				<div class="skills-header">Languages:</div>
+				<div class="skills-items">
+					<div class="skills-item">
+						<img src="images/skills/JavaScript.svg" alt="JavaScript">
+					</div>
+					<div class="skills-item">
+						<img src="images/skills/CPP.svg" alt="C++">
+					</div>
+					<div class="skills-item">
+						<img src="images/skills/Htmx-Dark.svg" alt="HTML">
+					</div>
+					<div class="skills-item">
+						<img src="images/skills/Powershell-Dark.svg" alt="Powershell">
+					</div>
+					<div class="skills-item">
+						<img src="images/skills/Python-Dark.svg" alt="Python">
+					</div>
+					<div class="skills-item">
+						<img src="images/skills/Java-Dark.svg" alt="Java">
+					</div>
+				</div>
+			</div>
+			<div class="skills-row">
+				<div class="skills-header">Libraries & Tools:</div>
+				<div class="skills-items">
+					<div class="skills-item">
+						<img src="images/skills/OpenCV-Dark.svg" alt="OpenCV">
+					</div>
+					<div class="skills-item">
+						<img src="images/skills/Npm-Dark.svg" alt="Npm">
+					</div>
+				</div>
+			</div>
+			<div class="skills-row">
+				<div class="skills-header">IDEs:</div>
+				<div class="skills-items">
+					<div class="skills-item">
+						<img src="images/skills/Eclipse-Dark.svg" alt="Eclipse">
+					</div>
+					<div class="skills-item">
+						<img src="images/skills/VSCode-Dark.svg" alt="VSCode">
+					</div>
+					<div class="skills-item">
+						<img src="images/skills/VisualStudio-Dark.svg" alt="Visual Studio">
+					</div>
+					<div class="skills-item">
+						<img src="images/skills/Idea-Dark.svg" alt="IntelliJ IDEA">
+					</div>
+					<div class="skills-item">
+						<img src="images/skills/PyCharm-Dark.svg" alt="IntelliJ IDEA PyCharm">
+					</div>
+					<div class="skills-item">
+						<img src="images/skills/MySQL-Dark.svg" alt="MySQL">
+					</div>
+				</div>
+			</div>
+			<div class="skills-row">
+				<div class="skills-header">Applications:</div>
+				<div class="skills-items">
+					<div class="skills-item">
+						<img src="images/skills/Unity-Dark.svg" alt="Unity">
+					</div>
+					<div class="skills-item">
+						<img src="images/skills/Photoshop.svg" alt="Adobe Photoshop">
+					</div>
+					<div class="skills-item">
+						<img src="images/skills/Premiere.svg" alt="Adobe Premiere Pro">
+					</div>
+					<div class="skills-item">
+						<img src="images/skills/Blender-Dark.svg" alt="Blender">
+					</div>
+					<div class="skills-item">
+						<img src="images/skills/Notion-Dark.svg" alt="Notion">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
 </body>
+
+
 </html>
