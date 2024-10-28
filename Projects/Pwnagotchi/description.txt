@@ -1,0 +1,1 @@
+Built from scratch, this is a DIY Wi-Fi hacking device that captures WPA handshakes for password cracking, all while featuring a playful AI interface. It combines portability with machine learning for optimized data collection. Tested legally.

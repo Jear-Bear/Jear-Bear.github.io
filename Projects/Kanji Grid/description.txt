@@ -1,0 +1,1 @@
+A python-plugin to work with a popular flashcard app, Anki. It parses the Kanji (Chinese characters) in your Japanese flashcards, tracks your performance when studying, and compiles a color-graded graph based on how well you know each kanji.
