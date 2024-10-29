@@ -95,6 +95,7 @@
             animation: titleFadeIn 2s forwards; 
             margin-bottom: 0; 
             position: relative; 
+			transition: font-size 0.3s ease;
         }
         .text-container {
             width: 80%; 
@@ -178,7 +179,7 @@
 			align-items: center;
 			justify-content: center;
 		}
-		
+
 /* Media Query for min-width: 1800px */
 @media (min-width: 1800px) {
     .navbar ul li a {
@@ -216,10 +217,11 @@
     }
 
     .tile {
-        flex: 1 1 calc(33.333% - 16px);
+        flex: 1 1 100%; /* Make sure tiles occupy full width initially */
         box-sizing: border-box;
         transition: transform 0.5s; /* Slower transition for hover effect */
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Darker shadow */
+        max-width: 420px; /* Apply max-width at large viewport */
     }
 
     .tile:hover {
@@ -264,16 +266,28 @@
     }
 
     .tile {
-        flex: 1 1 calc(33.333% - 16px);
+        flex: 1 1 100%; /* Default to full width */
         box-sizing: border-box;
         transition: transform 0.5s; /* Slower transition for hover effect */
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Darker shadow */
+        max-width: 420px; /* Keep max-width for tiles */
     }
 
     .tile:hover {
         transform: translateY(-5px) scale(1.05); /* Grow/raise effect on hover */
     }
 }
+
+/* Media Query for min-width: 1260px */
+@media (min-width: 1260px) {
+    .tile {
+        flex: 0 0 420px; /* Lock tile width to max-width */
+        max-width: 420px; /* Enforce the maximum width */
+        width: 100%; /* Make sure tiles occupy full available width */
+    }
+}
+
+
 
 /* Media Query for max-width: 950px for Two Columns */
 @media (max-width: 950px) {
@@ -419,7 +433,7 @@
         font-weight: bold;
     }
     .title-text {
-        font-size: 70px;
+        font-size: 50px;
     }
     .text-container {
         padding-left: 2%;
