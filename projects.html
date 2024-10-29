@@ -332,20 +332,18 @@
     document.addEventListener("DOMContentLoaded", function() {
         const tilesContainer = document.getElementById("tiles-container");
 
-				const observer = new IntersectionObserver((entries) => {
-						entries.forEach(entry => {
-								// Check if the entry is intersecting and fully visible in the viewport
-								if (entry.isIntersecting && entry.boundingClientRect.top < window.innerHeight) {
-										console.log(`Tile ${entry.target.firstChild.alt} is intersecting`);
-										entry.target.classList.add('visible'); // Add visible class to tile
-										observer.unobserve(entry.target); // Stop observing the tile once it becomes visible
-								}
-						});
-				}, {
-						threshold: 0.25, // Trigger when 25% of the tile is in view
-						rootMargin: '0px 0px -20% 0px' // Adjust the margin to trigger earlier
-				});
-
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && entry.boundingClientRect.top < window.innerHeight) {
+                    console.log(`Tile ${entry.target.firstChild.alt} is intersecting`);
+                    entry.target.classList.add('visible'); // Add visible class to tile
+                    observer.unobserve(entry.target); // Stop observing the tile once it becomes visible
+                }
+            });
+        }, {
+            threshold: 0.25, // Trigger when 25% of the tile is in view
+            rootMargin: '0px 0px -20% 0px' // Adjust the margin to trigger earlier
+        });
 
         // List of project folders
         const projectFolders = ["Pwnagotchi", "Kanji Grid", "GPT-Powered Pentester"]; // Update as needed
@@ -355,7 +353,8 @@
             tile.classList.add("tile");
 
             const img = document.createElement("img");
-            img.src = `projects/${folder}/image.png`; // Adjust the image name if needed
+            // Adjust image URL to use raw GitHub content URL
+            img.src = `https://raw.githubusercontent.com/Jear-Bear/Jear-Bear.github.io/5e878dc9709e4d5c738746f7116a08a5d7bb79f7/Projects/${folder}/image.png`;
             img.alt = folder;
 
             const title = document.createElement("h3");
@@ -364,8 +363,13 @@
             const description = document.createElement("p");
 
             // Fetch the description from the text file
-            fetch(`projects/${folder}/description.txt`)
-                .then(response => response.text())
+            fetch(`https://raw.githubusercontent.com/Jear-Bear/Jear-Bear.github.io/5e878dc9709e4d5c738746f7116a08a5d7bb79f7/Projects/${folder}/description.txt`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
                 .then(text => {
                     description.textContent = text;
                 })
@@ -381,6 +385,7 @@
         });
     });
 </script>
+
 
 </body>
 </html>
