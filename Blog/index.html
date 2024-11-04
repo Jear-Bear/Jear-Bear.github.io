@@ -73,17 +73,30 @@
             padding: 20px; 
             position: relative; 
         }
-        .white-section {
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: flex-start; 
-            min-height: calc(100vh - 50%); 
-            background-color: #F2F2F2; 
-            padding: 20px; 
-            box-sizing: border-box; 
-            width: 100%; 
-        }
+		.white-section {
+			display: flex; 
+			flex-direction: column; 
+			align-items: center; 
+			justify-content: flex-start; 
+			min-height: calc(100vh - 50%); 
+			background-color: #F2F2F2; 
+			padding: 20px; 
+			box-sizing: border-box; 
+			width: 100%; 
+			position: relative; /* Required for positioning the pseudo-element */
+			overflow: hidden; /* Prevent overflow issues */
+		}
+
+		.white-section::before {
+			content: ""; /* Required to create a pseudo-element */
+			position: absolute; /* Position it at the top */
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 50%; /* Height of the blue section */
+			background-color: #799FBE; /* Change this to your desired blue color */
+			z-index: 0; /* Set behind other content */
+		}
         .title-text {
             margin-top: 0; 
             color: #f2f2f2; 
@@ -162,7 +175,7 @@
 		/* Container for the tiles */
 		.tiles-container {
 			display: grid;
-			grid-template-columns: repeat(auto-fit, minmax(600px, 1fr)); /* Each tile is at least 600px wide */
+			grid-template-columns: repeat(auto-fit, minmax(600px, 1fr)); /* Default each tile is at least 600px wide */
 			gap: 20px;
 			width: 100%;
 			padding: 20px;
@@ -176,9 +189,10 @@
 			overflow: hidden;
 			box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
 			transition: transform 0.3s ease, opacity 0.3s ease;
-			opacity: 0;
-			transform: translateY(20px);
-			display: flex; /* Use flex to arrange image and content horizontally */
+			opacity: 1;
+			transform: scale(1);
+			display: flex; /* Arrange image and content */
+			flex-direction: row;
 		}
 
 		.tile.visible {
@@ -274,6 +288,12 @@
 			justify-content: center;
 		}
 
+@media (max-width: 1919px) {
+	.white-section::before {
+		height: 30%; /* Height of the blue section */
+	}
+}
+
 @media (min-width: 1800px) {
     .navbar ul li a {
         font-size: 16px;
@@ -334,15 +354,10 @@
     }
 }
 
-/* Media Query for min-width: 1260px */
-@media (min-width: 1260px) {
-}
-
-
-
-/* Media Query for max-width: 950px for Two Columns */
-@media (max-width: 950px) {
-
+@media (max-width: 1299px) {
+	.white-section::before {
+		height: 20%; /* Height of the blue section */
+	}
 }
 
 /* Media Query for max-width: 830px */
@@ -375,6 +390,46 @@
     }
 }
 
+/* Media Query for max-width: 675px */
+@media (max-width: 675px) {
+    .tiles-container {
+        grid-template-columns: 1fr; /* Stacks tiles vertically */
+    }
+
+    .tile {
+        flex-direction: column; /* Arrange image on top, content on bottom */
+        transform: scale(0.95); /* Slightly shrink for smoother effect */
+        opacity: 0.9;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .tile img {
+        width: 100%;
+        max-width: calc(100% - 20px); /* Reduce width to allow padding on sides */
+        height: auto; /* Maintain aspect ratio */
+        padding: 10px; /* Adds padding to the sides */
+        margin: auto; /* Center the image horizontally */
+        box-sizing: border-box;
+    }
+
+    .tile-content {
+        padding: 10px;
+        text-align: center;
+        width: 100%;
+    }
+	
+	.white-section::before {
+		height: 17%; /* Height of the blue section */
+	}
+}
+
+/* Animation reset on layout change */
+@media (min-width: 676px) {
+    .tile {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
 
 /* Media Query for max-width: 600px */
 @media (max-width: 600px) {
