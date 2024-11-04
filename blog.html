@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Overlay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow-y: auto; /* Enable vertical scrolling */
+            background-color: #F2F2F2;
+        }
+				.navbar {
+						background-color: #799FBE;
+						height: 80px;
+						display: flex;
+						align-items: center;
+						justify-content: center; /* Center the items */
+						padding: 0 20px;
+						z-index: 3; 
+				}
+
+				.navbar .logo {
+						display: flex; 
+						align-items: center; 
+						margin-right: auto; /* Pushes the logo to the left */
+				}
+
+				.navbar img {
+						height: 50px;
+				}
+
+				.navbar .logo-text {
+						margin-left: 10px;
+						color: white;
+						font-size: 20px;
+						font-weight: bold;
+				}
+
+				.navbar ul {
+						list-style: none;
+						display: flex;
+						margin: 0;
+						padding: 0;
+						/* Optional: center the ul */
+				}
+
+				.navbar ul li {
+						margin-left: 30px; /* Default margin for larger screens */
+						transition: margin-left 0.3s ease, font-size 0.3s ease; /* Adding transition for margin and font size */
+				}
+
+				.navbar ul li a {
+						color: white;
+						text-decoration: none;
+						font-size: 16px;
+						transition: font-size 0.3s ease; /* Adding transition for font size */
+				}
+
+				.navbar ul li a:hover {
+						text-decoration: underline;
+				}
+        .red-section {
+            background-color: #799FBE; 
+            height: 50%; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px; 
+            position: relative; 
+        }
+        .white-section {
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: flex-start; 
+            min-height: calc(100vh - 50%); 
+            background-color: #F2F2F2; 
+            padding: 20px; 
+            box-sizing: border-box; 
+            width: 100%; 
+        }
+        .title-text {
+            margin-top: 0; 
+            color: #f2f2f2; 
+            font-family: 'Poppins', sans-serif; 
+            font-size: 90px; 
+            font-weight: bold; 
+            z-index: 3; 
+            text-align: left; 
+            animation: titleFadeIn 2s forwards; 
+            margin-bottom: 0; 
+            position: relative; 
+			transition: font-size 0.3s ease;
+        }
+        .text-container {
+            width: 80%; 
+            margin-top: 5%; 
+            color: #f2f2f2; 
+            font-family: 'Libre Franklin', sans-serif; 
+            font-size: 18px; 
+            line-height: 1.6; 
+            text-align: center; 
+            font-weight: 300; 
+        }
+        .text-container p::first-letter {
+            font-size: 200%; 
+            font-weight: bold; 
+        }
+
+        @keyframes titleFadeIn {
+            from {
+                opacity: 0; 
+            }
+            to {
+                opacity: 1; 
+            }
+        }
+			
+		/* Modal Styles */
+		.modal {
+			display: none; /* Hidden by default */
+			position: fixed; /* Stay in place */
+			z-index: 1000; /* Sit on top */
+			left: 0;
+			top: 0;
+			width: 100%; /* Full width */
+			height: 100%; /* Full height */
+			overflow: auto; /* Enable scroll if needed */
+			background-color: rgba(0, 0, 0, 0.7); /* Black with opacity */
+		}
+
+		.modal-content {
+			background-color: #fefefe; /* White background */
+			margin: 15% auto; /* 15% from the top and centered */
+			padding: 20px;
+			border: 1px solid #888; /* Optional border */
+			width: 80%; /* Could be more or less, depending on screen size */
+			max-width: 600px; /* Limit the maximum width */
+			border-radius: 5px; /* Rounded corners */
+		}
+
+		.close-button {
+			color: #aaa; /* Gray */
+			float: right; /* Float to the right */
+			font-size: 28px; /* Larger font */
+			font-weight: bold; /* Bold */
+			cursor: pointer; /* Pointer cursor on hover */
+		}
+
+		.close-button:hover,
+		.close-button:focus {
+			color: black; /* Change color on hover */
+			text-decoration: none; /* No underline */
+			cursor: pointer; /* Pointer cursor on hover */
+		}
+
+		/* Container for the tiles */
+		.tiles-container {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(600px, 1fr)); /* Each tile is at least 600px wide */
+			gap: 20px;
+			width: 100%;
+			padding: 20px;
+			box-sizing: border-box;
+		}
+
+		/* Styling for individual tiles */
+		.tile {
+			background-color: #ffffff;
+			border-radius: 16px;
+			overflow: hidden;
+			box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+			transition: transform 0.3s ease, opacity 0.3s ease;
+			opacity: 0;
+			transform: translateY(20px);
+			display: flex; /* Use flex to arrange image and content horizontally */
+		}
+
+		.tile.visible {
+			opacity: 1; /* Fade in */
+			transform: translateY(0); /* Move to original position */
+		}
+
+		.tile:hover {
+			transform: translateY(-5px); /* Lift on hover */
+		}
+
+		.tile img {
+			width: 50%; /* Set width to 45% of the tile's width */
+			height: auto; /* Maintain aspect ratio for height */
+			aspect-ratio: 3 / 2; /* Enforce 3:2 aspect ratio */
+			object-fit: cover; /* Ensures the image covers the space */
+			padding: 2%; /* Remove padding for the image */
+			border-radius: 8%; /* Rounded corners for all sides */
+		}
+
+		.tile-content {
+			padding: 20px; /* Space around content */
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-start; /* Align content to the top */
+			width: 55%; /* Adjust width for content area to fill the remaining space */
+			box-sizing: border-box; /* Include padding in width calculation */
+		}
+
+		.category-tag {
+			font-size: 0.875rem; /* Font size for category */
+			font-weight: bold; /* Bold text */
+			padding: 5px 12px; /* Padding around the tag */
+			margin-bottom: 10px; /* Space between category and title */
+			display: inline-block; /* Make the rectangle wrap the text */
+		}
+
+		/* Define pastel colors for categories */
+		.category-technology {
+			background-color: #B2E0B2; /* Light green */
+		}
+
+		.category-health {
+			background-color: #FFB2B2; /* Light red */
+		}
+
+		.category-lifestyle {
+			background-color: #B2C7E0; /* Light blue */
+		}
+
+		.category-travel {
+			background-color: #E0B2D1; /* Light purple */
+		}
+
+		.tile h3 {
+			margin: 0; /* Remove margin for consistent spacing */
+			font-size: 1.5rem;
+			font-weight: bold; /* Bold title */
+			color: #333;
+		}
+
+		.tile p {
+			font-size: 1rem;
+			color: #555;
+			margin-top: 10px; /* Margin between title and paragraph */
+		}
+
+		.tile .read-more {
+			font-size: 0.875rem;
+			font-weight: bold; /* Bold read more link */
+			color: #007bff;
+			text-decoration: none;
+			margin-top: auto; /* Push to the bottom */
+		}
+
+		.tile .read-more:hover {
+			text-decoration: underline;
+		}
+
+		.read-time {
+			font-size: 0.875rem;
+			font-weight: bold; /* Bold read time */
+			color: #666; /* Grey color for read time */
+			margin-left: 5%; /* Space above read time */
+			margin-top: 20%;
+		}
+		
+		/* Flex container to hold title-text and text-container */
+		.flex-container {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+		}
+
+@media (min-width: 1800px) {
+    .navbar ul li a {
+        font-size: 16px;
+    }
+    .navbar img {
+        height: 37.5px;
+    }
+    .navbar .logo-text {
+        margin-left: 10px;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+    }
+    .title-text {
+        font-size: 70px;
+    }
+    .text-container {
+        padding-left: 2%;
+        margin-top: auto;
+        margin-bottom: auto;
+    }
+    .text-container p::first-letter {
+        font-size: 200%;
+        font-weight: bold;
+        line-height: 1;
+        display: inline-block;
+    }
+}
+
+
+/* Media Query for max-width: 1800px */
+@media (max-width: 1800px) {
+    .navbar ul li a {
+        font-size: 16px;
+    }
+    .navbar img {
+        height: 37.5px;
+    }
+    .navbar .logo-text {
+        margin-left: 10px;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+    }
+    .title-text {
+        font-size: 70px;
+    }
+    .text-container {
+        padding-left: 2%;
+        margin-top: auto;
+        margin-bottom: auto;
+    }
+    .text-container p::first-letter {
+        font-size: 200%;
+        font-weight: bold;
+        line-height: 1;
+        display: inline-block;
+    }
+}
+
+/* Media Query for min-width: 1260px */
+@media (min-width: 1260px) {
+}
+
+
+
+/* Media Query for max-width: 950px for Two Columns */
+@media (max-width: 950px) {
+
+}
+
+/* Media Query for max-width: 830px */
+@media (max-width: 830px) {
+    .navbar ul li a {
+        font-size: 16px;
+    }
+    .navbar img {
+        height: 37.5px;
+    }
+    .navbar .logo-text {
+        margin-left: 10px;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+    }
+    .title-text {
+        font-size: 70px;
+    }
+    .text-container {
+        padding-left: 2%;
+        margin-top: auto;
+        margin-bottom: auto;
+    }
+    .text-container p::first-letter {
+        font-size: 200%;
+        font-weight: bold;
+        line-height: 1;
+        display: inline-block;
+    }
+}
+
+
+/* Media Query for max-width: 600px */
+@media (max-width: 600px) {
+    .navbar ul li a {
+        font-size: 16px;
+    }
+    .navbar img {
+        height: 37.5px;
+    }
+    .navbar .logo-text {
+        margin-left: 10px;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+    }
+    .title-text {
+        font-size: 70px;
+    }
+    .text-container {
+        padding-left: 2%;
+        margin-top: auto;
+        margin-bottom: auto;
+    }
+    .text-container p::first-letter {
+        font-size: 200%;
+        font-weight: bold;
+        line-height: 1;
+        display: inline-block;
+    }
+}
+
+/* Media Query for max-width: 440px */
+@media (max-width: 440px) {
+    .navbar ul li a {
+        font-size: 12px;
+    }
+    .navbar img {
+        height: 37.5px;
+    }
+    .navbar .logo-text {
+        margin-left: 10px;
+        color: white;
+        font-size: 15px;
+        font-weight: bold;
+    }
+    .title-text {
+        font-size: 50px;
+    }
+    .text-container {
+        padding-left: 2%;
+        margin-top: auto;
+        margin-bottom: auto;
+    }
+    .text-container p::first-letter {
+        font-size: 200%;
+        font-weight: bold;
+        line-height: 1;
+        display: inline-block;
+    }
+    .navbar ul li {
+        margin-left: 10px;
+    }
+}
+    </style>
+	<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> <!-- Marked library -->
+</head>
+
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">
+            <img src="https://github.com/Jear-Bear/Jear-Bear.github.io/blob/b7769460d7fea76491da4b9a26bbecaea342d06b/images/logo.png?raw=true" alt="Logo">
+            <div class="logo-text">Home</div>
+        </div>
+        <ul>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Projects</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Contact</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Red Section -->
+        <div class="section red-section">
+            <div class="title-text">BLOG</div>
+            <div class="text-container">
+                <p>Welcome to my blog! <br> I write about hobbies, language learning, technology, and anything else that comes to mind!</p>
+            </div>
+        </div>
+
+        <!-- White Section for Tiles -->
+        <div class="section white-section">
+            <div class="tiles-container" id="tiles-container">
+                <!-- Project tiles will be dynamically generated here by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for displaying blog content -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <button id="close-modal" class="close">&times;</button>
+            <img id="modal-img" src="" alt="Blog Image">
+            <h2 id="modal-title"></h2>
+            <div id="modal-body"></div> <!-- This will contain the parsed markdown -->
+        </div>
+    </div>
+
+    <!-- JavaScript to Load Tiles Dynamically and Handle Animation -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const tilesContainer = document.getElementById("tiles-container");
+            const modal = document.getElementById("modal");
+            const closeModal = document.getElementById("close-modal");
+            const modalImg = document.getElementById("modal-img");
+            const modalTitle = document.getElementById("modal-title");
+            const modalBody = document.getElementById("modal-body");
+
+            // IntersectionObserver for tile animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible'); // Add 'visible' class to animate tile
+                        observer.unobserve(entry.target); // Stop observing once visible
+                    }
+                });
+            }, {
+                threshold: 0.25, // Trigger when 25% of the tile is visible
+                rootMargin: '0px 0px -20% 0px' // Adjust margin for earlier triggering
+            });
+
+            // List of project folders for dynamic content loading
+            const projectFolders = ["My Trip to Japan", "Journey to Bilingual", "The Best Izakaya in Tokyo"]; // Update this list as needed
+
+            projectFolders.forEach(folder => {
+                // Create the tile container
+                const tile = document.createElement("div");
+                tile.classList.add("tile");
+
+                // Create and set up the image
+                const img = document.createElement("img");
+                img.src = `/Blogs/${folder}/image.png`;
+                img.alt = folder;
+
+                // Create the content section for each tile
+                const tileContent = document.createElement("div");
+                tileContent.classList.add("tile-content");
+
+                // Meta information
+                const meta = document.createElement("div");
+                meta.classList.add("meta");
+
+                // Category tag
+                const category = document.createElement("span");
+                category.classList.add("category-tag"); // Add category class for styling
+
+                // Reading time text based on word count
+                const readingTime = document.createElement("span");
+                readingTime.classList.add("read-time");
+
+                // Title of the tile
+                const title = document.createElement("h3");
+                title.textContent = folder;
+
+                // Description for each tile
+                const description = document.createElement("p");
+
+                // Fetch the blog.md content
+                fetch(`/Blogs/${folder}/blog.md`)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.text();
+                    })
+                    .then(text => {
+                        const lines = text.split('\n');
+                        category.textContent = lines[0]; // First line is the category
+                        description.textContent = lines[1]; // Second line is the description
+
+                        // Calculate reading time based on body text
+                        const bodyText = lines.slice(2).join('\n').trim();
+                        const wordCount = bodyText.split(/\s+/).filter(word => word.length > 0).length;
+                        const readTime = Math.ceil(wordCount / 200); // Assuming an average reading speed of 200 wpm
+                        readingTime.textContent = `${readTime} min read`; // Replace with actual reading time
+
+                        // "Read more" link
+                        const readMore = document.createElement("a");
+                        readMore.href = "#"; // Prevent default behavior
+                        readMore.classList.add("read-more");
+                        readMore.textContent = "Read more →";
+
+						readMore.addEventListener('click', (event) => {
+							event.preventDefault();
+							modalImg.src = img.src;
+							modalTitle.textContent = title.textContent;
+							modalBody.innerHTML = marked.parse(bodyText);
+
+							modal.classList.add('active');
+						});
+
+                        // Append meta information to the meta section
+                        meta.appendChild(category);
+                        meta.appendChild(readingTime);
+
+                        // Append all elements to the tile content section
+                        tileContent.appendChild(meta);
+                        tileContent.appendChild(title);
+                        tileContent.appendChild(description);
+                        tileContent.appendChild(readMore);
+
+                        // Append the image and content to the tile container
+                        tile.appendChild(img);
+                        tile.appendChild(tileContent);
+
+                        // Add the tile to the tiles container in the white section
+                        tilesContainer.appendChild(tile);
+
+                        // Observe the tile for intersection to trigger animation
+                        observer.observe(tile);
+                    })
+                    .catch(err => console.error('Error fetching blog content:', err));
+            });
+
+					closeModal.addEventListener('click', () => {
+						modal.classList.remove('active');
+					});
+
+					window.addEventListener('click', (event) => {
+						if (event.target === modal) {
+							modal.classList.remove('active');
+						}
+					});
+        });
+    </script>
+
+    <!-- Styles for modal -->
+    <style>
+		.modal {
+			display: block; /* Always block, but hidden with opacity */
+			position: fixed;
+			z-index: 10;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(0, 0, 0, 0.7);
+			opacity: 0;
+			pointer-events: none;
+			transition: opacity 0.3s ease;
+		}
+
+		.modal.active {
+			opacity: 1;
+			pointer-events: auto;
+		}
+
+		.modal-content {
+			position: relative; /* Position relative for absolute positioning of close button */
+			background-color: #fff;
+			margin: 15% auto; /* 15% from the top and centered */
+			padding: 20px;
+			border: 1px solid #888;
+			width: 80%; /* Could be more or less, depending on screen size */
+			transform: scale(0.7); /* Start slightly smaller for scaling effect */
+			transition: transform 0.3s ease; /* Smooth transition for scaling */
+		}
+
+		.modal.active .modal-content {
+			transform: scale(1); /* Scale up to normal size when active */
+		}
+
+		.close {
+			position: absolute;
+			top: -15px;
+			right: -15px;
+			width: 40px;
+			height: 40px;
+			border-radius: 50%;
+			background-color: #be7979; /* Initial color */
+			color: white;
+			border: none;
+			font-size: 20px;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+			transition: background-color 0.3s ease; /* Smooth transition for background color */
+		}
+
+		.close:hover {
+			background-color: #c75c5c; /* Darker red on hover */
+		}
+
+		#modal-img {
+			max-width: 100%; /* Responsive image */
+			height: auto;
+		}
+    </style>
+</body>
+
+
+
+</html>
