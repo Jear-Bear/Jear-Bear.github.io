@@ -189,9 +189,9 @@
 			overflow: hidden;
 			box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
 			transition: transform 0.3s ease, opacity 0.3s ease;
-			opacity: 1;
-			transform: scale(1);
-			display: flex; /* Arrange image and content */
+			opacity: 0;
+			transform: translateY(20px);
+			display: flex; /* Use flex to arrange image and content */
 			flex-direction: row;
 		}
 
@@ -398,9 +398,6 @@
 
     .tile {
         flex-direction: column; /* Arrange image on top, content on bottom */
-        transform: scale(0.95); /* Slightly shrink for smoother effect */
-        opacity: 0.9;
-        transition: transform 0.3s ease, opacity 0.3s ease;
     }
 
     .tile img {
@@ -416,18 +413,6 @@
         padding: 10px;
         text-align: center;
         width: 100%;
-    }
-	
-	.white-section::before {
-		height: 17%; /* Height of the blue section */
-	}
-}
-
-/* Animation reset on layout change */
-@media (min-width: 676px) {
-    .tile {
-        transform: scale(1);
-        opacity: 1;
     }
 }
 

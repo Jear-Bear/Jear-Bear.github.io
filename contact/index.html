@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jared P.</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow-y: hidden; /* Enable vertical scrolling */
+            background-color: #F2F2F2;
+        }
+				.navbar {
+						background-color: #785E80;
+						height: 80px;
+						display: flex;
+						align-items: center;
+						justify-content: center; /* Center the items */
+						padding: 0 20px;
+						z-index: 3; 
+				}
+
+				.navbar .logo {
+						display: flex; 
+						align-items: center; 
+						margin-right: auto; /* Pushes the logo to the left */
+				}
+
+				.navbar img {
+						height: 50px;
+				}
+
+				.navbar .logo-text {
+						margin-left: 10px;
+						color: white;
+						font-size: 20px;
+						font-weight: bold;
+				}
+
+				.navbar ul {
+						list-style: none;
+						display: flex;
+						margin: 0;
+						padding: 0;
+						/* Optional: center the ul */
+				}
+
+				.navbar ul li {
+						margin-left: 30px; /* Default margin for larger screens */
+						transition: margin-left 0.3s ease, font-size 0.3s ease; /* Adding transition for margin and font size */
+				}
+
+				.navbar ul li a {
+						color: white;
+						text-decoration: none;
+						font-size: 16px;
+						transition: font-size 0.3s ease; /* Adding transition for font size */
+				}
+
+				.navbar ul li a:hover {
+						text-decoration: underline;
+				}
+        .red-section {
+            background-color: #785E80; 
+            height: 50%; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px; 
+            position: relative; 
+        }
+		.white-section {
+			display: flex; 
+			flex-direction: column; 
+			align-items: center; 
+			justify-content: flex-end; /* Change to flex-end to push items to the bottom */
+			min-height: calc(100vh - 80px); /* Adjust this value if needed */
+			background-color: #EBEFFF; 
+			padding: 20px; 
+			box-sizing: border-box; 
+			width: 100%; 
+			position: relative; /* Required for positioning the pseudo-element */
+			overflow: hidden; /* Prevent overflow issues */
+		}
+
+		.white-section::before {
+			content: ""; /* Required to create a pseudo-element */
+			position: absolute; /* Position it at the bottom */
+			bottom: 0; /* Move to the bottom */
+			left: 0;
+			right: 0;
+			height: 35%; /* Height of the blue section */
+			background-color: #785E80; /* Change this to your desired blue color */
+			z-index: 0; /* Set behind other content */
+		}
+
+        .title-text {
+            margin-top: 0; 
+            color: #f2f2f2; 
+            font-family: 'Poppins', sans-serif; 
+            font-size: 90px; 
+            font-weight: bold; 
+            z-index: 3; 
+            text-align: left; 
+            animation: titleFadeIn 2s forwards; 
+            margin-bottom: 0; 
+            position: relative; 
+			transition: font-size 0.3s ease;
+        }
+        .text-container {
+            width: 80%; 
+            margin-top: 5%; 
+            color: #f2f2f2; 
+            font-family: 'Libre Franklin', sans-serif; 
+            font-size: 18px; 
+            line-height: 1.6; 
+            text-align: center; 
+            font-weight: 300; 
+        }
+        .text-container p::first-letter {
+            font-size: 200%; 
+            font-weight: bold; 
+        }
+
+        @keyframes titleFadeIn {
+            from {
+                opacity: 0; 
+            }
+            to {
+                opacity: 1; 
+            }
+        }
+		
+		/* Flex container to hold title-text and text-container */
+		.flex-container {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+		}
+
+@media (max-width: 1919px) {
+	.white-section::before {
+		height: 30%; /* Height of the blue section */
+	}
+}
+
+@media (min-width: 1800px) {
+    .navbar ul li a {
+        font-size: 16px;
+    }
+    .navbar img {
+        height: 37.5px;
+    }
+    .navbar .logo-text {
+        margin-left: 10px;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+    }
+    .title-text {
+        font-size: 70px;
+    }
+    .text-container {
+        padding-left: 2%;
+        margin-top: auto;
+        margin-bottom: auto;
+    }
+    .text-container p::first-letter {
+        font-size: 200%;
+        font-weight: bold;
+        line-height: 1;
+        display: inline-block;
+    }
+}
+
+
+/* Media Query for max-width: 1800px */
+@media (max-width: 1800px) {
+    .navbar ul li a {
+        font-size: 16px;
+    }
+    .navbar img {
+        height: 37.5px;
+    }
+    .navbar .logo-text {
+        margin-left: 10px;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+    }
+    .title-text {
+        font-size: 70px;
+    }
+    .text-container {
+        padding-left: 2%;
+        margin-top: auto;
+        margin-bottom: auto;
+    }
+    .text-container p::first-letter {
+        font-size: 200%;
+        font-weight: bold;
+        line-height: 1;
+        display: inline-block;
+    }
+}
+
+@media (max-width: 1299px) {
+	.white-section::before {
+		height: 20%; /* Height of the blue section */
+	}
+}
+
+/* Media Query for max-width: 830px */
+@media (max-width: 830px) {
+    .navbar ul li a {
+        font-size: 16px;
+    }
+    .navbar img {
+        height: 37.5px;
+    }
+    .navbar .logo-text {
+        margin-left: 10px;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+    }
+    .title-text {
+        font-size: 70px;
+    }
+    .text-container {
+        padding-left: 2%;
+        margin-top: auto;
+        margin-bottom: auto;
+    }
+    .text-container p::first-letter {
+        font-size: 200%;
+        font-weight: bold;
+        line-height: 1;
+        display: inline-block;
+    }
+}
+
+/* Media Query for max-width: 600px */
+@media (max-width: 600px) {
+    .navbar ul li a {
+        font-size: 16px;
+    }
+    .navbar img {
+        height: 37.5px;
+    }
+    .navbar .logo-text {
+        margin-left: 10px;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+    }
+    .title-text {
+        font-size: 70px;
+    }
+    .text-container {
+        padding-left: 2%;
+        margin-top: auto;
+        margin-bottom: auto;
+    }
+    .text-container p::first-letter {
+        font-size: 200%;
+        font-weight: bold;
+        line-height: 1;
+        display: inline-block;
+    }
+}
+
+/* Media Query for max-width: 440px */
+@media (max-width: 440px) {
+    .navbar ul li a {
+        font-size: 12px;
+    }
+    .navbar img {
+        height: 37.5px;
+    }
+    .navbar .logo-text {
+        margin-left: 10px;
+        color: white;
+        font-size: 15px;
+        font-weight: bold;
+    }
+    .title-text {
+        font-size: 50px;
+    }
+    .text-container {
+        padding-left: 2%;
+        margin-top: auto;
+        margin-bottom: auto;
+    }
+    .text-container p::first-letter {
+        font-size: 200%;
+        font-weight: bold;
+        line-height: 1;
+        display: inline-block;
+    }
+    .navbar ul li {
+        margin-left: 10px;
+    }
+}
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">
+			<a href="../" style="text-decoration: none; color: inherit; display: flex; align-items: center;">
+				<img src="https://github.com/Jear-Bear/Jear-Bear.github.io/blob/b7769460d7fea76491da4b9a26bbecaea342d06b/images/logo.png?raw=true" alt="Logo">
+				<div class="logo-text">Home</div>
+			</a>
+        </div>
+        <ul>
+            <li><a href="../About/">About</a></li>
+            <li><a href="../Projects/">Projects</a></li>
+            <li><a href="../Blog/">Blog</a></li>
+            <li><a href="../Contact/">Contact</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Red Section -->
+        <div class="section red-section">
+            <div class="title-text">CONTACT ME</div>
+            <div class="text-container">
+                <p>Questions? Ideas? Do you want to connect with me? <br> Fill out a request and I'll get back to you!</p>
+            </div>
+        </div>
+
+        <!-- White Section for Tiles -->
+        <div class="section white-section">
+            <div class="tiles-container" id="tiles-container">
+            </div>
+        </div>
+    </div>
+</body>
+
+
+
+</html>

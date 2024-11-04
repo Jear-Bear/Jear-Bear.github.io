@@ -73,17 +73,30 @@
             padding: 20px; 
             position: relative; 
         }
-        .white-section {
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: flex-start; 
-            min-height: calc(100vh - 50%); 
-            background-color: #F2F2F2; 
-            padding: 20px; 
-            box-sizing: border-box; 
-            width: 100%; 
-        }
+		.white-section {
+			display: flex; 
+			flex-direction: column; 
+			align-items: center; 
+			justify-content: flex-start; 
+			min-height: calc(100vh - 50%); 
+			background-color: #F2F2F2; 
+			padding: 20px; 
+			box-sizing: border-box; 
+			width: 100%; 
+			position: relative; /* Required for positioning the pseudo-element */
+			overflow: hidden; /* Prevent overflow issues */
+		}
+
+		.white-section::before {
+			content: ""; /* Required to create a pseudo-element */
+			position: absolute; /* Position it at the top */
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 50%; /* Height of the blue section */
+			background-color: #5E7E80; /* Change this to your desired blue color */
+			z-index: 0; /* Set behind other content */
+		}
         .title-text {
             margin-top: 0; 
             color: #f2f2f2; 
@@ -278,6 +291,12 @@
     }
 }
 
+@media (max-width: 1371px) {
+	.white-section::before {
+		height: 27%; /* Height of the blue section */
+	}
+}
+
 /* Media Query for min-width: 1260px */
 @media (min-width: 1260px) {
     .tile {
@@ -416,6 +435,12 @@
     .tile:hover {
         transform: translateY(-5px) scale(1.05); /* Grow/raise effect on hover */
     }
+	
+	@media (max-width: 1371px) {
+	.white-section::before {
+		height: 17%; /* Height of the blue section */
+	}
+}
 }
 
 /* Media Query for max-width: 440px */

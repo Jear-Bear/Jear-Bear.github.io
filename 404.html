@@ -1,9 +1,157 @@
-<script>
-    window.onload = () => {
-        currentURL = window.location.href;
-        lowerCaseURL = currentURL.toLowerCase();
-        if (currentURL != lowerCaseURL) {
-            location.replace(lowerCaseURL);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jared P.</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: #F2F2F2;
+            overflow-y: hidden; /* Disable vertical scrolling */
         }
-    };
-</script>
+        .navbar {
+            background-color: #FF7D80;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 3; 
+        }
+        .logo {
+            display: flex; 
+            align-items: center; 
+            margin-right: auto; /* Pushes the logo to the left */
+        }
+        .logo img {
+            height: 50px;
+        }
+        .logo-text {
+            margin-left: 10px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .navbar ul {
+            list-style: none;
+            display: flex;
+            margin: 0;
+            padding: 0;
+            margin-left: auto; /* Right-justify the list */
+        }
+        .navbar ul li {
+            margin-left: 30px;
+        }
+        .navbar ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            transition: font-size 0.3s ease; 
+        }
+        .navbar ul li a:hover {
+            text-decoration: underline;
+        }
+        .red-section {
+            background-color: #FF7D80; 
+            padding: 20px; 
+            text-align: center; /* Center content in the red section */
+        }
+        .white-section {
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: flex-start; 
+            min-height: calc(100vh - 80px); /* Adjust for navbar height */
+            background-color: #F2F2F2; 
+            padding: 20px; 
+            box-sizing: border-box; 
+            position: relative; 
+            text-align: center; /* Center text in the white section */
+        }
+        .text-container {
+            width: 80%; 
+            margin: 1% auto; /* Center the container with auto margins */
+            color: #f2f2f2; 
+            font-family: 'Libre Franklin', sans-serif; 
+            font-size: 18px; 
+            line-height: 1.6; 
+            font-weight: 300; 
+        }
+
+        .title-text {
+            margin: 0 auto; /* Center the title */
+            color: #f2f2f2; 
+            font-family: 'Poppins', sans-serif; 
+            font-size: 90px; 
+            font-weight: bold; 
+            z-index: 3; 
+            animation: titleFadeIn 2s forwards; 
+            position: relative; 
+            transition: font-size 0.3s ease;
+        }
+
+        .text-container p::first-letter {
+            font-size: 200%; 
+            font-weight: bold; 
+        }
+
+        /* Make the image responsive to viewport width */
+        .full-width-image {
+            width: 100vw; /* 100% of the viewport width */
+            height: auto; /* Maintain aspect ratio */
+            display: block; /* Remove bottom margin/space */
+        }
+
+        @media (max-width: 600px) {
+            .navbar ul li a {
+                font-size: 14px; /* Smaller text for mobile */
+            }
+            .title-text {
+                font-size: 50px;
+            }
+        }
+    </style>
+    <script> 
+        window.onload = () => {
+            if (window.location.href !== window.location.href.toLowerCase()) {
+                location.replace(window.location.href.toLowerCase());
+            }
+        };
+    </script>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">
+            <a href="../" style="text-decoration: none; color: inherit; display: flex; align-items: center;">
+                <img src="https://github.com/Jear-Bear/Jear-Bear.github.io/blob/b7769460d7fea76491da4b9a26bbecaea342d06b/images/logo.png?raw=true" alt="Logo">
+                <div class="logo-text">Home</div>
+            </a>
+        </div>
+        <ul>
+            <li><a href="../About/">About</a></li>
+            <li><a href="../Projects/">Projects</a></li>
+            <li><a href="../Blog/">Blog</a></li>
+            <li><a href="../Contact/">Contact</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="red-section">
+        <div class="title-text">Uh oh...</div>
+        <div class="text-container">
+            <p>That page doesn't exist! <br> Check out the navbar above and explore the site!</p>
+        </div>
+    </div>
+    <div class="white-section">
+        <div class="tiles-container" id="tiles-container">
+            <img src="images/you.png" alt="You" class="full-width-image" style="margin-top: -7%">
+        </div>
+    </div>
+</body>
+</html>
