@@ -446,14 +446,16 @@
     <!-- Navbar -->
     <div class="navbar">
         <div class="logo">
-            <img src="https://github.com/Jear-Bear/Jear-Bear.github.io/blob/b7769460d7fea76491da4b9a26bbecaea342d06b/images/logo.png?raw=true" alt="Logo">
-            <div class="logo-text">Home</div>
+			<a href="../" style="text-decoration: none; color: inherit; display: flex; align-items: center;">
+				<img src="https://github.com/Jear-Bear/Jear-Bear.github.io/blob/b7769460d7fea76491da4b9a26bbecaea342d06b/images/logo.png?raw=true" alt="Logo">
+				<div class="logo-text">Home</div>
+			</a>
         </div>
         <ul>
-            <li><a href="#">About</a></li>
-            <li><a href="#">Projects</a></li>
-            <li><a href="#">Blog</a></li>
-            <li><a href="#">Contact</a></li>
+            <li><a href="../About/">About</a></li>
+            <li><a href="../Projects/">Projects</a></li>
+            <li><a href="../Blog/">Blog</a></li>
+            <li><a href="../Contact/">Contact</a></li>
         </ul>
     </div>
 
@@ -518,7 +520,7 @@
 
                 // Create and set up the image
                 const img = document.createElement("img");
-                img.src = `/Blogs/${folder}/image.png`;
+                img.src = `../Blogs/${folder}/image.png`;
                 img.alt = folder;
 
                 // Create the content section for each tile
