@@ -11,302 +11,351 @@
             margin: 0;
             padding: 0;
             height: 100%;
-            overflow-y: hidden; /* Enable vertical scrolling */
+            overflow-y: hidden;
             background-color: #F2F2F2;
         }
-				.navbar {
-						background-color: #785E80;
-						height: 80px;
-						display: flex;
-						align-items: center;
-						justify-content: center; /* Center the items */
-						padding: 0 20px;
-						z-index: 3; 
-				}
-
-				.navbar .logo {
-						display: flex; 
-						align-items: center; 
-						margin-right: auto; /* Pushes the logo to the left */
-				}
-
-				.navbar img {
-						height: 50px;
-				}
-
-				.navbar .logo-text {
-						margin-left: 10px;
-						color: white;
-						font-size: 20px;
-						font-weight: bold;
-				}
-
-				.navbar ul {
-						list-style: none;
-						display: flex;
-						margin: 0;
-						padding: 0;
-						/* Optional: center the ul */
-				}
-
-				.navbar ul li {
-						margin-left: 30px; /* Default margin for larger screens */
-						transition: margin-left 0.3s ease, font-size 0.3s ease; /* Adding transition for margin and font size */
-				}
-
-				.navbar ul li a {
-						color: white;
-						text-decoration: none;
-						font-size: 16px;
-						transition: font-size 0.3s ease; /* Adding transition for font size */
-				}
-
-				.navbar ul li a:hover {
-						text-decoration: underline;
-				}
-        .red-section {
-            background-color: #785E80; 
-            height: 50%; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            padding: 20px; 
-            position: relative; 
+        .navbar {
+            background-color: #785E80;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+            z-index: 3;
         }
-		.white-section {
-			display: flex; 
-			flex-direction: column; 
-			align-items: center; 
-			justify-content: flex-end; /* Change to flex-end to push items to the bottom */
-			min-height: calc(100vh - 80px); /* Adjust this value if needed */
-			background-color: #EBEFFF; 
-			padding: 20px; 
-			box-sizing: border-box; 
-			width: 100%; 
-			position: relative; /* Required for positioning the pseudo-element */
-			overflow: hidden; /* Prevent overflow issues */
-		}
-
-		.white-section::before {
-			content: ""; /* Required to create a pseudo-element */
-			position: absolute; /* Position it at the bottom */
-			bottom: 0; /* Move to the bottom */
-			left: 0;
-			right: 0;
-			height: 35%; /* Height of the blue section */
-			background-color: #785E80; /* Change this to your desired blue color */
-			z-index: 0; /* Set behind other content */
-		}
-
+        .navbar .logo {
+            display: flex; 
+            align-items: center; 
+            margin-right: auto; 
+        }
+        .navbar img {
+            height: 50px;
+        }
+        .navbar .logo-text {
+            margin-left: 10px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .navbar ul {
+            list-style: none;
+            display: flex;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar ul li {
+            margin-left: 30px;
+            transition: margin-left 0.3s ease, font-size 0.3s ease;
+        }
+        .navbar ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            transition: font-size 0.3s ease;
+        }
+        .navbar ul li a:hover {
+            text-decoration: underline;
+        }
+        .red-section {
+            background-color: #785E80;
+            height: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+        .white-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; /* Keep items at the top */
+            min-height: calc(100vh - 80px);
+            background-color: #EBEFFF;
+            padding: 20px;
+            box-sizing: border-box;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
         .title-text {
-            margin-top: 0; 
-            color: #f2f2f2; 
-            font-family: 'Poppins', sans-serif; 
-            font-size: 90px; 
-            font-weight: bold; 
-            z-index: 3; 
-            text-align: left; 
-            animation: titleFadeIn 2s forwards; 
-            margin-bottom: 0; 
-            position: relative; 
-			transition: font-size 0.3s ease;
+            margin-top: 0;
+            color: #f2f2f2;
+            font-family: 'Poppins', sans-serif;
+            font-size: 90px;
+            font-weight: bold;
+            z-index: 3;
+            text-align: left;
+            animation: titleFadeIn 2s forwards;
+            margin-bottom: 0;
+            position: relative;
+            transition: font-size 0.3s ease;
         }
         .text-container {
-            width: 80%; 
-            margin-top: 5%; 
-            color: #f2f2f2; 
-            font-family: 'Libre Franklin', sans-serif; 
-            font-size: 18px; 
-            line-height: 1.6; 
-            text-align: center; 
-            font-weight: 300; 
+            width: 80%;
+            margin-top: 0%;
+            color: #f2f2f2;
+            font-family: 'Libre Franklin', sans-serif;
+            font-size: 18px;
+            line-height: 1.6;
+            text-align: center;
+            font-weight: 300;
         }
         .text-container p::first-letter {
-            font-size: 200%; 
-            font-weight: bold; 
+            font-size: 200%;
+            font-weight: bold;
         }
-
-        @keyframes titleFadeIn {
-            from {
-                opacity: 0; 
-            }
-            to {
-                opacity: 1; 
-            }
+        .email-form {
+            width: 69%;
+			margin: 0 auto; /* Center the form horizontally */
+            max-width: 600px;
+            background-color: transparent;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+		.email-form input,
+		.email-form textarea {
+			width: 100%;
+			background-color: transparent;
+			padding: 10px;
+			margin-bottom: 10px;
+			border-radius: 20px;  /* Increase border radius for rounder corners */
+			border: 3px solid rgba(120, 94, 128, 0.2);  /* Set 20% opacity on the border color */
+			font-size: 16px;
+		}
+        .email-form button {
+            background-color: #785E80;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
         }
 		
-		/* Flex container to hold title-text and text-container */
-		.flex-container {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			justify-content: center;
+		.email-form textarea {
+			resize: none;  /* Disables resizing */
+		}
+		
+		.email-form input:focus,
+		.email-form textarea:focus {
+			outline: none; /* Removes the default outline */
+			border: 3px solid rgba(120, 94, 128, 0.2);  /* Set 20% opacity on the border color */
 		}
 
-@media (max-width: 1919px) {
-	.white-section::before {
-		height: 30%; /* Height of the blue section */
+        .email-form button:hover {
+            background-color: #6b4d6a;
+        }
+        @keyframes titleFadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        .flex-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+		
+	@media (max-width: 1919px) {
+		.white-section::before {
+			height: 30%; /* Height of the blue section */
+		}
 	}
-}
 
-@media (min-width: 1800px) {
-    .navbar ul li a {
-        font-size: 16px;
-    }
-    .navbar img {
-        height: 37.5px;
-    }
-    .navbar .logo-text {
-        margin-left: 10px;
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-    }
-    .title-text {
-        font-size: 70px;
-    }
-    .text-container {
-        padding-left: 2%;
-        margin-top: auto;
-        margin-bottom: auto;
-    }
-    .text-container p::first-letter {
-        font-size: 200%;
-        font-weight: bold;
-        line-height: 1;
-        display: inline-block;
-    }
-}
-
-
-/* Media Query for max-width: 1800px */
-@media (max-width: 1800px) {
-    .navbar ul li a {
-        font-size: 16px;
-    }
-    .navbar img {
-        height: 37.5px;
-    }
-    .navbar .logo-text {
-        margin-left: 10px;
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-    }
-    .title-text {
-        font-size: 70px;
-    }
-    .text-container {
-        padding-left: 2%;
-        margin-top: auto;
-        margin-bottom: auto;
-    }
-    .text-container p::first-letter {
-        font-size: 200%;
-        font-weight: bold;
-        line-height: 1;
-        display: inline-block;
-    }
-}
-
-@media (max-width: 1299px) {
-	.white-section::before {
-		height: 20%; /* Height of the blue section */
+	@media (min-width: 1800px) {
+		.navbar ul li a {
+			font-size: 16px;
+		}
+		.navbar img {
+			height: 37.5px;
+		}
+		.navbar .logo-text {
+			margin-left: 10px;
+			color: white;
+			font-size: 20px;
+			font-weight: bold;
+		}
+		.title-text {
+			font-size: 70px;
+		}
+		.text-container {
+			padding-left: 2%;
+			margin-top: auto;
+			margin-bottom: auto;
+		}
+		.text-container p::first-letter {
+			font-size: 200%;
+			font-weight: bold;
+			line-height: 1;
+			display: inline-block;
+		}
 	}
-}
 
-/* Media Query for max-width: 830px */
-@media (max-width: 830px) {
-    .navbar ul li a {
-        font-size: 16px;
-    }
-    .navbar img {
-        height: 37.5px;
-    }
-    .navbar .logo-text {
-        margin-left: 10px;
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-    }
-    .title-text {
-        font-size: 70px;
-    }
-    .text-container {
-        padding-left: 2%;
-        margin-top: auto;
-        margin-bottom: auto;
-    }
-    .text-container p::first-letter {
-        font-size: 200%;
-        font-weight: bold;
-        line-height: 1;
-        display: inline-block;
-    }
-}
 
-/* Media Query for max-width: 600px */
-@media (max-width: 600px) {
-    .navbar ul li a {
-        font-size: 16px;
-    }
-    .navbar img {
-        height: 37.5px;
-    }
-    .navbar .logo-text {
-        margin-left: 10px;
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-    }
-    .title-text {
-        font-size: 70px;
-    }
-    .text-container {
-        padding-left: 2%;
-        margin-top: auto;
-        margin-bottom: auto;
-    }
-    .text-container p::first-letter {
-        font-size: 200%;
-        font-weight: bold;
-        line-height: 1;
-        display: inline-block;
-    }
-}
+	/* Media Query for max-width: 1800px */
+	@media (max-width: 1800px) {
+		.navbar ul li a {
+			font-size: 16px;
+		}
+		.navbar img {
+			height: 37.5px;
+		}
+		.navbar .logo-text {
+			margin-left: 10px;
+			color: white;
+			font-size: 20px;
+			font-weight: bold;
+		}
+		.title-text {
+			font-size: 70px;
+		}
+		.text-container {
+			padding-left: 2%;
+			margin-top: auto;
+			margin-bottom: auto;
+		}
+		.text-container p::first-letter {
+			font-size: 200%;
+			font-weight: bold;
+			line-height: 1;
+			display: inline-block;
+		}
+	}
 
-/* Media Query for max-width: 440px */
-@media (max-width: 440px) {
-    .navbar ul li a {
-        font-size: 12px;
-    }
-    .navbar img {
-        height: 37.5px;
-    }
-    .navbar .logo-text {
-        margin-left: 10px;
-        color: white;
-        font-size: 15px;
-        font-weight: bold;
-    }
-    .title-text {
-        font-size: 50px;
-    }
-    .text-container {
-        padding-left: 2%;
-        margin-top: auto;
-        margin-bottom: auto;
-    }
-    .text-container p::first-letter {
-        font-size: 200%;
-        font-weight: bold;
-        line-height: 1;
-        display: inline-block;
-    }
-    .navbar ul li {
-        margin-left: 10px;
-    }
-}
+	@media (max-width: 1299px) {
+		.white-section::before {
+			height: 20%; /* Height of the blue section */
+		}
+	}
+
+	/* Media Query for max-width: 830px */
+	@media (max-width: 830px) {
+		.navbar ul li a {
+			font-size: 16px;
+		}
+		.navbar img {
+			height: 37.5px;
+		}
+		.navbar .logo-text {
+			margin-left: 10px;
+			color: white;
+			font-size: 20px;
+			font-weight: bold;
+		}
+		.title-text {
+			font-size: 70px;
+		}
+		.text-container {
+			padding-left: 2%;
+			margin-top: auto;
+			margin-bottom: auto;
+		}
+		.text-container p::first-letter {
+			font-size: 200%;
+			font-weight: bold;
+			line-height: 1;
+			display: inline-block;
+		}
+	}
+
+	/* Media Query for max-width: 675px */
+	@media (max-width: 675px) {
+		.tiles-container {
+			grid-template-columns: 1fr; /* Stacks tiles vertically */
+		}
+
+		.tile {
+			flex-direction: column; /* Arrange image on top, content on bottom */
+		}
+
+		.tile img {
+			width: 100%;
+			max-width: calc(100% - 20px); /* Reduce width to allow padding on sides */
+			height: auto; /* Maintain aspect ratio */
+			padding: 10px; /* Adds padding to the sides */
+			margin: auto; /* Center the image horizontally */
+			box-sizing: border-box;
+		}
+
+		.tile-content {
+			padding: 10px;
+			text-align: center;
+			width: 100%;
+		}
+	}
+
+	/* Media Query for max-width: 600px */
+	@media (max-width: 600px) {
+		.navbar ul li a {
+			font-size: 16px;
+		}
+		.navbar img {
+			height: 37.5px;
+		}
+		.navbar .logo-text {
+			margin-left: 10px;
+			color: white;
+			font-size: 20px;
+			font-weight: bold;
+		}
+		.title-text {
+			font-size: 70px;
+		}
+		.text-container {
+			padding-left: 2%;
+			margin-top: auto;
+			margin-bottom: auto;
+		}
+		.text-container p::first-letter {
+			font-size: 200%;
+			font-weight: bold;
+			line-height: 1;
+			display: inline-block;
+		}
+	}
+
+	/* Media Query for max-width: 440px */
+	@media (max-width: 507px) {
+		.navbar ul li a {
+			font-size: 12px;
+		}
+		.navbar img {
+			height: 37.5px;
+		}
+		.navbar .logo-text {
+			margin-left: 10px;
+			color: white;
+			font-size: 15px;
+			font-weight: bold;
+		}
+		.title-text {
+			font-size: 50px;
+		}
+		.text-container {
+			padding-left: 2%;
+			margin-top: auto;
+			margin-bottom: auto;
+			font-size: 15px;
+		}
+		.text-container p::first-letter {
+			font-size: 185%;
+			font-weight: bold;
+			line-height: 1;
+			display: inline-block;
+		}
+		.navbar ul li {
+			margin-left: 10px;
+		}
+		body {
+		  overflow-y: visible;
+		}
+	}
     </style>
 </head>
 
@@ -314,10 +363,10 @@
     <!-- Navbar -->
     <div class="navbar">
         <div class="logo">
-			<a href="../" style="text-decoration: none; color: inherit; display: flex; align-items: center;">
-				<img src="https://github.com/Jear-Bear/Jear-Bear.github.io/blob/b7769460d7fea76491da4b9a26bbecaea342d06b/images/logo.png?raw=true" alt="Logo">
-				<div class="logo-text">Home</div>
-			</a>
+            <a href="../" style="text-decoration: none; color: inherit; display: flex; align-items: center;">
+                <img src="https://github.com/Jear-Bear/Jear-Bear.github.io/blob/b7769460d7fea76491da4b9a26bbecaea342d06b/images/logo.png?raw=true" alt="Logo">
+                <div class="logo-text">Home</div>
+            </a>
         </div>
         <ul>
             <li><a href="../About/">About</a></li>
@@ -333,18 +382,66 @@
         <div class="section red-section">
             <div class="title-text">CONTACT ME</div>
             <div class="text-container">
-                <p>Questions? Ideas? Do you want to connect with me? <br> Fill out a request and I'll get back to you!</p>
+                <p>Questions? Ideas? Want to connect? <br> Fill out a request and I'll get back to you!</p>
             </div>
         </div>
 
         <!-- White Section for Tiles -->
         <div class="section white-section">
-            <div class="tiles-container" id="tiles-container">
+            <!-- Email Form -->
+            <div class="email-form">
+                <form id="contact-form">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" required>
+
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+
+                    <label for="message">Message:</label>
+                    <textarea id="message" name="message" rows="4" required></textarea>
+
+                    <button type="submit">Send Message</button>
+                </form>
             </div>
+            <div class="tiles-container" id="tiles-container"></div>
         </div>
     </div>
+
+	<!-- EmailJS Script -->
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+	<script type="text/javascript">
+		// Initialize EmailJS
+		(function() {
+			emailjs.init("z8lBeXbRQ2a3nnAat");  // Replace with your actual EmailJS public key
+		})();
+	</script>
+
+	<script>
+		document.getElementById("contact-form").addEventListener("submit", function(event) {
+			event.preventDefault();
+
+			// Get form data
+			var formData = new FormData(event.target);
+			var name = formData.get('name');
+			var email = formData.get('email');
+			var message = formData.get('message');
+
+			// Send the email via EmailJS
+			emailjs.send("service_kp4acia", "template_v5vk5m7", {
+				to_name: "Jared",  // Update to match your template parameters
+				from_name: name,
+				user_email: email,
+				message: message,
+				reply_to: email   // Ensures the reply goes to the user
+			}).then(function(response) {
+				console.log("Success", response);
+				alert("Your message has been sent successfully!");
+				document.getElementById("contact-form").reset();  // Optional: Reset form after submission
+			}, function(error) {
+				console.error("Error", error);
+				alert("There was an error sending your message. Please try again.");
+			});
+		});
+	</script>
 </body>
-
-
-
 </html>
