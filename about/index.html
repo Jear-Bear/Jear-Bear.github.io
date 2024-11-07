@@ -14,45 +14,57 @@
             overflow: hidden; /* Disable scrolling */
 			background-color: #F2F2F2;
         }
-        .navbar {
-            background-color: #BE797A; /* Navbar color matches the top section */
-            height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            z-index: 3; /* Ensure the navbar is above other content */
-        }
-        .navbar .logo {
-            display: flex; /* Use flexbox to align logo and text */
-            align-items: center; /* Center vertically */ 
-        }
-        .navbar img {
-            height: 50px;
-        }
-        .navbar .logo-text {
-            margin-left: 10px;
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-        }
-        .navbar ul {
-            list-style: none;
-            display: flex;
-            margin: 0;
-            padding: 0;
-        }
-        .navbar ul li {
-            margin-left: 30px;
-        }
-        .navbar ul li a {
-            color: white;
-            text-decoration: none;
-            font-size: 16px;
-        }
-        .navbar ul li a:hover {
-            text-decoration: underline;
-        }
+		.navbar {
+				background-color: #BE797A;
+				height: 80px;
+				display: flex;
+				align-items: center;
+				justify-content: center; /* Center the items */
+				padding: 0 20px;
+				z-index: 3; 
+		}
+
+		.navbar .logo {
+				display: flex; 
+				align-items: center; 
+				margin-right: auto; /* Pushes the logo to the left */
+		}
+
+		.navbar img {
+				height: 50px;
+		}
+
+		.navbar .logo-text {
+				margin-left: 10px;
+				color: white;
+				font-size: 20px;
+				font-weight: bold;
+		}
+
+		.navbar ul {
+				list-style: none;
+				display: flex;
+				margin: 0;
+				padding: 0;
+				/* Optional: center the ul */
+		}
+
+		.navbar ul li {
+				margin-left: 30px; /* Default margin for larger screens */
+				transition: margin-left 0.3s ease, font-size 0.3s ease; /* Adding transition for margin and font size */
+		}
+
+		.navbar ul li a {
+				color: white;
+				text-decoration: none;
+				font-size: 16px;
+				transition: font-size 0.3s ease; /* Adding transition for font size */
+		}
+
+		.navbar ul li a:hover {
+				text-decoration: underline;
+		}
+
         .container {
             height: calc(100vh - 100px); /* Full height minus the navbar */
             display: flex;
@@ -65,22 +77,25 @@
         }
         .red-section {
             background-color: #BE797A; /* Red rectangle */
-            height: 50%; /* Make it half the viewport height */
+            height: 30vh; /* Make it half the viewport height */
             display: flex; /* Use flexbox for alignment */
             align-items: center; /* Center items vertically */
             padding: 20px; /* Padding around the red section */
             position: relative; /* Positioning context for absolute positioning */
+			z-index: 1000;
         }
 		.white-section {
-			display: flex; /* Ensure it can take height with flexbox */
-			flex-direction: column; /* Stack children vertically */
-			align-items: center; /* Center children */
-			justify-content: flex-start; /* Align children to the start */
-			min-height: calc(100vh - [height_of_red_section]); /* Adjust according to red-section height */
-			background-color: #F2F2F2; /* Ensure background is white */
-			padding: 20px; /* Example padding */
-			box-sizing: border-box; /* Include padding and border in height calculations */
-			width: 100%; /* Full width */
+			display: flex; 
+			flex-direction: column; 
+			align-items: center; 
+			justify-content: flex-start; 
+			min-height: calc(100vh - 50%); 
+			background-color: #F2F2F2; 
+			padding: 20px; 
+			box-sizing: border-box; 
+			width: 100%; 
+			position: relative; /* Required for positioning the pseudo-element */
+			overflow: hidden; /* Prevent overflow issues */
 		}
 		.image-container {
 			width: 850px; /* Fixed width */
@@ -144,6 +159,7 @@
 			transition: opacity 2s; /* Smooth transition for opacity */
 			animation: fadeIn 2s forwards; /* Fade-in animation */
 			animation-delay: 1s; /* Delay before starting the animation */
+			padding-bottom: 5%;
 		}
 
 		/* Class to trigger fade-in effect */
@@ -161,16 +177,16 @@
 		.skills-section {
 			display: flex;
 			flex-direction: column;
-			align-items: center; /* Align items to the start */
-			position: absolute; /* Position absolutely */
-			left: calc(870px + 16px);
-			width: calc(100% - (870px + 20px)); /* Fill the remaining space to the right */
+			align-items: center;
+			position: absolute;
+			right: 4%;
+			margin-top: 90vh; /* This will always position the element at 40% of the viewport height */
 		}
 
 		/* Tablet view styles */
 		@media (max-width: 1900px) {
 			body {
-				overflow-y: auto; /* Enable vertical scrolling */
+				overflow-y: visible; /* Enable vertical scrolling */
 			}
 			.navbar {
 				padding: 10px 20px; /* Add padding */
@@ -236,7 +252,7 @@
 			gap: 20px; /* Add spacing between the grid items if needed */
 			width: 100%; /* Full width in mobile view */
 			margin: 0 auto; /* Center align the skills section */
-			top: 70%;
+			top: -10%;
 		  }
 
 		  .skill-item {
@@ -247,6 +263,25 @@
 		  }
 		}
 		
+@media (max-width: 1800px)
+{
+	.navbar ul li a {
+        font-size: 16px;
+    }
+    .navbar img {
+        height: 37.5px;
+    }
+    .navbar .logo-text {
+        margin-left: 10px;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+    }
+	.title-text{
+		padding-bottom: 10%;
+	}
+}
+
 /* Mobile view styles */
 @media (max-width: 1500px) {
 	/* Ensure the body allows scrolling */
@@ -278,6 +313,7 @@
 		opacity: 0; /* Start with hidden title */
 		animation: fadeIn 2s forwards; /* Fade in animation */
 		transition: opacity 0.5s ease; /* Smooth transition for opacity */
+		padding-bottom: 10%;
 	}
 
 	.image-container {
@@ -305,7 +341,7 @@
 		animation: fadeIn 2s forwards; /* Fade in animation */
 		transition: opacity 0.5s ease; /* Smooth transition for opacity */
 		animation-delay: 0.5s; /* Delay the text container fade-in */
-		top: 2%;
+		top: -10.5%;
 	}
 
 	.skills-section {
@@ -315,8 +351,8 @@
 		grid-template-rows: repeat(4, auto); /* Four rows */
 		gap: 20px; /* Add spacing between the grid items if needed */
 		width: 80%; /* Full width in mobile view */
-		margin: 0 auto; /* Center align the skills section */
-		top: 80%;
+		top: -20%;
+		left: 10%;
 	}
 
 	.skill-item {
@@ -326,6 +362,216 @@
 		padding: 10px; /* Adjust padding if needed */
 	}
 }
+
+/* Mobile view styles */
+@media (max-width: 1103px) {
+	.text-container {
+		top: 3%;
+	}
+    .skills-section {
+        transform: scale(0.8); /* Scale down the section */
+        transform-origin: top; /* Scale from the top */
+        padding: 10px;
+        margin-top: 10vh; /* Adjust the margin if necessary */
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Keep the contents aligned in the center */
+        justify-content: center; /* Vertically center the content */
+		left: -6%;
+    }
+}
+
+/* Mobile view styles */
+@media (max-width: 997px) {
+	.text-container {
+		top: 3%;
+	}
+	.skills-section {
+        margin-top: 8vh; /* Adjust the margin if necessary */
+		left: -4%;
+    }
+}
+
+/* Mobile view styles */
+@media (max-width: 922px) {
+	.text-container {
+		top: -8.5%;
+		font-size: 28px;
+	}
+	.skills-section {
+        margin-top: 4vh; /* Adjust the margin if necessary */
+		left: -8%;
+    }
+}
+
+/* Media Query for max-width: 830px */
+@media (max-width: 830px) {
+    .navbar ul li a {
+        font-size: 16px;
+    }
+    .navbar img {
+        height: 37.5px;
+    }
+    .navbar .logo-text {
+        margin-left: 10px;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+    }
+	.text-container {
+		top: -5%;
+		font-size: 24px;
+	}
+	
+	.skills-section {
+        margin-top: 4vh; /* Adjust the margin if necessary */
+		left: -13%;
+    }
+}
+
+/* Mobile view styles */
+@media (max-width: 692px) {
+	.text-container {
+		top: -5%;
+		font-size: 24px;
+	}
+	
+	.skills-section {
+        margin-top: 7vh; /* Adjust the margin if necessary */
+		left: -17%;
+    }
+}
+
+@media (max-width: 616px)
+{
+	.image-container {
+		width: 80%; /* Lock image width for mobile */
+	}
+	.title-text {
+        font-size: 70px;
+		padding-bottom: 20%;
+    }
+	.text-container {
+        top: 2%;
+    }
+
+	.skills-section {
+        margin-top: 10vh; /* Adjust the margin if necessary */
+		left: -17%;
+    }
+}
+
+/* Media Query for max-width: 600px */
+@media (max-width: 600px) {
+    .navbar ul li a {
+        font-size: 16px;
+    }
+    .navbar img {
+        height: 37.5px;
+    }
+    .navbar .logo-text {
+        margin-left: 10px;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+    }
+}
+
+/* Mobile view styles */
+@media (max-width: 578px) {
+	.text-container {
+		top: 5%;
+		font-size: 22px;
+	}
+	.skills-section {
+        transform: scale(0.5); /* Scale down the section */
+        transform-origin: top; /* Scale from the top */
+        padding: 10px;
+        margin-top: 14vh; /* Adjust the margin if necessary */
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Keep the contents aligned in the center */
+        justify-content: center; /* Vertically center the content */
+		left: -20%;
+    }
+}
+
+/* Media Query for max-width: 440px */
+@media (max-width: 440px) {
+    .navbar ul li a {
+        font-size: 12px;
+    }
+    .navbar img {
+        height: 37.5px;
+    }
+    .navbar .logo-text {
+        margin-left: 10px;
+        color: white;
+        font-size: 15px;
+        font-weight: bold;
+    }
+    .title-text {
+        font-size: 50px;
+    }
+    .text-container {
+        top: 10%;
+    }
+    .navbar ul li {
+        margin-left: 10px;
+    }
+
+	.skills-section {
+        transform: scale(0.5); /* Scale down the section */
+        transform-origin: top; /* Scale from the top */
+        padding: 10px;
+        margin-top: 15vh; /* Adjust the margin if necessary */
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Keep the contents aligned in the center */
+        justify-content: center; /* Vertically center the content */
+		left: -27%;
+    }
+
+	.skills-header{
+		margin-right: 20px;
+	}
+}
+
+/* Mobile view styles */
+@media (max-width: 416px) {
+	.text-container {
+		top: 15%;
+		font-size: 18px;
+	}
+
+	.title-text {
+		font-size: 40px; /* Adjusted font size for mobile */
+		padding-bottom: 20%;
+	}
+
+	.skills-section {
+        margin-top: 19vh; /* Adjust the margin if necessary */
+    }
+}
+
+/* Mobile view styles */
+@media (max-width: 390px) {
+	.text-container {
+		top: 45%;
+		font-size: 18px;
+	}
+
+	.title-text {
+		font-size: 40px; /* Adjusted font size for mobile */
+		padding-bottom: 20%;
+	}
+
+	.skills-section {
+        margin-top: 35vh; /* Adjust the margin if necessary */
+		left: -33%
+    }
+}
+
 
 		/* Keyframes for fade-in effect */
 		@keyframes fadeIn {
@@ -471,9 +717,6 @@
                 <span class="bold-l">L</span>et me introduce myself—I'm Jared Perlmutter, a student at the Naveen Jindal School of Management at UTDallas. I’m passionate about creating interactive web applications that enhance user experiences. In my spare time, I dive into new technologies and work on personal projects, always eager to learn and grow.
             </p>
         </div>
-    </div>
-    
-	<div class="section white-section">
 		<div class="skills-section">
 			<div class="skills-row">
 				<div class="skills-header">Languages:</div>
@@ -553,6 +796,10 @@
 				</div>
 			</div>
 		</div>
+    </div>
+    
+	<div class="section white-section">
+
 	</div>
 </div>
 </body>
