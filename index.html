@@ -119,6 +119,66 @@
         font-weight: 900;
         font-size: 14px;
     }
+
+    /* Modal styling */
+    #hwaModal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 20;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    #hwaModal.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    #modalContent {
+        background-color: rgb(255, 255, 255);
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        max-width: 500px;
+        width: 100%;
+    }
+
+    #modalContent h2 {
+        font-size: 30px;
+        margin: 0 0 10px 0;
+    }
+
+    #modalContent p {
+        font-family: 'Libre Franklin', sans-serif; 
+        font-size: 18px; 
+        margin-bottom: 20px;
+    }
+
+    #modalContent button {
+        background-color: #ff9a9a;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    #modalContent button:hover {
+        background-color: #c53838; /* Color change on hover */
+        transform: scale(1.1); /* Grow the button by 10% */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Subtle drop shadow */
+    }
+
 </style>
 <script src="liquidfun.js"></script>
 <script src="testbed/renderer.js"></script>
@@ -127,22 +187,58 @@
 <script src="testbed/testbed.js"></script>
 <script src="testbed/utils.js"></script>
 <script src="testbed/tests/jared.js"></script>
-<!--
 <script>
-    let lastWidth = window.innerWidth;
-    let lastHeight = window.innerHeight;
+    window.addEventListener("load", function() {
+        // Ensure the modal is checked only after the page is fully loaded
+        let lastWidth = window.innerWidth;
+        let lastHeight = window.innerHeight;
 
-    window.addEventListener('resize', () => {
-        if (window.innerWidth !== lastWidth || window.innerHeight !== lastHeight) {
-            lastWidth = window.innerWidth;
-            lastHeight = window.innerHeight;
+        window.addEventListener('resize', () => {
+            if (window.innerWidth !== lastWidth || window.innerHeight !== lastHeight) {
+                lastWidth = window.innerWidth;
+                lastHeight = window.innerHeight;
 
-            clearTimeout(window.resizeTimeout);
-            window.resizeTimeout = setTimeout(() => location.reload(), 300);
+                clearTimeout(window.resizeTimeout);
+                window.resizeTimeout = setTimeout(() => location.reload(), 300);
+            }
+        });
+
+        const hasHWA = (() => {
+            // create a test function for both "default" drawing and forced software
+            const test = (force=false) => {
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d", { willReadFrequently: force });
+                ctx.moveTo(0, 0),
+                ctx.lineTo(120, 121); // HWA is bad at obliques
+                ctx.stroke();
+                return ctx.getImageData(0, 0, 200, 200).data.join();
+            };
+            // check that both return different results
+            return test(true) !== test(false);
+        })();
+
+        console.log("Hardware Acceleration Supported: ", hasHWA);
+
+        // If hardware acceleration is not enabled, show the modal
+        if (!hasHWA) {
+            console.log("Displaying HWA modal");
+            const modal = document.getElementById("hwaModal");
+            modal.classList.add("show"); // Fade-in
         }
     });
+
+    // Function to close the modal
+    function closeModal() {
+        const modal = document.getElementById("hwaModal");
+        modal.classList.remove("show"); // Fade-out
+
+        // After fade-out, hide the modal completely
+        setTimeout(() => {
+            modal.style.display = "none";
+        }, 500); // 500ms matches the fade-out duration
+    }
 </script>
--->
+
 <body onload="initTestbed()">
     <canvas id="canvas"></canvas>
     <canvas id="highResCanvas"></canvas>
@@ -150,5 +246,13 @@
     <canvas id="sliderCanvas"></canvas>
     <button id="jellyButton" onclick="buttonClicked()" style="user-select: none;">jelly</button>
     <button id="clearButton" onclick="clearButtonClicked()" style="display: none;">clear</button>
+
+    <!-- Modal for Hardware Acceleration recommendation -->
+    <div id="hwaModal">
+        <div id="modalContent">
+            <p>Hey there! It looks like you may not have hardware acceleration enabled in your browser. <br><br> For a smoother simulation experience, you can enable it via Settings --> Advanced --> System --> Enable Hardware Acceleration, then restart your browser :)</p>
+            <button onclick="closeModal()">Close</button>
+        </div>
+    </div>
 </body>
 </html>
