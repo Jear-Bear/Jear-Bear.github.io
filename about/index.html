@@ -11,7 +11,7 @@
             margin: 0;
             padding: 0;
             height: 100%;
-            overflow: hidden; /* Disable scrolling */
+            overflow: visible; /* Disable scrolling */
 			background-color: #F2F2F2;
         }
 		.navbar {
@@ -77,7 +77,7 @@
         }
         .red-section {
             background-color: #BE797A; /* Red rectangle */
-            height: 30vh; /* Make it half the viewport height */
+            height: 420px; /* Make it half the viewport height */
             display: flex; /* Use flexbox for alignment */
             align-items: center; /* Center items vertically */
             padding: 20px; /* Padding around the red section */
@@ -97,6 +97,7 @@
 			position: relative; /* Required for positioning the pseudo-element */
 			overflow: hidden; /* Prevent overflow issues */
 		}
+
 		.image-container {
 			width: 850px; /* Fixed width */
 			height: auto; /* Auto height to prevent cropping */
@@ -107,7 +108,7 @@
 			margin: 300px 20px 0; /* Margin: top 300px, right 20px, bottom 0, left 20px */
 		}
         .title-text {
-            margin-top: 290px; /* Adjust based on your design */
+            margin-top: 350px; /* Adjust based on your design */
             color: #f2f2f2; /* White color */
             font-family: 'Poppins', sans-serif; /* Use Poppins font */
             font-size: 90px; /* Increased font size */
@@ -137,30 +138,31 @@
 		}
 
 		.text-container {
+			top: 92px; /* Fixed distance from the top */
 			height: 73%;
-			font-family: 'Libre Franklin', sans-serif; /* Use Libre Franklin font */
-			font-weight: 300;             /* Use a numeric weight for light */
-			color: #F2F2F2; /* White text color */
-			font-size: 33px; /* Font size for text */
-			line-height: 1.5; /* Spacing between lines */
-			position: absolute; /* Position the text absolutely */
-			bottom: 0px; /* 25px above the white rectangle */
-			left: calc(870px + 20px); /* Align text container to the right of the image */
-			width: calc(100% - (870px + 20px)); /* Fill the remaining space */
-			z-index: 2; /* Ensure text is above the image */
-			padding: 20px 6%; /* Add padding: 20px top/bottom, 6% left/right */
-			box-sizing: border-box; /* Include padding in the width and height calculations */
-			display: flex; /* Enable flexbox */
-			flex-direction: column; /* Stack items vertically */
-			justify-content: center; /* Center content vertically */
-			align-items: center; /* Center content horizontally */
-			text-align: left; /* Center text horizontally */
-			opacity: 0; /* Start fully invisible */
-			transition: opacity 2s; /* Smooth transition for opacity */
-			animation: fadeIn 2s forwards; /* Fade-in animation */
-			animation-delay: 1s; /* Delay before starting the animation */
+			font-family: 'Libre Franklin', sans-serif;
+			font-weight: 300;
+			color: #F2F2F2;
+			font-size: 33px;
+			line-height: 1.5;
+			position: absolute;
+			left: calc(870px + 20px);
+			width: calc(100% - (870px + 20px));
+			z-index: 2;
+			padding: 20px 6%;
+			box-sizing: border-box;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			text-align: left;
+			opacity: 0;
+			transition: opacity 2s;
+			animation: fadeIn 2s forwards;
+			animation-delay: 1s;
 			padding-bottom: 5%;
 		}
+
 
 		/* Class to trigger fade-in effect */
 		.fade-in {
@@ -180,8 +182,14 @@
 			align-items: center;
 			position: absolute;
 			right: 4%;
-			margin-top: 90vh; /* This will always position the element at 40% of the viewport height */
+			margin-top: 1100px; /* This will always position the element at 40% of the viewport height */
 		}
+
+		/* Initial styling (no changes to your HTML required) */
+		.container {
+			display: block;
+		}
+
 
 		/* Tablet view styles */
 		@media (max-width: 1900px) {
@@ -228,18 +236,17 @@
 			}
 
 			.text-container {
-				color: #000; /* Change text color to black */
+				color: #000; /* Black text for smaller screens */
 				text-align: center; /* Center text */
-				position: relative; /* Change to relative positioning */
+				position: relative; /* Relative positioning for flexibility */
 				width: calc(100% - 40px); /* Full width minus padding */
-				margin: 0 auto; /* Center container horizontally */
-				margin-top: 20px; /* Reset top margin */
+				margin: 20px auto 0; /* Top margin for spacing */
 				left: 0;
-				opacity: 0; /* Start with hidden text */
-				animation: fadeIn 2s forwards; /* Fade in animation */
-				transition: opacity 0.5s ease; /* Smooth transition for opacity */
-				animation-delay: 0.5s; /* Delay the text container fade-in */
-				top: -10%;
+				opacity: 0; /* Start hidden for animation */
+				animation: fadeIn 2s forwards; /* Fade-in animation */
+				transition: opacity 0.5s ease; /* Smooth opacity transition */
+				animation-delay: 0.5s; /* Delay fade-in */
+				top: 0px; /* Ensure a fixed distance from the top */
 			}
 
 		  .skills-section {
@@ -341,7 +348,7 @@
 		animation: fadeIn 2s forwards; /* Fade in animation */
 		transition: opacity 0.5s ease; /* Smooth transition for opacity */
 		animation-delay: 0.5s; /* Delay the text container fade-in */
-		top: -10.5%;
+		top: 0px;
 	}
 
 	.skills-section {
@@ -351,7 +358,7 @@
 		grid-template-rows: repeat(4, auto); /* Four rows */
 		gap: 20px; /* Add spacing between the grid items if needed */
 		width: 80%; /* Full width in mobile view */
-		top: -20%;
+		top: 0px;
 		left: 10%;
 	}
 
@@ -372,7 +379,7 @@
         transform: scale(0.8); /* Scale down the section */
         transform-origin: top; /* Scale from the top */
         padding: 10px;
-        margin-top: 10vh; /* Adjust the margin if necessary */
+        margin-top: 50px; /* Adjust the margin if necessary */
         display: flex;
         flex-direction: column;
         align-items: center; /* Keep the contents aligned in the center */
@@ -384,10 +391,10 @@
 /* Mobile view styles */
 @media (max-width: 997px) {
 	.text-container {
-		top: 3%;
+		top: 50px;
 	}
 	.skills-section {
-        margin-top: 8vh; /* Adjust the margin if necessary */
+        margin-top: 100px; /* Adjust the margin if necessary */
 		left: -4%;
     }
 }
@@ -395,11 +402,11 @@
 /* Mobile view styles */
 @media (max-width: 922px) {
 	.text-container {
-		top: -8.5%;
+		top: 0px;
 		font-size: 28px;
 	}
 	.skills-section {
-        margin-top: 4vh; /* Adjust the margin if necessary */
+        margin-top: 20px; /* Adjust the margin if necessary */
 		left: -8%;
     }
 }
@@ -424,20 +431,20 @@
 	}
 	
 	.skills-section {
-        margin-top: 4vh; /* Adjust the margin if necessary */
-		left: -13%;
+        margin-top: -30px; /* Adjust the margin if necessary */
+		left: -11%;
     }
 }
 
 /* Mobile view styles */
 @media (max-width: 692px) {
 	.text-container {
-		top: -5%;
+		top: 20px;
 		font-size: 24px;
 	}
 	
 	.skills-section {
-        margin-top: 7vh; /* Adjust the margin if necessary */
+        margin-top: 25px; /* Adjust the margin if necessary */
 		left: -17%;
     }
 }
@@ -455,10 +462,7 @@
         top: 2%;
     }
 
-	.skills-section {
-        margin-top: 10vh; /* Adjust the margin if necessary */
-		left: -17%;
-    }
+
 }
 
 /* Media Query for max-width: 600px */
@@ -480,14 +484,33 @@
 /* Mobile view styles */
 @media (max-width: 578px) {
 	.text-container {
-		top: 5%;
+		top: 20px;
 		font-size: 22px;
 	}
 	.skills-section {
         transform: scale(0.5); /* Scale down the section */
         transform-origin: top; /* Scale from the top */
         padding: 10px;
-        margin-top: 14vh; /* Adjust the margin if necessary */
+        margin-top: 45px; /* Adjust the margin if necessary */
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Keep the contents aligned in the center */
+        justify-content: center; /* Vertically center the content */
+		left: -18%;
+    }
+}
+
+/* Mobile view styles */
+@media (max-width: 510px) {
+	.text-container {
+		top: 20px;
+		font-size: 22px;
+	}
+	.skills-section {
+        transform: scale(0.5); /* Scale down the section */
+        transform-origin: top; /* Scale from the top */
+        padding: 10px;
+        margin-top: 70px; /* Adjust the margin if necessary */
         display: flex;
         flex-direction: column;
         align-items: center; /* Keep the contents aligned in the center */
@@ -514,7 +537,7 @@
         font-size: 50px;
     }
     .text-container {
-        top: 10%;
+        top: 50px;
     }
     .navbar ul li {
         margin-left: 10px;
@@ -524,7 +547,7 @@
         transform: scale(0.5); /* Scale down the section */
         transform-origin: top; /* Scale from the top */
         padding: 10px;
-        margin-top: 15vh; /* Adjust the margin if necessary */
+        margin-top: 110px; /* Adjust the margin if necessary */
         display: flex;
         flex-direction: column;
         align-items: center; /* Keep the contents aligned in the center */
@@ -540,7 +563,7 @@
 /* Mobile view styles */
 @media (max-width: 416px) {
 	.text-container {
-		top: 15%;
+		top: 0px;
 		font-size: 18px;
 	}
 
@@ -550,14 +573,14 @@
 	}
 
 	.skills-section {
-        margin-top: 19vh; /* Adjust the margin if necessary */
+        margin-top: 40px; /* Adjust the margin if necessary */
     }
 }
 
 /* Mobile view styles */
 @media (max-width: 390px) {
 	.text-container {
-		top: 45%;
+		top: 0px;
 		font-size: 18px;
 	}
 
@@ -567,7 +590,7 @@
 	}
 
 	.skills-section {
-        margin-top: 35vh; /* Adjust the margin if necessary */
+        margin-top: 30px; /* Adjust the margin if necessary */
 		left: -33%
     }
 }
@@ -691,6 +714,7 @@
 
 
 <body>
+    <!-- Navbar -->
     <div class="navbar">
         <div class="logo">
 			<a href="../" style="text-decoration: none; color: inherit; display: flex; align-items: center;">
