@@ -91,16 +91,13 @@ function initBabylon() {
 
 	if (aspect_ratio >= 0.9 && aspect_ratio <= 1) {
 		text.src = "images/text_compressed.png";
-		console.log("tinyish");
 		text_width = 2;
 	} 
 	else if (aspect_ratio > 1) {
 		text.src = "images/text.png";
-		console.log("not tiny");
 	} 
 	else {
 		text.src = "images/text_super_compressed.png";
-		console.log("quite tiny");
 		text_width = 1;
 	}
 	
@@ -312,21 +309,19 @@ function createPentagon(name, textureSrc, scene, scale = 1.25) { // Added scale 
     material.diffuseTexture.uScale = 1; // Keep U scale as default
     material.diffuseTexture.vScale = 1; // Keep V scale as default
 
-    return pentagon;e
+    return pentagon;
 }
 
   let bd, ground, particleSystem;
 
 function TestParticles() {
 	var aspect_ratio = window.innerWidth / window.innerHeight;
-	console.log(aspect_ratio);
 	
 	var wall_x_gap = 11.4 * aspect_ratio;
 	var wall_x = wall_x_gap / 2;
 	var part_x = wall_x_gap / 4;
 	var pent_x = wall_x_gap / 5;
 		
-	console.log(window.innerWidth + ", " + window.innerHeight);
 	document.getElementById('textCanvas').getContext("2d").scale(window.innerWidth/1386, window.innerHeight/818);
 	camera.position.y = 4;
 	camera.position.z = 8;
@@ -526,12 +521,57 @@ function TestParticles() {
 	    }
 	});
 	
+    Number.prototype.between = function(first, last) {
+        return this >= Math.min(first, last) && this <= Math.max(first, last);
+    };
+
 	// Function to handle mouse clicks and check for pentagon intersections
 	function handleMouseClick(mouseX, mouseY) {
-	// Example usage:
-	clickX = ((mouseX - 695)/1360)*18.6;
-	clickY = (((Math.abs(mouseY - 800) - 392.5)/789)*10.8 + 4);
-	isClickInPolygon();
+        // Example usage:
+        clickX = ((mouseX - 695)/1360)*18.6;
+        clickY = (((Math.abs(mouseY - 800) - 392.5)/789)*10.8 + 4);
+
+        var worldX = getMouseCoords().x;
+        var worldY = getMouseCoords().y;
+
+        //tablet view
+        if (aspect_ratio >= 0.9 && aspect_ratio <= 1) {
+            if(worldY.between(4.78, 5.152))
+            {
+                if (worldX.between(-4.052, -1.99)) window.location.replace("https://jaredperlmutter.com/about/");
+                else if (worldX.between(-1.50, -0.47)) window.location.replace("https://jaredperlmutter.com/blog/");
+                else if (worldX.between(0.218, 1.913)) window.location.replace("https://jaredperlmutter.com/projects/");
+                else if (worldX.between(2.2, 3.99)) window.location.replace("https://jaredperlmutter.com/contact/");
+            }
+        } 
+
+        //desktop view
+        else if (aspect_ratio > 1) {
+            if(worldY.between(4.80, 5.18))
+            {
+                if (worldX.between(-4.03, -2.02)) window.location.replace("https://jaredperlmutter.com/about/");
+                else if (worldX.between(-1.45, -0.472)) window.location.replace("https://jaredperlmutter.com/blog/");
+                else if (worldX.between(0.223, 1.937)) window.location.replace("https://jaredperlmutter.com/projects/");
+                else if (worldX.between(2.178, 4.057)) window.location.replace("https://jaredperlmutter.com/contact/");
+            }
+        } 
+
+        //mobile view
+        else {
+            if (worldY.between(4.82, 5.15))
+            {
+                if (worldX.between(-2.178, -0.139)) window.location.replace("https://jaredperlmutter.com/about/");
+                else if (worldX.between(0.75, 1.77)) window.location.replace("https://jaredperlmutter.com/blog/");
+
+            }
+            if(worldY.between(4.251, 4.609))
+            {
+                if (worldX.between(-2.039, -0.331)) window.location.replace("https://jaredperlmutter.com/projects/");
+                else if (worldX.between(0.357, 2.118)) window.location.replace("https://jaredperlmutter.com/contact/");
+            }
+        }
+
+        isClickInPolygon();
 	}
 	
 
@@ -554,6 +594,7 @@ function TestParticles() {
     {
 	let i = 0;
 	
+
 	while (i < pentagons.length)
 	{
 		// Assuming `pentagon` is a valid b2_dynamicBody object
@@ -564,7 +605,7 @@ function TestParticles() {
 		var a = coords.x - x;
 		var b = coords.y - y;			
 		var c = Math.sqrt( a*a + b*b );
-		
+
 			if (c < .75 && clickDuration < 300)
 			{
 				switch(i)
@@ -1133,7 +1174,6 @@ function toggleClearButton() {
     // Check if the clear button is currently hidden
     if (clearButton.style.display === "none" || clearButton.style.display === "") {
         clearButton.style.display = "block"; // Make it visible
-        console.log('Clear button is now visible');
     }
 }
 
@@ -1169,6 +1209,6 @@ function clearButtonClicked() {
 		    }
 		}
 	} else {
-		console.log('No jellies to destroy');
+		//console.log('No jellies to destroy');
 	}
 }
