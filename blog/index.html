@@ -228,30 +228,18 @@
 			padding: 5px 12px; /* Padding around the tag */
 			margin-bottom: 10px; /* Space between category and title */
 			display: inline-block; /* Make the rectangle wrap the text */
+            background-color: rgb(231, 231, 231);
+            border-radius: 10%; /* Rounded corners for all sides */
 		}
 
-		/* Define pastel colors for categories */
-		.category-technology {
-			background-color: #B2E0B2; /* Light green */
-		}
 
-		.category-health {
-			background-color: #FFB2B2; /* Light red */
-		}
-
-		.category-lifestyle {
-			background-color: #B2C7E0; /* Light blue */
-		}
-
-		.category-travel {
-			background-color: #E0B2D1; /* Light purple */
-		}
 
 		.tile h3 {
 			margin: 0; /* Remove margin for consistent spacing */
 			font-size: 1.5rem;
 			font-weight: bold; /* Bold title */
 			color: #333;
+            margin-bottom: -10px;
 		}
 
 		.tile p {
@@ -286,7 +274,19 @@
 			flex-direction: column;
 			align-items: center;
 			justify-content: center;
+            
 		}
+
+        /* More advanced styling for the creation date */
+        .creation-date {
+            font-size: 0.275rem;  /* Adjust the font size */
+            font-style: italic;   /* Italicize the date */
+            color: #999;  /* Lighter gray for the date text */
+            margin-bottom: 6px;
+            font-weight: 400;  /* Light weight */
+            text-align: left;   /* Align to the left */
+            max-width: 100%; /* Make sure it doesn't overflow */
+        }
 
 @media (max-width: 1919px) {
 	.white-section::before {
@@ -414,6 +414,10 @@
         text-align: center;
         width: 100%;
     }
+
+    .creation-date {
+            text-align: center;   /* Align to the left */
+        }
 }
 
 /* Media Query for max-width: 600px */
@@ -527,131 +531,170 @@
         </div>
     </div>
 
+    <div class="category-tag"></div>
+
     <!-- JavaScript to Load Tiles Dynamically and Handle Animation -->
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const tilesContainer = document.getElementById("tiles-container");
-            const modal = document.getElementById("modal");
-            const closeModal = document.getElementById("close-modal");
-            const modalImg = document.getElementById("modal-img");
-            const modalTitle = document.getElementById("modal-title");
-            const modalBody = document.getElementById("modal-body");
+document.addEventListener("DOMContentLoaded", function() {
+    const tilesContainer = document.getElementById("tiles-container");
+    const modal = document.getElementById("modal");
+    const closeModal = document.getElementById("close-modal");
+    const modalImg = document.getElementById("modal-img");
+    const modalTitle = document.getElementById("modal-title");
+    const modalBody = document.getElementById("modal-body");
 
-            // IntersectionObserver for tile animations
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible'); // Add 'visible' class to animate tile
-                        observer.unobserve(entry.target); // Stop observing once visible
-                    }
-                });
-            }, {
-                threshold: 0.25, // Trigger when 25% of the tile is visible
-                rootMargin: '0px 0px -20% 0px' // Adjust margin for earlier triggering
-            });
-
-            // List of project folders for dynamic content loading
-            const projectFolders = ["My Trip to Japan", "Journey to Bilingual", "The Best Izakaya in Tokyo"]; // Update this list as needed
-
-            projectFolders.forEach(folder => {
-                // Create the tile container
-                const tile = document.createElement("div");
-                tile.classList.add("tile");
-
-                // Create and set up the image
-                const img = document.createElement("img");
-                img.src = `../Blogs/${folder}/image.png`;
-                img.alt = folder;
-
-                // Create the content section for each tile
-                const tileContent = document.createElement("div");
-                tileContent.classList.add("tile-content");
-
-                // Meta information
-                const meta = document.createElement("div");
-                meta.classList.add("meta");
-
-                // Category tag
-                const category = document.createElement("span");
-                category.classList.add("category-tag"); // Add category class for styling
-
-                // Reading time text based on word count
-                const readingTime = document.createElement("span");
-                readingTime.classList.add("read-time");
-
-                // Title of the tile
-                const title = document.createElement("h3");
-                title.textContent = folder;
-
-                // Description for each tile
-                const description = document.createElement("p");
-
-                // Fetch the blog.md content
-                fetch(`/Blogs/${folder}/blog.md`)
-                    .then(response => {
-                        if (!response.ok) throw new Error('Network response was not ok');
-                        return response.text();
-                    })
-                    .then(text => {
-                        const lines = text.split('\n');
-                        category.textContent = lines[0]; // First line is the category
-                        description.textContent = lines[1]; // Second line is the description
-
-                        // Calculate reading time based on body text
-                        const bodyText = lines.slice(2).join('\n').trim();
-                        const wordCount = bodyText.split(/\s+/).filter(word => word.length > 0).length;
-                        const readTime = Math.ceil(wordCount / 200); // Assuming an average reading speed of 200 wpm
-                        readingTime.textContent = `${readTime} min read`; // Replace with actual reading time
-
-                        // "Read more" link
-                        const readMore = document.createElement("a");
-                        readMore.href = "#"; // Prevent default behavior
-                        readMore.classList.add("read-more");
-                        readMore.textContent = "Read more →";
-
-						readMore.addEventListener('click', (event) => {
-							event.preventDefault();
-							modalImg.src = img.src;
-							modalTitle.textContent = title.textContent;
-							modalBody.innerHTML = marked.parse(bodyText);
-
-							modal.classList.add('active');
-						});
-
-                        // Append meta information to the meta section
-                        meta.appendChild(category);
-                        meta.appendChild(readingTime);
-
-                        // Append all elements to the tile content section
-                        tileContent.appendChild(meta);
-                        tileContent.appendChild(title);
-                        tileContent.appendChild(description);
-                        tileContent.appendChild(readMore);
-
-                        // Append the image and content to the tile container
-                        tile.appendChild(img);
-                        tile.appendChild(tileContent);
-
-                        // Add the tile to the tiles container in the white section
-                        tilesContainer.appendChild(tile);
-
-                        // Observe the tile for intersection to trigger animation
-                        observer.observe(tile);
-                    })
-                    .catch(err => console.error('Error fetching blog content:', err));
-            });
-
-					closeModal.addEventListener('click', () => {
-						modal.classList.remove('active');
-					});
-
-					window.addEventListener('click', (event) => {
-						if (event.target === modal) {
-							modal.classList.remove('active');
-						}
-					});
+    // IntersectionObserver for tile animations
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible'); // Add 'visible' class to animate tile
+                observer.unobserve(entry.target); // Stop observing once visible
+            }
         });
-    </script>
+    }, {
+        threshold: 0.25, // Trigger when 25% of the tile is visible
+        rootMargin: '0px 0px -20% 0px' // Adjust margin for earlier triggering
+    });
+
+    // List of project folders for dynamic content loading
+    const projectFolders = ["My Trip to Japan", "Journey to Bilingual", "The Best Izakaya in Tokyo"]; // Update this list as needed
+
+    projectFolders.forEach(folder => {
+        // Create the tile container
+        const tile = document.createElement("div");
+        tile.classList.add("tile");
+
+        // Create and set up the image
+        const img = document.createElement("img");
+        img.src = `../Blogs/${folder}/image.png`;
+        img.alt = folder;
+
+        // Create the content section for each tile
+        const tileContent = document.createElement("div");
+        tileContent.classList.add("tile-content");
+
+        // Meta information
+        const meta = document.createElement("div");
+        meta.classList.add("meta");
+
+        // Category tag
+        const categoryTag = document.createElement("span");
+        categoryTag.classList.add("category-tag"); // Add category class for styling
+
+        // Reading time text based on word count
+        const readingTime = document.createElement("span");
+        readingTime.classList.add("read-time");
+
+        // Title of the tile
+        const title = document.createElement("h3");
+        title.textContent = folder;
+
+        // Description for each tile
+        const description = document.createElement("p");
+
+        // Create an element to display the creation date
+        const creationDateElement = document.createElement("p");
+        creationDateElement.classList.add("creation-date");
+
+        // Fetch the blog.md content
+        fetch(`/Blogs/${folder}/blog.md`)
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                // Fetch the file metadata (Last-Modified)
+                const creationDate = new Date(response.headers.get('Last-Modified'));
+                const formattedDate = creationDate.toLocaleDateString(); // Format the date as desired
+                creationDateElement.textContent = `${formattedDate}`; // Set the date text
+                
+                return response.text();
+            })
+            .then(text => {
+                // Assuming `text` is the string with category and description on separate lines
+                const lines = text.split('\n');
+
+                // Extract category and description from the split text
+                const category = lines[0];  // First line is the category
+                description.textContent = lines[1]; // Second line is the description
+
+                // Set the category text content
+                categoryTag.textContent = category;
+
+                // Apply background color based on category
+                if (category.trim() === 'Technology') {
+                    categoryTag.style.backgroundColor = '#B2E0B2'; // Light green
+                    categoryTag.style.color = '#4C8C4A'; // Darker green for text
+                } else if (category.trim() === 'Health') {
+                    categoryTag.style.backgroundColor = '#FFB2B2'; // Light red
+                    categoryTag.style.color = '#D44E4E'; // Darker red for text
+                } else if (category.trim() === 'Lifestyle') {
+                    categoryTag.style.backgroundColor = '#B2C7E0'; // Light blue
+                    categoryTag.style.color = '#4F7FBF'; // Darker blue for text
+                } else if (category.trim() === 'Travel') {
+                    categoryTag.style.backgroundColor = '#E0B2D1'; // Light purple
+                    categoryTag.style.color = '#9C3E7E'; // Darker purple for text
+                } else {
+                    categoryTag.style.backgroundColor = '#CCCCCC'; // Default gray for unknown category
+                    categoryTag.style.color = '#333333'; // Dark gray for text
+                }
+
+                // Calculate reading time based on body text
+                const bodyText = lines.slice(2).join('\n').trim();
+                const wordCount = bodyText.split(/\s+/).filter(word => word.length > 0).length;
+                const readTime = Math.ceil(wordCount / 200); // Assuming an average reading speed of 200 wpm
+                readingTime.textContent = `${readTime} min read`; // Replace with actual reading time
+
+                // "Read more" link
+                const readMore = document.createElement("a");
+                readMore.href = "#"; // Prevent default behavior
+                readMore.classList.add("read-more");
+                readMore.textContent = "Read more →";
+
+                // Open modal when "Read more" is clicked
+                readMore.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    modalImg.src = img.src; // Set image for modal
+                    modalTitle.textContent = title.textContent; // Set title for modal
+                    modalBody.innerHTML = marked.parse(bodyText); // Use marked.js to parse markdown content
+                    modal.classList.add('active'); // Show modal
+                });
+
+                // Append meta information to the meta section
+                meta.appendChild(categoryTag);
+                meta.appendChild(readingTime);
+
+                // Append the creation date above the description
+                tileContent.appendChild(meta);
+                tileContent.appendChild(title);
+                tileContent.appendChild(creationDateElement); // Add the creation date
+                tileContent.appendChild(description);
+                tileContent.appendChild(readMore);
+
+                // Append the image and content to the tile container
+                tile.appendChild(img);
+                tile.appendChild(tileContent);
+
+                // Add the tile to the tiles container
+                tilesContainer.appendChild(tile);
+
+                // Observe the tile for intersection to trigger animation
+                observer.observe(tile);
+            })
+            .catch(err => console.error('Error fetching blog content:', err));
+    });
+
+    // Close the modal when the close button is clicked
+    closeModal.addEventListener('click', () => {
+        modal.classList.remove('active');
+    });
+
+    // Close the modal if the user clicks outside the modal
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.classList.remove('active');
+        }
+    });
+});
+
+</script>
 
     <!-- Styles for modal -->
     <style>
