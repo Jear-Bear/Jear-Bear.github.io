@@ -576,6 +576,24 @@
             }
         }
 
+        async function getLastCommitDate(filename) {
+            // Use the commits endpoint to fetch the last commit for the specified file
+            const url = `https://api.github.com/repos/Jear-Bear/Jear-Bear.github.io/commits?path=Blogs/${filename}&per_page=1`;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Error fetching commit data: ${response.statusText}`);
+                
+                const commitData = await response.json();
+                if (commitData.length === 0) return 'No commits found for this file.';
+                
+                // Access the date of the latest commit and format it
+                return new Date(commitData[0].commit.committer.date).toLocaleDateString();
+            } catch (error) {
+                console.error('Error fetching commit date:', error);
+                return 'Error fetching commit date';
+            }
+        }
+
 document.addEventListener("DOMContentLoaded", function() {
     const tilesContainer = document.getElementById("tiles-container");
     const modal = document.getElementById("modal");
@@ -645,10 +663,18 @@ document.addEventListener("DOMContentLoaded", function() {
         fetch(`/Blogs/${folder}/blog.md`)
             .then(response => {
                 if (!response.ok) throw new Error('Network response was not ok');
-                // Fetch the file metadata (Last-Modified)
-                const creationDate = new Date(response.headers.get('Last-Modified'));
-                const formattedDate = creationDate.toLocaleDateString(); // Format the date as desired
-                creationDateElement.textContent = `${formattedDate}`; // Set the date text
+                
+                // Create an async function inside the .then() block
+                (async () => {
+                    try {
+                        // Fetch the last commit date using the filename (replace 'blog.md' with the actual filename)
+                        const lastCommitDate = await getLastCommitDate(`${folder}/blog.md`);
+                        creationDateElement.textContent = lastCommitDate; // Display the formatted commit date
+                    } catch (error) {
+                        console.error('Error retrieving last commit date:', error);
+                        creationDateElement.textContent = 'Date not available'; // Fallback text in case of an error
+                    }
+                })();
                 
                 return response.text();
             })
