@@ -1,4 +1,4 @@
-# Food
+Food
 I am an avid fan of home-cooked meals, and here are some of my top picks.
 
 ---
@@ -6,6 +6,8 @@ I am an avid fan of home-cooked meals, and here are some of my top picks.
 ## 1. [Homemade Chashu](https://www.justonecookbook.com/homemade-chashu/)
 
 Chashu is a flavorful, melt-in-your-mouth pork belly that is often served in ramen. This homemade version is perfect for ramen, but you can also serve it as a main dish.
+
+![Homemade Chashu](https://www.justonecookbook.com/wp-content/uploads/2020/09/Homemade-Chashu-Ramen-1.jpg)](https://www.justonecookbook.com/wp-content/uploads/2019/05/Chashu-II.jpg)
 
 ### Ingredients:
 - 2 pounds pork belly (skinless)
@@ -25,13 +27,13 @@ Chashu is a flavorful, melt-in-your-mouth pork belly that is often served in ram
 3. **Simmer the pork belly:** Add soy sauce, sake, mirin, sugar, garlic, ginger, and green onions to the pot. Bring the liquid to a simmer, then reduce heat to low and cover. Let it cook for 2–3 hours, turning the pork occasionally.
 4. **Cool and slice:** Once the pork is tender and cooked through, remove from the pot and let it cool before slicing into thick pieces. Serve over ramen, or as part of your favorite dish.
 
-![Homemade Chashu](https://www.justonecookbook.com/wp-content/uploads/2020/09/Homemade-Chashu-Ramen-1.jpg)
-
 ---
 
 ## 2. [Tsukemen](https://www.cherryonmysundae.com/2019/02/tsukemen.html)
 
 Tsukemen is a Japanese dipping ramen, where the noodles are served separately from the broth. It's perfect for a different spin on your ramen experience.
+
+![Tsukemen](https://www.cherryonmysundae.com/2019/02/tsukemen.html)](https://www.cherryonmysundae.com/wp-content/uploads/2019/02/tsukemen-final-8.jpg)
 
 ### Ingredients:
 - 2 servings of ramen noodles
@@ -54,13 +56,13 @@ Tsukemen is a Japanese dipping ramen, where the noodles are served separately fr
 3. **Simmer the sauce:** Add chicken broth to the pot and bring to a simmer. Let it cook for 10–15 minutes until the sauce thickens slightly.
 4. **Serve:** Divide the noodles into serving bowls and pour the dipping sauce into small bowls. Serve with a boiled egg, sliced green onions, and nori.
 
-![Tsukemen](https://www.cherryonmysundae.com/wp-content/uploads/2019/02/tsukemen.jpg)
-
 ---
 
 ## 3. [Katsudon](https://www.justonecookbook.com/katsudon/)
 
 Katsudon is a comforting Japanese dish consisting of a breaded and fried pork cutlet served over rice with egg, onions, and a flavorful sauce. It's a simple but hearty meal.
+
+![Katsudon](https://www.justonecookbook.com/wp-content/uploads/2021/08/Katsudon-0437-I-2.jpg)
 
 ### Ingredients:
 - 1 pork cutlet (tonkatsu)
@@ -79,13 +81,13 @@ Katsudon is a comforting Japanese dish consisting of a breaded and fried pork cu
 3. **Add the egg:** Pour the beaten eggs over the onions and sauce, and cook until the eggs are set but still soft.
 4. **Assemble the katsudon:** Place the sliced tonkatsu over a bowl of rice, then pour the egg and onion mixture on top. Serve immediately.
 
-![Katsudon](https://www.justonecookbook.com/wp-content/uploads/2017/02/Katsudon-1.jpg)
-
 ---
 
 ## 4. [How to Make Dashi](https://www.justonecookbook.com/how-to-make-dashi/#wprm-recipe-container-59130)
 
 Dashi is the essential Japanese soup stock used in many Japanese dishes, such as miso soup, udon, and katsudon. Learn how to make it from scratch.
+
+![Awase Dashi](https://www.justonecookbook.com/wp-content/uploads/2019/04/Awase-Dashi-I.jpg)
 
 ### Ingredients:
 - 1 strip kombu (dried kelp)
@@ -97,8 +99,6 @@ Dashi is the essential Japanese soup stock used in many Japanese dishes, such as
 2. **Simmer the kombu:** Slowly heat the water over medium heat until just before it comes to a boil. Remove the kombu from the pot and discard it.
 3. **Add the bonito flakes:** Bring the water to a boil, then add the bonito flakes. Let it boil for about 30 seconds, then remove the pot from the heat.
 4. **Strain the dashi:** Let the bonito flakes settle at the bottom of the pot for a few minutes, then strain the dashi through a fine-mesh sieve. The resulting clear, umami-rich stock is now ready to be used in your dishes.
-
-![Dashi](https://www.justonecookbook.com/wp-content/uploads/2019/01/how-to-make-dashi-4.jpg)
 
 ---
 
