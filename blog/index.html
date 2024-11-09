@@ -535,6 +535,35 @@
 
     <!-- JavaScript to Load Tiles Dynamically and Handle Animation -->
     <script>
+        async function fetchGitHubFolderContents() {
+            try {
+                const projects = [];
+
+                const url = 'https://api.github.com/repos/Jear-Bear/Jear-Bear.github.io/contents/Blogs';
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                throw new Error('Failed to fetch data from GitHub API');
+                }
+
+                const data = await response.json();
+
+                // Filter out .DS_Store and extract only the name values
+                const fileNames = data
+                .filter(item => item.name !== '.DS_Store') // Exclude .DS_Store
+                .map(item => item.name); // Get the name of each item
+
+                fileNames.forEach(filename => {
+                    projects.push(filename);
+                });
+
+                return projects;
+
+            } catch (error) {
+                console.error('Error fetching folder data:', error);
+            }
+        }
+
 document.addEventListener("DOMContentLoaded", function() {
     const tilesContainer = document.getElementById("tiles-container");
     const modal = document.getElementById("modal");
@@ -556,10 +585,14 @@ document.addEventListener("DOMContentLoaded", function() {
         rootMargin: '0px 0px -20% 0px' // Adjust margin for earlier triggering
     });
 
-    // List of project folders for dynamic content loading
-    const projectFolders = ["My Trip to Japan", "Journey to Bilingual", "The Best Izakaya in Tokyo", "My Favorite Pentesting Tools", "My Top 3 Homemade Meals"]; // Update this list as needed
+    var projectFolders = [];
+    fetchGitHubFolderContents().then(data => 
+    {
+        projectFolders = data;
 
-    projectFolders.forEach(folder => {
+        console.log(projectFolders);
+
+        projectFolders.forEach(folder => {
         // Create the tile container
         const tile = document.createElement("div");
         tile.classList.add("tile");
@@ -679,6 +712,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 observer.observe(tile);
             })
             .catch(err => console.error('Error fetching blog content:', err));
+        });
     });
 
     // Close the modal when the close button is clicked
