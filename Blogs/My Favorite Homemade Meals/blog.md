@@ -7,7 +7,7 @@ I am an avid fan of home-cooked meals, and here are some of my top picks.
 
 Chashu is a flavorful, melt-in-your-mouth pork belly that is often served in ramen. This homemade version is perfect for ramen, but you can also serve it as a main dish.
 
-![Homemade Chashu](https://www.justonecookbook.com/wp-content/uploads/2019/05/Chashu-I-2.jpg)
+<img src="https://www.justonecookbook.com/wp-content/uploads/2019/05/Chashu-I-2.jpg" width="600px" />
 
 ### Ingredients:
 - 2 pounds pork belly (skinless)
@@ -33,7 +33,7 @@ Chashu is a flavorful, melt-in-your-mouth pork belly that is often served in ram
 
 Tsukemen is a Japanese dipping ramen, where the noodles are served separately from the broth. It's perfect for a different spin on your ramen experience.
 
-![Tsukemen](https://www.cherryonmysundae.com/wp-content/uploads/2019/02/tsukemen-final-8.jpg)
+<img src="https://www.cherryonmysundae.com/wp-content/uploads/2019/02/tsukemen-final-8.jpg" width="600px" />
 
 ### Ingredients:
 - 2 servings of ramen noodles
@@ -62,7 +62,7 @@ Tsukemen is a Japanese dipping ramen, where the noodles are served separately fr
 
 Katsudon is a comforting Japanese dish consisting of a breaded and fried pork cutlet served over rice with egg, onions, and a flavorful sauce. It's a simple but hearty meal.
 
-![Katsudon](https://www.justonecookbook.com/wp-content/uploads/2021/08/Katsudon-0437-I-2.jpg)
+<img src="https://www.justonecookbook.com/wp-content/uploads/2021/08/Katsudon-0437-I-2.jpg" width="600px" />
 
 ### Ingredients:
 - 1 pork cutlet (tonkatsu)
@@ -87,7 +87,7 @@ Katsudon is a comforting Japanese dish consisting of a breaded and fried pork cu
 
 Dashi is the essential Japanese soup stock used in many Japanese dishes, such as miso soup, udon, and katsudon. Learn how to make it from scratch.
 
-![Awase Dashi](https://www.justonecookbook.com/wp-content/uploads/2019/04/Awase-Dashi-I.jpg)
+<img src="https://www.justonecookbook.com/wp-content/uploads/2019/04/Awase-Dashi-I.jpg" width="600px" />
 
 ### Ingredients:
 - 1 strip kombu (dried kelp)
