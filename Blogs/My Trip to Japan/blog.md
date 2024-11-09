@@ -1,5 +1,6 @@
 Travel
 I had the opportunity to travel to Japan last summer, and it was one of the most amazing experiences of my life.
+2024/11/04
 
 Last spring, I embarked on an unforgettable journey to Japan, a country where tradition harmoniously meets modernity. 
 

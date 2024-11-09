@@ -1,5 +1,6 @@
 Language
 I have been studying Japanese for years in an attempt to become comfortable navigating around Japan.
+2024/11/04
 
 ### The Appeal of Learning Japanese
 Japanese culture has fascinated people worldwide through its art, literature, anime, and cuisine. For many, the desire to learn Japanese stems from a love for these cultural elements. Understanding the language allows you to appreciate the nuances in anime dialogues, read literature in its original form, or even communicate with locals during travels to Japan. Moreover, Japan is home to some of the world’s leading industries, including technology, automotive, and entertainment. Knowing Japanese can give you a competitive edge in the job market, particularly if you aspire to work for Japanese companies or in international relations.

@@ -1,5 +1,6 @@
 Travel
 This is probably the most delicious Izakaya you will ever encounter!
+2024/11/04
 
 ### A Warm Welcome in Shinjuku
 Located in the vibrant neighborhood of **Shinjuku**, Izakaya Haru is beloved by locals and tourists alike for its warm ambiance and mouthwatering dishes. As you enter, the inviting scent of grilled skewers and savory broths envelops you, instantly making you feel at home.
