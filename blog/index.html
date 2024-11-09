@@ -557,7 +557,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     // List of project folders for dynamic content loading
-    const projectFolders = ["My Trip to Japan", "Journey to Bilingual", "The Best Izakaya in Tokyo"]; // Update this list as needed
+    const projectFolders = ["My Trip to Japan", "Journey to Bilingual", "The Best Izakaya in Tokyo", "My Favorite Pentesting Tools", "My Top 3 Homemade Meals"]; // Update this list as needed
 
     projectFolders.forEach(folder => {
         // Create the tile container
@@ -620,17 +620,17 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 // Apply background color based on category
                 if (category.trim() === 'Technology') {
-                    categoryTag.style.backgroundColor = '#B2E0B2'; // Light green
-                    categoryTag.style.color = '#4C8C4A'; // Darker green for text
-                } else if (category.trim() === 'Health') {
-                    categoryTag.style.backgroundColor = '#FFB2B2'; // Light red
-                    categoryTag.style.color = '#D44E4E'; // Darker red for text
-                } else if (category.trim() === 'Lifestyle') {
-                    categoryTag.style.backgroundColor = '#B2C7E0'; // Light blue
-                    categoryTag.style.color = '#4F7FBF'; // Darker blue for text
+                    categoryTag.style.backgroundColor = '#ebb2b2'; // Light green
+                    categoryTag.style.color = '#631d20'; // Darker green for text
+                } else if (category.trim() === 'Language') {
+                    categoryTag.style.backgroundColor = '#b2d4eb'; // Light red
+                    categoryTag.style.color = '#2e4b8f'; // Darker red for text
+                } else if (category.trim() === 'Food') {
+                    categoryTag.style.backgroundColor = '#d7b2eb'; // Light blue
+                    categoryTag.style.color = '#722e8f'; // Darker blue for text
                 } else if (category.trim() === 'Travel') {
-                    categoryTag.style.backgroundColor = '#E0B2D1'; // Light purple
-                    categoryTag.style.color = '#9C3E7E'; // Darker purple for text
+                    categoryTag.style.backgroundColor = '#b2ebc1'; // Light purple
+                    categoryTag.style.color = '#25631d'; // Darker purple for text
                 } else {
                     categoryTag.style.backgroundColor = '#CCCCCC'; // Default gray for unknown category
                     categoryTag.style.color = '#333333'; // Dark gray for text
