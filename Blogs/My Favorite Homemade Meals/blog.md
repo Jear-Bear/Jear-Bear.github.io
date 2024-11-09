@@ -7,7 +7,7 @@ I am an avid fan of home-cooked meals, and here are some of my top picks.
 
 Chashu is a flavorful, melt-in-your-mouth pork belly that is often served in ramen. This homemade version is perfect for ramen, but you can also serve it as a main dish.
 
-![Homemade Chashu](https://www.justonecookbook.com/wp-content/uploads/2020/09/Homemade-Chashu-Ramen-1.jpg)
+![Homemade Chashu](https://www.justonecookbook.com/wp-content/uploads/2019/05/Chashu-I-2.jpg)
 
 ### Ingredients:
 - 2 pounds pork belly (skinless)
