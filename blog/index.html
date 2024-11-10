@@ -576,7 +576,7 @@
             }
         }
 
-document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function() {
     const tilesContainer = document.getElementById("tiles-container");
     const modal = document.getElementById("modal");
     const closeModal = document.getElementById("close-modal");
@@ -598,133 +598,156 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     var projectFolders = [];
-    fetchGitHubFolderContents().then(data => 
-    {
+    var projectNameDates = new Map();
+
+    fetchGitHubFolderContents().then(data => {
         projectFolders = data;
 
-        console.log(projectFolders);
+        // Use Promise.all to wait for all fetch operations to complete
+        return Promise.all(
+            projectFolders.map(folder =>
+                fetch(`/Blogs/${folder}/blog.md`)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.text();
+                    })
+                    .then(text => {
+                        const lines = text.split('\n');
+                        const date = lines[2];  // Assuming this line contains the date
+                        projectNameDates.set(folder, date);  // Add to Map
+                    })
+                    .catch(err => console.error('Error fetching blog content:', err))
+            )
+        );
+    }).then(() => {
+        // Sort the Map once all fetch calls have completed
+        const sortedProjectMap = new Map(
+            Array.from(projectNameDates.entries()).sort((a, b) => new Date(b[1]) - new Date(a[1]))
+        );
 
-        projectFolders.forEach(folder => {
-        // Create the tile container
-        const tile = document.createElement("div");
-        tile.classList.add("tile");
+        console.log("Sorted Project Map:", sortedProjectMap);
 
-        // Create and set up the image
-        const img = document.createElement("img");
-        img.src = `../Blogs/${folder}/image.png`;
-        img.alt = folder;
+        // Loop through each folder in the sorted map
+        sortedProjectMap.keys().forEach(folder => {
+            const tile = document.createElement("div");
+            tile.classList.add("tile");
 
-        // Create the content section for each tile
-        const tileContent = document.createElement("div");
-        tileContent.classList.add("tile-content");
+            // Create and set up the image
+            const img = document.createElement("img");
+            img.src = `../Blogs/${folder}/image.png`;
+            img.alt = folder;
 
-        // Meta information
-        const meta = document.createElement("div");
-        meta.classList.add("meta");
+            // Create the content section for each tile
+            const tileContent = document.createElement("div");
+            tileContent.classList.add("tile-content");
 
-        // Category tag
-        const categoryTag = document.createElement("span");
-        categoryTag.classList.add("category-tag"); // Add category class for styling
+            // Meta information
+            const meta = document.createElement("div");
+            meta.classList.add("meta");
 
-        // Reading time text based on word count
-        const readingTime = document.createElement("span");
-        readingTime.classList.add("read-time");
+            // Category tag
+            const categoryTag = document.createElement("span");
+            categoryTag.classList.add("category-tag");
 
-        // Title of the tile
-        const title = document.createElement("h3");
-        title.textContent = folder;
+            // Reading time text based on word count
+            const readingTime = document.createElement("span");
+            readingTime.classList.add("read-time");
 
-        // Description for each tile
-        const description = document.createElement("p");
+            // Title of the tile
+            const title = document.createElement("h3");
+            title.textContent = folder;
 
-        // Create an element to display the creation date
-        const creationDateElement = document.createElement("p");
-        creationDateElement.classList.add("creation-date");
+            // Description for each tile
+            const description = document.createElement("p");
 
-        // Fetch the blog.md content
-        fetch(`/Blogs/${folder}/blog.md`)
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                
-                return response.text();
-            })
-            .then(text => {
-                // Assuming `text` is the string with category and description on separate lines
-                const lines = text.split('\n');
+            // Create an element to display the creation date
+            const creationDateElement = document.createElement("p");
+            creationDateElement.classList.add("creation-date");
 
-                // Extract category and description from the split text
-                const category = lines[0];  // First line is the category
-                description.textContent = lines[1]; // Second line is the description
-                creationDateElement.textContent = lines[2];
+            // Fetch the blog.md content
+            fetch(`/Blogs/${folder}/blog.md`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.text();
+                })
+                .then(text => {
+                    // Assuming `text` is the string with category and description on separate lines
+                    const lines = text.split('\n');
 
-                console.log(lines);
-                console.log(lines[2]);
+                    // Extract category and description from the split text
+                    const category = lines[0];  // First line is the category
+                    description.textContent = lines[1]; // Second line is the description
+                    creationDateElement.textContent = lines[2];
 
-                // Set the category text content
-                categoryTag.textContent = category;
+                    console.log(creationDateElement);
+                    
+                    // Set the category text content
+                    categoryTag.textContent = category;
 
-                // Apply background color based on category
-                if (category.trim() === 'Technology') {
-                    categoryTag.style.backgroundColor = '#ebb2b2'; // Light green
-                    categoryTag.style.color = '#631d20'; // Darker green for text
-                } else if (category.trim() === 'Language') {
-                    categoryTag.style.backgroundColor = '#b2d4eb'; // Light red
-                    categoryTag.style.color = '#2e4b8f'; // Darker red for text
-                } else if (category.trim() === 'Food') {
-                    categoryTag.style.backgroundColor = '#d7b2eb'; // Light blue
-                    categoryTag.style.color = '#722e8f'; // Darker blue for text
-                } else if (category.trim() === 'Travel') {
-                    categoryTag.style.backgroundColor = '#b2ebc1'; // Light purple
-                    categoryTag.style.color = '#25631d'; // Darker purple for text
-                } else {
-                    categoryTag.style.backgroundColor = '#CCCCCC'; // Default gray for unknown category
-                    categoryTag.style.color = '#333333'; // Dark gray for text
-                }
+                    // Apply background color based on category
+                    if (category.trim() === 'Technology') {
+                        categoryTag.style.backgroundColor = '#ebb2b2'; // Light green
+                        categoryTag.style.color = '#631d20'; // Darker green for text
+                    } else if (category.trim() === 'Language') {
+                        categoryTag.style.backgroundColor = '#b2d4eb'; // Light red
+                        categoryTag.style.color = '#2e4b8f'; // Darker red for text
+                    } else if (category.trim() === 'Food') {
+                        categoryTag.style.backgroundColor = '#d7b2eb'; // Light blue
+                        categoryTag.style.color = '#722e8f'; // Darker blue for text
+                    } else if (category.trim() === 'Travel') {
+                        categoryTag.style.backgroundColor = '#b2ebc1'; // Light purple
+                        categoryTag.style.color = '#25631d'; // Darker purple for text
+                    } else {
+                        categoryTag.style.backgroundColor = '#CCCCCC'; // Default gray for unknown category
+                        categoryTag.style.color = '#333333'; // Dark gray for text
+                    }
 
-                // Calculate reading time based on body text
-                const bodyText = lines.slice(3).join('\n').trim();
-                const wordCount = bodyText.split(/\s+/).filter(word => word.length > 0).length;
-                const readTime = Math.ceil(wordCount / 200); // Assuming an average reading speed of 200 wpm
-                readingTime.textContent = `${readTime} min read`; // Replace with actual reading time
+                    // Calculate reading time based on body text
+                    const bodyText = lines.slice(3).join('\n').trim();
+                    const wordCount = bodyText.split(/\s+/).filter(word => word.length > 0).length;
+                    const readTime = Math.ceil(wordCount / 200); // Assuming an average reading speed of 200 wpm
+                    readingTime.textContent = `${readTime} min read`; // Replace with actual reading time
 
-                // "Read more" link
-                const readMore = document.createElement("a");
-                readMore.href = "#"; // Prevent default behavior
-                readMore.classList.add("read-more");
-                readMore.textContent = "Read more →";
+                    // "Read more" link
+                    const readMore = document.createElement("a");
+                    readMore.href = "#"; // Prevent default behavior
+                    readMore.classList.add("read-more");
+                    readMore.textContent = "Read more →";
 
-                // Open modal when "Read more" is clicked
-                readMore.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    modalImg.src = img.src; // Set image for modal
-                    modalTitle.textContent = title.textContent; // Set title for modal
-                    modalBody.innerHTML = marked.parse(bodyText); // Use marked.js to parse markdown content
-                    modal.classList.add('active'); // Show modal
-                });
+                    // Open modal when "Read more" is clicked
+                    readMore.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        modalImg.src = img.src; // Set image for modal
+                        modalTitle.textContent = title.textContent; // Set title for modal
+                        modalBody.innerHTML = marked.parse(bodyText); // Use marked.js to parse markdown content
+                        modal.classList.add('active'); // Show modal
+                    });
 
-                // Append meta information to the meta section
-                meta.appendChild(categoryTag);
-                meta.appendChild(readingTime);
+                    // Append meta information to the meta section
+                    meta.appendChild(categoryTag);
+                    meta.appendChild(readingTime);
 
-                // Append the creation date above the description
-                tileContent.appendChild(meta);
-                tileContent.appendChild(title);
-                tileContent.appendChild(creationDateElement); // Add the creation date
-                tileContent.appendChild(description);
-                tileContent.appendChild(readMore);
+                    // Append the creation date above the description
+                    tileContent.appendChild(meta);
+                    tileContent.appendChild(title);
+                    tileContent.appendChild(creationDateElement); // Add the creation date
+                    tileContent.appendChild(description);
+                    tileContent.appendChild(readMore);
 
-                // Append the image and content to the tile container
-                tile.appendChild(img);
-                tile.appendChild(tileContent);
+                    // Append the image and content to the tile container
+                    tile.appendChild(img);
+                    tile.appendChild(tileContent);
 
-                // Add the tile to the tiles container
-                tilesContainer.appendChild(tile);
+                    // Add the tile to the tiles container
+                    tilesContainer.appendChild(tile);
 
-                // Observe the tile for intersection to trigger animation
-                observer.observe(tile);
-            })
-            .catch(err => console.error('Error fetching blog content:', err));
+                    // Observe the tile for intersection to trigger animation
+                    observer.observe(tile);
+                })
+                .catch(err => console.error('Error fetching blog content:', err));
         });
+    }).catch(error => {
+        console.error('Error in fetch operations:', error);
     });
 
     // Close the modal when the close button is clicked
