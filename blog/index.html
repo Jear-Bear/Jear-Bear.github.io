@@ -646,18 +646,6 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(response => {
                 if (!response.ok) throw new Error('Network response was not ok');
                 
-                // Create an async function inside the .then() block
-                (async () => {
-                    try {
-                        // Fetch the last commit date using the filename (replace 'blog.md' with the actual filename)
-                        const lastCommitDate = await getLastCommitDate(`${folder}/blog.md`);
-                        creationDateElement.textContent = lastCommitDate; // Display the formatted commit date
-                    } catch (error) {
-                        console.error('Error retrieving last commit date:', error);
-                        creationDateElement.textContent = 'Date not available'; // Fallback text in case of an error
-                    }
-                })();
-                
                 return response.text();
             })
             .then(text => {
@@ -668,6 +656,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 const category = lines[0];  // First line is the category
                 description.textContent = lines[1]; // Second line is the description
                 creationDateElement.textContent = lines[2];
+
+                console.log(lines);
+                console.log(lines[2]);
 
                 // Set the category text content
                 categoryTag.textContent = category;
