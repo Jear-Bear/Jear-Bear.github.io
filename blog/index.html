@@ -576,24 +576,6 @@
             }
         }
 
-        async function getLastCommitDate(filename) {
-            // Use the commits endpoint to fetch the last commit for the specified file
-            const url = `https://api.github.com/repos/Jear-Bear/Jear-Bear.github.io/commits?path=Blogs/${filename}&per_page=1`;
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Error fetching commit data: ${response.statusText}`);
-                
-                const commitData = await response.json();
-                if (commitData.length === 0) return 'No commits found for this file.';
-                
-                // Access the date of the latest commit and format it
-                return new Date(commitData[0].commit.committer.date).toLocaleDateString();
-            } catch (error) {
-                console.error('Error fetching commit date:', error);
-                return 'Error fetching commit date';
-            }
-        }
-
 document.addEventListener("DOMContentLoaded", function() {
     const tilesContainer = document.getElementById("tiles-container");
     const modal = document.getElementById("modal");
@@ -685,6 +667,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 // Extract category and description from the split text
                 const category = lines[0];  // First line is the category
                 description.textContent = lines[1]; // Second line is the description
+                creationDateElement.textContent = lines[2];
 
                 // Set the category text content
                 categoryTag.textContent = category;
@@ -708,7 +691,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
 
                 // Calculate reading time based on body text
-                const bodyText = lines.slice(2).join('\n').trim();
+                const bodyText = lines.slice(3).join('\n').trim();
                 const wordCount = bodyText.split(/\s+/).filter(word => word.length > 0).length;
                 const readTime = Math.ceil(wordCount / 200); // Assuming an average reading speed of 200 wpm
                 readingTime.textContent = `${readTime} min read`; // Replace with actual reading time
