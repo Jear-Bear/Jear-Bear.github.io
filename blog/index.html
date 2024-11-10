@@ -625,8 +625,6 @@
             Array.from(projectNameDates.entries()).sort((a, b) => new Date(b[1]) - new Date(a[1]))
         );
 
-        console.log("Sorted Project Map:", sortedProjectMap);
-
         // Loop through each folder in the sorted map
         sortedProjectMap.keys().forEach(folder => {
             const tile = document.createElement("div");
@@ -679,8 +677,6 @@
                     description.textContent = lines[1]; // Second line is the description
                     creationDateElement.textContent = lines[2];
 
-                    console.log(creationDateElement);
-                    
                     // Set the category text content
                     categoryTag.textContent = category;
 
