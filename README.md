@@ -123,22 +123,22 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Redirect buttons on home page
+- [x] Redirect buttons on home page
 - [x] Dynamic liquidfun walls/boundaries based on screen dimensions
-- [ ] Mobile support
+- [x] Mobile support
     - [x] Support mobile phone screens
     - [x] Track swipes to interact with liquidfun sandbox
-    - [ ] Mobile-friendly UI (especially for the landing page)
-- [ ] More Pages
-    - [ ] About Me
-    - [ ] Blog
-    - [ ] Projects
-    - [ ] Contact
-- [ ] CMS + DB for blog page and project page
-    - [ ] Setup DB
-    - [ ] Test article import using markdown format
-- [ ] Navbar for pages other than the landing page?
-    - [ ] Breadcrumbs?
+    - [x] Mobile-friendly UI (especially for the landing page)
+- [x] More Pages
+    - [x] About Me
+    - [x] Blog
+    - [x] Projects
+    - [x] Contact
+- [x] CMS + DB for blog page and project page
+    - [x] Use folder structure to host blogs on GitHub Pages instead
+    - [x] Test article import using markdown format
+- [x] Navbar for pages other than the landing page?
+    - [x] Breadcrumbs? (Nope! Navbar will suffice)
 - [ ] UI animations
     - [ ] Skeleton for nicer loading animations
 - [ ] Break up js files based on functions, make shared functions global
