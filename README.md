@@ -202,7 +202,7 @@ Project Link: [https://github.com/jear-bear/jear-bear.github.io](https://github.
 For more details, visit the [LiquidFun GitHub repository](https://github.com/google/liquidfun).
 * Special thanks to the Babylon.js team for their powerful and versatile game engine, which also helped me achieve a clean and positive UX on my landing page.
 For more information, visit the [Babylon.js website](https://www.babylonjs.com).
-* A big thanks to Andy Beaulieu, who used babylon.js and liquidfun in conjunction for sprite rendering--I was tearing my hair out trying to build a sprite library from the ground up before I found your [blog post](http://www.spritehand.com/2016/01/fluid-simulation-using-babylonjs-and.html).
+* A big thanks to [Andy Beaulieu](http://www.spritehand.com/p/about.html), who used babylon.js and liquidfun in conjunction for sprite rendering--I was tearing my hair out trying to build a sprite library from the ground up before I found your [blog post](http://www.spritehand.com/2016/01/fluid-simulation-using-babylonjs-and.html).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
