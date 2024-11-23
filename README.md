@@ -203,10 +203,12 @@ For more information, visit the [Babylon.js website](https://www.babylonjs.com).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-##Repo Information
+## Repo Information
 <div align="center">
   <img src="https://repobeats.axiom.co/api/embed/953a9f8ede390b2496ce82fe2a2c9698786ab993.svg" alt="Repobeats analytics image" title="Repobeats analytics image">
 </div>
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
