@@ -40,7 +40,7 @@
 <h3 align="center">Portfolio Website</h3>
 
   <p align="center">
-    This repository contains my personal portfolio website, showcasing my skills, projects, and professional background through an interactive and responsive interface. Built with React, Babylon.js, and LiquidFun, the site features dynamic page transitions and engaging animations, allowing visitors to explore my work seamlessly. Visit the live version <a href="https://jear-bear.github.io">here</a>.
+    This repository contains my personal portfolio website, showcasing my skills, projects, and professional background through an interactive and responsive interface. Built with jQuery, Babylon.js, and LiquidFun, the site features dynamic page transitions and engaging animations, allowing visitors to explore my work seamlessly. Visit the live version <a href="https://jear-bear.github.io">here</a>.
     <br />
     <a href="https://github.com/jear-bear/jear-bear.github.io"><strong>Explore the docs »</strong></a>
     <br />
@@ -93,9 +93,9 @@ This portfolio highlights my journey as a developer and my commitment to buildin
 
 ### Built With
 
+<!--
 * [![Next][Next.js]][Next-url]
 * [![React][React.js]][React-url]
-<!--
 * [![Vue][Vue.js]][Vue-url]
 * [![Angular][Angular.io]][Angular-url]
 * [![Svelte][Svelte.dev]][Svelte-url]
