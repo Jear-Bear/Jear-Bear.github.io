@@ -1,5 +1,13 @@
 pentagons = [];
 jellies = [];
+
+// Jelly dragging state
+var draggedJelly = null;     // The b2ParticleGroup currently being dragged
+var dragTargetX = 0;          // Where the cursor is in world coordinates
+var dragTargetY = 0;
+var DRAG_STRENGTH = 8.0;     // How aggressively the jelly follows the cursor
+var DRAG_DAMPING = 0.85;     // How quickly stray velocity decays (0-1, higher = less damping)
+
 var clickX = 0.0;
 var clickY = 0;
 let clickStartTime;
@@ -38,6 +46,85 @@ window.onload = function() {
     updateCamera(); // Call your updateCamera function to recalculate the aspect ratio
     updateMeshPositions(); // This can be a custom function to re-calculate mesh positions based on LiquidFun
 };
+
+// Returns the jelly group at the given world coordinates, or null if none.
+// Uses each group's particle bounding box as the hit area.
+function findJellyAtPoint(worldX, worldY) {
+    for (var i = jellies.length - 1; i >= 0; i--) {
+        var group = jellies[i];
+        if (!group) continue;
+
+        // Get the group's particle position buffer
+        var particleCount = group.GetParticleCount();
+        if (particleCount === 0) continue;
+
+        var firstParticle = group.GetBufferIndex();
+        var positions = particleSystem.GetPositionBuffer();
+
+        // Compute bounding box of this group's particles
+        var minX = Infinity, maxX = -Infinity;
+        var minY = Infinity, maxY = -Infinity;
+        for (var j = 0; j < particleCount; j++) {
+            var idx = firstParticle + j;
+            var px = positions[idx * 2];
+            var py = positions[idx * 2 + 1];
+            if (px < minX) minX = px;
+            if (px > maxX) maxX = px;
+            if (py < minY) minY = py;
+            if (py > maxY) maxY = py;
+        }
+
+        // Small margin to make grabbing easier
+        var margin = 0.15;
+        if (worldX >= minX - margin && worldX <= maxX + margin &&
+            worldY >= minY - margin && worldY <= maxY + margin) {
+            return group;
+        }
+    }
+    return null;
+}
+
+// Called every physics step while a jelly is being dragged.
+// Applies velocity to each particle so the group follows the cursor.
+function updateJellyDrag() {
+    if (!draggedJelly) return;
+
+    var particleCount = draggedJelly.GetParticleCount();
+    if (particleCount === 0) {
+        draggedJelly = null;
+        return;
+    }
+
+    var firstParticle = draggedJelly.GetBufferIndex();
+    var positions = particleSystem.GetPositionBuffer();
+    var velocities = particleSystem.GetVelocityBuffer();
+
+    // Compute group center to figure out the offset to apply
+    var centerX = 0, centerY = 0;
+    for (var j = 0; j < particleCount; j++) {
+        var idx = firstParticle + j;
+        centerX += positions[idx * 2];
+        centerY += positions[idx * 2 + 1];
+    }
+    centerX /= particleCount;
+    centerY /= particleCount;
+
+    // Vector from group center to target
+    var dx = dragTargetX - centerX;
+    var dy = dragTargetY - centerY;
+
+    // Apply velocity toward target, with damping on existing velocity
+    for (var j = 0; j < particleCount; j++) {
+        var idx = firstParticle + j;
+        var oldVx = velocities[idx * 2];
+        var oldVy = velocities[idx * 2 + 1];
+
+        // Move toward target while preserving some existing velocity for squish
+        velocities[idx * 2]     = oldVx * DRAG_DAMPING + dx * DRAG_STRENGTH * 0.1;
+        velocities[idx * 2 + 1] = oldVy * DRAG_DAMPING + dy * DRAG_STRENGTH * 0.1;
+    }
+}
+
 
 // Function to update mesh positions based on pentagons array
 function updateMeshPositions() {
@@ -473,6 +560,11 @@ function TestParticles() {
 	    
 	    var i = 0;
 	    
+        if (wasDragging) {
+            wasDragging = false;
+            return;   // Skip nav + pentagon routing if we just released a drag
+        }
+        
 	    // Check if click is within any button area
 	    buttonAreas.forEach(area => {
 		if (mouseTextX >= area.x && mouseTextX <= area.x + area.width &&
@@ -506,27 +598,60 @@ function TestParticles() {
 	});
 	
 	// Listen for the mousedown event (when the mouse button is pressed)
-	document.getElementById('canvas').addEventListener('mousedown', function(event) {
-	    if (event.button === 0) { // Check if it's the left mouse button (button === 0)
-		clickStartTime = new Date().getTime(); // Record the time when the mouse button is pressed
-	    }
-	});
+    document.getElementById('canvas').addEventListener('mousedown', function(event) {
+        if (event.button !== 0) return;
+        clickStartTime = new Date().getTime();
+    
+        // Check if we're grabbing a jelly
+        var coords = getMouseCoords();
+        var hit = findJellyAtPoint(coords.x, coords.y);
+        if (hit) {
+            draggedJelly = hit;
+            dragTargetX = coords.x;
+            dragTargetY = coords.y;
+            wasDragging = true;        // NEW
+            event.preventDefault();
+        }
+    });
+    
+    document.getElementById('canvas').addEventListener('mousemove', function(event) {
+        if (!draggedJelly) return;
+        var coords = getMouseCoords();
+        dragTargetX = coords.x;
+        dragTargetY = coords.y;
+    });
+
 	
 	// Listen for the mouseup event (when the mouse button is released)
-	document.getElementById('canvas').addEventListener('mouseup', function(event) {
-	    if (event.button === 0 && clickStartTime) { // Check if it's the left mouse button and if the click started
-		const clickEndTime = new Date().getTime(); // Record the time when the mouse button is released
-		clickDuration = clickEndTime - clickStartTime; // Calculate the duration
-		clickStartTime = null; // Reset the click start time
-	    }
-	});
+    document.getElementById('canvas').addEventListener('mouseup', function(event) {
+        if (event.button === 0 && clickStartTime) {
+            const clickEndTime = new Date().getTime();
+            clickDuration = clickEndTime - clickStartTime;
+            clickStartTime = null;
+        }
+        // Release the drag
+        if (draggedJelly) {
+            draggedJelly = null;
+        }
+    });
+
 	
     Number.prototype.between = function(first, last) {
         return this >= Math.min(first, last) && this <= Math.max(first, last);
     };
+    
+    document.getElementById('canvas').addEventListener('mouseleave', function() {
+        if (draggedJelly) {
+            draggedJelly = null;
+        }
+    });
+
+    
 
 	// Function to handle mouse clicks and check for pentagon intersections
 	function handleMouseClick(mouseX, mouseY) {
+        var wasDragging = false;
+        
         // Example usage:
         clickX = ((mouseX - 695)/1360)*18.6;
         clickY = (((Math.abs(mouseY - 800) - 392.5)/789)*10.8 + 4);
