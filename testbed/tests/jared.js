@@ -9,6 +9,7 @@ var dragGrabOffsetY = 0;       // NEW
 var DRAG_RADIUS = 0.6;         // NEW: how far the "grab" influence extends, in world units
 var DRAG_STRENGTH = 15.0;
 var DRAG_DAMPING = 0.85;
+var wasDragging = false;
 
 var clickX = 0.0;
 var clickY = 0;
