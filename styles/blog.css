@@ -1,0 +1,290 @@
+/* Blog page — hanada indigo */
+:root { --page-color: #3b5b9c; --page-color-soft: rgba(59, 91, 156, 0.10); }
+
+/* --- Post list (the new layout) -------------------------------------- */
+.post-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.post-item {
+  display: grid;
+  grid-template-columns: 120px 1fr auto;
+  align-items: start;
+  gap: clamp(20px, 4vw, 48px);
+  padding: 32px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+
+  /* Bounce-in motion for this page's tiles */
+  opacity: 0;
+  transform: translateY(40px) scale(0.96);
+  transition: opacity 0.6s ease,
+              transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1),
+              padding 0.3s ease,
+              background 0.3s ease;
+}
+
+.post-item.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.post-item:hover {
+  padding-left: 16px;
+  padding-right: 16px;
+  background: var(--page-color-soft);
+  border-radius: 12px;
+  border-bottom-color: transparent;
+}
+
+.post-item:hover + .post-item {
+  border-top: 1px solid transparent;
+}
+
+.post-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.post-date {
+  font-family: 'Inter', monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.post-category-tag {
+  display: inline-block;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: 500;
+  width: fit-content;
+}
+
+/* Category colors (preserved from existing system) */
+.post-category-tag.tech     { background: #ebb2b2; color: #631d20; }
+.post-category-tag.language { background: #b2d4eb; color: #2e4b8f; }
+.post-category-tag.food     { background: #d7b2eb; color: #722e8f; }
+.post-category-tag.travel   { background: #b2ebc1; color: #25631d; }
+.post-category-tag.default  { background: #cccccc; color: #333333; }
+
+.post-content { display: flex; flex-direction: column; gap: 8px; }
+
+.post-title {
+  font-size: clamp(1.3rem, 2.2vw, 1.65rem);
+  font-family: 'Fraunces', serif;
+  font-variation-settings: 'opsz' 72;
+  color: var(--ink);
+  line-height: 1.25;
+  font-weight: 500;
+  margin: 0;
+  transition: color 0.2s ease;
+}
+
+.post-item:hover .post-title { color: var(--page-color); }
+
+.post-desc {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 60ch;
+}
+
+.post-time {
+  font-size: 12px;
+  color: var(--faint);
+  white-space: nowrap;
+  padding-top: 6px;
+}
+
+.post-loading {
+  padding: 60px 0;
+  text-align: center;
+  color: var(--faint);
+  font-size: 14px;
+}
+
+/* --- Modal ------------------------------------------------------------ */
+.post-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.post-modal.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.post-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 24, 21, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.post-modal-content {
+  position: relative;
+  background: var(--surface);
+  border-radius: 24px;
+  max-width: 760px;
+  width: 100%;
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: clamp(28px, 5vw, 56px);
+  box-shadow: var(--shadow-lg);
+  transform: scale(0.95) translateY(10px);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.post-modal.open .post-modal-content {
+  transform: scale(1) translateY(0);
+}
+
+.post-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.post-modal-close:hover {
+  background: var(--page-color);
+  color: var(--bg);
+  border-color: var(--page-color);
+  transform: rotate(90deg);
+}
+
+.post-modal-header {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.post-modal-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.post-modal-category {
+  display: inline-block;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+.post-modal-date {
+  font-family: 'Inter', monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.post-modal-title {
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-family: 'Fraunces', serif;
+  color: var(--ink);
+  line-height: 1.15;
+  font-weight: 500;
+}
+
+.post-modal-body {
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--ink-soft);
+}
+
+.post-modal-body h1, .post-modal-body h2, .post-modal-body h3 {
+  color: var(--ink);
+  margin-top: 28px;
+  margin-bottom: 12px;
+}
+
+.post-modal-body p { margin-bottom: 16px; }
+
+.post-modal-body code {
+  background: var(--bg-deep);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.92em;
+}
+
+.post-modal-body pre {
+  background: var(--bg-deep);
+  padding: 16px;
+  border-radius: 12px;
+  overflow-x: auto;
+  margin: 16px 0;
+}
+
+.post-modal-body pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.post-modal-body a {
+  color: var(--page-color);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.post-modal-body a:hover { border-bottom-color: var(--page-color); }
+
+.post-modal-body img {
+  max-width: 100%;
+  border-radius: 12px;
+  margin: 16px 0;
+}
+
+/* --- Responsive ------------------------------------------------------- */
+@media (max-width: 720px) {
+  .post-item {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 24px 0;
+  }
+
+  .post-item:hover {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .post-meta {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .post-time { padding-top: 0; }
+}
