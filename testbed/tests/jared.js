@@ -619,12 +619,11 @@ function TestParticles() {
 		i++
 	    });
 	    
-	    var rect = this.getBoundingClientRect();
-	    var mouseX = event.clientX - rect.left;
-	    var mouseY = event.clientY - rect.top;
-			
-	    // Call your function with the mouse coordinates
-	    handleMouseClick(mouseX, mouseY);
+        var rect = this.getBoundingClientRect();
+        var mouseX = event.clientX - rect.left;
+        var mouseY = event.clientY - rect.top;
+        
+        handleMouseClick(mouseX, mouseY, event.clientX, event.clientY);
 	});
 	
 	// Listen for the mousedown event (when the mouse button is pressed)
@@ -703,9 +702,10 @@ function TestParticles() {
         // Example usage:
         clickX = ((mouseX - 695)/1360)*18.6;
         clickY = (((Math.abs(mouseY - 800) - 392.5)/789)*10.8 + 4);
-
-        var worldX = getMouseCoords().x;
-        var worldY = getMouseCoords().y;
+    
+        var coords = getMouseCoords(clientX, clientY);
+        var worldX = coords.x;
+        var worldY = coords.y;
 
         //tablet view
         if (aspect_ratio >= 0.9 && aspect_ratio <= 1) {
@@ -744,7 +744,7 @@ function TestParticles() {
             }
         }
 
-        isClickInPolygon();
+        isClickInPolygon(clientX, clientY);
 	}
 	
 
@@ -765,40 +765,40 @@ function TestParticles() {
     // Function to print pentagon coordinates to console
     function isClickInPolygon()
     {
-	let i = 0;
-	
-
-	while (i < pentagons.length)
-	{
-		// Assuming `pentagon` is a valid b2_dynamicBody object
-		var position = pentagons[i].GetPosition(); // Call GetPosition() method to retrieve position
-		var x = position.x; // Access x coordinate
-		var y = position.y; // Access y coordinate			
-		var coords = getMouseCoords();		
-		var a = coords.x - x;
-		var b = coords.y - y;			
-		var c = Math.sqrt( a*a + b*b );
-
-			if (c < .75 && clickDuration < 300)
-			{
-				switch(i)
-				{
-				    case 0:
-					window.open("https://www.hakoshop.com/");
-					break;
-				    case 1:
-					window.open("https://github.com/Jareddesu");
-					break;
-				    case 2:
-					window.open("https://www.youtube.com/@Jareddesu");
-					break;
-				    case 3:
-					window.open("https://www.instagram.com/jareddayo/");
-					break;
-				}   
-			}
-		i++;
-	}
+    	let i = 0;
+    	
+    
+    	while (i < pentagons.length)
+    	{
+    		// Assuming `pentagon` is a valid b2_dynamicBody object
+    		var position = pentagons[i].GetPosition();
+            var x = position.x;
+            var y = position.y;
+            var coords = getMouseCoords(clientX, clientY);
+            var a = coords.x - x;
+            var b = coords.y - y;
+            var c = Math.sqrt(a*a + b*b);
+    
+    			if (c < .75 && clickDuration < 300)
+    			{
+    				switch(i)
+    				{
+    				    case 0:
+    					window.open("https://www.hakoshop.com/");
+    					break;
+    				    case 1:
+    					window.open("https://github.com/Jareddesu");
+    					break;
+    				    case 2:
+    					window.open("https://www.youtube.com/@Jareddesu");
+    					break;
+    				    case 3:
+    					window.open("https://www.instagram.com/jareddayo/");
+    					break;
+    				}   
+    			}
+    		i++;
+    	}
     }
 
 var width = window.innerWidth, height = window.innerHeight;
