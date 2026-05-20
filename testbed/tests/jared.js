@@ -697,56 +697,47 @@ function TestParticles() {
     
 
 	// Function to handle mouse clicks and check for pentagon intersections
-	function handleMouseClick(mouseX, mouseY) {
-        var wasDragging = false;
-        
-        // Example usage:
+    function handleMouseClick(mouseX, mouseY, clientX, clientY) {
         clickX = ((mouseX - 695)/1360)*18.6;
         clickY = (((Math.abs(mouseY - 800) - 392.5)/789)*10.8 + 4);
     
         var coords = getMouseCoords(clientX, clientY);
         var worldX = coords.x;
         var worldY = coords.y;
-
+    
         //tablet view
         if (aspect_ratio >= 0.9 && aspect_ratio <= 1) {
-            if(worldY.between(4.78, 5.152))
-            {
+            if(worldY.between(4.78, 5.152)) {
                 if (worldX.between(-4.052, -1.99)) window.location.replace("https://jareddesu.com/about/");
                 else if (worldX.between(-1.50, -0.47)) window.location.replace("https://jareddesu.com/blog/");
                 else if (worldX.between(0.218, 1.913)) window.location.replace("https://jareddesu.com/projects/");
                 else if (worldX.between(2.2, 3.99)) window.location.replace("https://jareddesu.com/contact/");
             }
-        } 
-
+        }
         //desktop view
         else if (aspect_ratio > 1) {
-            if(worldY.between(4.80, 5.18))
-            {
+            if(worldY.between(4.80, 5.18)) {
                 if (worldX.between(-4.03, -2.02)) window.location.replace("https://jareddesu.com/about/");
                 else if (worldX.between(-1.45, -0.472)) window.location.replace("https://jareddesu.com/blog/");
                 else if (worldX.between(0.223, 1.937)) window.location.replace("https://jareddesu.com/projects/");
                 else if (worldX.between(2.178, 4.057)) window.location.replace("https://jareddesu.com/contact/");
             }
-        } 
-
+        }
         //mobile view
         else {
-            if (worldY.between(4.82, 5.15))
-            {
+            if (worldY.between(4.82, 5.15)) {
                 if (worldX.between(-2.178, -0.139)) window.location.replace("https://jareddesu.com/about/");
                 else if (worldX.between(0.75, 1.77)) window.location.replace("https://jareddesu.com/blog/");
-
             }
-            if(worldY.between(4.251, 4.609))
-            {
+            if(worldY.between(4.251, 4.609)) {
                 if (worldX.between(-2.039, -0.331)) window.location.replace("https://jareddesu.com/projects/");
                 else if (worldX.between(0.357, 2.118)) window.location.replace("https://jareddesu.com/contact/");
             }
         }
-
+    
         isClickInPolygon(clientX, clientY);
-	}
+    }
+
 	
 
 	function getMouseCoords() {
@@ -764,15 +755,10 @@ function TestParticles() {
 }
 	
     // Function to print pentagon coordinates to console
-    function isClickInPolygon()
-    {
-    	let i = 0;
-    	
-    
-    	while (i < pentagons.length)
-    	{
-    		// Assuming `pentagon` is a valid b2_dynamicBody object
-    		var position = pentagons[i].GetPosition();
+    function isClickInPolygon(clientX, clientY) {
+        let i = 0;
+        while (i < pentagons.length) {
+            var position = pentagons[i].GetPosition();
             var x = position.x;
             var y = position.y;
             var coords = getMouseCoords(clientX, clientY);
@@ -780,27 +766,18 @@ function TestParticles() {
             var b = coords.y - y;
             var c = Math.sqrt(a*a + b*b);
     
-    			if (c < .75 && clickDuration < 300)
-    			{
-    				switch(i)
-    				{
-    				    case 0:
-    					window.open("https://www.hakoshop.com/");
-    					break;
-    				    case 1:
-    					window.open("https://github.com/Jareddesu");
-    					break;
-    				    case 2:
-    					window.open("https://www.youtube.com/@Jareddesu");
-    					break;
-    				    case 3:
-    					window.open("https://www.instagram.com/jareddayo/");
-    					break;
-    				}   
-    			}
-    		i++;
-    	}
+            if (c < .75 && clickDuration < 300) {
+                switch(i) {
+                    case 0: window.open("https://www.hakoshop.com/"); break;
+                    case 1: window.open("https://github.com/Jareddesu"); break;
+                    case 2: window.open("https://www.youtube.com/@Jareddesu"); break;
+                    case 3: window.open("https://www.instagram.com/jareddayo/"); break;
+                }
+            }
+            i++;
+        }
     }
+
 
 var width = window.innerWidth, height = window.innerHeight;
 var widthHalf = width / 2, heightHalf = height / 2;
