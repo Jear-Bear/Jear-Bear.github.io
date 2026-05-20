@@ -1,447 +1,209 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jared P. - Contact</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300&display=swap" rel="stylesheet">
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow-y: auto;
-            background-color: #F2F2F2;
-        }
-        .navbar {
-            background-color: #785E80;
-            height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 20px;
-            z-index: 3;
-        }
-        .navbar .logo {
-            display: flex; 
-            align-items: center; 
-            margin-right: auto; 
-        }
-        .navbar img {
-            height: 50px;
-        }
-        .navbar .logo-text {
-            margin-left: 10px;
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-        }
-        .navbar ul {
-            list-style: none;
-            display: flex;
-            margin: 0;
-            padding: 0;
-        }
-        .navbar ul li {
-            margin-left: 30px;
-            transition: margin-left 0.3s ease, font-size 0.3s ease;
-        }
-        .navbar ul li a {
-            color: white;
-            text-decoration: none;
-            font-size: 16px;
-            transition: font-size 0.3s ease;
-        }
-        .navbar ul li a:hover {
-            text-decoration: underline;
-        }
-        .red-section {
-            background-color: #785E80;
-            height: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            position: relative;
-        }
-        .white-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start; /* Keep items at the top */
-            min-height: calc(100vh - 80px);
-            background-color: #EBEFFF;
-            padding: 20px;
-            box-sizing: border-box;
-            width: 100%;
-            position: relative;
-            overflow: hidden;
-        }
-        .title-text {
-            margin-top: 0;
-            color: #f2f2f2;
-            font-family: 'Poppins', sans-serif;
-            font-size: 90px;
-            font-weight: bold;
-            z-index: 3;
-            text-align: left;
-            animation: titleFadeIn 2s forwards;
-            margin-bottom: 0;
-            position: relative;
-            transition: font-size 0.3s ease;
-        }
-        .text-container {
-            width: 80%;
-            margin-top: 0%;
-            color: #f2f2f2;
-            font-family: 'Libre Franklin', sans-serif;
-            font-size: 18px;
-            line-height: 1.6;
-            text-align: center;
-            font-weight: 300;
-        }
-        .text-container p::first-letter {
-            font-size: 200%;
-            font-weight: bold;
-        }
-        .email-form {
-            width: 69%;
-			margin: 0 auto; /* Center the form horizontally */
-            max-width: 600px;
-            background-color: transparent;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-        }
-		.email-form input,
-		.email-form textarea {
-			width: 100%;
-			background-color: transparent;
-			padding: 10px;
-			margin-bottom: 10px;
-			border-radius: 20px;  /* Increase border radius for rounder corners */
-			border: 3px solid rgba(120, 94, 128, 0.2);  /* Set 20% opacity on the border color */
-			font-size: 16px;
-		}
-        .email-form button {
-            background-color: #785E80;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-		
-		.email-form textarea {
-			resize: none;  /* Disables resizing */
-		}
-		
-		.email-form input:focus,
-		.email-form textarea:focus {
-			outline: none; /* Removes the default outline */
-			border: 3px solid rgba(120, 94, 128, 0.2);  /* Set 20% opacity on the border color */
-		}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact · Jared Perlmutter</title>
+  <meta name="description" content="Get in touch with Jared. Discord, YouTube, email — pick what works for you. Honest expectations about what I respond to." />
 
-        .email-form button:hover {
-            background-color: #6b4d6a;
-        }
-        @keyframes titleFadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-        .flex-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-		
-	@media (max-width: 1919px) {
-		.white-section::before {
-			height: 30%; /* Height of the blue section */
-		}
-	}
+  <link rel="icon" href="../images/logo.png">
 
-	@media (min-width: 1800px) {
-		.navbar ul li a {
-			font-size: 16px;
-		}
-		.navbar img {
-			height: 37.5px;
-		}
-		.navbar .logo-text {
-			margin-left: 10px;
-			color: white;
-			font-size: 20px;
-			font-weight: bold;
-		}
-		.title-text {
-			font-size: 70px;
-		}
-		.text-container {
-			padding-left: 2%;
-			margin-top: auto;
-			margin-bottom: auto;
-		}
-		.text-container p::first-letter {
-			font-size: 200%;
-			font-weight: bold;
-			line-height: 1;
-			display: inline-block;
-		}
-	}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,30..100;1,9..144,300..700,30..100&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
+  <link rel="stylesheet" href="../styles/base.css">
+  <link rel="stylesheet" href="../styles/contact.css">
 
-	/* Media Query for max-width: 1800px */
-	@media (max-width: 1800px) {
-		.navbar ul li a {
-			font-size: 16px;
-		}
-		.navbar img {
-			height: 37.5px;
-		}
-		.navbar .logo-text {
-			margin-left: 10px;
-			color: white;
-			font-size: 20px;
-			font-weight: bold;
-		}
-		.title-text {
-			font-size: 70px;
-		}
-		.text-container {
-			padding-left: 2%;
-			margin-top: auto;
-			margin-bottom: auto;
-		}
-		.text-container p::first-letter {
-			font-size: 200%;
-			font-weight: bold;
-			line-height: 1;
-			display: inline-block;
-		}
-	}
-
-	@media (max-width: 1299px) {
-		.white-section::before {
-			height: 20%; /* Height of the blue section */
-		}
-	}
-
-	/* Media Query for max-width: 830px */
-	@media (max-width: 830px) {
-		.navbar ul li a {
-			font-size: 16px;
-		}
-		.navbar img {
-			height: 37.5px;
-		}
-		.navbar .logo-text {
-			margin-left: 10px;
-			color: white;
-			font-size: 20px;
-			font-weight: bold;
-		}
-		.title-text {
-			font-size: 70px;
-		}
-		.text-container {
-			padding-left: 2%;
-			margin-top: auto;
-			margin-bottom: auto;
-		}
-		.text-container p::first-letter {
-			font-size: 200%;
-			font-weight: bold;
-			line-height: 1;
-			display: inline-block;
-		}
-	}
-
-	/* Media Query for max-width: 675px */
-	@media (max-width: 675px) {
-		.tiles-container {
-			grid-template-columns: 1fr; /* Stacks tiles vertically */
-		}
-
-		.tile {
-			flex-direction: column; /* Arrange image on top, content on bottom */
-		}
-
-		.tile img {
-			width: 100%;
-			max-width: calc(100% - 20px); /* Reduce width to allow padding on sides */
-			height: auto; /* Maintain aspect ratio */
-			padding: 10px; /* Adds padding to the sides */
-			margin: auto; /* Center the image horizontally */
-			box-sizing: border-box;
-		}
-
-		.tile-content {
-			padding: 10px;
-			text-align: center;
-			width: 100%;
-		}
-	}
-
-	/* Media Query for max-width: 600px */
-	@media (max-width: 600px) {
-		.navbar ul li a {
-			font-size: 16px;
-		}
-		.navbar img {
-			height: 37.5px;
-		}
-		.navbar .logo-text {
-			margin-left: 10px;
-			color: white;
-			font-size: 20px;
-			font-weight: bold;
-		}
-		.title-text {
-			font-size: 70px;
-		}
-		.text-container {
-			padding-left: 2%;
-			margin-top: auto;
-			margin-bottom: auto;
-		}
-		.text-container p::first-letter {
-			font-size: 200%;
-			font-weight: bold;
-			line-height: 1;
-			display: inline-block;
-		}
-	}
-
-	/* Media Query for max-width: 440px */
-	@media (max-width: 507px) {
-		.navbar ul li a {
-			font-size: 12px;
-		}
-		.navbar img {
-			height: 37.5px;
-		}
-		.navbar .logo-text {
-			margin-left: 10px;
-			color: white;
-			font-size: 15px;
-			font-weight: bold;
-		}
-		.title-text {
-			font-size: 50px;
-		}
-		.text-container {
-			padding-left: 2%;
-			margin-top: auto;
-			margin-bottom: auto;
-			font-size: 15px;
-		}
-		.text-container p::first-letter {
-			font-size: 185%;
-			font-weight: bold;
-			line-height: 1;
-			display: inline-block;
-		}
-		.navbar ul li {
-			margin-left: 10px;
-		}
-		body {
-		  overflow-y: visible;
-		}
-	}
-    </style>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
+<body data-page="contact">
 
-<body>
-    <!-- Navbar -->
-    <div class="navbar">
-        <div class="logo">
-            <a href="../" style="text-decoration: none; color: inherit; display: flex; align-items: center;">
-                <img src="https://github.com/Jear-Bear/Jear-Bear.github.io/blob/b7769460d7fea76491da4b9a26bbecaea342d06b/images/logo.png?raw=true" alt="Logo">
-                <div class="logo-text">Home</div>
-            </a>
-        </div>
-        <ul>
-            <li><a href="../about/">About</a></li>
-            <li><a href="../projects/">Projects</a></li>
-            <li><a href="../blog/">Blog</a></li>
-            <li><a href="../contact/">Contact</a></li>
-        </ul>
-    </div>
+  <!-- Drifting background blob — the page's motion accent -->
+  <svg class="bg-blob" viewBox="0 0 600 600" aria-hidden="true">
+    <defs>
+      <linearGradient id="blobGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="currentColor" stop-opacity="0.18" />
+        <stop offset="100%" stop-color="currentColor" stop-opacity="0.04" />
+      </linearGradient>
+    </defs>
+    <path fill="url(#blobGrad)" d="M 300,80 C 460,80 540,220 540,330 C 540,440 420,540 290,540 C 180,540 60,440 60,310 C 60,180 160,80 300,80 Z" />
+  </svg>
 
-    <!-- Main Content -->
+  <nav class="navbar">
+    <a href="../" class="nav-logo">
+      <span class="nav-logo-mark"></span>
+      <span>jared</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="../about/">About</a></li>
+      <li><a href="../projects/">Projects</a></li>
+      <li><a href="../blog/">Blog</a></li>
+      <li><a href="../contact/">Contact</a></li>
+    </ul>
+    <button class="nav-burger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+  <ul class="nav-mobile">
+    <li><a href="../about/">About</a></li>
+    <li><a href="../projects/">Projects</a></li>
+    <li><a href="../blog/">Blog</a></li>
+    <li><a href="../contact/">Contact</a></li>
+  </ul>
+
+  <main>
     <div class="container">
-        <!-- Red Section -->
-        <div class="section red-section">
-            <div class="title-text">CONTACT ME</div>
-            <div class="text-container">
-                <p>Questions? Ideas? Want to connect? <br> Fill out a request and I'll get back to you!</p>
+
+      <header class="page-header">
+        <p class="eyebrow reveal">contact</p>
+        <h1 class="page-title reveal">
+          Let's <em>talk</em>.
+        </h1>
+        <p class="page-intro reveal">
+          Here's how to reach me &mdash; with honest expectations about how fast
+          I'll respond. Pick whatever channel fits.
+        </p>
+      </header>
+
+      <!-- Contact channels list -->
+      <section class="channels-section">
+        <div class="channels-grid">
+
+          <a href="#" target="_blank" rel="noopener" class="channel-card reveal">
+            <div class="channel-head">
+              <h3>Discord</h3>
+              <span class="channel-speed fast">fastest</span>
             </div>
-        </div>
+            <p class="channel-desc">Best for hako questions, collab ideas, or just hanging out. Active community.</p>
+            <p class="channel-meta">Usually within a day</p>
+            <span class="channel-cta">Join the server <span class="arrow">→</span></span>
+          </a>
 
-        <!-- White Section for Tiles -->
-        <div class="section white-section">
-            <!-- Email Form -->
-            <div class="email-form">
-                <form id="contact-form">
-                    <label for="name">Name:</label>
-                    <input type="text" id="name" name="name" required>
-
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" name="email" required>
-
-                    <label for="message">Message:</label>
-                    <textarea id="message" name="message" rows="4" required></textarea>
-
-                    <button type="submit">Send Message</button>
-                </form>
+          <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener" class="channel-card reveal">
+            <div class="channel-head">
+              <h3>YouTube</h3>
+              <span class="channel-speed medium">slow</span>
             </div>
-            <div class="tiles-container" id="tiles-container"></div>
+            <p class="channel-desc">Drop a comment on a video. I read them all, eventually.</p>
+            <p class="channel-meta">A few days to a week</p>
+            <span class="channel-cta">@jareddesu <span class="arrow">→</span></span>
+          </a>
+
+          <a href="mailto:hello@jareddesu.com" class="channel-card reveal">
+            <div class="channel-head">
+              <h3>Email</h3>
+              <span class="channel-speed medium">batch</span>
+            </div>
+            <p class="channel-desc">For business inquiries, longer messages, anything formal.</p>
+            <p class="channel-meta">Checked in batches, expect 48 hours</p>
+            <span class="channel-cta">hello@jareddesu.com <span class="arrow">→</span></span>
+          </a>
+
         </div>
+      </section>
+
+      <!-- What I can / can't help with -->
+      <section class="expectations-section">
+        <div class="expectations-grid">
+          <div class="expectations-card good reveal">
+            <h3>Happy to chat about</h3>
+            <ul>
+              <li>Japanese learning, immersion, AJATT-related questions</li>
+              <li>hako — feedback, beta access, partnership ideas</li>
+              <li>YouTube growth, content production, collab proposals</li>
+              <li>Side project nerding</li>
+            </ul>
+          </div>
+          <div class="expectations-card not reveal">
+            <h3>Sorry, can't help with</h3>
+            <ul>
+              <li>1-on-1 tutoring requests (not taking students)</li>
+              <li>"Check out my channel" — can't make promises</li>
+              <li>Crypto / NFT / AI tool partnerships</li>
+              <li>Anything that needs a fast turnaround</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Catch-all form -->
+      <section class="form-section">
+        <div class="section-label">
+          <span class="section-label-text">Or send a note</span>
+        </div>
+        <h2 class="section-title reveal">For everything else.</h2>
+        <p class="form-intro reveal">
+          If none of the channels above fit, drop a message here. Same response time as email.
+        </p>
+
+        <form class="contact-form reveal" id="contact-form">
+          <!-- Honeypot — hidden from humans, bots fill it -->
+          <input type="text" name="website" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+          <div class="form-row">
+            <label>
+              <span class="form-label">Your name</span>
+              <input type="text" name="name" required />
+            </label>
+            <label>
+              <span class="form-label">Email</span>
+              <input type="email" name="email" required />
+            </label>
+          </div>
+
+          <label>
+            <span class="form-label">Message</span>
+            <textarea name="message" rows="5" required placeholder="What's on your mind?"></textarea>
+          </label>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="form-submit">
+              <span class="submit-text">Send message</span>
+            </button>
+            <p class="form-meta" id="form-meta">No marketing, no resale, just me reading it.</p>
+          </div>
+        </form>
+      </section>
+
     </div>
+  </main>
 
-	<!-- EmailJS Script -->
-	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-	<script type="text/javascript">
-		// Initialize EmailJS
-		(function() {
-			emailjs.init("z8lBeXbRQ2a3nnAat");  // Replace with your actual EmailJS public key
-		})();
-	</script>
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-left">
+        <a href="../" class="nav-logo">
+          <span class="nav-logo-mark"></span>
+          <span>jared</span>
+        </a>
+        <p>Made by a person, with care.</p>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <p class="footer-heading">Site</p>
+          <a href="../about/">About</a>
+          <a href="../projects/">Projects</a>
+          <a href="../blog/">Blog</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-heading">Find me</p>
+          <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a>
+          <a href="#" target="_blank" rel="noopener">Discord ↗</a>
+          <a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-heading">Other</p>
+          <a href="../contact/">Contact</a>
+          <a href="#">RSS</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-baseline">
+      © 2026 Jared Perlmutter · Built with love and Inter
+    </div>
+  </footer>
 
-	<script>
-		document.getElementById("contact-form").addEventListener("submit", function(event) {
-			event.preventDefault();
-
-			// Get form data
-			var formData = new FormData(event.target);
-			var name = formData.get('name');
-			var email = formData.get('email');
-			var message = formData.get('message');
-
-			// Send the email via EmailJS
-			emailjs.send("service_kp4acia", "template_v5vk5m7", {
-				to_name: "Jared",  // Update to match your template parameters
-				from_name: name,
-				user_email: email,
-				message: message,
-				reply_to: email   // Ensures the reply goes to the user
-			}).then(function(response) {
-				console.log("Success", response);
-				alert("Your message has been sent successfully!");
-				document.getElementById("contact-form").reset();  // Optional: Reset form after submission
-			}, function(error) {
-				console.error("Error", error);
-				alert("There was an error sending your message. Please try again.");
-			});
-		});
-	</script>
+  <script src="../scripts/site.js"></script>
+  <script src="../scripts/contact.js"></script>
 </body>
 </html>
