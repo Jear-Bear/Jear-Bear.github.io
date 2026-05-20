@@ -1,621 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jared P. - Projects</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300&display=swap" rel="stylesheet">
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow-y: auto; /* Enable vertical scrolling */
-            background-color: #F2F2F2;
-        }
-				.navbar {
-						background-color: #5E7E80;
-						height: 80px;
-						display: flex;
-						align-items: center;
-						justify-content: center; /* Center the items */
-						padding: 0 20px;
-						z-index: 3; 
-				}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projects · Jared Perlmutter</title>
+  <meta name="description" content="A selection of side projects, experiments, and things I've built — including hako, an ambient Anki companion." />
 
-				.navbar .logo {
-						display: flex; 
-						align-items: center; 
-						margin-right: auto; /* Pushes the logo to the left */
-				}
+  <link rel="icon" href="../images/logo.png">
 
-				.navbar img {
-						height: 50px;
-				}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,30..100;1,9..144,300..700,30..100&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-				.navbar .logo-text {
-						margin-left: 10px;
-						color: white;
-						font-size: 20px;
-						font-weight: bold;
-				}
-
-				.navbar ul {
-						list-style: none;
-						display: flex;
-						margin: 0;
-						padding: 0;
-						/* Optional: center the ul */
-				}
-
-				.navbar ul li {
-						margin-left: 30px; /* Default margin for larger screens */
-						transition: margin-left 0.3s ease, font-size 0.3s ease; /* Adding transition for margin and font size */
-				}
-
-				.navbar ul li a {
-						color: white;
-						text-decoration: none;
-						font-size: 16px;
-						transition: font-size 0.3s ease; /* Adding transition for font size */
-				}
-
-				.navbar ul li a:hover {
-						text-decoration: underline;
-				}
-        .red-section {
-            background-color: #5E7E80; 
-            height: 50%; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            padding: 20px; 
-            position: relative; 
-        }
-		.white-section {
-			display: flex; 
-			flex-direction: column; 
-			align-items: center; 
-			justify-content: flex-start; 
-			min-height: calc(100vh - 50%); 
-			background-color: #F2F2F2; 
-			padding: 20px; 
-			box-sizing: border-box; 
-			width: 100%; 
-			position: relative; /* Required for positioning the pseudo-element */
-			overflow: hidden; /* Prevent overflow issues */
-		}
-
-		.white-section::before {
-			content: ""; /* Required to create a pseudo-element */
-			position: absolute; /* Position it at the top */
-			top: 0;
-			left: 0;
-			right: 0;
-			height: 50%; /* Height of the blue section */
-			background-color: #5E7E80; /* Change this to your desired blue color */
-			z-index: 0; /* Set behind other content */
-		}
-        .title-text {
-            margin-top: 0; 
-            color: #f2f2f2; 
-            font-family: 'Poppins', sans-serif; 
-            font-size: 90px; 
-            font-weight: bold; 
-            z-index: 3; 
-            text-align: left; 
-            animation: titleFadeIn 2s forwards; 
-            margin-bottom: 0; 
-            position: relative; 
-			transition: font-size 0.3s ease;
-        }
-        .text-container {
-            width: 80%; 
-            margin-top: 5%; 
-            color: #f2f2f2; 
-            font-family: 'Libre Franklin', sans-serif; 
-            font-size: 18px; 
-            line-height: 1.6; 
-            text-align: center; 
-            font-weight: 300; 
-        }
-        .text-container p::first-letter {
-            font-size: 200%; 
-            font-weight: bold; 
-        }
-
-        @keyframes titleFadeIn {
-            from {
-                opacity: 0; 
-            }
-            to {
-                opacity: 1; 
-            }
-        }
-
-		.tile {
-			opacity: 0; /* Start invisible */
-			transform: scale(1.2); /* Start larger */
-			transition: opacity 0.8s ease, transform 0.5s ease; /* Add transition for scaling */
-		}
-
-		.tile.visible {
-			opacity: 1; /* Fade in */
-			transform: scale(1); /* Normal size */
-			transition: opacity 0.5s ease, transform 0.5s ease; /* Ensure transition is also applied here */
-		}
-
-
-
-        .tiles-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
-            gap: 20px; 
-            width: 100%; 
-            padding: 20px; 
-            box-sizing: border-box; 
-						justify-items: center; /* Center items within each grid cell */
-    				justify-content: center; /* Center the grid itself within the container */
-        }
-        .tile {
-            background-color: #ffffff; 
-            border-radius: 8px; 
-            padding: 0px; 
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
-            text-align: center; 
-             <!-- border: 1px solid grey; -->
-        }
-        .tile img {
-            width: 100%; 
-            height: auto; 
-            border-radius: 4px; 
-            top: 0;
-        }
-        .tile h3 {
-            margin: 10px 0 5px; 
-            font-family: 'Poppins', sans-serif; 
-            font-weight: bold; 
-        }
-        .tile p {
-            font-family: 'Libre Franklin', sans-serif; 
-            font-weight: 300; 
-            color: #333; 
-            padding-left: 10%;
-            padding-right: 10%;
-        }
-		
-		/* Flex container to hold title-text and text-container */
-		.flex-container {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			justify-content: center;
-		}
-
-/* Media Query for min-width: 1800px */
-@media (min-width: 1800px) {
-    .navbar ul li a {
-        font-size: 16px;
-    }
-    .navbar img {
-        height: 37.5px;
-    }
-    .navbar .logo-text {
-        margin-left: 10px;
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-    }
-    .title-text {
-        font-size: 70px;
-    }
-    .text-container {
-        padding-left: 2%;
-        margin-top: auto;
-        margin-bottom: auto;
-    }
-    .text-container p::first-letter {
-        font-size: 200%;
-        font-weight: bold;
-        line-height: 1;
-        display: inline-block;
-    }
-
-    /* Tiles styling for three tiles per row */
-    .tiles-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-    }
-
-    .tile {
-        flex: 1 1 100%; /* Make sure tiles occupy full width initially */
-        box-sizing: border-box;
-        transition: transform 0.5s; /* Slower transition for hover effect */
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Darker shadow */
-        max-width: 420px; /* Apply max-width at large viewport */
-    }
-
-    .tile:hover {
-        transform: translateY(-5px) scale(1.05); /* Grow/raise effect on hover */
-    }
-}
-
-/* Media Query for max-width: 1800px */
-@media (max-width: 1800px) {
-    .navbar ul li a {
-        font-size: 16px;
-    }
-    .navbar img {
-        height: 37.5px;
-    }
-    .navbar .logo-text {
-        margin-left: 10px;
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-    }
-    .title-text {
-        font-size: 70px;
-    }
-    .text-container {
-        padding-left: 2%;
-        margin-top: auto;
-        margin-bottom: auto;
-    }
-    .text-container p::first-letter {
-        font-size: 200%;
-        font-weight: bold;
-        line-height: 1;
-        display: inline-block;
-    }
-
-    /* Tiles styling to create three tiles per row */
-    .tiles-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-    }
-
-    .tile {
-        flex: 1 1 100%; /* Default to full width */
-        box-sizing: border-box;
-        transition: transform 0.5s; /* Slower transition for hover effect */
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Darker shadow */
-        max-width: 420px; /* Keep max-width for tiles */
-    }
-
-    .tile:hover {
-        transform: translateY(-5px) scale(1.05); /* Grow/raise effect on hover */
-    }
-}
-
-@media (max-width: 1371px) {
-	.white-section::before {
-		height: 27%; /* Height of the blue section */
-	}
-}
-
-/* Media Query for min-width: 1260px */
-@media (min-width: 1260px) {
-    .tile {
-        flex: 0 0 420px; /* Lock tile width to max-width */
-        max-width: 420px; /* Enforce the maximum width */
-        width: 100%; /* Make sure tiles occupy full available width */
-    }
-}
-
-
-
-/* Media Query for max-width: 950px for Two Columns */
-@media (max-width: 950px) {
-    .tiles-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-    }
-
-    .tile {
-        flex: 1 1 calc(50% - 16px); /* Two tiles per row, accounting for the gap */
-        box-sizing: border-box;
-        transition: transform 0.5s; /* Slower transition for hover effect */
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Darker shadow */
-    }
-
-    .tile:hover {
-        transform: translateY(-5px) scale(1.05); /* Grow/raise effect on hover */
-    }
-}
-
-/* Media Query for max-width: 830px */
-@media (max-width: 830px) {
-    .navbar ul li a {
-        font-size: 16px;
-    }
-    .navbar img {
-        height: 37.5px;
-    }
-    .navbar .logo-text {
-        margin-left: 10px;
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-    }
-    .title-text {
-        font-size: 70px;
-    }
-    .text-container {
-        padding-left: 2%;
-        margin-top: auto;
-        margin-bottom: auto;
-    }
-    .text-container p::first-letter {
-        font-size: 200%;
-        font-weight: bold;
-        line-height: 1;
-        display: inline-block;
-    }
-
-    /* Tiles styling to create two tiles per row */
-    .tiles-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-    }
-
-    .tile {
-        flex: 1 1 calc(50% - 16px); /* Two tiles per row */
-        box-sizing: border-box;
-        transition: transform 0.5s, opacity 0.5s; /* Include opacity in the transition */
-        opacity: 0; /* Initial opacity set to 0 */
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Darker shadow */
-    }
-
-    /* Assuming you will add a class when the tile is in view */
-    .tile.visible {
-        opacity: 1; /* Set opacity to 1 when visible */
-    }
-
-    .tile:hover {
-        transform: translateY(-5px) scale(1.05); /* Grow/raise effect on hover */
-    }
-}
-
-
-/* Media Query for max-width: 600px */
-@media (max-width: 600px) {
-    .navbar ul li a {
-        font-size: 16px;
-    }
-    .navbar img {
-        height: 37.5px;
-    }
-    .navbar .logo-text {
-        margin-left: 10px;
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-    }
-    .title-text {
-        font-size: 70px;
-    }
-    .text-container {
-        padding-left: 2%;
-        margin-top: auto;
-        margin-bottom: auto;
-    }
-    .text-container p::first-letter {
-        font-size: 200%;
-        font-weight: bold;
-        line-height: 1;
-        display: inline-block;
-    }
-
-    /* Tiles styling to create one tile per row */
-    .tiles-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-    }
-
-    .tile {
-        flex: 1 1 calc(100% - 16px); /* One tile per row */
-        box-sizing: border-box;
-        transition: transform 0.5s, opacity 0.5s; /* Include opacity in the transition */
-        opacity: 0; /* Initial opacity set to 0 */
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Darker shadow */
-    }
-
-    /* Assuming you will add a class when the tile is in view */
-    .tile.visible {
-        opacity: 1; /* Set opacity to 1 when visible */
-    }
-
-    .tile:hover {
-        transform: translateY(-5px) scale(1.05); /* Grow/raise effect on hover */
-    }
-	
-	@media (max-width: 1371px) {
-	.white-section::before {
-		height: 17%; /* Height of the blue section */
-	}
-}
-}
-
-/* Media Query for max-width: 440px */
-@media (max-width: 440px) {
-    .navbar ul li a {
-        font-size: 12px;
-    }
-    .navbar img {
-        height: 37.5px;
-    }
-    .navbar .logo-text {
-        margin-left: 10px;
-        color: white;
-        font-size: 15px;
-        font-weight: bold;
-    }
-    .title-text {
-        font-size: 50px;
-    }
-    .text-container {
-        padding-left: 2%;
-        margin-top: auto;
-        margin-bottom: auto;
-    }
-    .text-container p::first-letter {
-        font-size: 200%;
-        font-weight: bold;
-        line-height: 1;
-        display: inline-block;
-    }
-    .navbar ul li {
-        margin-left: 10px;
-    }
-
-    /* Tiles styling remains one tile per row */
-    .tiles-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-    }
-
-    .tile {
-        flex: 1 1 calc(100% - 16px); /* One tile per row */
-    }
-}
-
-
-
-
-
-    </style>
+  <link rel="stylesheet" href="../styles/base.css">
+  <link rel="stylesheet" href="../styles/projects.css">
 </head>
+<body data-page="projects">
 
-<body>
-    <div class="navbar">
-        <div class="logo">
-			<a href="../" style="text-decoration: none; color: inherit; display: flex; align-items: center;">
-				<img src="https://github.com/Jear-Bear/Jear-Bear.github.io/blob/b7769460d7fea76491da4b9a26bbecaea342d06b/images/logo.png?raw=true" alt="Logo">
-				<div class="logo-text">Home</div>
-			</a>
-        </div>
-        <ul>
-            <li><a href="../about/">About</a></li>
-            <li><a href="../projects/">Projects</a></li>
-            <li><a href="../blog/">Blog</a></li>
-            <li><a href="../contact/">Contact</a></li>
-        </ul>
-    </div>
+  <!-- Navbar (same across all pages) -->
+  <nav class="navbar">
+    <a href="../" class="nav-logo">
+      <span class="nav-logo-mark"></span>
+      <span>jared</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="../about/">About</a></li>
+      <li><a href="../projects/">Projects</a></li>
+      <li><a href="../blog/">Blog</a></li>
+      <li><a href="../contact/">Contact</a></li>
+    </ul>
+    <button class="nav-burger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+  <ul class="nav-mobile">
+    <li><a href="../about/">About</a></li>
+    <li><a href="../projects/">Projects</a></li>
+    <li><a href="../blog/">Blog</a></li>
+    <li><a href="../contact/">Contact</a></li>
+  </ul>
 
+  <main>
     <div class="container">
-        <div class="section red-section">
-            <div class="title-text">PROJECTS</div>
-            <div class="text-container">
-                <p>Welcome to my projects page! <br> Here, you'll find a selection of the work I've done in my free time.</p>
-            </div>
+
+      <!-- Page header -->
+      <header class="page-header">
+        <p class="eyebrow reveal">projects</p>
+        <h1 class="page-title reveal">
+          Side <em>experiments</em>.
+        </h1>
+        <p class="page-intro reveal">
+          Things I've built, mostly at night, mostly because nobody asked me to.
+          The good ones turn into long-term projects. The rest stay in this list as a record.
+        </p>
+      </header>
+
+      <!-- Featured: hako -->
+      <section class="featured-section">
+        <div class="section-label">
+          <span class="section-label-text">Featured</span>
         </div>
 
-        <div class="section white-section">
-            <div class="tiles-container" id="tiles-container">
-                <!-- Project tiles will be dynamically generated here -->
+        <a href="https://hakoshop.com" target="_blank" rel="noopener" class="featured-card reveal">
+          <div class="featured-glow"></div>
+          <div class="featured-image">
+            <img src="../images/hako-hero.png" alt="hako device"
+                 onerror="this.style.display='none'; this.parentElement.classList.add('placeholder');" />
+            <div class="featured-placeholder">箱</div>
+          </div>
+          <div class="featured-content">
+            <p class="featured-eyebrow">an ongoing project</p>
+            <h2 class="featured-title">hako — an ambient Anki companion</h2>
+            <p class="featured-desc">
+              A small wooden box that shows your daily Anki progress on a 64×64 LED matrix.
+              Handmade enclosure, Raspberry Pi inside, talks to AnkiConnect over Wi-Fi.
+              Currently in closed beta with ~25 testers; first batch drops summer 2026.
+            </p>
+            <div class="featured-tags">
+              <span>Python</span><span>Hardware</span><span>Anki</span><span>Japanese</span>
             </div>
+            <span class="featured-link">
+              hakoshop.com <span class="arrow">→</span>
+            </span>
+          </div>
+        </a>
+      </section>
+
+      <!-- Other projects (dynamically loaded from GitHub) -->
+      <section class="projects-section">
+        <div class="section-label">
+          <span class="section-label-text">Other things</span>
         </div>
+        <h2 class="section-title reveal">More stuff I've made.</h2>
+
+        <div class="projects-grid" id="projects-grid">
+          <!-- Tiles inserted by projects.js, fetched from /Project_Showcase/ -->
+        </div>
+      </section>
+
     </div>
+  </main>
 
-<script>
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-left">
+        <a href="../" class="nav-logo">
+          <span class="nav-logo-mark"></span>
+          <span>jared</span>
+        </a>
+        <p>Made by a person, with care.</p>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <p class="footer-heading">Site</p>
+          <a href="../about/">About</a>
+          <a href="../projects/">Projects</a>
+          <a href="../blog/">Blog</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-heading">Find me</p>
+          <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a>
+          <a href="#" target="_blank" rel="noopener">Discord ↗</a>
+          <a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-heading">Other</p>
+          <a href="../contact/">Contact</a>
+          <a href="#">RSS</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-baseline">
+      © 2026 Jared Perlmutter · Built with love and Inter
+    </div>
+  </footer>
 
-    async function fetchGitHubFolderContents() {
-        try {
-            const projects = [];
-
-            const url = 'https://api.github.com/repos/Jear-Bear/Jear-Bear.github.io/contents/Project_Showcase';
-            const response = await fetch(url);
-
-            if (!response.ok) {
-            throw new Error('Failed to fetch data from GitHub API');
-            }
-
-            const data = await response.json();
-
-            // Filter out .DS_Store and extract only the name values
-            const fileNames = data
-            .filter(item => item.name !== '.DS_Store') // Exclude .DS_Store
-            .map(item => item.name); // Get the name of each item
-
-            fileNames.forEach(filename => {
-                projects.push(filename);
-            });
-
-            return projects;
-
-        } catch (error) {
-            console.error('Error fetching folder data:', error);
-        }
-    }
-
-    document.addEventListener("DOMContentLoaded", function() {
-        const tilesContainer = document.getElementById("tiles-container");
-
-		const observer = new IntersectionObserver((entries) => {
-			entries.forEach(entry => {
-				if (entry.isIntersecting) {
-					console.log(`Tile ${entry.target.firstChild.alt} is intersecting`);
-					entry.target.classList.add('visible'); // Add visible class to tile
-					observer.unobserve(entry.target); // Stop observing the tile once it becomes visible
-				}
-			});
-		}, {
-			threshold: 0.25, // Trigger when 25% of the tile is in view
-			rootMargin: '0px 0px -20% 0px' // Adjust the margin to trigger earlier
-		});
-
-        var projectFolders = [];
-        fetchGitHubFolderContents().then(data => 
-        {
-            projectFolders = data;
-
-            projectFolders.forEach(folder => {
-                const tile = document.createElement("div");
-                tile.classList.add("tile");
-
-                const img = document.createElement("img");
-                // Adjust image URL to use raw GitHub content URL
-                img.src = `../Project_Showcase/${folder}/image.png`;
-                img.alt = folder;
-
-                const title = document.createElement("h3");
-                title.textContent = folder;
-
-                const description = document.createElement("p");
-
-                // Fetch the description from the text file
-                fetch(`../Project_Showcase/${folder}/description.txt`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.text();
-                    })
-                    .then(text => {
-                        description.textContent = text;
-                    })
-                    .catch(err => console.error('Error fetching description:', err));
-
-                tile.appendChild(img);
-                tile.appendChild(title);
-                tile.appendChild(description);
-                tilesContainer.appendChild(tile);
-
-                // Observe the tile for intersection after it's added to the DOM
-                observer.observe(tile);
-            });
-        });
-    });
-</script>
-
-
+  <script src="../scripts/site.js"></script>
+  <script src="../scripts/projects.js"></script>
 </body>
 </html>
