@@ -7,7 +7,7 @@ var dragTargetY = 0;
 var dragGrabOffsetX = 0;       // NEW: where in the jelly the user grabbed (world-relative to centroid)
 var dragGrabOffsetY = 0;       // NEW
 var DRAG_RADIUS = 0.6;         // NEW: how far the "grab" influence extends, in world units
-var DRAG_STRENGTH = 30.0;
+var DRAG_STRENGTH = 45.0;
 var DRAG_DAMPING = 0.7;
 var wasDragging = false;
 
