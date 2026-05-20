@@ -1,834 +1,244 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jared P. - About</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet"> <!-- Poppins font -->
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300&display=swap" rel="stylesheet">
-	<style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: visible; /* Disable scrolling */
-			background-color: #F2F2F2;
-        }
-		.navbar {
-				background-color: #BE797A;
-				height: 80px;
-				display: flex;
-				align-items: center;
-				justify-content: center; /* Center the items */
-				padding: 0 20px;
-				z-index: 3; 
-		}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About · Jared Perlmutter</title>
+  <meta name="description" content="Jared Perlmutter — Japanese learner, YouTuber at @jareddesu, and student-maker building hako and other late-night experiments." />
 
-		.navbar .logo {
-				display: flex; 
-				align-items: center; 
-				margin-right: auto; /* Pushes the logo to the left */
-				z-index: 2000;
-		}
+  <link rel="icon" href="../images/logo.png">
 
-		.navbar img {
-				height: 50px;
-		}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,30..100;1,9..144,300..700,30..100&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-		.navbar .logo-text {
-				margin-left: 10px;
-				color: white;
-				font-size: 20px;
-				font-weight: bold;
-		}
-
-		.navbar ul {
-				list-style: none;
-				display: flex;
-				margin: 0;
-				padding: 0;
-				z-index: 2000;
-				/* Optional: center the ul */
-		}
-
-		.navbar ul li {
-				margin-left: 30px; /* Default margin for larger screens */
-				transition: margin-left 0.3s ease, font-size 0.3s ease; /* Adding transition for margin and font size */
-		}
-
-		.navbar ul li a {
-				color: white;
-				text-decoration: none;
-				font-size: 16px;
-				transition: font-size 0.3s ease; /* Adding transition for font size */
-		}
-
-		.navbar ul li a:hover {
-				text-decoration: underline;
-		}
-
-        .container {
-            height: calc(100vh - 100px); /* Full height minus the navbar */
-            display: flex;
-            flex-direction: column; /* Stack sections vertically */
-            position: relative; /* Positioning context for absolute children */
-        }
-        .section {
-            flex: 1; /* Allow sections to take equal space */
-            position: relative; /* Positioning context for the image */
-        }
-        .red-section {
-            background-color: #BE797A; /* Red rectangle */
-            height: 420px; /* Make it half the viewport height */
-            display: flex; /* Use flexbox for alignment */
-            align-items: center; /* Center items vertically */
-            padding: 20px; /* Padding around the red section */
-            position: relative; /* Positioning context for absolute positioning */
-			z-index: 1000;
-        }
-		.white-section {
-			display: flex; 
-			flex-direction: column; 
-			align-items: center; 
-			justify-content: flex-start; 
-			min-height: calc(100vh - 50%); 
-			background-color: #F2F2F2; 
-			padding: 20px; 
-			box-sizing: border-box; 
-			width: 100%; 
-			position: relative; /* Required for positioning the pseudo-element */
-			overflow: hidden; /* Prevent overflow issues */
-		}
-
-		.image-container {
-			width: 850px; /* Fixed width */
-			height: auto; /* Auto height to prevent cropping */
-			z-index: 2; /* Ensure the image is above the sections */
-			display: flex;
-			flex-direction: column; /* Stack title and image vertically */
-			align-items: flex-start; /* Align items to the start of the container */
-			margin: 300px 20px 0; /* Margin: top 300px, right 20px, bottom 0, left 20px */
-		}
-        .title-text {
-            margin-top: 350px; /* Adjust based on your design */
-            color: #f2f2f2; /* White color */
-            font-family: 'Poppins', sans-serif; /* Use Poppins font */
-            font-size: 90px; /* Increased font size */
-            font-weight: bold; /* Bold font */
-            z-index: 3; /* Ensure the title is above the image */
-            text-align: left; /* Align text to the left */
-            margin-bottom: 0px; /* Add space between the title and the image */
-			animation: fadeIn 2s forwards; /* Fade in animation */	
-        }
-		.overlay-image {
-			width: 100%; /* Image takes full width of the container */
-			height: auto; /* Maintain aspect ratio */
-			opacity: 0; /* Start with the image hidden */
-			animation: fadeIn 2s forwards; /* Fade in animation */
-			animation-delay: 0.5s; /* Delay before starting the animation */
-			transition: opacity 0.5s ease-in; /* Smooth transition for opacity */
-		}
-        
-		/* Keyframes for fade-in effect */
-		@keyframes fadeIn {
-			from {
-				opacity: 0; /* Start invisible */
-			}
-			to {
-				opacity: 1; /* Fully visible */
-			}
-		}
-
-		.text-container {
-			top: 92px; /* Fixed distance from the top */
-			height: 73%;
-			font-family: 'Libre Franklin', sans-serif;
-			font-weight: 300;
-			color: #F2F2F2;
-			font-size: 33px;
-			line-height: 1.5;
-			position: absolute;
-			left: calc(870px + 20px);
-			width: calc(100% - (870px + 20px));
-			z-index: 2;
-			padding: 20px 6%;
-			box-sizing: border-box;
-			display: flex;
-			flex-direction: column;
-			justify-content: center;
-			align-items: center;
-			text-align: left;
-			opacity: 0;
-			transition: opacity 2s;
-			animation: fadeIn 2s forwards;
-			animation-delay: 1s;
-			padding-bottom: 5%;
-		}
-
-
-		/* Class to trigger fade-in effect */
-		.fade-in {
-			opacity: 1; /* Fully visible when class is added */
-			animation: fadeIn 2s forwards; /* Apply the fade-in animation */
-		}
-		
-		.bold-l {
-			font-weight: bold;
-			font-size: 46px;
-			color: #F2F2F2; /* Default color */
-		}
-		
-		.skills-section {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			position: absolute;
-			right: 4%;
-			margin-top: 1100px; /* This will always position the element at 40% of the viewport height */
-		}
-
-		/* Initial styling (no changes to your HTML required) */
-		.container {
-			display: block;
-		}
-
-
-		/* Tablet view styles */
-		@media (max-width: 1900px) {
-			body {
-				overflow-y: visible; /* Enable vertical scrolling */
-			}
-			.navbar {
-				padding: 10px 20px; /* Add padding */
-			}
-			.red-section {
-				flex-direction: column; /* Stack elements vertically */
-				align-items: center; /* Center items */
-				padding-bottom: 0; /* Remove any padding from the bottom */
-			}
-			.white-section {
-				flex-direction: column; /* Ensure the white section stacks vertically */
-				align-items: center; /* Center items */
-				padding-bottom: 0; /* Remove any padding from the bottom */
-			}
-			.bold-l {
-				color: #BE797A; /* Change color to red when media query is triggered */
-			}
-
-			.title-text {
-				font-size: 90px; /* Adjusted font size for mobile */
-				text-align: center; /* Center text for mobile */
-				margin-bottom: -20px; /* Fine-tuned margin */
-				opacity: 0; /* Start with hidden title */
-				animation: fadeIn 2s forwards; /* Fade in animation */
-				transition: opacity 0.5s ease; /* Smooth transition for opacity */
-			}
-
-			.image-container {
-				width: 500px; /* Lock image width for mobile */
-				padding: 0 20px; /* Add side padding */
-				align-items: center; /* Center items */
-				margin-top: -300px; /* Adjusted margin to be closer to the title */
-				transition: margin-top 0.5s ease; /* Smooth transition for margin-top */
-			}
-
-			.overlay-image {
-				width: 100%; /* Full width relative to its container */
-				height: auto; /* Maintain aspect ratio */
-			}
-
-			.text-container {
-				color: #000; /* Black text for smaller screens */
-				text-align: center; /* Center text */
-				position: relative; /* Relative positioning for flexibility */
-				width: calc(100% - 40px); /* Full width minus padding */
-				margin: 20px auto 0; /* Top margin for spacing */
-				left: 0;
-				opacity: 0; /* Start hidden for animation */
-				animation: fadeIn 2s forwards; /* Fade-in animation */
-				transition: opacity 0.5s ease; /* Smooth opacity transition */
-				animation-delay: 0.5s; /* Delay fade-in */
-				top: 0px; /* Ensure a fixed distance from the top */
-			}
-
-		  .skills-section {
-			display: grid;
-			position: relative;
-			left: 2%;
-			
-			grid-template-columns: repeat(2, 1fr); /* Two columns */
-			grid-template-rows: repeat(2, auto);   /* Two rows */
-			gap: 20px; /* Add spacing between the grid items if needed */
-			width: 100%; /* Full width in mobile view */
-			margin: 0 auto; /* Center align the skills section */
-			top: -10%;
-		  }
-
-		  .skill-item {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			padding: 10px; /* Adjust padding if needed */
-		  }
-		}
-		
-@media (max-width: 1800px)
-{
-	.navbar ul li a {
-        font-size: 16px;
-    }
-    .navbar img {
-        height: 37.5px;
-    }
-    .navbar .logo-text {
-        margin-left: 10px;
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-    }
-	.title-text{
-		padding-bottom: 10%;
-	}
-}
-
-/* Mobile view styles */
-@media (max-width: 1500px) {
-	/* Ensure the body allows scrolling */
-	body {
-		overflow-y: auto; /* Enable vertical scrolling */
-	}
-
-	.navbar {
-		padding: 10px 20px; /* Add padding */
-	}
-	.red-section {
-		flex-direction: column; /* Stack elements vertically */
-		align-items: center; /* Center items */
-		padding-bottom: 0; /* Remove any padding from the bottom */
-	}
-	.white-section {
-		flex-direction: column; /* Ensure the white section stacks vertically */
-		align-items: center; /* Center items */
-		padding-bottom: 0; /* Remove any padding from the bottom */
-	}
-	.bold-l {
-		color: #BE797A; /* Change color to red when media query is triggered */
-	}
-
-	.title-text {
-		font-size: 90px; /* Adjusted font size for mobile */
-		text-align: center; /* Center text for mobile */
-		margin-bottom: -20px; /* Fine-tuned margin */
-		opacity: 0; /* Start with hidden title */
-		animation: fadeIn 2s forwards; /* Fade in animation */
-		transition: opacity 0.5s ease; /* Smooth transition for opacity */
-		padding-bottom: 10%;
-	}
-
-	.image-container {
-		width: 500px; /* Lock image width for mobile */
-		padding: 0 20px; /* Add side padding */
-		align-items: center; /* Center items */
-		margin-top: -300px; /* Adjusted margin to be closer to the title */
-		transition: margin-top 0.5s ease; /* Smooth transition for margin-top */
-	}
-
-	.overlay-image {
-		width: 100%; /* Full width relative to its container */
-		height: auto; /* Maintain aspect ratio */
-	}
-
-	.text-container {
-		color: #000; /* Change text color to black */
-		text-align: center; /* Center text */
-		position: relative; /* Change to relative positioning */
-		width: calc(100% - 40px); /* Full width minus padding */
-		margin: 0 auto; /* Center container horizontally */
-		margin-top: 20px; /* Reset top margin */
-		left: 0;
-		opacity: 0; /* Start with hidden text */
-		animation: fadeIn 2s forwards; /* Fade in animation */
-		transition: opacity 0.5s ease; /* Smooth transition for opacity */
-		animation-delay: 0.5s; /* Delay the text container fade-in */
-		top: 0px;
-	}
-
-	.skills-section {
-		display: grid;
-		position: relative;
-		grid-template-columns: 1fr; /* Single column for mobile */
-		grid-template-rows: repeat(4, auto); /* Four rows */
-		gap: 20px; /* Add spacing between the grid items if needed */
-		width: 80%; /* Full width in mobile view */
-		top: 0px;
-		left: 10%;
-	}
-
-	.skill-item {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 10px; /* Adjust padding if needed */
-	}
-}
-
-/* Mobile view styles */
-@media (max-width: 1103px) {
-	.text-container {
-		top: 3%;
-	}
-    .skills-section {
-        transform: scale(0.8); /* Scale down the section */
-        transform-origin: top; /* Scale from the top */
-        padding: 10px;
-        margin-top: 50px; /* Adjust the margin if necessary */
-        display: flex;
-        flex-direction: column;
-        align-items: center; /* Keep the contents aligned in the center */
-        justify-content: center; /* Vertically center the content */
-		left: -6%;
-    }
-}
-
-/* Mobile view styles */
-@media (max-width: 997px) {
-	.text-container {
-		top: 50px;
-	}
-	.skills-section {
-        margin-top: 100px; /* Adjust the margin if necessary */
-		left: -4%;
-    }
-}
-
-/* Mobile view styles */
-@media (max-width: 922px) {
-	.text-container {
-		top: 0px;
-		font-size: 28px;
-	}
-	.skills-section {
-        margin-top: 20px; /* Adjust the margin if necessary */
-		left: -8%;
-    }
-}
-
-/* Media Query for max-width: 830px */
-@media (max-width: 830px) {
-    .navbar ul li a {
-        font-size: 16px;
-    }
-    .navbar img {
-        height: 37.5px;
-    }
-    .navbar .logo-text {
-        margin-left: 10px;
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-    }
-	.text-container {
-		top: -5%;
-		font-size: 24px;
-	}
-	
-	.skills-section {
-        margin-top: -30px; /* Adjust the margin if necessary */
-		left: -11%;
-    }
-}
-
-/* Mobile view styles */
-@media (max-width: 692px) {
-	.text-container {
-		top: 20px;
-		font-size: 24px;
-	}
-	
-	.skills-section {
-        margin-top: 25px; /* Adjust the margin if necessary */
-		left: -17%;
-    }
-}
-
-@media (max-width: 616px)
-{
-	.image-container {
-		width: 80%; /* Lock image width for mobile */
-	}
-	.title-text {
-        font-size: 70px;
-		padding-bottom: 20%;
-    }
-	.text-container {
-        top: 2%;
-    }
-
-
-}
-
-/* Media Query for max-width: 600px */
-@media (max-width: 600px) {
-    .navbar ul li a {
-        font-size: 16px;
-    }
-    .navbar img {
-        height: 37.5px;
-    }
-    .navbar .logo-text {
-        margin-left: 10px;
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-    }
-}
-
-/* Mobile view styles */
-@media (max-width: 578px) {
-	.text-container {
-		top: 20px;
-		font-size: 22px;
-	}
-	.skills-section {
-        transform: scale(0.5); /* Scale down the section */
-        transform-origin: top; /* Scale from the top */
-        padding: 10px;
-        margin-top: 45px; /* Adjust the margin if necessary */
-        display: flex;
-        flex-direction: column;
-        align-items: center; /* Keep the contents aligned in the center */
-        justify-content: center; /* Vertically center the content */
-		left: -18%;
-    }
-}
-
-/* Mobile view styles */
-@media (max-width: 510px) {
-	.text-container {
-		top: 20px;
-		font-size: 22px;
-	}
-	.skills-section {
-        transform: scale(0.5); /* Scale down the section */
-        transform-origin: top; /* Scale from the top */
-        padding: 10px;
-        margin-top: 70px; /* Adjust the margin if necessary */
-        display: flex;
-        flex-direction: column;
-        align-items: center; /* Keep the contents aligned in the center */
-        justify-content: center; /* Vertically center the content */
-		left: -20%;
-    }
-}
-
-/* Media Query for max-width: 440px */
-@media (max-width: 440px) {
-    .navbar ul li a {
-        font-size: 12px;
-    }
-    .navbar img {
-        height: 37.5px;
-    }
-    .navbar .logo-text {
-        margin-left: 10px;
-        color: white;
-        font-size: 15px;
-        font-weight: bold;
-    }
-    .title-text {
-        font-size: 50px;
-    }
-    .text-container {
-        top: 50px;
-    }
-    .navbar ul li {
-        margin-left: 10px;
-    }
-
-	.skills-section {
-        transform: scale(0.5); /* Scale down the section */
-        transform-origin: top; /* Scale from the top */
-        padding: 10px;
-        margin-top: 110px; /* Adjust the margin if necessary */
-        display: flex;
-        flex-direction: column;
-        align-items: center; /* Keep the contents aligned in the center */
-        justify-content: center; /* Vertically center the content */
-		left: -27%;
-    }
-
-	.skills-header{
-		margin-right: 20px;
-	}
-}
-
-/* Mobile view styles */
-@media (max-width: 416px) {
-	.text-container {
-		top: 0px;
-		font-size: 18px;
-	}
-
-	.title-text {
-		font-size: 40px; /* Adjusted font size for mobile */
-		padding-bottom: 20%;
-	}
-
-	.skills-section {
-        margin-top: 40px; /* Adjust the margin if necessary */
-    }
-}
-
-/* Mobile view styles */
-@media (max-width: 390px) {
-	.text-container {
-		top: 0px;
-		font-size: 18px;
-	}
-
-	.title-text {
-		font-size: 40px; /* Adjusted font size for mobile */
-		padding-bottom: 20%;
-	}
-
-	.skills-section {
-        margin-top: 30px; /* Adjust the margin if necessary */
-		left: -33%
-    }
-}
-
-
-		/* Keyframes for fade-in effect */
-		@keyframes fadeIn {
-			to {
-				opacity: 1; /* Fully visible */
-			}
-		}
-		.image-container,
-		.red-section,
-		.skills-section,
-		.text-container {
-			transition: all 0.5s ease; /* Apply transition to all properties with a duration of 0.5 seconds */
-		}
-		.container {
-			display: flex; /* Use flexbox for layout */
-			justify-content: space-between; /* Space between image and skills section */
-		}
-
-		.skills-row {
-			display: flex;
-			align-items: right; /* Align items vertically */
-			margin: 30px 0; /* Space between rows */
-			width: 83%; /* Make the row take the full width */
-			height: 70px;
-		}
-
-		.skills-header {
-			display: flex;                /* Enable Flexbox */
-			align-items: center;          /* Center vertically */
-			justify-content: left;        /* Align text to the left (change to center if needed) */
-			width: 300px;                 /* Fixed width for headers */
-			font-family: 'Libre Franklin', sans-serif; /* Use Libre Franklin font */
-			font-weight: 300;             /* Use a numeric weight for light */
-			font-size: 30px;              /* Font size */
-			color: black;                 /* Text color */
-			height: 66px;                 /* Set a height to see vertical centering */
-		}
-
-		.skills-items {
-			display: flex; /* Horizontal layout for icons */
-			flex: 1; /* Allow this to fill the remaining space */
-			justify-content: flex-start; /* Align items to the start */
-		}
-
-		.skills-item {
-			margin-right: 20px; /* Space between icons */
-			height: 66px;
-			width: auto;
-		}
-
-.skills-item img {
-    width: auto; /* Adjust size as needed */
-    height: 100%; /* Maintain aspect ratio */
-    transition: transform 0.3s ease, opacity 0.8s ease, box-shadow 0.3s ease; /* Smooth transitions for transform, opacity, and shadow */
-    border-radius: 15px; /* Adjust this value for rounded corners */
-    box-shadow: none; /* No shadow on load */
-}
-
-.skills-item img:hover {
-    transform: scale(1.1); /* Slightly enlarge the image on hover */
-    box-shadow: -10px 10px 20px rgba(0, 0, 0, 0.7); /* Exaggerated shadow offset to the left and down */
-}
-
-
-    </style>
-<script>
-	const overlayImage = document.querySelector('.overlay-image');
-
-	// Wait for the image to load
-	overlayImage.addEventListener('load', () => {
-		overlayImage.style.opacity = 1; // Set opacity to 1 to trigger the fade-in
-	});
-
-	// Optionally handle errors
-	overlayImage.addEventListener('error', () => {
-		console.error('Image failed to load.');
-	});
-</script>
+  <link rel="stylesheet" href="../styles/base.css">
+  <link rel="stylesheet" href="../styles/about.css">
 </head>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const skillsItems = document.querySelectorAll('.skills-item img');
+<body data-page="about">
 
-        skillsItems.forEach((img, index) => {
-            // Set initial opacity and transition properties
-            img.style.opacity = 0;
-            img.style.transition = 'opacity 0.8s ease, transform 0.3s ease, box-shadow 0.3s ease'; // Set transition for opacity, transform, and shadow
+  <!-- ============================================================== -->
+  <!-- NAVBAR                                                          -->
+  <!-- ============================================================== -->
+  <nav class="navbar">
+    <a href="../" class="nav-logo">
+      <span class="nav-logo-mark"></span>
+      <span>jared</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="../about/">About</a></li>
+      <li><a href="../projects/">Projects</a></li>
+      <li><a href="../blog/">Blog</a></li>
+      <li><a href="../contact/">Contact</a></li>
+    </ul>
+    <button class="nav-burger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+  <ul class="nav-mobile">
+    <li><a href="../about/">About</a></li>
+    <li><a href="../projects/">Projects</a></li>
+    <li><a href="../blog/">Blog</a></li>
+    <li><a href="../contact/">Contact</a></li>
+  </ul>
 
-            // Wait for each image to load
-            img.addEventListener('load', () => {
-                setTimeout(() => {
-                    img.style.opacity = 1; // Trigger fade-in by changing opacity
-                }, index * 70); // Delay of 70ms per item
-            });
-
-            // Optionally handle errors
-            img.addEventListener('error', () => {
-                console.error(`Image failed to load: ${img.alt}`);
-            });
-
-            // Add hover effect
-            img.addEventListener('mouseenter', () => {
-                img.style.transform = 'scale(1.1)'; // Scale up the image on hover
-                img.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.3)'; // Add shadow effect
-            });
-
-            img.addEventListener('mouseleave', () => {
-                img.style.transform = 'scale(1)'; // Scale back to original size when not hovered
-                img.style.boxShadow = 'none'; // Remove shadow effect
-            });
-        });
-    });
-</script>
-
-
-
-
-
-<body>
-    <!-- Navbar -->
-    <div class="navbar">
-        <div class="logo">
-			<a href="../" style="text-decoration: none; color: inherit; display: flex; align-items: center;">
-				<img src="../images/logo.png" alt="Logo">
-				<div class="logo-text">Home</div>
-			</a>
-        </div>
-        <ul>
-            <li><a href="../about/">About</a></li>
-            <li><a href="../projects/">Projects</a></li>
-            <li><a href="../blog/">Blog</a></li>
-            <li><a href="../contact/">Contact</a></li>
-        </ul>
-    </div>
-
+  <!-- ============================================================== -->
+  <!-- MAIN                                                            -->
+  <!-- ============================================================== -->
+  <main>
     <div class="container">
-    <div class="section red-section">
-        <div class="image-container">
-            <div class="title-text">ABOUT ME</div> <!-- Title Text -->
-            <img class="overlay-image" src="../images/fukuoka_shrine.png" alt="Fukuoka Shrine">
-        </div>
-        <div class="text-container">
+
+      <!-- Page header -->
+      <header class="page-header">
+        <p class="eyebrow reveal">about me</p>
+        <h1 class="page-title reveal">
+          Hi, I'm <em class="wobble">Jared</em>.
+        </h1>
+        <p class="page-intro reveal">
+          A Japanese learner, YouTuber, and student-maker. I build things late
+          at night that nobody asked for.
+        </p>
+      </header>
+
+      <!-- Bio + portrait -->
+      <section class="bio-section">
+        <div class="bio-grid">
+          <div class="bio-text reveal">
             <p>
-                <span class="bold-l">L</span>et me introduce myself—I'm Jared Perlmutter, a student at the Naveen Jindal School of Management at UTDallas. I’m passionate about creating interactive web applications that enhance user experiences. In my spare time, I dive into new technologies and work on personal projects, always eager to learn and grow.
+              I run <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener" class="inline-link">@jareddesu</a> on YouTube, where I document my journey learning Japanese
+              through AJATT-style immersion. About 12K of you have decided to come along
+              for the ride. I'm grateful you're here.
             </p>
+            <p>
+              When I'm not making videos, I'm usually in front of Anki, working on
+              <a href="https://hakoshop.com" target="_blank" rel="noopener" class="inline-link">hako</a> &mdash; a small wooden box that shows your study progress on an LED matrix
+              &mdash; or breaking some piece of software in a way that sends me down a rabbit hole.
+            </p>
+            <p>
+              I'm a student at the Naveen Jindal School of Management at UT Dallas. Outside
+              of that, I spend most of my hours on language learning, content creation,
+              and whatever side project has captured my attention this month.
+            </p>
+          </div>
+          <div class="bio-portrait reveal">
+            <div class="portrait-frame">
+              <!-- Replace with real portrait at /images/jared.jpg -->
+              <img src="../images/jared.jpg" alt="Jared"
+                   onerror="this.style.display='none'; this.parentElement.classList.add('placeholder');" />
+              <div class="portrait-placeholder">J</div>
+            </div>
+          </div>
         </div>
-		<div class="skills-section">
-			<div class="skills-row">
-				<div class="skills-header">Languages:</div>
-				<div class="skills-items">
-					<div class="skills-item">
-						<img src="../images/Skills/JavaScript.svg" alt="JavaScript">
-					</div>
-					<div class="skills-item">
-						<img src="../images/Skills/CPP.svg" alt="C++">
-					</div>
-					<div class="skills-item">
-						<img src="../images/Skills/Htmx-Dark.svg" alt="HTML">
-					</div>
-					<div class="skills-item">
-						<img src="../images/Skills/Powershell-Dark.svg" alt="Powershell">
-					</div>
-					<div class="skills-item">
-						<img src="../images/Skills/Python-Dark.svg" alt="Python">
-					</div>
-					<div class="skills-item">
-						<img src="../images/Skills/Java-Dark.svg" alt="Java">
-					</div>
-				</div>
-			</div>
-			<div class="skills-row">
-				<div class="skills-header">Libraries & Tools:</div>
-				<div class="skills-items">
-					<div class="skills-item">
-						<img src="../images/Skills/OpenCV-Dark.svg" alt="OpenCV">
-					</div>
-					<div class="skills-item">
-						<img src="../images/Skills/Npm-Dark.svg" alt="Npm">
-					</div>
-				</div>
-			</div>
-			<div class="skills-row">
-				<div class="skills-header">IDEs:</div>
-				<div class="skills-items">
-					<div class="skills-item">
-						<img src="../images/Skills/Eclipse-Dark.svg" alt="Eclipse">
-					</div>
-					<div class="skills-item">
-						<img src="../images/Skills/VSCode-Dark.svg" alt="VSCode">
-					</div>
-					<div class="skills-item">
-						<img src="../images/Skills/VisualStudio-Dark.svg" alt="Visual Studio">
-					</div>
-					<div class="skills-item">
-						<img src="../images/Skills/Idea-Dark.svg" alt="IntelliJ IDEA">
-					</div>
-					<div class="skills-item">
-						<img src="../images/Skills/PyCharm-Dark.svg" alt="IntelliJ IDEA PyCharm">
-					</div>
-					<div class="skills-item">
-						<img src="../images/Skills/MySQL-Dark.svg" alt="MySQL">
-					</div>
-				</div>
-			</div>
-			<div class="skills-row">
-				<div class="skills-header">Applications:</div>
-				<div class="skills-items">
-					<div class="skills-item">
-						<img src="../images/Skills/Unity-Dark.svg" alt="Unity">
-					</div>
-					<div class="skills-item">
-						<img src="../images/Skills/Photoshop.svg" alt="Adobe Photoshop">
-					</div>
-					<div class="skills-item">
-						<img src="../images/Skills/Premiere.svg" alt="Adobe Premiere Pro">
-					</div>
-					<div class="skills-item">
-						<img src="../images/Skills/Blender-Dark.svg" alt="Blender">
-					</div>
-					<div class="skills-item">
-						<img src="../images/Skills/Notion-Dark.svg" alt="Notion">
-					</div>
-				</div>
-			</div>
-		</div>
+      </section>
+
+      <!-- Currently -->
+      <section class="currently-section">
+        <div class="section-label">
+          <span class="section-label-text">Currently</span>
+        </div>
+        <h2 class="section-title reveal">What I'm up to right now.</h2>
+        <ul class="now-list">
+          <li class="now-item reveal">
+            <span class="now-marker">→</span>
+            <div>
+              <strong>Shipping hako's first batch.</strong>
+              <span>~25 handmade units of an ambient Anki device. Drops summer 2026.</span>
+            </div>
+          </li>
+          <li class="now-item reveal">
+            <span class="now-marker">→</span>
+            <div>
+              <strong>Reading 文豪ストレイドッグス in Japanese.</strong>
+              <span>Slowly. Looking up roughly two kanji per page and pretending it's fine.</span>
+            </div>
+          </li>
+          <li class="now-item reveal">
+            <span class="now-marker">→</span>
+            <div>
+              <strong>Pushing my reading speed.</strong>
+              <span>Tracking characters per hour. The graph is going up. Some days.</span>
+            </div>
+          </li>
+          <li class="now-item reveal">
+            <span class="now-marker">→</span>
+            <div>
+              <strong>Finishing my degree.</strong>
+              <span>School happens in between everything else.</span>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Skills -->
+      <section class="skills-section">
+        <div class="section-label">
+          <span class="section-label-text">Tools &amp; tech</span>
+        </div>
+        <h2 class="section-title reveal">Things I build with.</h2>
+
+        <div class="skills-grid">
+          <div class="skill-row reveal">
+            <h3 class="skill-row-title">Languages</h3>
+            <div class="skill-row-items">
+              <div class="skill-pill"><img src="../images/Skills/JavaScript.svg" alt="JavaScript" /><span>JavaScript</span></div>
+              <div class="skill-pill"><img src="../images/Skills/Python-Dark.svg" alt="Python" /><span>Python</span></div>
+              <div class="skill-pill"><img src="../images/Skills/CPP.svg" alt="C++" /><span>C++</span></div>
+              <div class="skill-pill"><img src="../images/Skills/Java-Dark.svg" alt="Java" /><span>Java</span></div>
+              <div class="skill-pill"><img src="../images/Skills/Htmx-Dark.svg" alt="HTML" /><span>HTML</span></div>
+              <div class="skill-pill"><img src="../images/Skills/Powershell-Dark.svg" alt="Powershell" /><span>Powershell</span></div>
+            </div>
+          </div>
+
+          <div class="skill-row reveal">
+            <h3 class="skill-row-title">Libraries &amp; tools</h3>
+            <div class="skill-row-items">
+              <div class="skill-pill"><img src="../images/Skills/OpenCV-Dark.svg" alt="OpenCV" /><span>OpenCV</span></div>
+              <div class="skill-pill"><img src="../images/Skills/Npm-Dark.svg" alt="npm" /><span>npm</span></div>
+            </div>
+          </div>
+
+          <div class="skill-row reveal">
+            <h3 class="skill-row-title">IDEs</h3>
+            <div class="skill-row-items">
+              <div class="skill-pill"><img src="../images/Skills/VSCode-Dark.svg" alt="VSCode" /><span>VSCode</span></div>
+              <div class="skill-pill"><img src="../images/Skills/Idea-Dark.svg" alt="IntelliJ" /><span>IntelliJ</span></div>
+              <div class="skill-pill"><img src="../images/Skills/PyCharm-Dark.svg" alt="PyCharm" /><span>PyCharm</span></div>
+              <div class="skill-pill"><img src="../images/Skills/VisualStudio-Dark.svg" alt="Visual Studio" /><span>Visual Studio</span></div>
+              <div class="skill-pill"><img src="../images/Skills/Eclipse-Dark.svg" alt="Eclipse" /><span>Eclipse</span></div>
+              <div class="skill-pill"><img src="../images/Skills/MySQL-Dark.svg" alt="MySQL" /><span>MySQL</span></div>
+            </div>
+          </div>
+
+          <div class="skill-row reveal">
+            <h3 class="skill-row-title">Creative tools</h3>
+            <div class="skill-row-items">
+              <div class="skill-pill"><img src="../images/Skills/Unity-Dark.svg" alt="Unity" /><span>Unity</span></div>
+              <div class="skill-pill"><img src="../images/Skills/Blender-Dark.svg" alt="Blender" /><span>Blender</span></div>
+              <div class="skill-pill"><img src="../images/Skills/Photoshop.svg" alt="Photoshop" /><span>Photoshop</span></div>
+              <div class="skill-pill"><img src="../images/Skills/Premiere.svg" alt="Premiere Pro" /><span>Premiere Pro</span></div>
+              <div class="skill-pill"><img src="../images/Skills/Notion-Dark.svg" alt="Notion" /><span>Notion</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Find me -->
+      <section class="find-me-section">
+        <div class="find-me-box reveal">
+          <h2 class="section-title">Want to chat?</h2>
+          <p>
+            I'm easiest to reach on Discord or YouTube comments. Email works too,
+            but I check it in batches.
+          </p>
+          <div class="find-me-actions">
+            <a href="../contact/" class="btn btn-primary">Get in touch</a>
+            <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener" class="btn-link">
+              YouTube <span class="arrow">→</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
     </div>
-    
-	<div class="section white-section">
+  </main>
 
-	</div>
-</div>
+  <!-- ============================================================== -->
+  <!-- FOOTER                                                          -->
+  <!-- ============================================================== -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-left">
+        <a href="../" class="nav-logo">
+          <span class="nav-logo-mark"></span>
+          <span>jared</span>
+        </a>
+        <p>Made by a person, with care.</p>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <p class="footer-heading">Site</p>
+          <a href="../about/">About</a>
+          <a href="../projects/">Projects</a>
+          <a href="../blog/">Blog</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-heading">Find me</p>
+          <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a>
+          <a href="#" target="_blank" rel="noopener">Discord ↗</a>
+          <a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-heading">Other</p>
+          <a href="../contact/">Contact</a>
+          <a href="#">RSS</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-baseline">
+      © 2026 Jared Perlmutter · Built with love and Inter
+    </div>
+  </footer>
+
+  <script src="../scripts/site.js"></script>
 </body>
-
-
 </html>
