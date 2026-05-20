@@ -218,9 +218,9 @@ function initBabylon() {
 		var inloop = false;
 	
     // Render loop
-		engine.runRenderLoop(() => {
-    babylonScene.render();
-			
+	engine.runRenderLoop(() => {
+        babylonScene.render();
+		updateJellyDrag();
 		if (!inloop)
 		{
 			engine.resize();
