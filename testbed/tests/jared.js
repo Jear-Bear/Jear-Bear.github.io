@@ -4,8 +4,8 @@ var clickX = 0.0;
 var clickY = 0;
 let clickStartTime;
 let clickDuration;
-var linkedin = new Image();
-linkedin.src = "images/linkedin.png";
+var hako = new Image();
+hako.src = "images/hako.png";
 var git = new Image();
 git.src = "images/github.png";
 var image = new Image();
@@ -84,7 +84,7 @@ function initBabylon() {
     babylonScene.clearColor = new BABYLON.Color4(0, 0, 0, 0); // Transparent background
 
     // Create circles and apply the textures
-    const pentagon1 = createPentagon("pentagon1", linkedin, babylonScene);
+    const pentagon1 = createPentagon("pentagon1", hako, babylonScene);
 		const pentagon2 = createPentagon("pentagon2", git, babylonScene);
 		const pentagon3 = createPentagon("pentagon3", youtube, babylonScene);
 		const pentagon4 = createPentagon("pentagon4", instagram, babylonScene);
@@ -611,16 +611,16 @@ function TestParticles() {
 				switch(i)
 				{
 				    case 0:
-					window.open("https://www.linkedin.com/in/jaredperlmutter/");
+					window.open("https://www.https://hakoshop.com/");
 					break;
 				    case 1:
-					window.open("https://github.com/Jear-Bear");
+					window.open("https://github.com/Jareddesu");
 					break;
 				    case 2:
-					window.open("https://www.youtube.com/@Jareddddddddddddddddd");
+					window.open("https://www.youtube.com/@Jareddesu");
 					break;
 				    case 3:
-					window.open("https://www.instagram.com/j_earbear/");
+					window.open("https://www.instagram.com/jareddayo/");
 					break;
 				}   
 			}
