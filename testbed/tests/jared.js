@@ -1,12 +1,14 @@
 pentagons = [];
 jellies = [];
 
-// Jelly dragging state
-var draggedJelly = null;     // The b2ParticleGroup currently being dragged
-var dragTargetX = 0;          // Where the cursor is in world coordinates
+var draggedJelly = null;
+var dragTargetX = 0;
 var dragTargetY = 0;
-var DRAG_STRENGTH = 8.0;     // How aggressively the jelly follows the cursor
-var DRAG_DAMPING = 0.85;     // How quickly stray velocity decays (0-1, higher = less damping)
+var dragGrabOffsetX = 0;       // NEW: where in the jelly the user grabbed (world-relative to centroid)
+var dragGrabOffsetY = 0;       // NEW
+var DRAG_RADIUS = 0.6;         // NEW: how far the "grab" influence extends, in world units
+var DRAG_STRENGTH = 8.0;
+var DRAG_DAMPING = 0.85;
 
 var clickX = 0.0;
 var clickY = 0;
@@ -99,7 +101,7 @@ function updateJellyDrag() {
     var positions = particleSystem.GetPositionBuffer();
     var velocities = particleSystem.GetVelocityBuffer();
 
-    // Compute group center to figure out the offset to apply
+    // Compute current centroid of the dragged group
     var centerX = 0, centerY = 0;
     for (var j = 0; j < particleCount; j++) {
         var idx = firstParticle + j;
@@ -109,19 +111,47 @@ function updateJellyDrag() {
     centerX /= particleCount;
     centerY /= particleCount;
 
-    // Vector from group center to target
-    var dx = dragTargetX - centerX;
-    var dy = dragTargetY - centerY;
+    // Where the "grab point" is right now, in world coordinates.
+    // The grab point sits at the original offset (from centroid) — so as
+    // the jelly translates, the grab point moves with the centroid.
+    var grabX = centerX + dragGrabOffsetX;
+    var grabY = centerY + dragGrabOffsetY;
 
-    // Apply velocity toward target, with damping on existing velocity
+    // Vector from grab point to cursor target
+    var pullX = dragTargetX - grabX;
+    var pullY = dragTargetY - grabY;
+
+    // For each particle, weight the pull by how close it is to the grab point.
+    // Particles right at the grab point get full pull; far particles get
+    // little to none. The jelly's internal elasticity handles the rest.
+    var radiusSq = DRAG_RADIUS * DRAG_RADIUS;
+
     for (var j = 0; j < particleCount; j++) {
         var idx = firstParticle + j;
-        var oldVx = velocities[idx * 2];
-        var oldVy = velocities[idx * 2 + 1];
+        var px = positions[idx * 2];
+        var py = positions[idx * 2 + 1];
 
-        // Move toward target while preserving some existing velocity for squish
-        velocities[idx * 2]     = oldVx * DRAG_DAMPING + dx * DRAG_STRENGTH * 0.1;
-        velocities[idx * 2 + 1] = oldVy * DRAG_DAMPING + dy * DRAG_STRENGTH * 0.1;
+        // Distance from this particle to the grab point
+        var dx = px - grabX;
+        var dy = py - grabY;
+        var distSq = dx * dx + dy * dy;
+
+        // Smooth falloff: 1.0 at grab point, 0.0 at DRAG_RADIUS, smooth in between.
+        // Using (1 - dist²/radius²) gives a nice quadratic falloff.
+        var weight = 0;
+        if (distSq < radiusSq) {
+            weight = 1.0 - (distSq / radiusSq);
+            weight = weight * weight;  // square for sharper falloff (optional)
+        }
+
+        if (weight > 0) {
+            var oldVx = velocities[idx * 2];
+            var oldVy = velocities[idx * 2 + 1];
+            velocities[idx * 2]     = oldVx * DRAG_DAMPING + pullX * DRAG_STRENGTH * 0.1 * weight;
+            velocities[idx * 2 + 1] = oldVy * DRAG_DAMPING + pullY * DRAG_STRENGTH * 0.1 * weight;
+        }
+        // Particles outside the radius get no direct force — they follow
+        // through the jelly's internal elastic bonds.
     }
 }
 
@@ -609,7 +639,25 @@ function TestParticles() {
             draggedJelly = hit;
             dragTargetX = coords.x;
             dragTargetY = coords.y;
-            wasDragging = true;        // NEW
+        
+            // Compute the jelly's centroid so we know where the click was relative to it
+            var particleCount = hit.GetParticleCount();
+            var firstParticle = hit.GetBufferIndex();
+            var positions = particleSystem.GetPositionBuffer();
+            var centerX = 0, centerY = 0;
+            for (var j = 0; j < particleCount; j++) {
+                var idx = firstParticle + j;
+                centerX += positions[idx * 2];
+                centerY += positions[idx * 2 + 1];
+            }
+            centerX /= particleCount;
+            centerY /= particleCount;
+        
+            // Record where the grab was, in the jelly's local frame
+            dragGrabOffsetX = coords.x - centerX;
+            dragGrabOffsetY = coords.y - centerY;
+        
+            wasDragging = true;
             event.preventDefault();
         }
     });
