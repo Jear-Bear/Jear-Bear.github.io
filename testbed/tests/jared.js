@@ -611,7 +611,7 @@ function TestParticles() {
 				switch(i)
 				{
 				    case 0:
-					window.open("https://www.https://hakoshop.com/");
+					window.open("https://www.hakoshop.com/");
 					break;
 				    case 1:
 					window.open("https://github.com/Jareddesu");
