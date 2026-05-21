@@ -584,7 +584,7 @@ function TestParticles() {
 	body3.CreateFixtureFromShape(pentagon, 0.5); // 0.5 is the density
 	
 	// Capture mouse click events and send coordinates to your JS file
-	document.getElementById('canvas').addEventListener('click', function(event) {
+	document.addEventListener('click', function(event) {
 	    const rectang = textCanvas.getBoundingClientRect();
 	    const mouseTextX = event.clientX - rectang.left;
 	    const mouseTextY = event.clientY - rectang.top;
@@ -620,7 +620,7 @@ function TestParticles() {
 		i++
 	    });
 	    
-        var rect = this.getBoundingClientRect();
+        var rect = document.getElementById('canvas').getBoundingClientRect();
         var mouseX = event.clientX - rect.left;
         var mouseY = event.clientY - rect.top;
         
@@ -628,7 +628,7 @@ function TestParticles() {
 	});
 	
 	// Listen for the mousedown event (when the mouse button is pressed)
-    document.getElementById('canvas').addEventListener('mousedown', function(event) {
+    document.addEventListener('mousedown', function(event) {
         if (event.button !== 0) return;
         clickStartTime = new Date().getTime();
     
@@ -662,7 +662,7 @@ function TestParticles() {
         }
     });
     
-    document.getElementById('canvas').addEventListener('mousemove', function(event) {
+    document.addEventListener('mousemove', function(event) {
         if (!draggedJelly) return;
         var coords = getMouseCoords();
         dragTargetX = coords.x;
@@ -671,7 +671,7 @@ function TestParticles() {
 
 	
 	// Listen for the mouseup event (when the mouse button is released)
-    document.getElementById('canvas').addEventListener('mouseup', function(event) {
+    document.addEventListener('mouseup', function(event) {
         if (event.button === 0 && clickStartTime) {
             const clickEndTime = new Date().getTime();
             clickDuration = clickEndTime - clickStartTime;
@@ -688,7 +688,7 @@ function TestParticles() {
         return this >= Math.min(first, last) && this <= Math.max(first, last);
     };
     
-    document.getElementById('canvas').addEventListener('mouseleave', function() {
+    document.addEventListener('mouseleave', function() {
         if (draggedJelly) {
             draggedJelly = null;
         }
