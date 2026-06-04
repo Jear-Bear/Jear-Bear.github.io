@@ -1288,6 +1288,84 @@ function randomSpawnXY(xMinFrac, xMaxFrac, yMinFrac, yMaxFrac) {
 	};
 }
 
+function createBlob() {
+	var color = rgbaColors[getRandomInt(6)];
+	var circle = new b2CircleShape();
+	circle.radius = 0.6;
+	var p = randomSpawnXY(0.30, 0.70, 0.20, 0.50);
+	circle.position.Set(p.x, p.y);          // circle carries its own position
+	var pgd = new b2ParticleGroupDef();
+	pgd.flags = b2_elasticParticle;
+	pgd.groupFlags = b2_solidParticleGroup;
+	pgd.angularVelocity = 2;
+	pgd.shape = circle;
+	pgd.color.Set(color[0], color[1], color[2], 200);
+	var particleGroup = particleSystem.CreateParticleGroup(pgd);
+	jellies.push(particleGroup);
+}
+
+function createTriangle() {
+	var color = rgbaColors[getRandomInt(6)];
+	var tri = new b2PolygonShape();
+	var v = tri.vertices;                    // CCW winding, centered on origin
+	v.push(new b2Vec2(-0.7, -0.5));
+	v.push(new b2Vec2( 0.7, -0.5));
+	v.push(new b2Vec2( 0.0,  0.8));
+	var pgd = new b2ParticleGroupDef();
+	pgd.flags = b2_elasticParticle;
+	pgd.groupFlags = b2_solidParticleGroup;
+	var p = randomSpawnXY(0.30, 0.70, 0.20, 0.50);
+	pgd.position.Set(p.x, p.y);
+	pgd.angle = -0.5;
+	pgd.angularVelocity = 2;
+	pgd.shape = tri;
+	pgd.color.Set(color[0], color[1], color[2], 200);
+	var particleGroup = particleSystem.CreateParticleGroup(pgd);
+	jellies.push(particleGroup);
+}
+
+function createPentagonJelly() {
+	var color = rgbaColors[getRandomInt(6)];
+	var poly = new b2PolygonShape();
+	var v = poly.vertices;
+	var r = 0.7;
+	for (var i = 0; i < 5; i++) {
+		var a = (Math.PI / 2) + i * (2 * Math.PI / 5);   // start at top, go CCW
+		v.push(new b2Vec2(r * Math.cos(a), r * Math.sin(a)));
+	}
+	var pgd = new b2ParticleGroupDef();
+	pgd.flags = b2_elasticParticle;
+	pgd.groupFlags = b2_solidParticleGroup;
+	var p = randomSpawnXY(0.30, 0.70, 0.20, 0.50);
+	pgd.position.Set(p.x, p.y);
+	pgd.angularVelocity = 2;
+	pgd.shape = poly;
+	pgd.color.Set(color[0], color[1], color[2], 200);
+	var particleGroup = particleSystem.CreateParticleGroup(pgd);
+	jellies.push(particleGroup);
+}
+
+function createHexagon() {
+	var color = rgbaColors[getRandomInt(6)];
+	var poly = new b2PolygonShape();
+	var v = poly.vertices;
+	var r = 0.7;
+	for (var i = 0; i < 6; i++) {
+		var a = i * (Math.PI / 3);
+		v.push(new b2Vec2(r * Math.cos(a), r * Math.sin(a)));
+	}
+	var pgd = new b2ParticleGroupDef();
+	pgd.flags = b2_elasticParticle;
+	pgd.groupFlags = b2_solidParticleGroup;
+	var p = randomSpawnXY(0.30, 0.70, 0.20, 0.50);
+	pgd.position.Set(p.x, p.y);
+	pgd.angularVelocity = 2;
+	pgd.shape = poly;
+	pgd.color.Set(color[0], color[1], color[2], 200);
+	var particleGroup = particleSystem.CreateParticleGroup(pgd);
+	jellies.push(particleGroup);
+}
+
 function createElasticBox() {
 	var color = rgbaColors[getRandomInt(6)];
 	var box = new b2PolygonShape();
@@ -1354,20 +1432,17 @@ function toggleClearButton() {
     }
 }
 
-
 function buttonClicked() {
 	toggleClearButton();
-	result = getRandomInt(3);
+	result = getRandomInt(7);
 	switch (result){
-		case 0:
-			createElasticBox();
-			break;
-		case 1:
-			createSmallElasticBox();
-			break;
-		case 2:
-			createElasticRod();
-			break;
+		case 0: createElasticBox();      break;
+		case 1: createSmallElasticBox(); break;
+		case 2: createElasticRod();      break;
+		case 3: createBlob();            break;
+		case 4: createTriangle();        break;
+		case 5: createPentagonJelly();   break;
+		case 6: createHexagon();         break;
 	}
 }
 
