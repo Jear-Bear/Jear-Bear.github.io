@@ -1,0 +1,1 @@
+A python-plugin based on the original Kanji Grid. Revamped with additional feautres, and compatibility with the newest versions of a popular flashcard app, Anki. It parses the Kanji (Chinese characters) in your Japanese flashcards, tracks your performance when studying, and compiles a color-graded graph based on how well you know each kanji.
