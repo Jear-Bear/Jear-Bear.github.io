@@ -1264,7 +1264,30 @@ function createLine(width = 3) {
 
 }
 
-// Function to create an elastic box within the newly created particle system
+// Jellies spawn inside the wall box, which scales with the viewport aspect
+// ratio just like the visible play area — so a screen-relative band stays
+// on-screen at any size (this is what was breaking on mobile).
+//   x fraction: 0 = left wall,  1 = right wall
+//   y fraction: 0 = top,        1 = bottom   (measured from the top, screen-style)
+function randomSpawnXY(xMinFrac, xMaxFrac, yMinFrac, yMaxFrac) {
+	var aspect = window.innerWidth / window.innerHeight;
+
+	// Mirror the wall geometry from TestParticles()
+	var wallX = 5.7 * aspect;          // wall_x = (11.4 * aspect) / 2
+	var left   = -wallX + 0.4;          // inner face of the left wall
+	var right  =  wallX - 0.4;          // inner face of the right wall
+	var top    = 9.4;                   // bottom of the ceiling
+	var bottom = -1.4;                  // top of the floor
+
+	var fx = xMinFrac + Math.random() * (xMaxFrac - xMinFrac);
+	var fy = yMinFrac + Math.random() * (yMaxFrac - yMinFrac);
+
+	return {
+		x: left + fx * (right - left),
+		y: top  - fy * (top - bottom),  // y measured down from the top
+	};
+}
+
 function createElasticBox() {
 	var color = rgbaColors[getRandomInt(6)];
 	var box = new b2PolygonShape();
@@ -1272,7 +1295,8 @@ function createElasticBox() {
 	box.SetAsBoxXY(0.5, .5);
 	pgd.flags = b2_elasticParticle;
 	pgd.groupFlags = b2_solidParticleGroup;
-	pgd.position.Set(1, 4);
+	var p = randomSpawnXY(0.30, 0.70, 0.20, 0.50);
+	pgd.position.Set(p.x, p.y);
 	pgd.angle = -0.5;
 	pgd.angularVelocity = 2;
 	pgd.shape = box;
@@ -1280,7 +1304,7 @@ function createElasticBox() {
 	var particleGroup = particleSystem.CreateParticleGroup(pgd);
 	jellies.push(particleGroup);
 }
-	
+
 function createSmallElasticBox() {
 	var color = rgbaColors[getRandomInt(6)];
 	var box = new b2PolygonShape();
@@ -1288,7 +1312,8 @@ function createSmallElasticBox() {
 	box.SetAsBoxXY(0.2, .2);
 	pgd.flags = b2_elasticParticle;
 	pgd.groupFlags = b2_solidParticleGroup;
-	pgd.position.Set(-7, 6);
+	var p = randomSpawnXY(0.30, 0.70, 0.20, 0.50);
+	pgd.position.Set(p.x, p.y);
 	pgd.angle = -0.5;
 	pgd.angularVelocity = 2;
 	pgd.shape = box;
@@ -1296,7 +1321,7 @@ function createSmallElasticBox() {
 	var particleGroup = particleSystem.CreateParticleGroup(pgd);
 	jellies.push(particleGroup);
 }
-	
+
 function createElasticRod() {
 	var color = rgbaColors[getRandomInt(6)];
 	var box = new b2PolygonShape();
@@ -1304,7 +1329,8 @@ function createElasticRod() {
 	box.SetAsBoxXY(0.1, 2);
 	pgd.flags = b2_elasticParticle;
 	pgd.groupFlags = b2_solidParticleGroup;
-	pgd.position.Set(-7, 7);
+	var p = randomSpawnXY(0.30, 0.70, 0.20, 0.50);
+	pgd.position.Set(p.x, p.y);
 	pgd.angle = -0.5;
 	pgd.angularVelocity = 2;
 	pgd.shape = box;
