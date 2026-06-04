@@ -3,7 +3,7 @@
   const form = document.getElementById('contact-form');
   if (!form) return;
 
-  const ACCESS_KEY = 'YOUR-WEB3FORMS-ACCESS-KEY'; // free key from web3forms.com
+  const ACCESS_KEY = '7137a0ba-b831-4c6d-9f6c-3b04fffbae4c'; // free key from web3forms.com
   const btnText = form.querySelector('.submit-text');
   const meta = document.getElementById('form-meta');
 
