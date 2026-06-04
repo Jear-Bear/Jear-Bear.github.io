@@ -9,7 +9,7 @@
 
 .post-item {
   display: grid;
-  grid-template-columns: 120px 1fr auto;
+  grid-template-columns: clamp(96px, 11vw, 128px) 120px 1fr auto;
   align-items: start;
   gap: clamp(20px, 4vw, 48px);
   padding: 32px 0;
@@ -23,6 +23,11 @@
               transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1),
               padding 0.3s ease,
               background 0.3s ease;
+}
+
+/* If a post has no image.png, drop the thumbnail column cleanly */
+.post-item.no-thumb {
+  grid-template-columns: 120px 1fr auto;
 }
 
 .post-item.visible {
@@ -40,6 +45,27 @@
 
 .post-item:hover + .post-item {
   border-top: 1px solid transparent;
+}
+
+/* --- Card thumbnail --------------------------------------------------- */
+.post-thumb {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--page-color-soft);
+}
+
+.post-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.45s cubic-bezier(0.34, 1.1, 0.64, 1);
+}
+
+.post-item:hover .post-thumb img {
+  transform: scale(1.06);
 }
 
 .post-meta {
@@ -156,6 +182,16 @@
   transform: scale(1) translateY(0);
 }
 
+/* --- Modal banner image ----------------------------------------------- */
+.post-modal-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 16px;
+  margin-bottom: 28px;
+}
+
 .post-modal-close {
   position: absolute;
   top: 16px;
@@ -173,6 +209,9 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  /* Sits above the banner image, so give it a touch of lift */
+  box-shadow: 0 1px 6px rgba(26, 24, 21, 0.18);
+  z-index: 2;
 }
 
 .post-modal-close:hover {
@@ -269,7 +308,8 @@
 
 /* --- Responsive ------------------------------------------------------- */
 @media (max-width: 720px) {
-  .post-item {
+  .post-item,
+  .post-item.no-thumb {
     grid-template-columns: 1fr;
     gap: 12px;
     padding: 24px 0;
@@ -280,6 +320,12 @@
     padding-right: 12px;
   }
 
+  /* Image leads the stacked card on mobile, as a wide banner */
+  .post-thumb {
+    order: -1;
+    aspect-ratio: 16 / 9;
+  }
+
   .post-meta {
     flex-direction: row;
     align-items: center;
@@ -287,4 +333,9 @@
   }
 
   .post-time { padding-top: 0; }
+
+  .post-modal-image {
+    aspect-ratio: 16 / 9;
+    margin-bottom: 20px;
+  }
 }
