@@ -1264,27 +1264,24 @@ function createLine(width = 3) {
 
 }
 
-// Jellies spawn inside the wall box, which scales with the viewport aspect
-// ratio just like the visible play area — so a screen-relative band stays
-// on-screen at any size (this is what was breaking on mobile).
-//   x fraction: 0 = left wall,  1 = right wall
-//   y fraction: 0 = top,        1 = bottom   (measured from the top, screen-style)
-function randomSpawnXY(xMinFrac, xMaxFrac, yMinFrac, yMaxFrac) {
+// Spawn across the LOWER HALF of the box: full width between the two side
+// walls, from just above the floor up to the walls' vertical midpoint.
+// halfW / halfH = the shape's half-extents, so it clears the walls + floor.
+function randomSpawnXY(halfW, halfH) {
+	if (halfW === undefined) halfW = 0.5;
+	if (halfH === undefined) halfH = halfW;
+
 	var aspect = window.innerWidth / window.innerHeight;
+	var wallX  = 5.7 * aspect;          // wall_x = (11.4 * aspect) / 2
 
-	// Mirror the wall geometry from TestParticles()
-	var wallX = 5.7 * aspect;          // wall_x = (11.4 * aspect) / 2
-	var left   = -wallX + 0.4;          // inner face of the left wall
-	var right  =  wallX - 0.4;          // inner face of the right wall
-	var top    = 9.4;                   // bottom of the ceiling
-	var bottom = -1.4;                  // top of the floor
-
-	var fx = xMinFrac + Math.random() * (xMaxFrac - xMinFrac);
-	var fy = yMinFrac + Math.random() * (yMaxFrac - yMinFrac);
+	var left  = -wallX + 0.4 + halfW;   // inner face of left wall  + clearance
+	var right =  wallX - 0.4 - halfW;   // inner face of right wall - clearance
+	var floor = -1.4 + halfH;           // top of the floor          + clearance
+	var midY  = 4.0;                    // midpoint of the walls (top of lower half)
 
 	return {
-		x: left + fx * (right - left),
-		y: top  - fy * (top - bottom),  // y measured down from the top
+		x: left  + Math.random() * (right - left),
+		y: floor + Math.random() * (midY  - floor),
 	};
 }
 
@@ -1292,7 +1289,7 @@ function createBlob() {
 	var color = rgbaColors[getRandomInt(6)];
 	var circle = new b2CircleShape();
 	circle.radius = 0.6;
-	var p = randomSpawnXY(0.30, 0.70, 0.20, 0.50);
+	var p = randomSpawnXY(0.6, 0.6);
 	circle.position.Set(p.x, p.y);          // circle carries its own position
 	var pgd = new b2ParticleGroupDef();
 	pgd.flags = b2_elasticParticle;
@@ -1314,7 +1311,7 @@ function createTriangle() {
 	var pgd = new b2ParticleGroupDef();
 	pgd.flags = b2_elasticParticle;
 	pgd.groupFlags = b2_solidParticleGroup;
-	var p = randomSpawnXY(0.30, 0.70, 0.20, 0.50);
+	var p = randomSpawnXY(0.7, 0.8);
 	pgd.position.Set(p.x, p.y);
 	pgd.angle = -0.5;
 	pgd.angularVelocity = 2;
@@ -1336,7 +1333,7 @@ function createPentagonJelly() {
 	var pgd = new b2ParticleGroupDef();
 	pgd.flags = b2_elasticParticle;
 	pgd.groupFlags = b2_solidParticleGroup;
-	var p = randomSpawnXY(0.30, 0.70, 0.20, 0.50);
+	var p = randomSpawnXY(0.7, 0.7);
 	pgd.position.Set(p.x, p.y);
 	pgd.angularVelocity = 2;
 	pgd.shape = poly;
@@ -1357,7 +1354,7 @@ function createHexagon() {
 	var pgd = new b2ParticleGroupDef();
 	pgd.flags = b2_elasticParticle;
 	pgd.groupFlags = b2_solidParticleGroup;
-	var p = randomSpawnXY(0.30, 0.70, 0.20, 0.50);
+	var p = randomSpawnXY(0.7, 0.7);
 	pgd.position.Set(p.x, p.y);
 	pgd.angularVelocity = 2;
 	pgd.shape = poly;
@@ -1373,7 +1370,7 @@ function createElasticBox() {
 	box.SetAsBoxXY(0.5, .5);
 	pgd.flags = b2_elasticParticle;
 	pgd.groupFlags = b2_solidParticleGroup;
-	var p = randomSpawnXY(0.30, 0.70, 0.20, 0.50);
+	var p = randomSpawnXY(0.5, 0.5);
 	pgd.position.Set(p.x, p.y);
 	pgd.angle = -0.5;
 	pgd.angularVelocity = 2;
@@ -1390,7 +1387,7 @@ function createSmallElasticBox() {
 	box.SetAsBoxXY(0.2, .2);
 	pgd.flags = b2_elasticParticle;
 	pgd.groupFlags = b2_solidParticleGroup;
-	var p = randomSpawnXY(0.30, 0.70, 0.20, 0.50);
+	var p = randomSpawnXY(0.2, 0.2);
 	pgd.position.Set(p.x, p.y);
 	pgd.angle = -0.5;
 	pgd.angularVelocity = 2;
@@ -1407,7 +1404,7 @@ function createElasticRod() {
 	box.SetAsBoxXY(0.1, 2);
 	pgd.flags = b2_elasticParticle;
 	pgd.groupFlags = b2_solidParticleGroup;
-	var p = randomSpawnXY(0.30, 0.70, 0.20, 0.50);
+	var p = randomSpawnXY(0.1, 2);
 	pgd.position.Set(p.x, p.y);
 	pgd.angle = -0.5;
 	pgd.angularVelocity = 2;
