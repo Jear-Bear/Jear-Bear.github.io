@@ -185,7 +185,7 @@ Distributed under the MIT License. See [LICENSE.txt](https://github.com/Jear-Bea
 <!-- CONTACT -->
 ## Contact
 
-Jared Perlmutter - [@jodabeats](https://twitter.com/jodabeats) - jperlmutter1@gmail.com
+Jared P. - jared@jareddesu.com
 
 Project Link: [https://github.com/jear-bear/jear-bear.github.io](https://github.com/jear-bear/jear-bear.github.io)
 
