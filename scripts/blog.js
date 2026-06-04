@@ -1,6 +1,7 @@
 // Blog page — fetches markdown blog posts from GitHub /Blogs/ folder
 // Preserves existing architecture: folder per post, blog.md inside has
 // line 1 = category, line 2 = description, line 3 = date, line 4+ = body
+// Each post folder also has an image.png used as the card + modal thumbnail.
 
 (function() {
   const list = document.getElementById('post-list');
@@ -10,6 +11,8 @@
   const modalDate = document.getElementById('post-modal-date');
   const modalTitle = document.getElementById('post-modal-title');
   const modalBody = document.getElementById('post-modal-body');
+  const modalContent = modal ? modal.querySelector('.post-modal-content') : null;
+  let modalImage = null;  // created lazily, reused across opens
 
   if (!list) return;
 
@@ -45,6 +48,11 @@
       default:  { bg: '#cccccc', fg: '#333333' },
     };
     return map[c] || map.default;
+  }
+
+  // Each post's image lives alongside its blog.md, in the post's own folder.
+  function imageSrc(folder) {
+    return `/Blogs/${folder}/image.png`;
   }
 
   async function fetchPostFolders() {
@@ -94,6 +102,19 @@
 
     const colors = categoryColors(meta.category);
 
+    // Thumbnail — leads the row. Falls back gracefully if image.png is missing.
+    const thumb = document.createElement('div');
+    thumb.className = 'post-thumb';
+    const thumbImg = document.createElement('img');
+    thumbImg.loading = 'lazy';
+    thumbImg.alt = meta.folder;
+    thumbImg.src = imageSrc(meta.folder);
+    thumbImg.addEventListener('error', () => {
+      thumb.remove();
+      item.classList.add('no-thumb');
+    });
+    thumb.appendChild(thumbImg);
+
     const metaCol = document.createElement('div');
     metaCol.className = 'post-meta';
 
@@ -126,12 +147,28 @@
     time.className = 'post-time';
     time.textContent = `${meta.readTime} min read`;
 
+    item.appendChild(thumb);
     item.appendChild(metaCol);
     item.appendChild(content);
     item.appendChild(time);
 
     item.addEventListener('click', () => openPost(meta));
     return item;
+  }
+
+  // Create-or-reuse the banner image at the very top of the modal.
+  function setModalImage(meta) {
+    if (!modalContent) return;
+    if (!modalImage) {
+      modalImage = document.createElement('img');
+      modalImage.className = 'post-modal-image';
+      // Insert as the first element so it sits above the header.
+      modalContent.insertBefore(modalImage, modalContent.firstChild);
+    }
+    modalImage.onerror = () => { modalImage.style.display = 'none'; };
+    modalImage.style.display = '';  // reset in case the previous post had no image
+    modalImage.alt = meta.folder;
+    modalImage.src = imageSrc(meta.folder);
   }
 
   function openPost(meta) {
@@ -141,6 +178,9 @@
     modalCategory.style.color = colors.fg;
     modalDate.textContent = formatDate(meta.date);
     modalTitle.textContent = meta.folder;
+
+    // Thumbnail banner at the top of the modal
+    setModalImage(meta);
 
     // Render markdown
     if (typeof marked !== 'undefined') {
@@ -158,6 +198,8 @@
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+    // Scroll back to the top so the next post opens at the banner.
+    if (modalContent) modalContent.scrollTop = 0;
   }
 
   modalClose.addEventListener('click', closePost);
