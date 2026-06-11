@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kana Trainer · Jared P.</title>
+  <meta name="description" content="A fast, adaptive kana recognition trainer. Hiragana, katakana, dakuten, yōon and extended katakana — with spaced repetition and confusion tracking." />
+
+  <link rel="icon" href="../../images/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,30..100;1,9..144,300..700,30..100&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <!-- Japanese display faces (Google Fonts serves kana subsets via unicode-range, so only small slices load) -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=M+PLUS+Rounded+1c:wght@400&family=Shippori+Mincho:wght@500&family=Klee+One:wght@600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../../styles/base.css">
+  <link rel="stylesheet" href="../../styles/kana.css">
+</head>
+<body data-page="kana">
+
+  <!-- NAVBAR (matches site shell) -->
+  <nav class="navbar">
+    <a href="../../" class="nav-logo">
+      <span class="nav-logo-mark"></span>
+      <span>jared</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="../../about/">About</a></li>
+      <li><a href="../../projects/">Projects</a></li>
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../../contact/">Contact</a></li>
+    </ul>
+    <button class="nav-burger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+  <ul class="nav-mobile">
+    <li><a href="../../about/">About</a></li>
+    <li><a href="../../projects/">Projects</a></li>
+    <li><a href="../../blog/">Blog</a></li>
+    <li><a href="../../contact/">Contact</a></li>
+  </ul>
+
+  <main>
+    <div class="container kt">
+
+      <!-- ===================== DASHBOARD ===================== -->
+      <section id="view-dashboard">
+        <header class="page-header">
+          <p class="eyebrow reveal">tools</p>
+          <h1 class="page-title reveal">Kana <em class="wobble">Trainer</em>.</h1>
+          <p class="page-intro reveal">
+            Fast, adaptive kana recognition. Type the reading, hit Enter, repeat.
+            It learns what you miss and feeds it back to you.
+          </p>
+        </header>
+
+        <!-- Continue card -->
+        <div class="kt-continue reveal" id="continue-card">
+          <div class="kt-continue-info">
+            <p class="kt-continue-line" id="continue-line">Loading…</p>
+            <p class="kt-continue-sub" id="continue-sub"></p>
+          </div>
+          <div class="kt-continue-actions">
+            <button class="btn btn-primary" id="btn-start">Start reviewing</button>
+            <button class="btn-link" id="btn-placement">Test my level <span class="arrow">→</span></button>
+          </div>
+        </div>
+
+        <!-- Mode chips -->
+        <div class="kt-modes reveal" id="mode-chips" role="group" aria-label="Review modes">
+          <button class="kt-chip is-active" data-mode="smart">Smart review</button>
+          <button class="kt-chip" data-mode="hiragana">Hiragana</button>
+          <button class="kt-chip" data-mode="katakana">Katakana</button>
+          <button class="kt-chip" data-mode="weak">Weak kana</button>
+          <button class="kt-chip" data-mode="missed">Recently missed</button>
+          <button class="kt-chip" data-mode="confusables">Confusables</button>
+          <button class="kt-chip" data-mode="speed">Speed</button>
+          <button class="kt-chip" data-mode="random">Random</button>
+        </div>
+
+        <!-- Progression track -->
+        <section class="kt-section">
+          <div class="section-label"><span class="section-label-text">Progression</span></div>
+          <h2 class="section-title reveal">Your path through the kana.</h2>
+          <ol class="kt-stages" id="stage-track"></ol>
+        </section>
+
+        <!-- Mastery grid -->
+        <section class="kt-section">
+          <div class="section-label"><span class="section-label-text">Mastery</span></div>
+          <h2 class="section-title reveal">Every kana, at a glance.</h2>
+          <p class="kt-grid-legend reveal" aria-hidden="true">
+            <span class="kt-cell-demo m0"></span> new
+            <span class="kt-cell-demo m1"></span> learning
+            <span class="kt-cell-demo m2"></span> familiar
+            <span class="kt-cell-demo m3"></span> strong
+            <span class="kt-cell-demo m4"></span> mastered
+          </p>
+          <div id="mastery-grid" class="reveal"></div>
+        </section>
+
+        <!-- Trouble spots -->
+        <section class="kt-section">
+          <div class="section-label"><span class="section-label-text">Trouble spots</span></div>
+          <h2 class="section-title reveal">Your personal confusions.</h2>
+          <div id="trouble-spots" class="reveal"></div>
+        </section>
+
+        <!-- Stats -->
+        <section class="kt-section">
+          <div class="section-label"><span class="section-label-text">Stats</span></div>
+          <h2 class="section-title reveal">The numbers.</h2>
+          <div class="kt-stats reveal" id="stats-panel"></div>
+          <div class="kt-settings reveal">
+            <label class="kt-toggle">
+              <input type="checkbox" id="opt-fonts" checked>
+              <span>Rotate Japanese fonts <small>(so you learn the kana, not the typeface)</small></span>
+            </label>
+            <div class="kt-data-actions">
+              <button class="btn-link" id="btn-export">Export progress</button>
+              <button class="btn-link" id="btn-import">Import</button>
+              <button class="btn-link kt-danger" id="btn-reset">Reset all data</button>
+              <input type="file" id="import-file" accept="application/json" hidden>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- ===================== REVIEW ===================== -->
+      <section id="view-review" hidden>
+        <div class="kt-hud">
+          <button class="btn-link kt-hud-back" id="btn-end">← End session</button>
+          <div class="kt-hud-stats">
+            <span id="hud-mode" class="kt-hud-mode">Smart review</span>
+            <span id="hud-count">0 reviewed</span>
+            <span id="hud-acc">— %</span>
+            <span id="hud-combo" class="kt-combo" aria-label="streak">×0</span>
+          </div>
+        </div>
+
+        <div class="kt-stage-progress" id="placement-progress" hidden></div>
+
+        <div class="kt-card-zone">
+          <div class="kt-speedbar" id="speedbar" hidden><div></div></div>
+          <div class="kt-kana" id="kana-display" lang="ja">あ</div>
+          <p class="kt-feedback" id="feedback" aria-live="polite">&nbsp;</p>
+          <form class="kt-answer" id="answer-form" autocomplete="off">
+            <input id="answer-input" type="text" inputmode="latin" autocapitalize="off"
+                   autocorrect="off" spellcheck="false" placeholder="reading…"
+                   aria-label="Type the romaji reading" />
+          </form>
+          <p class="kt-hint">Enter to answer · Enter again to continue · Esc to end</p>
+        </div>
+
+        <!-- Session summary overlay -->
+        <div class="kt-overlay" id="summary-overlay" hidden>
+          <div class="kt-summary">
+            <p class="eyebrow" id="summary-eyebrow">checkpoint</p>
+            <h2 class="kt-summary-title" id="summary-title">25 down.</h2>
+            <div class="kt-summary-stats" id="summary-stats"></div>
+            <div class="kt-summary-hook" id="summary-hook"></div>
+            <div class="kt-summary-actions">
+              <button class="btn btn-primary" id="btn-summary-continue">Keep going</button>
+              <button class="btn-link" id="btn-summary-end">End session</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== PLACEMENT INTRO / RESULTS ===================== -->
+      <section id="view-placement" hidden>
+        <div class="kt-placement" id="placement-intro">
+          <p class="eyebrow">placement</p>
+          <h2 class="section-title">Find your level.</h2>
+          <p class="kt-placement-copy">
+            A short test — six kana per stage, hiragana through extended katakana.
+            Keep a stage above 5/6 and you move up; the test stops where you stop.
+            Stages you pass unlock instantly and count as known.
+          </p>
+          <p class="kt-placement-copy kt-placement-note">Takes 2–4 minutes. You can retake it anytime.</p>
+          <div class="kt-summary-actions">
+            <button class="btn btn-primary" id="btn-placement-start">Begin test</button>
+            <button class="btn-link" id="btn-placement-cancel">Never mind</button>
+          </div>
+        </div>
+        <div class="kt-placement" id="placement-results" hidden>
+          <p class="eyebrow">placement complete</p>
+          <h2 class="section-title" id="placement-result-title">Nice.</h2>
+          <div id="placement-result-body"></div>
+          <div class="kt-summary-actions">
+            <button class="btn btn-primary" id="btn-placement-review">Start reviewing</button>
+            <button class="btn-link" id="btn-placement-dash">Back to dashboard</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Toasts -->
+  <div class="kt-toasts" id="toasts" aria-live="polite"></div>
+
+  <!-- FOOTER (matches site shell) -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-left">
+        <a href="../../" class="nav-logo">
+          <span class="nav-logo-mark"></span>
+          <span>jared</span>
+        </a>
+        <p>Made with care.</p>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <p class="footer-heading">Site</p>
+          <a href="../../about/">About</a>
+          <a href="../../projects/">Projects</a>
+          <a href="../../blog/">Blog</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-heading">Find me</p>
+          <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a>
+          <a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a>
+          <a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-heading">Other</p>
+          <a href="../../contact/">Contact</a>
+          <a href="#">RSS</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-baseline">
+      © 2026 Jared P. · Built with love
+    </div>
+  </footer>
+
+  <script src="../../scripts/site.js"></script>
+  <script type="module" src="../../scripts/kana/app.js"></script>
+</body>
+</html>
