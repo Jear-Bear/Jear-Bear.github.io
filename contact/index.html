@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact · Jared P.</title>
+  <meta name="description" content="Get in touch with me. Discord, YouTube, email — pick what works for you. Honest expectations about what I respond to." />
+
+  <link rel="icon" href="../images/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,30..100;1,9..144,300..700,30..100&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../styles/base.css">
+  <link rel="stylesheet" href="../styles/contact.css">
+  <script src="contact.js"></script>
+</head>
+<body data-page="contact">
+
+  <!-- Drifting background blob — the page's motion accent -->
+  <svg class="bg-blob" viewBox="0 0 600 600" aria-hidden="true">
+    <defs>
+      <linearGradient id="blobGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="currentColor" stop-opacity="0.18" />
+        <stop offset="100%" stop-color="currentColor" stop-opacity="0.04" />
+      </linearGradient>
+    </defs>
+    <path fill="url(#blobGrad)" d="M 300,80 C 460,80 540,220 540,330 C 540,440 420,540 290,540 C 180,540 60,440 60,310 C 60,180 160,80 300,80 Z" />
+  </svg>
+
+  <nav class="navbar">
+    <a href="../" class="nav-logo">
+      <span class="nav-logo-mark"></span>
+      <span>jared</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="../about/">About</a></li>
+      <li><a href="../projects/">Projects</a></li>
+      <li><a href="../tools/">Tools</a></li>
+      <li><a href="../blog/">Blog</a></li>
+      <li><a href="../contact/">Contact</a></li>
+    </ul>
+    <button class="nav-burger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+  <ul class="nav-mobile">
+    <li><a href="../about/">About</a></li>
+    <li><a href="../projects/">Projects</a></li>
+    <li><a href="../tools/">Tools</a></li>
+    <li><a href="../blog/">Blog</a></li>
+    <li><a href="../contact/">Contact</a></li>
+  </ul>
+
+  <main>
+    <div class="container">
+
+      <header class="page-header">
+        <p class="eyebrow reveal">contact</p>
+        <h1 class="page-title reveal">
+          Let's <em>talk</em>.
+        </h1>
+        <p class="page-intro reveal">
+          Here's how to reach me &mdash; with honest expectations about how fast
+          I'll respond. Pick whatever channel fits.
+        </p>
+      </header>
+
+      <!-- Contact channels list -->
+      <section class="channels-section">
+        <div class="channels-grid">
+
+          <a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener" class="channel-card reveal">
+            <div class="channel-head">
+              <h3>Discord</h3>
+              <span class="channel-speed fast">fastest</span>
+            </div>
+            <p class="channel-desc">Best for hako questions, collab ideas, or just hanging out. Active community.</p>
+            <p class="channel-meta">Usually within a day</p>
+            <span class="channel-cta">Join the server <span class="arrow">→</span></span>
+          </a>
+
+          <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener" class="channel-card reveal">
+            <div class="channel-head">
+              <h3>YouTube</h3>
+              <span class="channel-speed medium">slow</span>
+            </div>
+            <p class="channel-desc">Drop a comment on a video. I read them all, eventually.</p>
+            <p class="channel-meta">A few days to a week</p>
+            <span class="channel-cta">@jareddesu <span class="arrow">→</span></span>
+          </a>
+
+          <a href="mailto:jared@jareddesu.com" class="channel-card reveal">
+            <div class="channel-head">
+              <h3>Email</h3>
+              <span class="channel-speed medium">batch</span>
+            </div>
+            <p class="channel-desc">For business inquiries, longer messages, anything formal.</p>
+            <p class="channel-meta">Checked in batches, expect 48 hours</p>
+            <span class="channel-cta">jared@jareddesu.com <span class="arrow">→</span></span>
+          </a>
+
+        </div>
+      </section>
+
+      <!-- What I can / can't help with -->
+      <section class="expectations-section">
+        <div class="expectations-grid">
+          <div class="expectations-card good reveal">
+            <h3>Happy to chat about</h3>
+            <ul>
+              <li>Japanese learning, immersion, AJATT-related questions</li>
+              <li>hako — feedback, beta access, partnership ideas</li>
+              <li>YouTube growth, content production, collab proposals</li>
+              <li>Side project nerding</li>
+            </ul>
+          </div>
+          <div class="expectations-card not reveal">
+            <h3>Sorry, can't help with</h3>
+            <ul>
+              <li>1-on-1 tutoring requests (not taking students)</li>
+              <li>"Check out my channel" — can't make promises</li>
+              <li>Crypto / NFT / AI tool partnerships</li>
+              <li>Anything that needs a fast turnaround</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Catch-all form -->
+      <section class="form-section">
+        <div class="section-label">
+          <span class="section-label-text">Or send a note</span>
+        </div>
+        <h2 class="section-title reveal">For everything else.</h2>
+        <p class="form-intro reveal">
+          If none of the channels above fit, drop a message here. Same response time as email.
+        </p>
+
+        <form class="contact-form reveal" id="contact-form">
+          <!-- Honeypot — hidden from humans, bots fill it -->
+          <input type="text" name="website" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+          <div class="form-row">
+            <label>
+              <span class="form-label">Your name</span>
+              <input type="text" name="name" required />
+            </label>
+            <label>
+              <span class="form-label">Email</span>
+              <input type="email" name="email" required />
+            </label>
+          </div>
+
+          <label>
+            <span class="form-label">Message</span>
+            <textarea name="message" rows="5" required placeholder="What's on your mind?"></textarea>
+          </label>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="form-submit">
+              <span class="submit-text">Send message</span>
+            </button>
+            <p class="form-meta" id="form-meta">Expect responses within 48 hours</p>
+          </div>
+        </form>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-left">
+        <a href="../" class="nav-logo">
+          <span class="nav-logo-mark"></span>
+          <span>jared</span>
+        </a>
+        <p>Made with care.</p>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <p class="footer-heading">Site</p>
+          <a href="../about/">About</a>
+          <a href="../projects/">Projects</a>
+          <a href="../tools/">Tools</a>
+          <a href="../blog/">Blog</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-heading">Find me</p>
+          <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a>
+          <a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a>
+          <a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-heading">Other</p>
+          <a href="../contact/">Contact</a>
+          <a href="#">RSS</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-baseline">
+      © 2026 Jared P. · Built with love
+    </div>
+  </footer>
+
+  <script src="../scripts/site.js"></script>
+  <script src="../scripts/contact.js"></script>
+</body>
+</html>

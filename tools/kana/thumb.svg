@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="Kana Trainer">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#23223a"/>
+      <stop offset="1" stop-color="#1b1a2e"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="675" fill="url(#bg)"/>
+
+  <!-- ghost katakana, oversized -->
+  <text x="820" y="560" font-family="Hiragino Sans, Noto Sans JP, Yu Gothic, sans-serif"
+        font-size="560" font-weight="500" fill="#5b5bd6" opacity="0.10"
+        text-anchor="middle">ア</text>
+
+  <!-- main hiragana -->
+  <text x="395" y="455" font-family="Hiragino Sans, Noto Sans JP, Yu Gothic, sans-serif"
+        font-size="360" font-weight="500" fill="#f2f1fa"
+        text-anchor="middle">あ</text>
+
+  <!-- wobbly kikyō underline -->
+  <rect x="220" y="492" width="350" height="16" rx="8" fill="#5b5bd6" opacity="0.45"
+        transform="skewX(-3)"/>
+
+  <!-- mastery scale: new → mastered -->
+  <g transform="translate(220, 560)">
+    <rect x="0"   width="52" height="52" rx="12" fill="#5b5bd6" opacity="0.12"/>
+    <rect x="68"  width="52" height="52" rx="12" fill="#5b5bd6" opacity="0.30"/>
+    <rect x="136" width="52" height="52" rx="12" fill="#5b5bd6" opacity="0.58"/>
+    <rect x="204" width="52" height="52" rx="12" fill="#5b5bd6" opacity="0.80"/>
+    <rect x="272" width="52" height="52" rx="12" fill="#5b5bd6"/>
+    <text x="298" y="36" font-family="Hiragino Sans, Noto Sans JP, sans-serif"
+          font-size="28" fill="#ffffff" text-anchor="middle">あ</text>
+  </g>
+</svg>

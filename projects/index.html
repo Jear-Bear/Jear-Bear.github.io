@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projects · Jared P.</title>
+  <meta name="description" content="A selection of side projects, experiments, and things I've built — including hako, an ambient Anki companion." />
+
+  <link rel="icon" href="../images/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,30..100;1,9..144,300..700,30..100&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../styles/base.css">
+  <link rel="stylesheet" href="../styles/projects.css">
+</head>
+<body data-page="projects">
+
+  <!-- Navbar (same across all pages) -->
+  <nav class="navbar">
+    <a href="../" class="nav-logo">
+      <span class="nav-logo-mark"></span>
+      <span>jared</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="../about/">About</a></li>
+      <li><a href="../projects/">Projects</a></li>
+      <li><a href="../tools/">Tools</a></li>
+      <li><a href="../blog/">Blog</a></li>
+      <li><a href="../contact/">Contact</a></li>
+    </ul>
+    <button class="nav-burger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+  <ul class="nav-mobile">
+    <li><a href="../about/">About</a></li>
+    <li><a href="../projects/">Projects</a></li>
+    <li><a href="../tools/">Tools</a></li>
+    <li><a href="../blog/">Blog</a></li>
+    <li><a href="../contact/">Contact</a></li>
+  </ul>
+
+  <main>
+    <div class="container">
+
+      <!-- Page header -->
+      <header class="page-header">
+        <p class="eyebrow reveal">projects</p>
+        <h1 class="page-title reveal">
+          Side <em>experiments</em>.
+        </h1>
+        <p class="page-intro reveal">
+          Things I've built, mostly losing sleep over at night.
+          The good ones turn into long-term projects. The rest (still pretty good) stay in this list as a record.
+        </p>
+      </header>
+
+      <!-- Featured: hako -->
+      <section class="featured-section">
+        <div class="section-label">
+          <span class="section-label-text">Featured</span>
+        </div>
+
+        <a href="https://hakoshop.com" target="_blank" rel="noopener" class="featured-card reveal">
+          <div class="featured-glow"></div>
+          <div class="featured-image">
+            <img src="../images/hako-hero.png" alt="hako device"
+                 onerror="this.style.display='none'; this.parentElement.classList.add('placeholder');" />
+            <div class="featured-placeholder">箱</div>
+          </div>
+          <div class="featured-content">
+            <p class="featured-eyebrow">an ongoing project</p>
+            <h2 class="featured-title">hako — an ambient Anki companion</h2>
+            <p class="featured-desc">
+              A small wooden box that shows your daily Anki progress on a 64×64 LED matrix.
+              Handmade enclosure, Raspberry Pi inside, talks to AnkiConnect over Wi-Fi.
+              Currently in closed beta with ~5 testers; first batch drops spring 2027.
+            </p>
+            <div class="featured-tags">
+              <span>Python</span><span>Hardware</span><span>Anki</span><span>Japanese</span>
+            </div>
+            <span class="featured-link">
+              hakoshop.com <span class="arrow">→</span>
+            </span>
+          </div>
+        </a>
+      </section>
+
+      <!-- Other projects (dynamically loaded from GitHub) -->
+      <section class="projects-section">
+        <div class="section-label">
+          <span class="section-label-text">Other things</span>
+        </div>
+        <h2 class="section-title reveal">More stuff I've made.</h2>
+
+        <div class="projects-grid" id="projects-grid">
+          <!-- Tiles inserted by projects.js, fetched from /Project_Showcase/ -->
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-left">
+        <a href="../" class="nav-logo">
+          <span class="nav-logo-mark"></span>
+          <span>jared</span>
+        </a>
+        <p>Made with care.</p>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <p class="footer-heading">Site</p>
+          <a href="../about/">About</a>
+          <a href="../projects/">Projects</a>
+          <a href="../tools/">Tools</a>
+          <a href="../blog/">Blog</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-heading">Find me</p>
+          <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a>
+          <a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a>
+          <a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-heading">Other</p>
+          <a href="../contact/">Contact</a>
+          <a href="#">RSS</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-baseline">
+      © 2026 Jared P. · Built with love
+    </div>
+  </footer>
+
+  <script src="../scripts/site.js"></script>
+  <script src="../scripts/projects.js"></script>
+</body>
+</html>
