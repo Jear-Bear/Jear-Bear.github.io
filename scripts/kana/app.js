@@ -1,7 +1,10 @@
 // app.js — UI orchestration for the Kana Trainer.
-import { KANA, BY_CHAR, STAGES, stageItems } from './data.js';
-import * as E from './engine.js';
-import * as S from './storage.js';
+import { KANA, BY_CHAR, STAGES, stageItems } from './data.js?v=8';
+import * as E from './engine.js?v=8';
+import * as S from './storage.js?v=8';
+
+const KT_VERSION = 8;
+console.info(`[Kana Trainer] v${KT_VERSION}`);
 
 const $ = (id) => document.getElementById(id);
 const store = S.load();
@@ -34,12 +37,49 @@ function weakPool() {
 }
 
 // ---------------------------------------------------------------- views
+// Track the *visual* viewport (shrinks when the mobile keyboard opens) so the
+// review overlay can size itself to the space the keyboard doesn't cover.
+function syncViewport() {
+  const vv = window.visualViewport;
+  const root = document.documentElement.style;
+  root.setProperty('--vvh', `${vv ? vv.height : window.innerHeight}px`);
+  root.setProperty('--vvt', `${vv ? vv.offsetTop : 0}px`);
+}
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', syncViewport);
+  window.visualViewport.addEventListener('scroll', syncViewport);
+} else {
+  window.addEventListener('resize', syncViewport);
+}
+syncViewport();
+
+// Body scroll lock (iOS ignores overflow:hidden on body — position:fixed is
+// the reliable technique; remember and restore the scroll position).
+let savedScrollY = 0;
+function lockScroll() {
+  savedScrollY = window.scrollY;
+  Object.assign(document.body.style, {
+    position: 'fixed', top: `-${savedScrollY}px`,
+    left: '0', right: '0', width: '100%',
+  });
+}
+function unlockScroll() {
+  Object.assign(document.body.style, { position: '', top: '', left: '', right: '', width: '' });
+  window.scrollTo(0, savedScrollY);
+}
+
 function show(view) {
   for (const v of ['view-dashboard', 'view-review', 'view-placement']) {
     $(v).hidden = v !== view;
   }
   document.body.classList.toggle('kt-focus', view === 'view-review');
-  window.scrollTo({ top: 0 });
+  if (view === 'view-review') {
+    syncViewport();
+    lockScroll();
+  } else {
+    unlockScroll();
+    window.scrollTo({ top: 0 });
+  }
 }
 
 // ---------------------------------------------------------------- toasts
@@ -221,6 +261,7 @@ function startSession(modeKey, poolOverride = null, label = null) {
   $('session-bar-fill').style.width = '0%';
   $('placement-progress').hidden = true;
   markSessionDay();
+  syncHint();
   show('view-review');
   nextCard();
 }
@@ -425,6 +466,7 @@ function startPlacement() {
     },
   };
   $('hud-mode').textContent = 'Placement test';
+  syncHint();
   $('speedbar').hidden = true;
   $('session-bar').hidden = true;
   show('view-review');
@@ -537,6 +579,18 @@ $('btn-summary-continue').addEventListener('click', () => {
 $('btn-summary-end').addEventListener('click', endSession);
 
 $('answer-form').addEventListener('submit', (e) => { e.preventDefault(); submitAnswer(); });
+
+// Auto-submit: the instant the typed text matches an accepted reading of the
+// *shown* card, accept it — no Enter needed. Wrong answers still need Enter,
+// so a non-advancing input is itself a signal you're off. Prefix-safe because
+// we only ever match against the current card ("n" on な waits for "na";
+// "n" on ん accepts immediately, which is correct).
+$('answer-input').addEventListener('input', (e) => {
+  if (!session || !store.settings.autoSubmit) return;
+  if (session.awaitingAdvance || session.answered) return;
+  const cur = session.current;
+  if (cur && e.target.value.trim() && E.grade(cur, e.target.value)) submitAnswer();
+});
 document.addEventListener('keydown', (e) => {
   if (!session) return;
   if (e.key === 'Escape') {
@@ -562,17 +616,45 @@ $('mode-chips').addEventListener('click', (e) => {
   else $('btn-start').textContent = `Start: ${MODES[selectedMode].name}`;
 });
 
-$('opt-fonts').checked = store.settings.fontRotation;
-$('opt-fonts').addEventListener('change', (e) => {
-  store.settings.fontRotation = e.target.checked;
-  S.save(store);
+// Guarded wiring: if a control is missing (stale HTML deploy), skip it
+// rather than letting one null crash everything after it.
+function wire(id, setup) {
+  const el = $(id);
+  if (el) setup(el);
+  else console.warn(`[Kana Trainer] missing #${id} — is index.html up to date?`);
+}
+
+wire('opt-fonts', (el) => {
+  el.checked = store.settings.fontRotation;
+  el.addEventListener('change', (e) => {
+    store.settings.fontRotation = e.target.checked;
+    S.save(store);
+  });
 });
 
-$('opt-batch').value = String(batchSize());
-$('opt-batch').addEventListener('change', (e) => {
-  store.settings.batchSize = parseInt(e.target.value, 10);
-  S.save(store);
-  toast(`Checkpoint every <strong>${batchSize()}</strong> cards.`);
+wire('opt-auto', (el) => {
+  el.checked = store.settings.autoSubmit !== false;
+  el.addEventListener('change', (e) => {
+    store.settings.autoSubmit = e.target.checked;
+    S.save(store);
+  });
+});
+
+function syncHint() {
+  const el = $('hint-line');
+  if (!el) return;
+  el.textContent = store.settings.autoSubmit
+    ? 'auto-advances when right · Enter to check · ? to reveal · Esc to end'
+    : 'Enter to answer · ? to reveal · Esc to end';
+}
+
+wire('opt-batch', (el) => {
+  el.value = String(batchSize());
+  el.addEventListener('change', (e) => {
+    store.settings.batchSize = parseInt(e.target.value, 10);
+    S.save(store);
+    toast(`Checkpoint every <strong>${batchSize()}</strong> cards.`);
+  });
 });
 
 // tap a mastery-grid cell → drill that kana's gojūon row
