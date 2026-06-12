@@ -37,7 +37,7 @@ const TOOLS = [
     const accent = t.accent || 'var(--page-color)';
     const thumb = `./${t.slug}/${t.thumb || 'thumb.png'}`;
     return `
-      <a class="tool-tile reveal" href="./${t.slug}/" style="--tile-color:${accent}">
+      <a class="tool-tile" href="./${t.slug}/" style="--tile-color:${accent}">
         <div class="tool-thumb">
           <img src="${thumb}" alt="" loading="lazy"
                onerror="this.style.display='none'; this.parentElement.classList.add('placeholder');" />
@@ -52,4 +52,10 @@ const TOOLS = [
         </div>
       </a>`;
   }).join('');
+
+  // Self-contained staggered entrance — dynamically injected elements can't
+  // use the site's .reveal system (site.js has already collected those).
+  grid.querySelectorAll('.tool-tile').forEach((el, i) => {
+    setTimeout(() => el.classList.add('is-in'), 80 + i * 90);
+  });
 })();
