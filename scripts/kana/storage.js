@@ -5,7 +5,7 @@ export function defaultStore() {
   return {
     version: 1,
     createdAt: Date.now(),
-    settings: { fontRotation: true, sound: false },
+    settings: { fontRotation: true, sound: false, batchSize: 25, lastMode: 'smart' },
     overrides: { unlockedStages: [] },
     global: {
       reviewCount: 0, totalCorrect: 0,
