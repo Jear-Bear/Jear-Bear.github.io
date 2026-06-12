@@ -261,6 +261,7 @@
   touch-action: manipulation;
 }
 
+body.kt-focus { overflow: hidden; overscroll-behavior: none; }
 body.kt-focus .navbar { opacity: .35; transition: opacity .3s; }
 body.kt-focus .navbar:hover, body.kt-focus .navbar:focus-within { opacity: 1; }
 body.kt-focus .site-footer { display: none; }
