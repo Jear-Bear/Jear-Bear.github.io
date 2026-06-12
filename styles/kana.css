@@ -31,6 +31,26 @@
 
 .kt-section { margin-top: 72px; }
 
+/* FIX: the hidden attribute must always beat component display values —
+   without this the summary overlay renders permanently and blocks the page */
+.kt [hidden] { display: none !important; }
+
+/* base.css pill buttons run tight with the trainer's longer labels
+   ("Export progress", "End session") — give them room + 44px touch targets */
+.kt .btn,
+.kt .btn-link {
+  height: auto;
+  min-height: 44px;
+  padding: 10px 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  line-height: 1.2;
+  box-sizing: border-box;
+}
+
 /* ====================== continue card ====================== */
 .kt-continue {
   display: flex; align-items: center; justify-content: space-between; gap: 24px;
