@@ -1,5 +1,5 @@
 // engine.js — pure logic. No DOM, no storage. Everything testable.
-import { KANA, BY_CHAR, stageItems, SEED_PAIRS } from './data.js';
+import { KANA, BY_CHAR, stageItems, SEED_PAIRS } from './data.js?v=8';
 
 // ---------- records ----------
 export function freshRecord() {
