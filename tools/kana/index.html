@@ -82,6 +82,28 @@
           <button class="kt-chip" data-mode="random">Random</button>
         </div>
 
+        <!-- Study settings -->
+        <div class="kt-study-settings reveal" aria-label="Study settings">
+          <label class="kt-toggle">
+            <input type="checkbox" id="opt-auto" checked>
+            <span>Auto-submit when correct</span>
+          </label>
+          <label class="kt-toggle">
+            <input type="checkbox" id="opt-fonts" checked>
+            <span>Rotate fonts</span>
+          </label>
+          <label class="kt-toggle">
+            <span>Checkpoint every</span>
+            <select id="opt-batch" class="kt-select" aria-label="Cards per checkpoint">
+              <option value="10">10</option>
+              <option value="25" selected>25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+            <span><small>cards</small></span>
+          </label>
+        </div>
+
         <!-- Progression track -->
         <section class="kt-section">
           <div class="section-label"><span class="section-label-text">Progression</span></div>
@@ -115,23 +137,13 @@
           <div class="section-label"><span class="section-label-text">Stats</span></div>
           <h2 class="section-title reveal">The numbers.</h2>
           <div class="kt-stats reveal" id="stats-panel"></div>
+        </section>
+
+        <!-- Settings -->
+        <section class="kt-section" id="data">
+          <div class="section-label"><span class="section-label-text">Data</span></div>
+          <h2 class="section-title reveal">Your progress, yours.</h2>
           <div class="kt-settings reveal">
-            <div class="kt-prefs">
-              <label class="kt-toggle">
-                <input type="checkbox" id="opt-fonts" checked>
-                <span>Rotate Japanese fonts <small>(so you learn the kana, not the typeface)</small></span>
-              </label>
-              <label class="kt-toggle">
-                <span>Checkpoint every</span>
-                <select id="opt-batch" class="kt-select" aria-label="Cards per checkpoint">
-                  <option value="10">10</option>
-                  <option value="25" selected>25</option>
-                  <option value="50">50</option>
-                  <option value="100">100</option>
-                </select>
-                <span><small>cards</small></span>
-              </label>
-            </div>
             <div class="kt-data-actions">
               <button class="btn-link" id="btn-export">Export progress</button>
               <button class="btn-link" id="btn-import">Import</button>
@@ -167,7 +179,7 @@
                    autocorrect="off" spellcheck="false" placeholder="reading…"
                    aria-label="Type the romaji reading" />
           </form>
-          <p class="kt-hint">Enter to answer · ? to reveal · Esc to end</p>
+          <p class="kt-hint" id="hint-line">Enter to answer · ? to reveal · Esc to end</p>
         </div>
 
         <!-- Session summary overlay -->
