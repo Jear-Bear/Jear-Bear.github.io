@@ -1,9 +1,9 @@
 // app.js — UI orchestration for the Kana Trainer.
-import { KANA, BY_CHAR, STAGES, stageItems } from './data.js?v=9';
-import * as E from './engine.js?v=9';
-import * as S from './storage.js?v=9';
+import { KANA, BY_CHAR, STAGES, stageItems } from './data.js?v=10';
+import * as E from './engine.js?v=10';
+import * as S from './storage.js?v=10';
 
-const KT_VERSION = 9;
+const KT_VERSION = 10;
 console.info(`[Kana Trainer] v${KT_VERSION}`);
 
 const $ = (id) => document.getElementById(id);
@@ -63,13 +63,11 @@ syncViewport();
 let savedScrollY = 0;
 function lockScroll() {
   savedScrollY = window.scrollY;
-  Object.assign(document.body.style, {
-    position: 'fixed', top: `-${savedScrollY}px`,
-    left: '0', right: '0', width: '100%',
-  });
+  // body.kt-focus does the fixed positioning in CSS; just pin to the top.
+  // (No -scrollY offset: the page content is hidden during review anyway.)
+  window.scrollTo(0, 0);
 }
 function unlockScroll() {
-  Object.assign(document.body.style, { position: '', top: '', left: '', right: '', width: '' });
   window.scrollTo(0, savedScrollY);
 }
 
@@ -604,6 +602,13 @@ document.addEventListener('keydown', (e) => {
     else endSession();
   }
 });
+// Hard-block drag panning while reviewing: with the keyboard up, iOS lets
+// touches pan the visual viewport even over non-scrollable content. The
+// checkpoint summary is exempt so it can scroll internally if needed.
+$('view-review').addEventListener('touchmove', (e) => {
+  if (!e.target.closest('.kt-summary')) e.preventDefault();
+}, { passive: false });
+
 // keep the input owning the keyboard during review
 window.addEventListener('focus', () => { if (session) $('answer-input').focus(); });
 document.addEventListener('click', (e) => {
