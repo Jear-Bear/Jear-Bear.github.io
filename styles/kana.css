@@ -202,6 +202,20 @@
 }
 .kt-stat-l { font-size: 0.75rem; color: var(--muted); letter-spacing: .04em; }
 
+/* study settings — quiet strip under the mode chips */
+.kt-study-settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 28px;
+  margin-top: 18px;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.kt-study-settings .kt-toggle { font-size: 0.88rem; }
+
 .kt-settings {
   margin-top: 28px; display: flex; flex-wrap: wrap; gap: 18px;
   justify-content: space-between; align-items: center;
@@ -230,13 +244,32 @@
 .kt-danger { color: var(--kt-no) !important; }
 
 /* ====================== review view ====================== */
+/* The review view is a fixed overlay sized to the visual viewport (--vvh
+   shrinks when the mobile keyboard opens), so the kana stays locked in
+   place and the page underneath can't scroll or bounce. */
+#view-review:not([hidden]) {
+  position: fixed;
+  top: var(--vvt, 0px); left: 0; right: 0;
+  height: var(--vvh, 100dvh);
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg, var(--surface));
+  padding: max(10px, env(safe-area-inset-top)) 20px env(safe-area-inset-bottom);
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
+
 body.kt-focus .navbar { opacity: .35; transition: opacity .3s; }
 body.kt-focus .navbar:hover, body.kt-focus .navbar:focus-within { opacity: 1; }
 body.kt-focus .site-footer { display: none; }
 
 .kt-hud {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 24px 0 8px; gap: 16px; flex-wrap: wrap;
+  padding: 8px 0; gap: 16px; flex-wrap: wrap;
+  width: 100%; max-width: 720px; margin: 0 auto;
+  flex-shrink: 0;
 }
 .kt-hud-stats { display: flex; gap: 18px; align-items: center; font-size: 0.88rem; color: var(--muted); }
 .kt-hud-mode { color: var(--page-color); font-weight: 500; }
@@ -255,6 +288,8 @@ body.kt-focus .site-footer { display: none; }
 @keyframes kt-pop { 50% { transform: scale(1.35); } }
 
 .kt-session-bar {
+  flex-shrink: 0;
+  width: 100%; max-width: 720px; margin-left: auto; margin-right: auto;
   height: 4px; border-radius: 999px;
   background: var(--page-color-soft);
   overflow: hidden;
@@ -268,12 +303,17 @@ body.kt-focus .site-footer { display: none; }
 }
 
 .kt-stage-progress {
+  flex-shrink: 0;
   text-align: center; color: var(--muted); font-size: 0.9rem; margin-top: 16px;
 }
 
 .kt-card-zone {
-  max-width: 560px; margin: 0 auto; padding: 6vh 16px 12vh;
-  display: flex; flex-direction: column; align-items: center; text-align: center;
+  width: 100%; max-width: 560px; margin: 0 auto;
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 0 8px;
 }
 .kt-speedbar {
   width: 100%; height: 3px; border-radius: 999px;
@@ -284,7 +324,7 @@ body.kt-focus .site-footer { display: none; }
 @keyframes kt-drain { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 
 .kt-kana {
-  font-size: clamp(96px, 22vw, 160px);
+  font-size: min(clamp(84px, 22vw, 160px), calc(var(--vvh, 100vh) * 0.26));
   line-height: 1.1;
   color: var(--ink);
   font-family: 'Noto Sans JP', sans-serif;
@@ -356,6 +396,8 @@ body.kt-focus .site-footer { display: none; }
   box-shadow: 0 24px 60px rgba(0,0,0,.18);
   padding: 36px 40px;
   max-width: 460px; width: 100%;
+  max-height: calc(var(--vvh, 100dvh) - 48px);
+  overflow-y: auto;
   text-align: center;
   animation: kt-rise .3s cubic-bezier(.22,1,.36,1);
 }
@@ -423,10 +465,10 @@ body.kt-focus .site-footer { display: none; }
 
 @media (max-width: 640px) {
   .kt-continue { flex-direction: column; align-items: flex-start; padding: 22px; }
-  .kt-card-zone { padding-top: 3vh; }
   .kt-cell { width: 38px; height: 38px; font-size: 0.95rem; }
   .kt-summary { padding: 28px 22px; }
   .kt-settings { flex-direction: column; align-items: flex-start; }
+  .kt-study-settings { flex-direction: column; align-items: flex-start; gap: 12px; }
   .kt-data-actions { flex-wrap: wrap; }
   .kt-toasts { left: 16px; right: 16px; align-items: stretch; }
   .kt-toast { max-width: none; }
