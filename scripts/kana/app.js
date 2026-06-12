@@ -156,8 +156,8 @@ function renderGrid() {
           const rec = store.kana[k.char];
           const lvl = rec ? E.masteryLevel(rec) : 0;
           const acc = rec && rec.reviews ? Math.round(E.recentAccuracy(rec) * 100) : null;
-          const title = `${k.char} · ${k.reading}${acc != null ? ` · ${acc}% · ${E.LEVEL_NAMES[lvl]}` : ' · not yet reviewed'}`;
-          return `<button class="kt-cell m${lvl}" lang="ja" title="${title}" aria-label="${title}">${k.char}</button>`;
+          const title = `${k.char} · ${k.reading}${acc != null ? ` · ${acc}% · ${E.LEVEL_NAMES[lvl]}` : ' · not yet reviewed'} — tap to drill this row`;
+          return `<button class="kt-cell m${lvl}" lang="ja" data-char="${k.char}" title="${title}" aria-label="${title}">${k.char}</button>`;
         }).join('')}
       </div>
     </div>`).join('');
@@ -204,7 +204,7 @@ function renderStats() {
 }
 
 // ---------------------------------------------------------------- review loop
-function startSession(modeKey, poolOverride = null) {
+function startSession(modeKey, poolOverride = null, label = null) {
   const mode = MODES[modeKey];
   let pool = poolOverride || mode.pool();
   if (!pool.length) {
@@ -215,8 +215,10 @@ function startSession(modeKey, poolOverride = null) {
     modeKey, pool, history: [], current: null, answered: false,
     shownAt: 0, count: 0, correct: 0, combo: 0, bestCombo: 0, placement: null,
   };
-  $('hud-mode').textContent = mode.name;
+  $('hud-mode').textContent = label || mode.name;
   $('speedbar').hidden = !mode.speed;
+  $('session-bar').hidden = false;
+  $('session-bar-fill').style.width = '0%';
   $('placement-progress').hidden = true;
   markSessionDay();
   show('view-review');
@@ -279,7 +281,8 @@ function submitAnswer() {
   if (!raw.trim()) return;
 
   const kana = session.current;
-  const correct = E.grade(kana, raw);
+  const revealed = raw.trim() === '?';
+  const correct = !revealed && E.grade(kana, raw);
   const levelBefore = store.kana[kana.char] ? E.masteryLevel(store.kana[kana.char]) : 0;
   const unlockedBefore = E.unlockedStageIds(store);
 
@@ -311,10 +314,12 @@ function submitAnswer() {
     session.combo = 0;
     store.recentMisses = store.recentMisses.filter((c) => c !== kana.char);
     store.recentMisses.push(kana.char);
-    const confusedWith = E.detectConfusion(kana, raw, new Set(E.unlockedKana(store).map((x) => x.char)));
+    const confusedWith = revealed ? null : E.detectConfusion(kana, raw, new Set(E.unlockedKana(store).map((x) => x.char)));
     if (confusedWith) E.recordConfusion(store, kana.char, confusedWith);
     k.classList.add('miss');
-    fb.innerHTML = `<span class="no">✗ ${escapeHTML(E.normalize(raw)) || '…'}</span>
+    fb.innerHTML = revealed
+      ? `<span class="truth">it's <strong>${kana.reading}</strong></span>`
+      : `<span class="no">✗ ${escapeHTML(E.normalize(raw)) || '…'}</span>
       <span class="truth">it's <strong>${kana.reading}</strong></span>
       ${confusedWith ? `<span class="confused">you typed <span lang="ja">${confusedWith}</span>'s reading</span>` : ''}`;
     fb.className = 'kt-feedback show';
@@ -327,8 +332,20 @@ function submitAnswer() {
 function advance() {
   if (!session) return;
   session.awaitingAdvance = false;
-  if (session.count > 0 && session.count % 25 === 0) showSummary();
+  if (session.count > 0 && session.count % batchSize() === 0) showSummary();
   else nextCard();
+}
+
+const batchSize = () => {
+  const n = parseInt(store.settings.batchSize, 10);
+  return Number.isFinite(n) && n >= 5 ? n : 25;
+};
+
+function updateSessionBar() {
+  const b = batchSize();
+  const inBatch = session.count % b;
+  const pct = session.count === 0 ? 0 : (inBatch === 0 ? 100 : (inBatch / b) * 100);
+  $('session-bar-fill').style.width = `${pct}%`;
 }
 
 function comboFeedback() {
@@ -364,6 +381,7 @@ function unlockCheck(before) {
 function updateHUD() {
   $('hud-count').textContent = `${session.count} reviewed`;
   $('hud-acc').textContent = session.count ? `${Math.round((session.correct / session.count) * 100)}%` : '— %';
+  updateSessionBar();
 }
 
 function showSummary() {
@@ -408,6 +426,7 @@ function startPlacement() {
   };
   $('hud-mode').textContent = 'Placement test';
   $('speedbar').hidden = true;
+  $('session-bar').hidden = true;
   show('view-review');
   nextPlacementCard();
 }
@@ -510,7 +529,11 @@ $('btn-placement-cancel').addEventListener('click', () => show('view-dashboard')
 $('btn-placement-review').addEventListener('click', () => startSession('smart'));
 $('btn-placement-dash').addEventListener('click', () => { renderDashboard(); show('view-dashboard'); });
 $('btn-end').addEventListener('click', endSession);
-$('btn-summary-continue').addEventListener('click', () => { $('summary-overlay').hidden = true; nextCard(); });
+$('btn-summary-continue').addEventListener('click', () => {
+  $('summary-overlay').hidden = true;
+  $('session-bar-fill').style.width = '0%';
+  nextCard();
+});
 $('btn-summary-end').addEventListener('click', endSession);
 
 $('answer-form').addEventListener('submit', (e) => { e.preventDefault(); submitAnswer(); });
@@ -532,6 +555,8 @@ $('mode-chips').addEventListener('click', (e) => {
   const chip = e.target.closest('.kt-chip');
   if (!chip) return;
   selectedMode = chip.dataset.mode;
+  store.settings.lastMode = selectedMode;
+  S.save(store);
   $('mode-chips').querySelectorAll('.kt-chip').forEach((c) => c.classList.toggle('is-active', c === chip));
   if (selectedMode === 'smart') renderContinue();
   else $('btn-start').textContent = `Start: ${MODES[selectedMode].name}`;
@@ -541,6 +566,27 @@ $('opt-fonts').checked = store.settings.fontRotation;
 $('opt-fonts').addEventListener('change', (e) => {
   store.settings.fontRotation = e.target.checked;
   S.save(store);
+});
+
+$('opt-batch').value = String(batchSize());
+$('opt-batch').addEventListener('change', (e) => {
+  store.settings.batchSize = parseInt(e.target.value, 10);
+  S.save(store);
+  toast(`Checkpoint every <strong>${batchSize()}</strong> cards.`);
+});
+
+// tap a mastery-grid cell → drill that kana's gojūon row
+function rowPool(kana) {
+  let pool = KANA.filter((x) => x.stage === kana.stage && x.script === kana.script && x.row === kana.row);
+  if (pool.length < 4) pool = KANA.filter((x) => x.stage === kana.stage);
+  return pool;
+}
+$('mastery-grid').addEventListener('click', (e) => {
+  const cell = e.target.closest('.kt-cell');
+  if (!cell) return;
+  const kana = BY_CHAR[cell.dataset.char];
+  if (!kana) return;
+  startSession('smart', rowPool(kana), `Row drill · ${kana.char}`);
 });
 
 $('btn-export').addEventListener('click', () => S.exportJSON(store));
@@ -571,4 +617,8 @@ function escapeHTML(s) {
 
 // ---------------------------------------------------------------- boot
 renderDashboard();
+if (MODES[store.settings.lastMode]) selectedMode = store.settings.lastMode;
+$('mode-chips').querySelectorAll('.kt-chip').forEach((c) =>
+  c.classList.toggle('is-active', c.dataset.mode === selectedMode));
+if (selectedMode !== 'smart') $('btn-start').textContent = `Start: ${MODES[selectedMode].name}`;
 show('view-dashboard');
