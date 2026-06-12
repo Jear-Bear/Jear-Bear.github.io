@@ -136,6 +136,8 @@
 .kt-stage-go:hover { text-decoration: underline; }
 
 /* ====================== mastery grid ====================== */
+.kt-grid-hint { color: var(--muted); font-size: 0.88rem; margin: 8px 0 0; }
+
 .kt-grid-legend {
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
   font-size: 0.8rem; color: var(--muted); margin: 20px 0 8px;
@@ -154,7 +156,8 @@
   font-family: 'Noto Sans JP', sans-serif; font-size: 1.05rem;
   border-radius: 9px;
   border: 1px solid var(--border);
-  cursor: default;
+  cursor: pointer;
+  background: transparent;
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow .15s, background .4s;
 }
 .kt-cell:hover { transform: translateY(-3px) scale(1.06); box-shadow: var(--shadow-sm); z-index: 1; }
@@ -207,6 +210,22 @@
 .kt-toggle { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: var(--ink-soft); cursor: pointer; }
 .kt-toggle small { color: var(--muted); }
 .kt-toggle input { accent-color: var(--page-color); width: 16px; height: 16px; }
+.kt-prefs { display: flex; flex-direction: column; gap: 12px; }
+.kt-select {
+  font: 500 0.9rem 'Inter', sans-serif;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+}
+.kt-select:focus {
+  outline: none;
+  border-color: var(--page-color);
+  box-shadow: 0 0 0 3px var(--page-color-soft);
+}
 .kt-data-actions { display: flex; gap: 18px; align-items: center; }
 .kt-danger { color: var(--kt-no) !important; }
 
@@ -234,6 +253,19 @@ body.kt-focus .site-footer { display: none; }
   text-shadow: 0 0 14px color-mix(in srgb, var(--page-color) 60%, transparent);
 }
 @keyframes kt-pop { 50% { transform: scale(1.35); } }
+
+.kt-session-bar {
+  height: 4px; border-radius: 999px;
+  background: var(--page-color-soft);
+  overflow: hidden;
+  margin: 2px 0 10px;
+}
+.kt-session-bar > div {
+  height: 100%; width: 0%;
+  background: var(--page-color);
+  border-radius: 999px;
+  transition: width .35s cubic-bezier(.22,1,.36,1);
+}
 
 .kt-stage-progress {
   text-align: center; color: var(--muted); font-size: 0.9rem; margin-top: 16px;
