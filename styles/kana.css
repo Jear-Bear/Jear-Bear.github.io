@@ -244,27 +244,41 @@
 .kt-danger { color: var(--kt-no) !important; }
 
 /* ====================== review view ====================== */
-/* The review view is a fixed overlay sized to the visual viewport (--vvh
-   shrinks when the mobile keyboard opens), so the kana stays locked in
-   place and the page underneath can't scroll or bounce. */
-#view-review:not([hidden]) {
+/* Focus mode: the BODY becomes the locked, viewport-sized box and the
+   review view simply fills it in-flow. No position:fixed on the view —
+   a transformed/filtered ancestor (e.g. reveal animations on the page
+   shell) silently breaks fixed positioning, which is why the overlay
+   approach scrolled with the page. */
+body.kt-focus {
   position: fixed;
-  top: 0; left: 0; right: 0;
-  height: var(--vvh, 100dvh);
-  z-index: 70;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+body.kt-focus .navbar,
+body.kt-focus .nav-mobile,
+body.kt-focus .site-footer { display: none; }
+body.kt-focus main,
+body.kt-focus .container.kt {
+  margin: 0;
+  padding: 0;
+  max-width: none;
+  width: 100%;
+  height: 100%;
+}
+
+#view-review:not([hidden]) {
+  width: 100%;
+  height: var(--vvh, 100%);
   display: flex;
   flex-direction: column;
-  background: var(--bg, var(--surface));
   padding: max(10px, env(safe-area-inset-top)) 20px env(safe-area-inset-bottom);
   overflow: hidden;
   overscroll-behavior: none;
   touch-action: manipulation;
 }
-
-body.kt-focus { overflow: hidden; overscroll-behavior: none; }
-body.kt-focus .navbar { opacity: .35; transition: opacity .3s; }
-body.kt-focus .navbar:hover, body.kt-focus .navbar:focus-within { opacity: 1; }
-body.kt-focus .site-footer { display: none; }
 
 .kt-hud {
   display: flex; justify-content: space-between; align-items: center;
