@@ -1,9 +1,9 @@
 // app.js — UI orchestration for the Kana Trainer.
-import { KANA, BY_CHAR, STAGES, stageItems } from './data.js?v=8';
-import * as E from './engine.js?v=8';
-import * as S from './storage.js?v=8';
+import { KANA, BY_CHAR, STAGES, stageItems } from './data.js?v=9';
+import * as E from './engine.js?v=9';
+import * as S from './storage.js?v=9';
 
-const KT_VERSION = 8;
+const KT_VERSION = 9;
 console.info(`[Kana Trainer] v${KT_VERSION}`);
 
 const $ = (id) => document.getElementById(id);
@@ -41,9 +41,14 @@ function weakPool() {
 // review overlay can size itself to the space the keyboard doesn't cover.
 function syncViewport() {
   const vv = window.visualViewport;
-  const root = document.documentElement.style;
-  root.setProperty('--vvh', `${vv ? vv.height : window.innerHeight}px`);
-  root.setProperty('--vvt', `${vv ? vv.offsetTop : 0}px`);
+  document.documentElement.style.setProperty(
+    '--vvh', `${vv ? vv.height : window.innerHeight}px`);
+  // While the review overlay is up, cancel Safari's focus-pan so the layout
+  // and visual viewports stay pinned together at the top. (Chasing the pan
+  // with an offset just moves the overlay along with it.)
+  if (document.body.classList.contains('kt-focus')) {
+    if (window.scrollY !== 0 || (vv && vv.offsetTop > 0)) window.scrollTo(0, 0);
+  }
 }
 if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', syncViewport);
