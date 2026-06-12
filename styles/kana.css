@@ -249,7 +249,7 @@
    place and the page underneath can't scroll or bounce. */
 #view-review:not([hidden]) {
   position: fixed;
-  top: var(--vvt, 0px); left: 0; right: 0;
+  top: 0; left: 0; right: 0;
   height: var(--vvh, 100dvh);
   z-index: 70;
   display: flex;
