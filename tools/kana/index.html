@@ -15,7 +15,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=M+PLUS+Rounded+1c:wght@400&family=Shippori+Mincho:wght@500&family=Klee+One:wght@600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="../../styles/base.css">
-  <link rel="stylesheet" href="../../styles/kana.css?v=10">
+  <link rel="stylesheet" href="../../styles/kana.css?v=11">
 </head>
 <body data-page="kana">
 
@@ -70,9 +70,10 @@
           </div>
         </div>
 
-        <!-- Mode chips -->
+        <!-- Mode chips: Smart review (daily) + Custom study (extra practice) -->
         <div class="kt-modes reveal" id="mode-chips" role="group" aria-label="Review modes">
           <button class="kt-chip is-active" data-mode="smart">Smart review</button>
+          <span class="kt-modes-sep" aria-hidden="true">custom study:</span>
           <button class="kt-chip" data-mode="hiragana">Hiragana</button>
           <button class="kt-chip" data-mode="katakana">Katakana</button>
           <button class="kt-chip" data-mode="weak">Weak kana</button>
@@ -85,6 +86,11 @@
         <!-- Study settings -->
         <div class="kt-study-settings reveal" aria-label="Study settings">
           <label class="kt-toggle">
+            <span>New kana / day</span>
+            <input type="number" id="opt-new" class="kt-num" min="0" max="1000" step="1" value="15"
+                   aria-label="New kana introduced per day" inputmode="numeric">
+          </label>
+          <label class="kt-toggle">
             <input type="checkbox" id="opt-auto" checked>
             <span>Auto-submit when correct</span>
           </label>
@@ -92,9 +98,9 @@
             <input type="checkbox" id="opt-fonts" checked>
             <span>Rotate fonts</span>
           </label>
-          <label class="kt-toggle">
-            <span>Checkpoint every</span>
-            <select id="opt-batch" class="kt-select" aria-label="Cards per checkpoint">
+          <label class="kt-toggle" title="Pacing for endless Custom study modes only">
+            <span>Custom checkpoint</span>
+            <select id="opt-batch" class="kt-select" aria-label="Cards per checkpoint in custom study">
               <option value="10">10</option>
               <option value="25" selected>25</option>
               <option value="50">50</option>
@@ -114,7 +120,7 @@
         <!-- Mastery grid -->
         <section class="kt-section">
           <div class="section-label"><span class="section-label-text">Mastery</span></div>
-          <h2 class="section-title reveal">Every kana, at a glance.</h2><p class="kt-grid-hint reveal">Tap any kana to drill its row.</p>
+          <h2 class="section-title reveal">Every kana, at a glance.</h2>\n          <p class="kt-grid-hint reveal">Tap any kana to drill its row.</p>
           <p class="kt-grid-legend reveal" aria-hidden="true">
             <span class="kt-cell-demo m0"></span> new
             <span class="kt-cell-demo m1"></span> learning
@@ -142,7 +148,7 @@
         <!-- Settings -->
         <section class="kt-section" id="data">
           <div class="section-label"><span class="section-label-text">Data</span></div>
-          <h2 class="section-title reveal">Your progress.</h2>
+          <h2 class="section-title reveal">Your progress, yours.</h2>
           <div class="kt-settings reveal">
             <div class="kt-data-actions">
               <button class="btn-link" id="btn-export">Export progress</button>
@@ -267,6 +273,6 @@
   </footer>
 
   <script src="../../scripts/site.js"></script>
-  <script type="module" src="../../scripts/kana/app.js?v=10"></script>
+  <script type="module" src="../../scripts/kana/app.js?v=11"></script>
 </body>
 </html>
