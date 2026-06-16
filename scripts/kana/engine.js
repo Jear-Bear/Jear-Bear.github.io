@@ -1,5 +1,5 @@
 // engine.js — pure logic. No DOM, no storage. Everything testable.
-import { KANA, BY_CHAR, stageItems, SEED_PAIRS } from './data.js?v=10';
+import { KANA, BY_CHAR, stageItems, SEED_PAIRS } from './data.js?v=11';
 
 // ---------- records ----------
 export function freshRecord() {
@@ -219,6 +219,32 @@ export function dueCount(store) {
     const rec = store.kana[k.char];
     return rec && rec.reviews > 0 && rec.duePosition <= g;
   }).length;
+}
+
+// New (never-reviewed) unlocked kana, in stage/row order so rows introduce together.
+export function newKana(store) {
+  return unlockedKana(store)
+    .filter((k) => !store.kana[k.char] || store.kana[k.char].reviews === 0)
+    .sort((a, b) => a.stage - b.stage || a.row - b.row);
+}
+
+// How many new kana the user has already started today (for the daily gate).
+export function newSeenToday(store) {
+  const today = isoDay();
+  return (store.global.newByDay && store.global.newByDay[today]) || 0;
+}
+
+// The finite Smart-review queue: every due kana + up to `remaining new` cards.
+// Returns the chars to study this session (ordering still handled by pickNext).
+export function dueQueue(store, newPerDay) {
+  const g = store.global.reviewCount;
+  const due = unlockedKana(store).filter((k) => {
+    const rec = store.kana[k.char];
+    return rec && rec.reviews > 0 && rec.duePosition <= g;
+  });
+  const remaining = Math.max(0, newPerDay - newSeenToday(store));
+  const fresh = newKana(store).slice(0, remaining);
+  return { due, fresh, pool: due.concat(fresh) };
 }
 
 export function nearlyMastered(store) {

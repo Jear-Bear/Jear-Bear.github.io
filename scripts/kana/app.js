@@ -1,9 +1,9 @@
 // app.js — UI orchestration for the Kana Trainer.
-import { KANA, BY_CHAR, STAGES, stageItems } from './data.js?v=10';
-import * as E from './engine.js?v=10';
-import * as S from './storage.js?v=10';
+import { KANA, BY_CHAR, STAGES, stageItems } from './data.js?v=11';
+import * as E from './engine.js?v=11';
+import * as S from './storage.js?v=11';
 
-const KT_VERSION = 10;
+const KT_VERSION = 11;
 console.info(`[Kana Trainer] v${KT_VERSION}`);
 
 const $ = (id) => document.getElementById(id);
@@ -119,19 +119,34 @@ function renderDashboard() {
 function renderContinue() {
   const due = E.dueCount(store);
   const total = Object.values(store.kana).filter((r) => r.reviews > 0).length;
+  const newRemaining = Math.max(0, batchSize.newPerDay() - E.newSeenToday(store));
+  const freshAvailable = Math.min(newRemaining, E.newKana(store).length);
+  const queueSize = due + freshAvailable;
   const line = $('continue-line'), sub = $('continue-sub');
+
+  if (selectedMode !== 'smart') {
+    // a practice (endless) mode is selected — keep it simple
+    line.textContent = `${MODES[selectedMode].name} — practice mode.`;
+    sub.textContent = 'Endless reps until you stop. No daily limit.';
+    $('btn-start').textContent = `Start: ${MODES[selectedMode].name}`;
+    return;
+  }
+
   if (total === 0) {
     line.textContent = 'Start with hiragana — or test into your level.';
-    sub.textContent = '46 kana are waiting. The first session takes about five minutes.';
+    sub.textContent = `${freshAvailable} new kana ready today. The first session takes a few minutes.`;
     $('btn-start').textContent = 'Start reviewing';
-  } else if (due > 0) {
-    line.textContent = `${due} kana due for review.`;
-    sub.textContent = nextStepHint();
-    $('btn-start').textContent = 'Continue';
+  } else if (queueSize > 0) {
+    const bits = [];
+    if (due > 0) bits.push(`${due} due`);
+    if (freshAvailable > 0) bits.push(`${freshAvailable} new`);
+    line.textContent = `${queueSize} kana in today's queue.`;
+    sub.textContent = `${bits.join(' · ')}${nextStepHint() ? ' — ' + nextStepHint() : ''}`;
+    $('btn-start').textContent = 'Start';
   } else {
-    line.textContent = 'Queue clear. Nicely done.';
-    sub.textContent = nextStepHint() || 'Practice ahead, drill weak kana, or come back later.';
-    $('btn-start').textContent = 'Practice anyway';
+    line.textContent = 'Queue clear for today. Nicely done.';
+    sub.textContent = nextStepHint() || 'Come back tomorrow, or use Custom study for extra reps.';
+    $('btn-start').textContent = 'Custom study';
   }
 }
 
@@ -254,9 +269,23 @@ function startSession(modeKey, poolOverride = null, label = null) {
     toast(modeKey === 'weak' ? 'No weak kana yet — review a bit first.' : 'Nothing to review in that mode yet.');
     return;
   }
+
+  // Smart review is FINITE: a daily queue of due + new kana that ends when
+  // worked down. Misses get re-queued (they're still "due"). Other modes
+  // (weak/speed/random/row drills) stay endless practice grinds.
+  const finite = modeKey === 'smart' && !poolOverride;
+  let queue = null, newSet = null;
+  if (finite) {
+    const dq = E.dueQueue(store, batchSize.newPerDay());
+    pool = dq.pool;
+    queue = dq.pool.map((k) => k.char);          // remaining chars to clear
+    newSet = new Set(dq.fresh.map((k) => k.char)); // which are new (for daily gate)
+  }
+
   session = {
     modeKey, pool, history: [], current: null, answered: false,
     shownAt: 0, count: 0, correct: 0, combo: 0, bestCombo: 0, placement: null,
+    finite, queue, newSet, cleared: 0, total: queue ? queue.length : 0,
   };
   $('hud-mode').textContent = label || mode.name;
   $('speedbar').hidden = !mode.speed;
@@ -276,7 +305,23 @@ function markSessionDay() {
 
 function nextCard() {
   const mode = MODES[session.modeKey];
-  session.current = E.pickNext(store, session.pool, session.history, { uniform: !!mode.uniform });
+
+  // Finite session: pick from the remaining queue; finish when empty.
+  if (session.finite) {
+    if (!session.queue.length) return finishDaily();
+    // weighted pick limited to the queue, still avoiding the last 3 shown
+    const queuePool = session.pool.filter((k) => session.queue.includes(k.char));
+    session.current = E.pickNext(store, queuePool, session.history, { uniform: false });
+    // count a new card against the daily gate the first time it's shown
+    if (session.newSet.has(session.current.char)) {
+      session.newSet.delete(session.current.char);
+      const today = E.isoDay();
+      store.global.newByDay[today] = (store.global.newByDay[today] || 0) + 1;
+    }
+  } else {
+    session.current = E.pickNext(store, session.pool, session.history, { uniform: !!mode.uniform });
+  }
+
   session.history.push(session.current.char);
   session.answered = false;
   session.awaitingAdvance = false;
@@ -344,6 +389,10 @@ function submitAnswer() {
     session.correct++;
     session.combo++;
     session.bestCombo = Math.max(session.bestCombo, session.combo);
+    if (session.finite) {
+      session.queue = session.queue.filter((c) => c !== kana.char);
+      session.cleared++;
+    }
     k.classList.add('hit');
     fb.innerHTML = `<span class="ok">✓ ${kana.reading}</span>`;
     fb.className = 'kt-feedback show';
@@ -356,6 +405,20 @@ function submitAnswer() {
     }, 380);
   } else {
     session.combo = 0;
+    // finite session: re-queue a missed kana so it comes back — but cap how
+    // many times, so a persistently-missed card can't make the session endless.
+    if (session.finite) {
+      session.requeues = session.requeues || {};
+      const r = (session.requeues[kana.char] || 0);
+      if (r < 4 && !session.queue.includes(kana.char)) {
+        session.queue.push(kana.char);
+        session.requeues[kana.char] = r + 1;
+      } else if (r >= 4) {
+        // give up on it for this session; it stays due for next time
+        session.queue = session.queue.filter((c) => c !== kana.char);
+        session.cleared++;
+      }
+    }
     store.recentMisses = store.recentMisses.filter((c) => c !== kana.char);
     store.recentMisses.push(kana.char);
     const confusedWith = revealed ? null : E.detectConfusion(kana, raw, new Set(E.unlockedKana(store).map((x) => x.char)));
@@ -376,6 +439,11 @@ function submitAnswer() {
 function advance() {
   if (!session) return;
   session.awaitingAdvance = false;
+  if (session.finite) {
+    if (!session.queue.length) return finishDaily();
+    return nextCard();
+  }
+  // endless practice modes keep the every-N checkpoint pacing
   if (session.count > 0 && session.count % batchSize() === 0) showSummary();
   else nextCard();
 }
@@ -384,12 +452,44 @@ const batchSize = () => {
   const n = parseInt(store.settings.batchSize, 10);
   return Number.isFinite(n) && n >= 5 ? n : 25;
 };
+batchSize.newPerDay = () => {
+  const n = parseInt(store.settings.newPerDay, 10);
+  return Number.isFinite(n) && n >= 0 ? Math.min(1000, n) : 15;
+};
 
 function updateSessionBar() {
-  const b = batchSize();
-  const inBatch = session.count % b;
-  const pct = session.count === 0 ? 0 : (inBatch === 0 ? 100 : (inBatch / b) * 100);
-  $('session-bar-fill').style.width = `${pct}%`;
+  let pct;
+  if (session.finite) {
+    pct = session.total ? (session.cleared / session.total) * 100 : 0;
+  } else {
+    const b = batchSize();
+    const inBatch = session.count % b;
+    pct = session.count === 0 ? 0 : (inBatch === 0 ? 100 : (inBatch / b) * 100);
+  }
+  $('session-bar-fill').style.width = `${Math.min(100, pct)}%`;
+}
+
+// Finite Smart-review queue cleared → the "done for today" state.
+function finishDaily() {
+  S.save(store, { now: true });
+  const acc = session.count ? Math.round((session.correct / session.count) * 100) : 100;
+  const best = session.bestCombo;
+  const remainingNew = E.newKana(store).length;
+  session = null;
+  $('summary-eyebrow').textContent = 'done for today';
+  $('summary-title').textContent = 'Queue clear.';
+  $('summary-stats').innerHTML = [
+    [`${acc}%`, 'accuracy'],
+    [`×${best}`, 'best streak'],
+    [E.dueCount(store), 'still due'],
+  ].map(([v, l]) => `<div class="kt-stat"><span class="kt-stat-v">${v}</span><span class="kt-stat-l">${l}</span></div>`).join('');
+  $('summary-hook').innerHTML = remainingNew
+    ? `<p>${remainingNew} kana still unlearned. Raise your new-cards-a-day in settings, or keep going with Custom study.</p>`
+    : `<p>You've seen every unlocked kana. Unlock the next stage, or drill weak spots in Custom study.</p>`;
+  $('btn-summary-continue').textContent = 'Custom study';
+  $('btn-summary-continue').dataset.action = 'custom';
+  $('summary-overlay').hidden = false;
+  $('btn-summary-continue').focus();
 }
 
 function comboFeedback() {
@@ -429,6 +529,9 @@ function updateHUD() {
 }
 
 function showSummary() {
+  $('summary-eyebrow').textContent = 'checkpoint';
+  $('btn-summary-continue').textContent = 'Keep going';
+  delete $('btn-summary-continue').dataset.action;
   const acc = Math.round((session.correct / session.count) * 100);
   $('summary-title').textContent = `${session.count} down.`;
   $('summary-stats').innerHTML = [
@@ -567,7 +670,15 @@ function finishPlacement() {
 }
 
 // ---------------------------------------------------------------- wiring
-$('btn-start').addEventListener('click', () => startSession(selectedMode));
+$('btn-start').addEventListener('click', () => {
+  if (selectedMode === 'smart') {
+    const due = E.dueCount(store);
+    const newRemaining = Math.max(0, batchSize.newPerDay() - E.newSeenToday(store));
+    const fresh = Math.min(newRemaining, E.newKana(store).length);
+    if (due + fresh === 0) { openCustomStudy(); return; }
+  }
+  startSession(selectedMode);
+});
 $('btn-placement').addEventListener('click', openPlacement);
 $('btn-placement-start').addEventListener('click', startPlacement);
 $('btn-placement-cancel').addEventListener('click', () => show('view-dashboard'));
@@ -576,10 +687,27 @@ $('btn-placement-dash').addEventListener('click', () => { renderDashboard(); sho
 $('btn-end').addEventListener('click', endSession);
 $('btn-summary-continue').addEventListener('click', () => {
   $('summary-overlay').hidden = true;
+  if ($('btn-summary-continue').dataset.action === 'custom') {
+    openCustomStudy();
+    return;
+  }
   $('session-bar-fill').style.width = '0%';
   nextCard();
 });
 $('btn-summary-end').addEventListener('click', endSession);
+
+// Custom study: scroll the dashboard's mode chips into view so the user can
+// pick an endless practice mode (weak/speed/random/etc.) past the daily queue.
+function openCustomStudy() {
+  endSession();
+  const chips = $('mode-chips');
+  if (chips) {
+    chips.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    chips.classList.add('kt-pulse');
+    setTimeout(() => chips.classList.remove('kt-pulse'), 1600);
+  }
+  toast('Pick a practice mode below for extra reps.');
+}
 
 $('answer-form').addEventListener('submit', (e) => { e.preventDefault(); submitAnswer(); });
 
@@ -663,8 +791,22 @@ wire('opt-batch', (el) => {
   el.addEventListener('change', (e) => {
     store.settings.batchSize = parseInt(e.target.value, 10);
     S.save(store);
-    toast(`Checkpoint every <strong>${batchSize()}</strong> cards.`);
+    toast(`Custom-study checkpoint every <strong>${batchSize()}</strong> cards.`);
   });
+});
+
+wire('opt-new', (el) => {
+  el.value = String(batchSize.newPerDay());
+  const commit = (e) => {
+    let n = parseInt(e.target.value, 10);
+    if (!Number.isFinite(n)) n = 15;
+    n = Math.max(0, Math.min(1000, n));
+    e.target.value = String(n);
+    store.settings.newPerDay = n;
+    S.save(store);
+    renderContinue();
+  };
+  el.addEventListener('change', commit);
 });
 
 // tap a mastery-grid cell → drill that kana's gojūon row
