@@ -5,11 +5,12 @@ export function defaultStore() {
   return {
     version: 1,
     createdAt: Date.now(),
-    settings: { fontRotation: true, sound: false, batchSize: 25, lastMode: 'smart', autoSubmit: true },
+    settings: { fontRotation: true, sound: false, batchSize: 25, lastMode: 'smart', autoSubmit: true, newPerDay: 15 },
     overrides: { unlockedStages: [] },
     global: {
       reviewCount: 0, totalCorrect: 0,
       sessionDates: [], dailyCounts: {}, studyTimeMs: 0,
+      newByDay: {},
     },
     kana: {},
     confusions: {},
@@ -60,6 +61,10 @@ function write(store) {
   store.recentMisses = store.recentMisses.slice(-100);
   const days = Object.keys(store.global.dailyCounts).sort();
   for (const d of days.slice(0, Math.max(0, days.length - 90))) delete store.global.dailyCounts[d];
+  if (store.global.newByDay) {
+    const nd = Object.keys(store.global.newByDay).sort();
+    for (const d of nd.slice(0, Math.max(0, nd.length - 90))) delete store.global.newByDay[d];
+  }
   try { localStorage.setItem(KEY, JSON.stringify(store)); } catch {}
 }
 
