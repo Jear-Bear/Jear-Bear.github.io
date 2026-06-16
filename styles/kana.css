@@ -216,6 +216,29 @@
 }
 .kt-study-settings .kt-toggle { font-size: 0.88rem; }
 
+.kt-num {
+  width: 64px;
+  font: 500 0.9rem 'Inter', sans-serif;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px 8px;
+  text-align: center;
+  transition: border-color .15s, box-shadow .15s;
+}
+.kt-num:focus { outline: none; border-color: var(--page-color); box-shadow: 0 0 0 3px var(--page-color-soft); }
+.kt-modes-sep {
+  font: 500 0.72rem 'Inter', sans-serif; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); align-self: center; margin: 0 2px 0 8px;
+}
+@keyframes kt-modes-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  30% { box-shadow: 0 0 0 4px var(--page-color-soft); }
+}
+.kt-modes.kt-pulse { border-radius: 14px; animation: kt-modes-pulse 1.6s ease; }
+
+
 .kt-settings {
   margin-top: 28px; display: flex; flex-wrap: wrap; gap: 18px;
   justify-content: space-between; align-items: center;
