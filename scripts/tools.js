@@ -19,6 +19,18 @@ const TOOLS = [
     accent: '#5b5bd6',          // each tool's --page-color carries onto its tile
     thumb: 'thumb.svg',          // relative to the tool folder; defaults to thumb.png
   },
+  {
+    slug: 'pitch',
+    title: 'Pitch Mirror',
+    description:
+      'See your Japanese pitch accent. Hear a native pattern, record yourself, ' +
+      'and watch your pitch contour drawn live over the target — words, sentences, ' +
+      'or your own mined audio.',
+    tags: ['pitch accent', 'speaking', 'audio'],
+    glyph: '声',
+    accent: '#8b7bd8',
+    thumb: 'thumb.svg',
+  },
   // {
   //   slug: 'pitch',
   //   title: 'Pitch Accent Trainer',
