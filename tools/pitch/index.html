@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+  <title>Pitch Mirror · Jared P.</title>
+  <meta name="description" content="See your Japanese pitch accent. Hear a native pattern, record yourself, and watch your pitch contour drawn live over the target — with pattern and contour scoring." />
+
+  <link rel="icon" href="../../images/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,30..100;1,9..144,300..700,30..100&family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../../styles/base.css">
+  <link rel="stylesheet" href="../../styles/pitch.css?v=1">
+</head>
+<body data-page="pitch">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="../../" class="nav-logo"><span class="nav-logo-mark"></span><span>jared</span></a>
+    <ul class="nav-links">
+      <li><a href="../../about/">About</a></li>
+      <li><a href="../../projects/">Projects</a></li>
+      <li><a href="../../tools/">Tools</a></li>
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../../contact/">Contact</a></li>
+    </ul>
+    <button class="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </nav>
+  <ul class="nav-mobile">
+    <li><a href="../../about/">About</a></li>
+    <li><a href="../../projects/">Projects</a></li>
+    <li><a href="../../tools/">Tools</a></li>
+    <li><a href="../../blog/">Blog</a></li>
+    <li><a href="../../contact/">Contact</a></li>
+  </ul>
+
+  <main>
+    <div class="container pm">
+
+      <!-- ===================== DASHBOARD ===================== -->
+      <section id="pm-dashboard">
+        <header class="page-header">
+          <p class="eyebrow reveal">tools</p>
+          <h1 class="page-title reveal">Pitch <em class="wobble">Mirror</em>.</h1>
+          <p class="page-intro reveal">
+            See your pitch accent. Hear the pattern, record yourself, and watch
+            your voice drawn live over the target. Your audio never leaves this page.
+          </p>
+        </header>
+
+        <!-- Filters -->
+        <div class="pm-filters reveal">
+          <div class="pm-filter-group" role="group" aria-label="Type">
+            <button class="pm-chip is-active" data-filter="type" data-val="all">All</button>
+            <button class="pm-chip" data-filter="type" data-val="word">Words</button>
+            <button class="pm-chip" data-filter="type" data-val="sentence">Sentences</button>
+          </div>
+          <div class="pm-filter-group" role="group" aria-label="Voice">
+            <button class="pm-chip is-active" data-filter="gender" data-val="all">Any voice</button>
+            <button class="pm-chip" data-filter="gender" data-val="f">Female</button>
+            <button class="pm-chip" data-filter="gender" data-val="m">Male</button>
+          </div>
+          <div class="pm-filter-group" id="genre-group" role="group" aria-label="Genre"></div>
+        </div>
+
+        <!-- Modes -->
+        <div class="pm-modes reveal" role="group" aria-label="Practice modes">
+          <button class="pm-mode is-active" data-mode="repeat">
+            <span class="pm-mode-name">Listen &amp; repeat</span>
+            <span class="pm-mode-desc">Hear it, record it, see your contour</span>
+          </button>
+          <button class="pm-mode" data-mode="pairs">
+            <span class="pm-mode-name">Minimal pairs</span>
+            <span class="pm-mode-desc">Drill 箸/橋-style accent contrasts</span>
+          </button>
+          <button class="pm-mode" data-mode="shadow">
+            <span class="pm-mode-name">Shadowing</span>
+            <span class="pm-mode-desc">Match a full sentence line</span>
+          </button>
+          <button class="pm-mode" data-mode="mine">
+            <span class="pm-mode-name">Your clips</span>
+            <span class="pm-mode-desc">Practice your own mined audio</span>
+          </button>
+          <button class="pm-mode" data-mode="free">
+            <span class="pm-mode-name">Free record</span>
+            <span class="pm-mode-desc">Just watch your own pitch</span>
+          </button>
+        </div>
+
+        <div class="pm-start-row reveal">
+          <button class="btn btn-primary" id="pm-start">Start</button>
+          <label class="kt-toggle pm-contour-toggle">
+            <input type="checkbox" id="pm-show-contour">
+            <span>Show contour score <small>(stricter — shape closeness)</small></span>
+          </label>
+        </div>
+
+        <!-- Your clips manager (only in mine mode) -->
+        <section class="kt-section" id="pm-clips-section" hidden>
+          <div class="section-label"><span class="section-label-text">Your clips</span></div>
+          <h2 class="section-title reveal">Bring your own audio.</h2>
+          <p class="pm-copy reveal">
+            Drop in sentence audio you've mined — from Game Sentence Miner, asbplayer,
+            Migaku, anywhere. Add the sentence text so the trainer can mark the moras.
+            Files stay on your device.
+          </p>
+          <div class="pm-import reveal">
+            <input type="file" id="pm-file" accept="audio/*" hidden>
+            <button class="btn btn-primary" id="pm-add-clip">Add audio file</button>
+            <input type="text" id="pm-clip-text" class="pm-text-input" placeholder="sentence or word (optional)" />
+          </div>
+          <ul class="pm-clip-list" id="pm-clip-list"></ul>
+        </section>
+
+        <!-- Progress -->
+        <section class="kt-section">
+          <div class="section-label"><span class="section-label-text">Progress</span></div>
+          <h2 class="section-title reveal">Where you're landing.</h2>
+          <div class="pm-stats reveal" id="pm-stats"></div>
+          <div class="kt-settings reveal" style="margin-top:24px">
+            <span class="pm-copy" style="margin:0">Progress is saved on this device.</span>
+            <div class="kt-data-actions">
+              <button class="btn-link" id="pm-export">Export</button>
+              <button class="btn-link kt-danger" id="pm-reset">Reset all data</button>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- ===================== REVIEW ===================== -->
+      <section id="pm-review" hidden>
+        <div class="pm-hud">
+          <button class="btn-link" id="pm-end">← End session</button>
+          <div class="pm-hud-stats">
+            <span id="pm-mode-label" class="pm-hud-mode">Listen &amp; repeat</span>
+            <span id="pm-progress">0 / 0</span>
+          </div>
+        </div>
+
+        <div class="pm-stage">
+          <div class="pm-word">
+            <span class="pm-word-text" id="pm-text" lang="ja">箸</span>
+            <span class="pm-word-reading" id="pm-reading" lang="ja">はし</span>
+            <span class="pm-word-pattern" id="pm-pattern-label">atamadaka</span>
+          </div>
+
+          <div class="pm-staff-wrap">
+            <canvas id="pm-staff" class="pm-staff"></canvas>
+          </div>
+
+          <div class="pm-verdict" id="pm-verdict" aria-live="polite"></div>
+
+          <div class="pm-transport">
+            <button class="pm-tbtn" id="pm-play" aria-label="Play target pitch">
+              <span class="pm-tbtn-ico">▶</span> Play
+            </button>
+            <button class="pm-tbtn pm-rec" id="pm-record" aria-label="Record your voice">
+              <span class="pm-tbtn-ico">●</span> <span id="pm-rec-label">Record</span>
+            </button>
+            <button class="pm-tbtn" id="pm-next" aria-label="Next clip">Next →</button>
+          </div>
+          <p class="pm-hint" id="pm-hint">Space to play · R to record · N for next · Esc to end</p>
+        </div>
+      </section>
+
+      <!-- ===================== MIC PRE-PROMPT ===================== -->
+      <section id="pm-permission" hidden>
+        <div class="pm-permission-card">
+          <p class="eyebrow">microphone</p>
+          <h2 class="section-title">One-time mic access.</h2>
+          <p class="pm-copy">
+            Pitch Mirror reads your voice's pitch right here in the browser to draw
+            it against the target. Nothing is recorded, uploaded, or stored — the
+            audio is analyzed and discarded frame by frame. Your browser will ask
+            next.
+          </p>
+          <div class="kt-summary-actions">
+            <button class="btn btn-primary" id="pm-grant">Enable microphone</button>
+            <button class="btn-link" id="pm-perm-cancel">Not now</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <div class="kt-toasts" id="pm-toasts" aria-live="polite"></div>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-left">
+        <a href="../../" class="nav-logo"><span class="nav-logo-mark"></span><span>jared</span></a>
+        <p>Made with care.</p>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <p class="footer-heading">Site</p>
+          <a href="../../about/">About</a>
+          <a href="../../projects/">Projects</a>
+          <a href="../../tools/">Tools</a>
+          <a href="../../blog/">Blog</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-heading">Find me</p>
+          <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a>
+          <a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a>
+          <a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-heading">Other</p>
+          <a href="../../contact/">Contact</a>
+          <a href="#">RSS</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-baseline">© 2026 Jared P. · Built with love</div>
+  </footer>
+
+  <script src="../../scripts/site.js"></script>
+  <script type="module" src="../../scripts/pitch/app.js?v=1"></script>
+</body>
+</html>
