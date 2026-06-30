@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JIS Grind — kana key trainer</title>
+<style>
+  :root{
+    --case:#0c0c0e;        /* keyboard case / page */
+    --panel:#15151a;       /* raised panels */
+    --panel-2:#1d1d24;
+    --line:#2a2a33;        /* hairlines */
+    --cap:#dcd8cf;         /* keycap cream (his caps) */
+    --cap-edge:#b7b3a8;    /* keycap side wall */
+    --cap-dim:#3a3a42;     /* unused keys */
+    --cap-dim-edge:#26262d;
+    --ink:#26262b;         /* legend on cream caps */
+    --ink-dim:#8a8a93;     /* legend on dark caps */
+    --red:#e4332b;         /* the ESC key — heat / target */
+    --red-soft:#ff5a4d;
+    --go:#5bbf6f;          /* correct */
+    --txt:#e9e7e1;
+    --txt-dim:#8f8d86;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --jp: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Noto Sans JP", "Meiryo", system-ui, sans-serif;
+    --ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --u: 46px;             /* base key unit, scaled by JS via --scale */
+    --gap: 6px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--case);color:var(--txt);font-family:var(--ui);-webkit-font-smoothing:antialiased}
+  body{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:22px 16px 40px}
+  a{color:var(--red-soft)}
+
+  /* ---------- top bar ---------- */
+  header{width:100%;max-width:1040px;display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px}
+  .brand{display:flex;align-items:baseline;gap:12px;line-height:1}
+  .brand .mark{
+    font-family:var(--mono);font-weight:700;font-size:26px;letter-spacing:-.5px;
+    color:var(--txt);padding:6px 9px;border:1.5px solid var(--red);border-radius:7px;
+    box-shadow:0 2px 0 var(--red);
+  }
+  .brand .mark b{color:var(--red)}
+  .brand .sub{font-size:13px;color:var(--txt-dim);font-family:var(--mono)}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px}
+  .seg button{
+    font:600 13px/1 var(--ui);color:var(--txt-dim);background:none;border:0;cursor:pointer;
+    padding:7px 12px;border-radius:7px;transition:background .12s,color .12s}
+  .seg button[aria-pressed="true"]{background:var(--red);color:#fff}
+  .seg button:focus-visible{outline:2px solid var(--red-soft);outline-offset:2px}
+  .ghost{font:600 13px/1 var(--ui);color:var(--txt-dim);background:var(--panel);border:1px solid var(--line);
+    border-radius:9px;padding:8px 12px;cursor:pointer}
+  .ghost:hover{color:var(--txt)}
+  .ghost:focus-visible{outline:2px solid var(--red-soft);outline-offset:2px}
+
+  /* ---------- stage / prompt ---------- */
+  .stage{width:100%;max-width:1040px;background:linear-gradient(180deg,var(--panel),#101015);
+    border:1px solid var(--line);border-radius:16px;padding:24px 26px 20px;margin-bottom:16px;position:relative;overflow:hidden}
+  .scopebar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+  .chip{font:600 12.5px/1 var(--ui);color:var(--txt-dim);background:var(--panel-2);border:1px solid var(--line);
+    border-radius:999px;padding:7px 12px;cursor:pointer;transition:.12s}
+  .chip[aria-pressed="true"]{color:var(--txt);border-color:var(--red);box-shadow:inset 0 0 0 1px var(--red)}
+  .chip.jp{font-family:var(--jp);font-size:14px}
+  .chip:focus-visible{outline:2px solid var(--red-soft);outline-offset:2px}
+  .chip small{font-family:var(--mono);opacity:.6;margin-left:5px}
+
+  .promptwrap{display:flex;align-items:center;gap:28px;flex-wrap:wrap}
+  .target{font-family:var(--jp);font-weight:600;font-size:118px;line-height:.9;min-width:120px;text-align:center;
+    color:var(--txt);text-shadow:0 4px 30px rgba(228,51,43,.25);transition:transform .08s}
+  .target.hit{color:var(--go);transform:scale(1.04)}
+  .target.miss{color:var(--red);animation:shake .3s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+  .meta{display:flex;flex-direction:column;gap:12px;flex:1;min-width:240px}
+  .reading{font-family:var(--mono);font-size:15px;color:var(--txt-dim);min-height:20px}
+  .reading b{color:var(--red-soft)}
+  .reading .where{color:var(--txt)}
+  .reading.hidden-hint{visibility:hidden}
+
+  /* heat / combo meter — the redline nod */
+  .heat{height:12px;border-radius:7px;background:var(--panel-2);border:1px solid var(--line);overflow:hidden;position:relative}
+  .heat .fill{height:100%;width:0%;background:linear-gradient(90deg,#4a8f5a,#cbb24a 55%,var(--red));transition:width .18s ease-out}
+  .heat .redline{position:absolute;top:0;bottom:0;right:8%;width:2px;background:var(--red);opacity:.5}
+  .combo{font-family:var(--mono);font-size:13px;color:var(--txt-dim)}
+  .combo b{color:var(--txt);font-size:15px}
+  .combo.redlining b{color:var(--red);animation:pulse .6s infinite}
+  @keyframes pulse{50%{opacity:.55}}
+
+  .startveil{position:absolute;inset:0;background:rgba(10,10,12,.86);backdrop-filter:blur(2px);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:5;text-align:center;padding:20px}
+  .startveil h2{margin:0;font:600 22px/1.2 var(--ui)}
+  .startveil p{margin:0;color:var(--txt-dim);max-width:440px;font-size:14px;line-height:1.5}
+  .startbtn{font:700 15px/1 var(--ui);color:#fff;background:var(--red);border:0;border-radius:10px;
+    padding:13px 22px;cursor:pointer;box-shadow:0 3px 0 #a51f19}
+  .startbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #a51f19}
+  .startbtn:focus-visible{outline:2px solid #fff;outline-offset:2px}
+  .kbd{font-family:var(--mono);background:var(--panel-2);border:1px solid var(--line);border-bottom-width:2px;
+    border-radius:5px;padding:1px 6px;font-size:12px;color:var(--txt)}
+
+  /* ---------- the board (hero) ---------- */
+  .boardwrap{width:100%;max-width:1040px;overflow-x:auto;padding-bottom:6px}
+  .board{--scale:1;background:var(--case);border:1px solid #000;border-radius:14px;padding:14px;
+    box-shadow:0 10px 40px rgba(0,0,0,.5), inset 0 1px 0 #ffffff10;width:max-content;margin:0 auto}
+  .row{display:flex;gap:var(--gap);margin-bottom:var(--gap)}
+  .row:last-child{margin-bottom:0}
+  .key{
+    --w:1;
+    width:calc(var(--u) * var(--w) * var(--scale));
+    height:calc(var(--u) * var(--scale));
+    background:var(--cap);border-radius:7px;position:relative;flex:0 0 auto;
+    box-shadow:0 3px 0 var(--cap-edge), 0 4px 5px rgba(0,0,0,.45);
+    display:flex;flex-direction:column;justify-content:space-between;padding:5px 6px;
+    transition:transform .05s, box-shadow .05s, background .12s;
+  }
+  .key.dim{background:var(--cap-dim);box-shadow:0 3px 0 var(--cap-dim-edge),0 4px 5px rgba(0,0,0,.4)}
+  .key.esc{background:var(--red);box-shadow:0 3px 0 #a51f19,0 4px 5px rgba(0,0,0,.45)}
+  .key .asc{font:600 11px/1 var(--mono);color:var(--ink);opacity:.62}
+  .key.dim .asc{color:var(--ink-dim);opacity:.85;font-size:10px}
+  .key.esc .asc{color:#fff;opacity:.9}
+  .key .kana{font:600 18px/1 var(--jp);color:var(--ink);align-self:flex-end}
+  .key .lbl{font:600 11px/1.1 var(--ui);color:var(--ink-dim);align-self:flex-start}
+  .key .sml{position:absolute;top:4px;right:6px;font:600 10px/1 var(--jp);color:var(--ink);opacity:.5}
+
+  /* states */
+  .key.target{background:#fff;box-shadow:0 0 0 2px var(--red),0 0 22px 3px rgba(228,51,43,.55),0 3px 0 var(--cap-edge);}
+  .key.target .kana{color:var(--red)}
+  .key.good{background:#dff5e4;box-shadow:0 0 0 2px var(--go),0 0 18px 2px rgba(91,191,111,.5),0 3px 0 #9ec9a6}
+  .key.bad{background:#fbdcd9;box-shadow:0 0 0 2px var(--red),0 0 18px 2px rgba(228,51,43,.5),0 3px 0 #c79b96}
+  .key.press{transform:translateY(3px);box-shadow:0 0 0 1px #00000020}
+
+  /* ---------- stats hud ---------- */
+  .hud{width:100%;max-width:1040px;display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .stat{flex:1;min-width:120px;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+  .stat .k{font:600 11px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--txt-dim)}
+  .stat .v{font:700 27px/1 var(--mono);margin-top:8px;color:var(--txt)}
+  .stat .v small{font-size:14px;color:var(--txt-dim);font-weight:600}
+  .stat.accent .v{color:var(--red-soft)}
+
+  /* mastery strip */
+  .mastery{width:100%;max-width:1040px;margin-top:14px;background:var(--panel);border:1px solid var(--line);
+    border-radius:11px;padding:14px}
+  .mastery h3{margin:0 0 10px;font:600 11px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--txt-dim)}
+  .grid{display:flex;flex-wrap:wrap;gap:4px}
+  .cell{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+    font:600 15px/1 var(--jp);color:#0c0c0e;background:#2a2a33;cursor:default;position:relative}
+  .cell[data-seen="0"]{color:#6a6a72;background:#1c1c22;border:1px dashed #33333d}
+  .mastery .legend{display:flex;gap:14px;align-items:center;margin-top:11px;font:600 11px/1 var(--mono);color:var(--txt-dim)}
+  .swatch{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+  .foot{width:100%;max-width:1040px;margin-top:22px;color:var(--txt-dim);font-size:12px;line-height:1.6;font-family:var(--mono)}
+  .foot .row2{display:flex;gap:18px;flex-wrap:wrap}
+
+  @media (max-width:560px){
+    .target{font-size:84px}
+    .brand .sub{display:none}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <span class="mark">JIS<b>:</b>Grind</span>
+    <span class="sub">kana → key, until it's muscle memory</span>
+  </div>
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Mode">
+      <button id="m-learn" aria-pressed="true">Learn</button>
+      <button id="m-drill" aria-pressed="false">Drill</button>
+    </div>
+    <div class="seg" role="group" aria-label="Hint">
+      <button id="h-toggle" aria-pressed="true">Hints</button>
+    </div>
+    <button class="ghost" id="reset">Reset stats</button>
+  </div>
+</header>
+
+<section class="stage" aria-label="Practice">
+  <div class="scopebar" id="scopebar" role="group" aria-label="What to practice"></div>
+
+  <div class="promptwrap">
+    <div class="target" id="target" aria-live="polite">—</div>
+    <div class="meta">
+      <div class="reading" id="reading">&nbsp;</div>
+      <div class="heat" aria-hidden="true"><div class="fill" id="heatfill"></div><div class="redline"></div></div>
+      <div class="combo" id="combo">combo <b>0</b> &middot; redline at 16</div>
+    </div>
+  </div>
+
+  <div class="startveil" id="veil">
+    <h2>Grind the JIS layout</h2>
+    <p>A kana appears. Hit the matching key on your physical board. It reads the <em>key position</em>, not the character your OS types — so leave your IME wherever it is. Wrong key shows you the right one.</p>
+    <button class="startbtn" id="start">Start &nbsp;<span class="kbd">Enter</span></button>
+    <p style="font-size:12px"><span class="kbd">Esc</span> pause &middot; <span class="kbd">Space</span> skip a kana</p>
+  </div>
+</section>
+
+<div class="boardwrap">
+  <div class="board" id="board"></div>
+</div>
+
+<div class="hud">
+  <div class="stat accent"><div class="k">Accuracy</div><div class="v" id="s-acc">—<small>%</small></div></div>
+  <div class="stat"><div class="k">Streak</div><div class="v" id="s-streak">0</div></div>
+  <div class="stat"><div class="k">Best streak</div><div class="v" id="s-best">0</div></div>
+  <div class="stat"><div class="k">Speed</div><div class="v" id="s-kpm">0<small> kpm</small></div></div>
+  <div class="stat"><div class="k">Total hits</div><div class="v" id="s-total">0</div></div>
+</div>
+
+<div class="mastery">
+  <h3>Mastery — weak kana surface more often</h3>
+  <div class="grid" id="grid"></div>
+  <div class="legend">
+    <span><span class="swatch" style="background:#1c1c22;border:1px dashed #33333d"></span>unseen</span>
+    <span><span class="swatch" style="background:#e4332b"></span>cold</span>
+    <span><span class="swatch" style="background:#cbb24a"></span>warming</span>
+    <span><span class="swatch" style="background:#5bbf6f"></span>locked in</span>
+  </div>
+</div>
+
+<div class="foot">
+  <div class="row2">
+    <span>physical-key detection via <code>event.code</code></span>
+    <span>scoped to your Keychron JIS legends</span>
+  </div>
+  <div style="margin-top:6px">ー (¥ key) and ろ register as <code>IntlYen</code> / <code>IntlRo</code> — these only fire if your OS sees the board as JIS. If they don't, skip those two with <span class="kbd">Space</span>.</div>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   JIS kana → physical key map (read off the board photo).
+   code  = KeyboardEvent.code (physical position, layout-agnostic)
+   shift = small/secondary kana that needs Shift on JIS
+   ============================================================ */
+const KANA = [
+  // gojūon
+  {k:"あ",r:"a",code:"Digit3",g:"a"},  {k:"い",r:"i",code:"KeyE",g:"a"},
+  {k:"う",r:"u",code:"Digit4",g:"a"},  {k:"え",r:"e",code:"Digit5",g:"a"},
+  {k:"お",r:"o",code:"Digit6",g:"a"},
+  {k:"か",r:"ka",code:"KeyT",g:"ka"}, {k:"き",r:"ki",code:"KeyG",g:"ka"},
+  {k:"く",r:"ku",code:"KeyH",g:"ka"}, {k:"け",r:"ke",code:"Quote",g:"ka"},
+  {k:"こ",r:"ko",code:"KeyB",g:"ka"},
+  {k:"さ",r:"sa",code:"KeyX",g:"sa"}, {k:"し",r:"shi",code:"KeyD",g:"sa"},
+  {k:"す",r:"su",code:"KeyR",g:"sa"}, {k:"せ",r:"se",code:"KeyP",g:"sa"},
+  {k:"そ",r:"so",code:"KeyC",g:"sa"},
+  {k:"た",r:"ta",code:"KeyQ",g:"ta"}, {k:"ち",r:"chi",code:"KeyA",g:"ta"},
+  {k:"つ",r:"tsu",code:"KeyZ",g:"ta"},{k:"て",r:"te",code:"KeyW",g:"ta"},
+  {k:"と",r:"to",code:"KeyS",g:"ta"},
+  {k:"な",r:"na",code:"KeyU",g:"na"}, {k:"に",r:"ni",code:"KeyI",g:"na"},
+  {k:"ぬ",r:"nu",code:"Digit1",g:"na"},{k:"ね",r:"ne",code:"Comma",g:"na"},
+  {k:"の",r:"no",code:"KeyK",g:"na"},
+  {k:"は",r:"ha",code:"KeyF",g:"ha"}, {k:"ひ",r:"hi",code:"KeyV",g:"ha"},
+  {k:"ふ",r:"fu",code:"Digit2",g:"ha"},{k:"へ",r:"he",code:"Equal",g:"ha"},
+  {k:"ほ",r:"ho",code:"Minus",g:"ha"},
+  {k:"ま",r:"ma",code:"KeyJ",g:"ma"}, {k:"み",r:"mi",code:"KeyN",g:"ma"},
+  {k:"む",r:"mu",code:"Backslash",g:"ma"},{k:"め",r:"me",code:"Slash",g:"ma"},
+  {k:"も",r:"mo",code:"KeyM",g:"ma"},
+  {k:"や",r:"ya",code:"Digit7",g:"ya"},{k:"ゆ",r:"yu",code:"Digit8",g:"ya"},
+  {k:"よ",r:"yo",code:"Digit9",g:"ya"},
+  {k:"ら",r:"ra",code:"KeyO",g:"ra"}, {k:"り",r:"ri",code:"KeyL",g:"ra"},
+  {k:"る",r:"ru",code:"Period",g:"ra"},{k:"れ",r:"re",code:"Semicolon",g:"ra"},
+  {k:"ろ",r:"ro",code:"IntlRo",g:"ra"},
+  {k:"わ",r:"wa",code:"Digit0",g:"wa"},{k:"を",r:"wo",code:"Digit0",shift:true,g:"wa"},
+  {k:"ん",r:"n",code:"KeyY",g:"wa"},
+  // small kana (need Shift)
+  {k:"ぁ",r:"xa",code:"Digit3",shift:true,g:"small"},{k:"ぃ",r:"xi",code:"KeyE",shift:true,g:"small"},
+  {k:"ぅ",r:"xu",code:"Digit4",shift:true,g:"small"},{k:"ぇ",r:"xe",code:"Digit5",shift:true,g:"small"},
+  {k:"ぉ",r:"xo",code:"Digit6",shift:true,g:"small"},{k:"ゃ",r:"xya",code:"Digit7",shift:true,g:"small"},
+  {k:"ゅ",r:"xyu",code:"Digit8",shift:true,g:"small"},{k:"ょ",r:"xyo",code:"Digit9",shift:true,g:"small"},
+  {k:"っ",r:"xtsu",code:"KeyZ",shift:true,g:"small"},
+  // marks
+  {k:"゛",r:"dakuten",code:"BracketLeft",g:"marks"},{k:"゜",r:"handakuten",code:"BracketRight",g:"marks"},
+  {k:"ー",r:"chōonpu",code:"IntlYen",g:"marks"},
+];
+
+const GROUPS = [
+  {id:"a",label:"あ"},{id:"ka",label:"か"},{id:"sa",label:"さ"},{id:"ta",label:"た"},
+  {id:"na",label:"な"},{id:"ha",label:"は"},{id:"ma",label:"ま"},{id:"ya",label:"や"},
+  {id:"ra",label:"ら"},{id:"wa",label:"わ"},
+  {id:"small",label:"小",mono:"ぁゃっ"},{id:"marks",label:"゛゜ー",mono:""},
+];
+
+/* ---------- on-screen board layout (matches the photo) ----------
+   each entry: [asciiTop, kana, code, widthUnits, extraClass, smallKana]
+   keys with a code participate in highlight; others are decorative. */
+const ROWS = [
+  // function row (decorative)
+  [["esc","","",1,"esc"],["F1","","",1,"dim"],["F2","","",1,"dim"],["F3","","",1,"dim"],["F4","","",1,"dim"],
+   ["F5","","",1,"dim"],["F6","","",1,"dim"],["F7","","",1,"dim"],["F8","","",1,"dim"],
+   ["F9","","",1,"dim"],["F10","","",1,"dim"],["F11","","",1,"dim"],["F12","","",1,"dim"],["del","","",1,"dim"]],
+  // number row
+  [["!","ぬ","Digit1",1],["\"","ふ","Digit2",1],["#","あ","Digit3",1,"","ぁ"],["$","う","Digit4",1,"","ぅ"],
+   ["%","え","Digit5",1,"","ぇ"],["&","お","Digit6",1,"","ぉ"],["'","や","Digit7",1,"","ゃ"],
+   ["(","ゆ","Digit8",1,"","ゅ"],[")","よ","Digit9",1,"","ょ"],["0","わ","Digit0",1,"","を"],
+   ["=","ほ","Minus",1],["~","へ","Equal",1],["|","ー","IntlYen",1],["⌫","","",1.5,"dim"]],
+  // qwerty row
+  [["tab","","",1.5,"dim"],["Q","た","KeyQ",1],["W","て","KeyW",1],["E","い","KeyE",1,"","ぃ"],["R","す","KeyR",1],
+   ["T","か","KeyT",1],["Y","ん","KeyY",1],["U","な","KeyU",1],["I","に","KeyI",1],["O","ら","KeyO",1],
+   ["P","せ","KeyP",1],["@","゛","BracketLeft",1],["[","゜","BracketRight",1],["↵","","",1.5,"dim","",1]],
+  // home row
+  [["caps","","",1.75,"dim"],["A","ち","KeyA",1],["S","と","KeyS",1],["D","し","KeyD",1],["F","は","KeyF",1],
+   ["G","き","KeyG",1],["H","く","KeyH",1],["J","ま","KeyJ",1],["K","の","KeyK",1],["L","り","KeyL",1],
+   [";","れ","Semicolon",1],[":","け","Quote",1],["]","む","Backslash",1.25]],
+  // bottom row
+  [["⇧","","",2.25,"dim"],["Z","つ","KeyZ",1,"","っ"],["X","さ","KeyX",1],["C","そ","KeyC",1],["V","ひ","KeyV",1],
+   ["B","こ","KeyB",1],["N","み","KeyN",1],["M","も","KeyM",1],[",","ね","Comma",1],[".","る","Period",1],
+   ["/","め","Slash",1],["\\","ろ","IntlRo",1],["⇧","","",1.25,"dim"]],
+  // mod row (decorative)
+  [["ctrl","","",1.25,"dim"],["alt","","",1,"dim"],["⌘","","",1,"dim"],["","","",1,"dim"],
+   ["","","",6.25,"dim"],["","","",1,"dim"],["fn","","",1,"dim"],["ctrl","","",1.25,"dim"]],
+];
+
+/* ============================================================ */
+const $ = s => document.querySelector(s);
+const byCode = {}, byCodeShift = {};
+KANA.forEach(x => { (x.shift?byCodeShift:byCode)[x.code]=x; });
+
+/* ---- persistence (guarded so it never throws in a sandbox) ---- */
+const SKEY="jisgrind:v2";
+let store = {stats:{}, best:0, totalHits:0, totalTries:0};
+function load(){ try{ const r=localStorage.getItem(SKEY); if(r) store=Object.assign(store,JSON.parse(r)); }catch(e){} }
+function save(){ try{ localStorage.setItem(SKEY, JSON.stringify(store)); }catch(e){} }
+load();
+
+/* per-kana adaptive weight state lives in store.stats[kana] = {seen,hit,wsum,wn} */
+function st(k){ return store.stats[k] || (store.stats[k]={seen:0,hit:0}); }
+
+/* ---- session state ---- */
+let mode="learn", hints=true, running=false;
+let scope=new Set(["a","ka","sa","ta","na","ha","ma","ya","ra","wa"]); // small+marks off by default
+let current=null, awaiting=false, sessionStart=0, sessionHits=0;
+
+/* ---------- build the board DOM ---------- */
+const board=$("#board"), keyEls={};
+ROWS.forEach(row=>{
+  const r=document.createElement("div"); r.className="row";
+  row.forEach(def=>{
+    const [asc,kana,code,w=1,extra="",sml="",isLbl=0]=def;
+    const el=document.createElement("div");
+    el.className="key"+(extra?" "+extra:"");
+    el.style.setProperty("--w",w);
+    if(isLbl){ // enter / special label key
+      const l=document.createElement("div"); l.className="lbl"; l.textContent=asc; el.appendChild(l);
+    } else {
+      if(asc){const a=document.createElement("div");a.className="asc";a.textContent=asc;el.appendChild(a);}
+      if(sml){const s=document.createElement("div");s.className="sml";s.textContent=sml;el.appendChild(s);}
+      if(kana){const kk=document.createElement("div");kk.className="kana";kk.textContent=kana;el.appendChild(kk);}
+    }
+    if(code){ keyEls[code]=el; }
+    r.appendChild(el);
+  });
+  board.appendChild(r);
+});
+
+/* responsive board scale */
+function fit(){
+  const wrap=$(".boardwrap"); const natural=board.scrollWidth; const avail=wrap.clientWidth-2;
+  let scale = Math.min(1, avail/natural);
+  if(scale<1) board.style.setProperty("--scale", scale.toFixed(3));
+  else board.style.setProperty("--scale",1);
+}
+new ResizeObserver(fit).observe(document.body);
+requestAnimationFrame(fit);
+
+/* ---------- scope chips ---------- */
+const scopebar=$("#scopebar");
+GROUPS.forEach(g=>{
+  const c=document.createElement("button");
+  c.className="chip"+(g.mono===undefined?"":"")+(["a","ka","sa","ta","na","ha","ma","ya","ra","wa"].includes(g.id)?" jp":"");
+  if(g.id==="small"||g.id==="marks") c.classList.add("jp");
+  c.textContent=g.label;
+  c.setAttribute("aria-pressed", scope.has(g.id));
+  c.onclick=()=>{ scope.has(g.id)?scope.delete(g.id):scope.add(g.id); c.setAttribute("aria-pressed",scope.has(g.id)); buildGrid(); if(running) next(); };
+  scopebar.appendChild(c);
+});
+// all / none quick toggles
+["All","None"].forEach(t=>{
+  const b=document.createElement("button"); b.className="chip"; b.style.borderStyle="dashed"; b.textContent=t;
+  b.onclick=()=>{ if(t==="All"){GROUPS.forEach(g=>scope.add(g.id));} else {scope.clear();} syncChips(); buildGrid(); if(running) next(); };
+  scopebar.appendChild(b);
+});
+function syncChips(){ [...scopebar.children].forEach(c=>{ const g=GROUPS.find(x=>x.label===c.textContent); if(g) c.setAttribute("aria-pressed",scope.has(g.id)); }); }
+
+/* ---------- pool + adaptive weighting ---------- */
+function pool(){ return KANA.filter(x=>scope.has(x.g)); }
+function codeHasShiftVariantInScope(code){
+  return pool().some(x=>x.code===code && x.shift);
+}
+function weight(x){
+  const s=st(x.k);
+  const acc = s.seen? s.hit/s.seen : 0;
+  // unseen → high; low accuracy → high; locked in → low. +small base so nothing hits 0.
+  let w = 1 + (1-acc)*3;
+  if(s.seen===0) w=4.5;
+  if(s.seen>0 && s.seen<3) w+=1;       // freshly introduced, reinforce
+  return w;
+}
+function pick(){
+  const p=pool(); if(!p.length) return null;
+  // avoid immediate repeat
+  const cand = p.length>1 && current ? p.filter(x=>x.k!==current.k) : p;
+  let tot=0; cand.forEach(x=>tot+=weight(x));
+  let r=Math.random()*tot;
+  for(const x of cand){ r-=weight(x); if(r<=0) return x; }
+  return cand[cand.length-1];
+}
+
+/* ---------- round flow ---------- */
+function clearKeys(){ Object.values(keyEls).forEach(e=>e.classList.remove("target","good","bad","press")); }
+function showReading(){
+  const rd=$("#reading");
+  if(!current){ rd.innerHTML="&nbsp;"; return; }
+  const sh = current.shift? "Shift + " : "";
+  rd.classList.toggle("hidden-hint", !hints);
+  rd.innerHTML = `<b>${current.r}</b> &nbsp;·&nbsp; <span class="where">${sh}${prettyCode(current.code)}</span>`;
+}
+function prettyCode(c){
+  return c.replace("Key","").replace("Digit","").replace("Bracket","").replace("Intl","")
+          .replace("Semicolon",";").replace("Quote",":").replace("Backslash","]")
+          .replace("Comma",",").replace("Period",".").replace("Slash","/")
+          .replace("Minus","-").replace("Equal","^").replace("Yen","¥").replace("Ro","ろ key")
+          .replace("Left","@").replace("Right","[");
+}
+function next(){
+  if(!running) return;
+  clearKeys();
+  current=pick();
+  if(!current){ $("#target").textContent="∅"; $("#reading").textContent="pick at least one group above"; return; }
+  $("#target").className="target";
+  $("#target").textContent=current.k;
+  showReading();
+  if(mode==="learn"){ const el=keyEls[current.code]; if(el) el.classList.add("target"); }
+  awaiting=true;
+}
+
+function judge(e){
+  if(!running||!awaiting) return;
+  const code=e.code;
+  // ignore bare modifiers / nav we use elsewhere
+  if(["ShiftLeft","ShiftRight","AltLeft","AltRight","ControlLeft","ControlRight","MetaLeft","MetaRight","CapsLock","Tab"].includes(code)) return;
+  if(code==="Enter"||code==="Escape") return;
+  if(code==="Space"){ e.preventDefault(); skip(); return; }
+
+  // only intercept keys that are part of the board
+  if(keyEls[code]) e.preventDefault();
+
+  const want = current;
+  // Only require an exact shift state when shift actually disambiguates:
+  // the target needs shift, OR a shift-variant of the same key is currently in scope.
+  const shiftMatters = want.shift || codeHasShiftVariantInScope(want.code);
+  const codeOk = code===want.code;
+  const shiftOk = shiftMatters ? (!!e.shiftKey === !!want.shift) : true;
+  const correct = codeOk && shiftOk;
+  awaiting=false;
+
+  const s=st(want.k); s.seen++; store.totalTries++;
+  const pressedEl = keyEls[code];
+
+  if(correct){
+    s.hit++; store.totalHits++; sessionHits++;
+    streak++; if(streak>store.best) store.best=streak;
+    $("#target").className="target hit";
+    if(pressedEl){ pressedEl.classList.add("good","press"); }
+    save(); paint();
+    setTimeout(()=>{ if(pressedEl) pressedEl.classList.remove("press"); next(); }, 230);
+  } else {
+    streak=0;
+    $("#target").className="target miss";
+    if(pressedEl){ pressedEl.classList.add("bad","press"); }
+    const right=keyEls[want.code]; if(right) right.classList.add("target");
+    save(); paint();
+    setTimeout(()=>{
+      if(pressedEl) pressedEl.classList.remove("bad","press");
+      // re-arm same kana so it must be answered right
+      awaiting=true;
+      $("#target").className="target";
+    }, 650);
+  }
+}
+function skip(){
+  if(!running) return;
+  streak=0; awaiting=false; paint(); next();
+}
+
+let streak=0;
+/* ---------- stats paint ---------- */
+function paint(){
+  const acc = store.totalTries? Math.round(100*store.totalHits/store.totalTries) : null;
+  $("#s-acc").innerHTML = (acc===null?"—":acc)+"<small>%</small>";
+  $("#s-streak").textContent=streak;
+  $("#s-best").textContent=store.best;
+  $("#s-total").textContent=store.totalHits;
+  const mins=(performance.now()-sessionStart)/60000;
+  $("#s-kpm").innerHTML=(running&&mins>0.03?Math.round(sessionHits/mins):0)+"<small> kpm</small>";
+  // heat meter
+  const RED=16;
+  const pct=Math.min(100, (streak/RED)*100);
+  $("#heatfill").style.width=pct+"%";
+  const cb=$("#combo"); cb.innerHTML=`combo <b>${streak}</b> &middot; redline at ${RED}`;
+  cb.classList.toggle("redlining", streak>=RED);
+  buildGrid();
+}
+/* kpm ticks while idle */
+setInterval(()=>{ if(running){ const mins=(performance.now()-sessionStart)/60000; $("#s-kpm").innerHTML=(mins>0.03?Math.round(sessionHits/mins):0)+"<small> kpm</small>"; } },1000);
+
+/* ---------- mastery grid ---------- */
+const grid=$("#grid");
+function heatColor(acc){
+  // 0 → red, .5 → amber, 1 → green
+  const a=Math.max(0,Math.min(1,acc));
+  const c1=[228,51,43], c2=[203,178,74], c3=[91,191,111];
+  let from,to,t;
+  if(a<0.5){from=c1;to=c2;t=a/0.5;} else {from=c2;to=c3;t=(a-0.5)/0.5;}
+  const m=from.map((v,i)=>Math.round(v+(to[i]-v)*t));
+  return `rgb(${m[0]},${m[1]},${m[2]})`;
+}
+function buildGrid(){
+  grid.innerHTML="";
+  pool().forEach(x=>{
+    const s=st(x.k);
+    const cell=document.createElement("div");
+    cell.className="cell";
+    cell.dataset.seen = s.seen>0?1:0;
+    cell.textContent=x.k;
+    if(s.seen>0){ const acc=s.hit/s.seen; cell.style.background=heatColor(acc); }
+    cell.title=`${x.r} · ${s.hit}/${s.seen}`;
+    grid.appendChild(cell);
+  });
+}
+buildGrid();
+
+/* ---------- controls ---------- */
+function setMode(m){
+  mode=m;
+  $("#m-learn").setAttribute("aria-pressed", m==="learn");
+  $("#m-drill").setAttribute("aria-pressed", m==="drill");
+  if(running){ clearKeys(); if(mode==="learn"&&current){const el=keyEls[current.code]; if(el)el.classList.add("target");} }
+}
+$("#m-learn").onclick=()=>setMode("learn");
+$("#m-drill").onclick=()=>setMode("drill");
+$("#h-toggle").onclick=()=>{ hints=!hints; $("#h-toggle").setAttribute("aria-pressed",hints); showReading(); };
+$("#reset").onclick=()=>{
+  if(!confirm("Reset all mastery and stats?")) return;
+  store={stats:{},best:0,totalHits:0,totalTries:0}; save(); streak=0; sessionHits=0; sessionStart=performance.now();
+  paint(); buildGrid();
+};
+
+/* ---------- start / pause ---------- */
+function start(){
+  if(!pool().length){ alert("Turn on at least one group first."); return; }
+  running=true; $("#veil").style.display="none";
+  sessionStart=performance.now(); sessionHits=0;
+  next(); paint();
+}
+function pause(){
+  running=false; awaiting=false; clearKeys();
+  const v=$("#veil"); v.style.display="flex";
+  v.querySelector("h2").textContent="Paused";
+  v.querySelector("p").textContent="Stats are saved. Pick up where you left off.";
+  $("#start").innerHTML='Resume &nbsp;<span class="kbd">Enter</span>';
+}
+$("#start").onclick=start;
+
+window.addEventListener("keydown", e=>{
+  if(e.code==="Enter" && !running){ e.preventDefault(); start(); return; }
+  if(e.code==="Escape"){ e.preventDefault(); if(running) pause(); return; }
+  if(e.repeat) return;
+  judge(e);
+}, true);
+
+paint();
+</script>
+</body>
+</html>
