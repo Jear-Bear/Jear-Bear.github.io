@@ -3,7 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>JIS Grind — kana key trainer</title>
+<title>JIS Grind · Jared P.</title>
+<meta name="description" content="A kana-to-physical-key trainer for the JIS keyboard layout. Reads key position via event.code, adaptive weighting surfaces your weak kana, scoped to Keychron JIS legends." />
+
+<link rel="icon" href="../../images/logo.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,30..100;1,9..144,300..700,30..100&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<!-- site shell (navbar + footer only) -->
+<link rel="stylesheet" href="../../styles/base.css">
+
 <style>
   :root{
     --case:#0c0c0e;        /* keyboard case / page */
@@ -23,87 +34,88 @@
     --txt-dim:#8f8d86;
     --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
     --jp: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Noto Sans JP", "Meiryo", system-ui, sans-serif;
-    --ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --u: 46px;             /* base key unit, scaled by JS via --scale */
     --gap: 6px;
   }
-  *{box-sizing:border-box}
-  html,body{margin:0;background:var(--case);color:var(--txt);font-family:var(--ui);-webkit-font-smoothing:antialiased}
-  body{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:22px 16px 40px}
-  a{color:var(--red-soft)}
+  /* the JIS app owns the page background, but the site navbar/footer keep
+     their own look from base.css. Scope the dark theme to the app wrapper. */
+  html,body{margin:0;background:var(--case);color:var(--txt);-webkit-font-smoothing:antialiased}
+  .jis-app{font-family:var(--ui);display:flex;flex-direction:column;align-items:center;padding:22px 16px 40px}
+  .jis-app a{color:var(--red-soft)}
 
   /* ---------- top bar ---------- */
-  header{width:100%;max-width:1040px;display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px}
-  .brand{display:flex;align-items:baseline;gap:12px;line-height:1}
-  .brand .mark{
+  .jis-app header{width:100%;max-width:1040px;display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px}
+  .jis-app .brand{display:flex;align-items:baseline;gap:12px;line-height:1}
+  .jis-app .brand .mark{
     font-family:var(--mono);font-weight:700;font-size:26px;letter-spacing:-.5px;
     color:var(--txt);padding:6px 9px;border:1.5px solid var(--red);border-radius:7px;
     box-shadow:0 2px 0 var(--red);
   }
-  .brand .mark b{color:var(--red)}
-  .brand .sub{font-size:13px;color:var(--txt-dim);font-family:var(--mono)}
-  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  .seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px}
-  .seg button{
+  .jis-app .brand .mark b{color:var(--red)}
+  .jis-app .brand .sub{font-size:13px;color:var(--txt-dim);font-family:var(--mono)}
+  .jis-app .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .jis-app .seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px}
+  .jis-app .seg button{
     font:600 13px/1 var(--ui);color:var(--txt-dim);background:none;border:0;cursor:pointer;
     padding:7px 12px;border-radius:7px;transition:background .12s,color .12s}
-  .seg button[aria-pressed="true"]{background:var(--red);color:#fff}
-  .seg button:focus-visible{outline:2px solid var(--red-soft);outline-offset:2px}
-  .ghost{font:600 13px/1 var(--ui);color:var(--txt-dim);background:var(--panel);border:1px solid var(--line);
+  .jis-app .seg button[aria-pressed="true"]{background:var(--red);color:#fff}
+  .jis-app .seg button:focus-visible{outline:2px solid var(--red-soft);outline-offset:2px}
+  .jis-app .ghost{font:600 13px/1 var(--ui);color:var(--txt-dim);background:var(--panel);border:1px solid var(--line);
     border-radius:9px;padding:8px 12px;cursor:pointer}
-  .ghost:hover{color:var(--txt)}
-  .ghost:focus-visible{outline:2px solid var(--red-soft);outline-offset:2px}
+  .jis-app .ghost:hover{color:var(--txt)}
+  .jis-app .ghost:focus-visible{outline:2px solid var(--red-soft);outline-offset:2px}
 
   /* ---------- stage / prompt ---------- */
-  .stage{width:100%;max-width:1040px;background:linear-gradient(180deg,var(--panel),#101015);
+  .jis-app .stage{width:100%;max-width:1040px;background:linear-gradient(180deg,var(--panel),#101015);
     border:1px solid var(--line);border-radius:16px;padding:24px 26px 20px;margin-bottom:16px;position:relative;overflow:hidden}
-  .scopebar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
-  .chip{font:600 12.5px/1 var(--ui);color:var(--txt-dim);background:var(--panel-2);border:1px solid var(--line);
+  .jis-app .scopebar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+  .jis-app .chip{font:600 12.5px/1 var(--ui);color:var(--txt-dim);background:var(--panel-2);border:1px solid var(--line);
     border-radius:999px;padding:7px 12px;cursor:pointer;transition:.12s}
-  .chip[aria-pressed="true"]{color:var(--txt);border-color:var(--red);box-shadow:inset 0 0 0 1px var(--red)}
-  .chip.jp{font-family:var(--jp);font-size:14px}
-  .chip:focus-visible{outline:2px solid var(--red-soft);outline-offset:2px}
-  .chip small{font-family:var(--mono);opacity:.6;margin-left:5px}
+  .jis-app .chip[aria-pressed="true"]{color:var(--txt);border-color:var(--red);box-shadow:inset 0 0 0 1px var(--red)}
+  .jis-app .chip.jp{font-family:var(--jp);font-size:14px}
+  .jis-app .chip:focus-visible{outline:2px solid var(--red-soft);outline-offset:2px}
+  .jis-app .chip small{font-family:var(--mono);opacity:.6;margin-left:5px}
 
-  .promptwrap{display:flex;align-items:center;gap:28px;flex-wrap:wrap}
-  .target{font-family:var(--jp);font-weight:600;font-size:118px;line-height:.9;min-width:120px;text-align:center;
+  .jis-app .promptwrap{display:flex;align-items:center;gap:28px;flex-wrap:wrap}
+  .jis-app .target{font-family:var(--jp);font-weight:600;font-size:118px;line-height:.9;min-width:120px;text-align:center;
     color:var(--txt);text-shadow:0 4px 30px rgba(228,51,43,.25);transition:transform .08s}
-  .target.hit{color:var(--go);transform:scale(1.04)}
-  .target.miss{color:var(--red);animation:shake .3s}
+  .jis-app .target.hit{color:var(--go);transform:scale(1.04)}
+  .jis-app .target.miss{color:var(--red);animation:shake .3s}
   @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
-  .meta{display:flex;flex-direction:column;gap:12px;flex:1;min-width:240px}
-  .reading{font-family:var(--mono);font-size:15px;color:var(--txt-dim);min-height:20px}
-  .reading b{color:var(--red-soft)}
-  .reading .where{color:var(--txt)}
-  .reading.hidden-hint{visibility:hidden}
+  .jis-app .meta{display:flex;flex-direction:column;gap:12px;flex:1;min-width:240px}
+  .jis-app .reading{font-family:var(--mono);font-size:15px;color:var(--txt-dim);min-height:20px}
+  .jis-app .reading b{color:var(--red-soft)}
+  .jis-app .reading .where{color:var(--txt)}
+  .jis-app .reading.hidden-hint{visibility:hidden}
 
   /* heat / combo meter — the redline nod */
-  .heat{height:12px;border-radius:7px;background:var(--panel-2);border:1px solid var(--line);overflow:hidden;position:relative}
-  .heat .fill{height:100%;width:0%;background:linear-gradient(90deg,#4a8f5a,#cbb24a 55%,var(--red));transition:width .18s ease-out}
-  .heat .redline{position:absolute;top:0;bottom:0;right:8%;width:2px;background:var(--red);opacity:.5}
-  .combo{font-family:var(--mono);font-size:13px;color:var(--txt-dim)}
-  .combo b{color:var(--txt);font-size:15px}
-  .combo.redlining b{color:var(--red);animation:pulse .6s infinite}
+  .jis-app .heat{height:12px;border-radius:7px;background:var(--panel-2);border:1px solid var(--line);overflow:hidden;position:relative}
+  .jis-app .heat .fill{height:100%;width:0%;background:linear-gradient(90deg,#4a8f5a,#cbb24a 55%,var(--red));transition:width .18s ease-out}
+  .jis-app .heat .redline{position:absolute;top:0;bottom:0;right:8%;width:2px;background:var(--red);opacity:.5}
+  .jis-app .combo{font-family:var(--mono);font-size:13px;color:var(--txt-dim)}
+  .jis-app .combo b{color:var(--txt);font-size:15px}
+  .jis-app .combo.redlining b{color:var(--red);animation:pulse .6s infinite}
   @keyframes pulse{50%{opacity:.55}}
 
-  .startveil{position:absolute;inset:0;background:rgba(10,10,12,.86);backdrop-filter:blur(2px);
+  .jis-app .startveil{position:absolute;inset:0;background:rgba(10,10,12,.86);backdrop-filter:blur(2px);
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:5;text-align:center;padding:20px}
-  .startveil h2{margin:0;font:600 22px/1.2 var(--ui)}
-  .startveil p{margin:0;color:var(--txt-dim);max-width:440px;font-size:14px;line-height:1.5}
-  .startbtn{font:700 15px/1 var(--ui);color:#fff;background:var(--red);border:0;border-radius:10px;
+  .jis-app .startveil h2{margin:0;font:600 22px/1.2 var(--ui)}
+  .jis-app .startveil p{margin:0;color:var(--txt-dim);max-width:440px;font-size:14px;line-height:1.5}
+  .jis-app .startbtn{font:700 15px/1 var(--ui);color:#fff;background:var(--red);border:0;border-radius:10px;
     padding:13px 22px;cursor:pointer;box-shadow:0 3px 0 #a51f19}
-  .startbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #a51f19}
-  .startbtn:focus-visible{outline:2px solid #fff;outline-offset:2px}
-  .kbd{font-family:var(--mono);background:var(--panel-2);border:1px solid var(--line);border-bottom-width:2px;
+  .jis-app .startbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #a51f19}
+  .jis-app .startbtn:focus-visible{outline:2px solid #fff;outline-offset:2px}
+  .jis-app .kbd{font-family:var(--mono);background:var(--panel-2);border:1px solid var(--line);border-bottom-width:2px;
     border-radius:5px;padding:1px 6px;font-size:12px;color:var(--txt)}
 
   /* ---------- the board (hero) ---------- */
-  .boardwrap{width:100%;max-width:1040px;overflow-x:auto;padding-bottom:6px}
-  .board{--scale:1;background:var(--case);border:1px solid #000;border-radius:14px;padding:14px;
+  .jis-app .boardwrap{width:100%;max-width:1040px;overflow-x:auto;padding-bottom:6px}
+  .jis-app .board{--scale:1;background:var(--case);border:1px solid #000;border-radius:14px;padding:14px;
     box-shadow:0 10px 40px rgba(0,0,0,.5), inset 0 1px 0 #ffffff10;width:max-content;margin:0 auto}
-  .row{display:flex;gap:var(--gap);margin-bottom:var(--gap)}
-  .row:last-child{margin-bottom:0}
-  .key{
+  .jis-app .row{display:flex;gap:var(--gap);margin-bottom:var(--gap)}
+  .jis-app .row:last-child{margin-bottom:0}
+  .jis-app .key{
     --w:1;
     width:calc(var(--u) * var(--w) * var(--scale));
     height:calc(var(--u) * var(--scale));
@@ -112,54 +124,76 @@
     display:flex;flex-direction:column;justify-content:space-between;padding:5px 6px;
     transition:transform .05s, box-shadow .05s, background .12s;
   }
-  .key.dim{background:var(--cap-dim);box-shadow:0 3px 0 var(--cap-dim-edge),0 4px 5px rgba(0,0,0,.4)}
-  .key.esc{background:var(--red);box-shadow:0 3px 0 #a51f19,0 4px 5px rgba(0,0,0,.45)}
-  .key .asc{font:600 11px/1 var(--mono);color:var(--ink);opacity:.62}
-  .key.dim .asc{color:var(--ink-dim);opacity:.85;font-size:10px}
-  .key.esc .asc{color:#fff;opacity:.9}
-  .key .kana{font:600 18px/1 var(--jp);color:var(--ink);align-self:flex-end}
-  .key .lbl{font:600 11px/1.1 var(--ui);color:var(--ink-dim);align-self:flex-start}
-  .key .sml{position:absolute;top:4px;right:6px;font:600 10px/1 var(--jp);color:var(--ink);opacity:.5}
+  .jis-app .key.dim{background:var(--cap-dim);box-shadow:0 3px 0 var(--cap-dim-edge),0 4px 5px rgba(0,0,0,.4)}
+  .jis-app .key.esc{background:var(--red);box-shadow:0 3px 0 #a51f19,0 4px 5px rgba(0,0,0,.45)}
+  .jis-app .key .asc{font:600 11px/1 var(--mono);color:var(--ink);opacity:.62}
+  .jis-app .key.dim .asc{color:var(--ink-dim);opacity:.85;font-size:10px}
+  .jis-app .key.esc .asc{color:#fff;opacity:.9}
+  .jis-app .key .kana{font:600 18px/1 var(--jp);color:var(--ink);align-self:flex-end}
+  .jis-app .key .lbl{font:600 11px/1.1 var(--ui);color:var(--ink-dim);align-self:flex-start}
+  .jis-app .key .sml{position:absolute;top:4px;right:6px;font:600 10px/1 var(--jp);color:var(--ink);opacity:.5}
 
   /* states */
-  .key.target{background:#fff;box-shadow:0 0 0 2px var(--red),0 0 22px 3px rgba(228,51,43,.55),0 3px 0 var(--cap-edge);}
-  .key.target .kana{color:var(--red)}
-  .key.good{background:#dff5e4;box-shadow:0 0 0 2px var(--go),0 0 18px 2px rgba(91,191,111,.5),0 3px 0 #9ec9a6}
-  .key.bad{background:#fbdcd9;box-shadow:0 0 0 2px var(--red),0 0 18px 2px rgba(228,51,43,.5),0 3px 0 #c79b96}
-  .key.press{transform:translateY(3px);box-shadow:0 0 0 1px #00000020}
+  .jis-app .key.target{background:#fff;box-shadow:0 0 0 2px var(--red),0 0 22px 3px rgba(228,51,43,.55),0 3px 0 var(--cap-edge);}
+  .jis-app .key.target .kana{color:var(--red)}
+  .jis-app .key.good{background:#dff5e4;box-shadow:0 0 0 2px var(--go),0 0 18px 2px rgba(91,191,111,.5),0 3px 0 #9ec9a6}
+  .jis-app .key.bad{background:#fbdcd9;box-shadow:0 0 0 2px var(--red),0 0 18px 2px rgba(228,51,43,.5),0 3px 0 #c79b96}
+  .jis-app .key.press{transform:translateY(3px);box-shadow:0 0 0 1px #00000020}
 
   /* ---------- stats hud ---------- */
-  .hud{width:100%;max-width:1040px;display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-  .stat{flex:1;min-width:120px;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:12px 14px}
-  .stat .k{font:600 11px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--txt-dim)}
-  .stat .v{font:700 27px/1 var(--mono);margin-top:8px;color:var(--txt)}
-  .stat .v small{font-size:14px;color:var(--txt-dim);font-weight:600}
-  .stat.accent .v{color:var(--red-soft)}
+  .jis-app .hud{width:100%;max-width:1040px;display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .jis-app .stat{flex:1;min-width:120px;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+  .jis-app .stat .k{font:600 11px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--txt-dim)}
+  .jis-app .stat .v{font:700 27px/1 var(--mono);margin-top:8px;color:var(--txt)}
+  .jis-app .stat .v small{font-size:14px;color:var(--txt-dim);font-weight:600}
+  .jis-app .stat.accent .v{color:var(--red-soft)}
 
   /* mastery strip */
-  .mastery{width:100%;max-width:1040px;margin-top:14px;background:var(--panel);border:1px solid var(--line);
+  .jis-app .mastery{width:100%;max-width:1040px;margin-top:14px;background:var(--panel);border:1px solid var(--line);
     border-radius:11px;padding:14px}
-  .mastery h3{margin:0 0 10px;font:600 11px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--txt-dim)}
-  .grid{display:flex;flex-wrap:wrap;gap:4px}
-  .cell{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  .jis-app .mastery h3{margin:0 0 10px;font:600 11px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--txt-dim)}
+  .jis-app .grid{display:flex;flex-wrap:wrap;gap:4px}
+  .jis-app .cell{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;
     font:600 15px/1 var(--jp);color:#0c0c0e;background:#2a2a33;cursor:default;position:relative}
-  .cell[data-seen="0"]{color:#6a6a72;background:#1c1c22;border:1px dashed #33333d}
-  .mastery .legend{display:flex;gap:14px;align-items:center;margin-top:11px;font:600 11px/1 var(--mono);color:var(--txt-dim)}
-  .swatch{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  .jis-app .cell[data-seen="0"]{color:#6a6a72;background:#1c1c22;border:1px dashed #33333d}
+  .jis-app .mastery .legend{display:flex;gap:14px;align-items:center;margin-top:11px;font:600 11px/1 var(--mono);color:var(--txt-dim)}
+  .jis-app .swatch{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 
-  .foot{width:100%;max-width:1040px;margin-top:22px;color:var(--txt-dim);font-size:12px;line-height:1.6;font-family:var(--mono)}
-  .foot .row2{display:flex;gap:18px;flex-wrap:wrap}
+  .jis-app .foot{width:100%;max-width:1040px;margin-top:22px;color:var(--txt-dim);font-size:12px;line-height:1.6;font-family:var(--mono)}
+  .jis-app .foot .row2{display:flex;gap:18px;flex-wrap:wrap}
 
   @media (max-width:560px){
-    .target{font-size:84px}
-    .brand .sub{display:none}
+    .jis-app .target{font-size:84px}
+    .jis-app .brand .sub{display:none}
   }
   @media (prefers-reduced-motion: reduce){
-    *{animation:none !important;transition:none !important}
+    .jis-app *{animation:none !important;transition:none !important}
   }
 </style>
 </head>
-<body>
+<body data-page="jis">
+
+  <!-- NAVBAR (site shell) -->
+  <nav class="navbar">
+    <a href="../../" class="nav-logo"><span class="nav-logo-mark"></span><span>jared</span></a>
+    <ul class="nav-links">
+      <li><a href="../../about/">About</a></li>
+      <li><a href="../../projects/">Projects</a></li>
+      <li><a href="../../tools/">Tools</a></li>
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../../contact/">Contact</a></li>
+    </ul>
+    <button class="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </nav>
+  <ul class="nav-mobile">
+    <li><a href="../../about/">About</a></li>
+    <li><a href="../../projects/">Projects</a></li>
+    <li><a href="../../tools/">Tools</a></li>
+    <li><a href="../../blog/">Blog</a></li>
+    <li><a href="../../contact/">Contact</a></li>
+  </ul>
+
+<div class="jis-app">
 <header>
   <div class="brand">
     <span class="mark">JIS<b>:</b>Grind</span>
@@ -227,6 +261,40 @@
   </div>
   <div style="margin-top:6px">ー (¥ key) and ろ register as <code>IntlYen</code> / <code>IntlRo</code> — these only fire if your OS sees the board as JIS. If they don't, skip those two with <span class="kbd">Space</span>.</div>
 </div>
+</div><!-- /.jis-app -->
+
+  <!-- FOOTER (site shell) -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-left">
+        <a href="../../" class="nav-logo"><span class="nav-logo-mark"></span><span>jared</span></a>
+        <p>Made with care.</p>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <p class="footer-heading">Site</p>
+          <a href="../../about/">About</a>
+          <a href="../../projects/">Projects</a>
+          <a href="../../tools/">Tools</a>
+          <a href="../../blog/">Blog</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-heading">Find me</p>
+          <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a>
+          <a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a>
+          <a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-heading">Other</p>
+          <a href="../../contact/">Contact</a>
+          <a href="#">RSS</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-baseline">© 2026 Jared P. · Built with love</div>
+  </footer>
+
+  <script src="../../scripts/site.js"></script>
 
 <script>
 "use strict";
