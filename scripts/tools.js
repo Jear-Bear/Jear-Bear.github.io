@@ -18,7 +18,8 @@ const TOOLS = [
     glyph: 'あ',
     accent: '#5b5bd6',          // each tool's --page-color carries onto its tile
     thumb: 'thumb.svg',          // relative to the tool folder; defaults to thumb.png
-  },
+  }
+  /*
   {
     slug: 'pitch',
     title: 'Pitch Mirror',
@@ -31,6 +32,7 @@ const TOOLS = [
     accent: '#8b7bd8',
     thumb: 'thumb.svg',
   },
+  */
   // {
   //   slug: 'pitch',
   //   title: 'Pitch Accent Trainer',
