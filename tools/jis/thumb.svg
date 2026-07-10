@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="JIS Grind">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#131317"/>
+      <stop offset="1" stop-color="#0a0a0c"/>
+    </linearGradient>
+    <linearGradient id="cap" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e4e0d7"/>
+      <stop offset="1" stop-color="#d0ccc2"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+
+  <!-- ghost kana -->
+  <text x="1010" y="250" font-family="Hiragino Sans, Noto Sans JP, sans-serif"
+        font-size="300" font-weight="600" fill="#e4332b" opacity="0.10" text-anchor="middle">あ</text>
+
+  <!-- monospace brand mark, echoing the in-app logo -->
+  <g transform="translate(90, 120)">
+    <rect x="-14" y="-42" width="250" height="70" rx="10" fill="none" stroke="#e4332b" stroke-width="3"/>
+    <text x="0" y="8" font-family="ui-monospace, Menlo, monospace" font-size="46" font-weight="700" fill="#e9e7e1">JIS<tspan fill="#e4332b">:</tspan>Grind</text>
+  </g>
+  <text x="92" y="180" font-family="ui-monospace, Menlo, monospace" font-size="24" fill="#8f8d86">kana → key, until it's muscle memory</text>
+
+  <!-- keyboard case -->
+  <rect x="90" y="250" width="1020" height="330" rx="20" fill="#0c0c0e" stroke="#000" stroke-width="2"/>
+
+  <!-- a compact grid of keycaps -->
+  <g font-family="Hiragino Sans, Noto Sans JP, sans-serif" font-weight="600" text-anchor="middle">
+    <!-- helper: rows of cream caps with kana; one red target -->
+    <!-- row 1 -->
+    <g transform="translate(130, 290)">
+      <!-- generate 10 caps -->
+      <!-- each cap 78 wide incl gap -->
+      <g><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">た</text></g>
+      <g transform="translate(80,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">て</text></g>
+      <g transform="translate(160,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">い</text></g>
+      <!-- TARGET key (red glow, red kana on white) -->
+      <g transform="translate(240,0)">
+        <rect width="70" height="70" rx="9" fill="#fff" stroke="#e4332b" stroke-width="3"/>
+        <rect x="-6" y="-6" width="82" height="82" rx="12" fill="none" stroke="#e4332b" stroke-width="2" opacity="0.5"/>
+        <text x="35" y="52" font-size="30" fill="#e4332b">す</text>
+      </g>
+      <g transform="translate(320,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">か</text></g>
+      <g transform="translate(400,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">ん</text></g>
+      <g transform="translate(480,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">な</text></g>
+      <g transform="translate(560,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">に</text></g>
+      <g transform="translate(640,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">ら</text></g>
+      <g transform="translate(720,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">せ</text></g>
+    </g>
+    <!-- row 2 (offset, includes a green 'locked in' cap) -->
+    <g transform="translate(160, 375)">
+      <g><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">ち</text></g>
+      <g transform="translate(80,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">と</text></g>
+      <g transform="translate(160,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">し</text></g>
+      <g transform="translate(240,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">は</text></g>
+      <g transform="translate(320,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">き</text></g>
+      <g transform="translate(400,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">く</text></g>
+      <g transform="translate(480,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">ま</text></g>
+      <g transform="translate(560,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">の</text></g>
+      <g transform="translate(640,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">り</text></g>
+    </g>
+    <!-- row 3 -->
+    <g transform="translate(130, 460)">
+      <g><rect width="120" height="70" rx="9" fill="#2f2f38"/><text x="60" y="50" font-size="22" fill="#8a8a93" font-family="Inter, sans-serif">⇧</text></g>
+      <g transform="translate(130,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">つ</text></g>
+      <g transform="translate(210,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">さ</text></g>
+      <g transform="translate(290,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">そ</text></g>
+      <g transform="translate(370,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">ひ</text></g>
+      <g transform="translate(450,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">こ</text></g>
+      <g transform="translate(530,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">み</text></g>
+      <g transform="translate(610,0)"><rect width="70" height="70" rx="9" fill="url(#cap)"/><text x="35" y="52" font-size="30" fill="#26262b">も</text></g>
+    </g>
+  </g>
+
+  <!-- heat bar -->
+  <rect x="130" y="548" width="940" height="14" rx="7" fill="#1d1d24"/>
+  <rect x="130" y="548" width="620" height="14" rx="7" fill="#e4332b" opacity="0.9"/>
+</svg>
