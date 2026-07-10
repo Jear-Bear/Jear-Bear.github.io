@@ -18,6 +18,18 @@ const TOOLS = [
     glyph: 'あ',
     accent: '#5b5bd6',          // each tool's --page-color carries onto its tile
     thumb: 'thumb.svg',          // relative to the tool folder; defaults to thumb.png
+  },
+  {
+    slug: 'jis',
+    title: 'JIS Grind',
+    description:
+      'Drill the JIS kana layout until it\'s muscle memory. A kana appears, ' +
+      'you hit the matching physical key — detected by position, so your IME ' +
+      'stays put. Weak kana surface more often.',
+    tags: ['JIS', 'typing', 'kana'],
+    glyph: 'あ',
+    accent: '#e4332b',
+    thumb: 'thumb.svg',
   }
   /*
   {
