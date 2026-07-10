@@ -41,7 +41,7 @@
   /* the JIS app owns the page background, but the site navbar/footer keep
      their own look from base.css. Scope the dark theme to the app wrapper. */
   html,body{margin:0;background:var(--case);color:var(--txt);-webkit-font-smoothing:antialiased}
-  .jis-app{font-family:var(--ui);display:flex;flex-direction:column;align-items:center;padding:22px 16px 40px}
+  .jis-app{font-family:var(--ui);display:flex;flex-direction:column;align-items:center;padding:22px 16px 40px;padding-top:var(--jis-navpad,94px)}
   .jis-app a{color:var(--red-soft)}
 
   /* ---------- top bar ---------- */
@@ -298,6 +298,22 @@
 
 <script>
 "use strict";
+
+/* Clear the site's fixed navbar precisely: measure its real height (base.css
+   owns it, so we can't hardcode it) and pad the app to match. Falls back to
+   94px via the CSS default if the navbar isn't found. */
+(function navClearance(){
+  function apply(){
+    var nav = document.querySelector('.navbar');
+    if(!nav) return;
+    var h = nav.getBoundingClientRect().height;
+    if(h > 0) document.documentElement.style.setProperty('--jis-navpad', (h + 22) + 'px');
+  }
+  apply();
+  window.addEventListener('resize', apply);
+  window.addEventListener('load', apply);
+})();
+
 /* ============================================================
    JIS kana → physical key map (read off the board photo).
    code  = KeyboardEvent.code (physical position, layout-agnostic)
