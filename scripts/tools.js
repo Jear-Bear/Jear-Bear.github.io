@@ -24,8 +24,8 @@ const TOOLS = [
     title: 'JIS Grind',
     description:
       'Drill the JIS kana layout until it\'s muscle memory. A kana appears, ' +
-      'you hit the matching physical key — detected by position, so your IME ' +
-      'stays put. Weak kana surface more often.',
+      'you hit the matching physical key (detected by position, so your IME ' +
+      'stays put). Weak kana surface more often.',
     tags: ['JIS', 'typing', 'kana'],
     glyph: 'あ',
     accent: '#e4332b',
