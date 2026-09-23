@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-23T21:15:06.480Z",
+  "generatedAt": "2026-09-23T21:19:58.315Z",
   "generatedBy": "sponsor-stats-action",
   "channel": {
     "id": "UCSIxTP9PCM2kcTszONRxZ1w",
@@ -54,42 +54,6 @@
         "display": "As of Sep 23, 2026"
       },
       "source": "youtube-data-api",
-      "asOf": "2026-09-23"
-    },
-    "longFormViews": {
-      "value": 0,
-      "unit": "count",
-      "label": "Long-form views",
-      "period": {
-        "start": "2026-08-24",
-        "end": "2026-09-20",
-        "display": "Aug 24–Sep 20, 2026"
-      },
-      "source": "youtube-analytics-api",
-      "asOf": "2026-09-23"
-    },
-    "shortsViews": {
-      "value": 0,
-      "unit": "count",
-      "label": "Shorts views",
-      "period": {
-        "start": "2026-08-24",
-        "end": "2026-09-20",
-        "display": "Aug 24–Sep 20, 2026"
-      },
-      "source": "youtube-analytics-api",
-      "asOf": "2026-09-23"
-    },
-    "liveViews": {
-      "value": 0,
-      "unit": "count",
-      "label": "Live views",
-      "period": {
-        "start": "2026-08-24",
-        "end": "2026-09-20",
-        "display": "Aug 24–Sep 20, 2026"
-      },
-      "source": "youtube-analytics-api",
       "asOf": "2026-09-23"
     },
     "viewsAllFormats": {
@@ -185,6 +149,42 @@
       "value": 0.544,
       "unit": "percent",
       "label": "Views from the US, UK, Canada & Australia",
+      "period": {
+        "start": "2026-08-24",
+        "end": "2026-09-20",
+        "display": "Aug 24–Sep 20, 2026"
+      },
+      "source": "youtube-analytics-api",
+      "asOf": "2026-09-23"
+    },
+    "longFormViews": {
+      "value": 59470,
+      "unit": "count",
+      "label": "Long-form views",
+      "period": {
+        "start": "2026-08-24",
+        "end": "2026-09-20",
+        "display": "Aug 24–Sep 20, 2026"
+      },
+      "source": "youtube-analytics-api",
+      "asOf": "2026-09-23"
+    },
+    "shortsViews": {
+      "value": 22266,
+      "unit": "count",
+      "label": "Shorts views",
+      "period": {
+        "start": "2026-08-24",
+        "end": "2026-09-20",
+        "display": "Aug 24–Sep 20, 2026"
+      },
+      "source": "youtube-analytics-api",
+      "asOf": "2026-09-23"
+    },
+    "liveViews": {
+      "value": 2092,
+      "unit": "count",
+      "label": "Live views",
       "period": {
         "start": "2026-08-24",
         "end": "2026-09-20",
@@ -594,7 +594,7 @@
       "publishedAt": "2026-09-18T13:30:36Z",
       "metrics": {
         "views": {
-          "value": 10333,
+          "value": 10338,
           "unit": "count",
           "label": "Views",
           "period": {
