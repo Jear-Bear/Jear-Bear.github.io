@@ -20,6 +20,18 @@ const TOOLS = [
     thumb: 'thumb.svg',          // relative to the tool folder; defaults to thumb.png
   },
   {
+    slug: 'kanji',
+    title: 'Kanji Trainer',
+    description:
+      'Jōyō, jinmeiyō, JLPT, Kanken or your own list (paste, CSV or Excel). ' +
+      'Meanings, readings, common words and handwriting with stroke-order ' +
+      'checking, on a spaced-repetition schedule.',
+    tags: ['kanji', 'writing', 'JLPT', 'Kanken'],
+    glyph: '漢',
+    accent: '#42602d',
+    thumb: 'thumb.svg',
+  },
+  {
     slug: 'jis',
     title: 'JIS Grind',
     description:

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+  <title>Kanji Trainer · Jared P.</title>
+  <meta name="description" content="Study kanji by jōyō, jinmeiyō, JLPT level, Kanken level or your own list. Handwriting with stroke-order checking, readings, meanings and common words, with spaced repetition." />
+  <link rel="canonical" href="https://www.jareddesu.com/tools/kanji/" />
+
+  <link rel="icon" href="../../images/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,30..100;1,9..144,300..700,30..100&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Klee+One:wght@600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../../styles/base.css">
+  <link rel="stylesheet" href="../../styles/kanji.css?v=1">
+</head>
+<body data-page="kanji">
+
+  <nav class="navbar">
+    <a href="../../" class="nav-logo">
+      <span class="nav-logo-mark"></span>
+      <span>jared</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="../../about/">About</a></li>
+      <li><a href="../../projects/">Projects</a></li>
+      <li><a href="../../tools/">Tools</a></li>
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../../sponsorships/">Sponsorships</a></li>
+      <li><a href="../../contact/">Contact</a></li>
+    </ul>
+    <button class="nav-burger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+  <ul class="nav-mobile">
+    <li><a href="../../about/">About</a></li>
+    <li><a href="../../projects/">Projects</a></li>
+    <li><a href="../../tools/">Tools</a></li>
+    <li><a href="../../blog/">Blog</a></li>
+    <li><a href="../../sponsorships/">Sponsorships</a></li>
+    <li><a href="../../contact/">Contact</a></li>
+  </ul>
+
+  <main>
+    <div class="container kj">
+
+      <!-- ===================== DASHBOARD ===================== -->
+      <section id="view-dashboard">
+        <header class="page-header">
+          <p class="eyebrow reveal">tools</p>
+          <h1 class="page-title reveal">Kanji <em>Trainer</em>.</h1>
+          <p class="page-intro reveal">
+            Pick a list (jōyō, JLPT, Kanken or your own), then practice meanings,
+            readings, common words and handwriting. It remembers what you miss
+            and brings it back before you forget.
+          </p>
+        </header>
+
+        <div class="kj-continue reveal" id="continue-card">
+          <div>
+            <p class="kj-continue-line" id="continue-line">Loading kanji…</p>
+            <p class="kj-continue-sub" id="continue-sub"></p>
+          </div>
+          <div class="kj-continue-actions">
+            <button class="btn btn-primary" id="btn-start" disabled>Start review</button>
+            <button class="btn-link" id="btn-practice" disabled>Extra practice <span class="arrow">→</span></button>
+          </div>
+        </div>
+
+        <!-- What to study -->
+        <section class="kj-section">
+          <div class="section-label"><span class="section-label-text">What to study</span></div>
+          <h2 class="section-title reveal">Choose your kanji.</h2>
+          <p class="kj-help reveal">Pick one or more lists. Combining them works too, e.g. N3 plus your own list.</p>
+          <div id="set-picker" class="kj-sets"></div>
+          <div class="kj-set-group">
+            <p class="kj-set-title">Your lists</p>
+            <div class="kj-chips" id="custom-sets"></div>
+            <button class="btn-link" id="btn-add-list">+ Add your own list <span class="arrow">→</span></button>
+            <p class="kj-set-note">Paste text, or upload a CSV or Excel (.xlsx) file.</p>
+          </div>
+          <p class="kj-selection" id="selection-summary" aria-live="polite"></p>
+        </section>
+
+        <!-- How to practice -->
+        <section class="kj-section">
+          <div class="section-label"><span class="section-label-text">How to practice</span></div>
+          <h2 class="section-title reveal">Your practice style.</h2>
+          <div class="kj-options">
+            <div class="kj-opt">
+              <p class="kj-opt-label" id="lbl-item">Study</p>
+              <div class="kj-seg" role="radiogroup" aria-labelledby="lbl-item" data-setting="itemType">
+                <button role="radio" data-value="kanji">Single kanji</button>
+                <button role="radio" data-value="words">Words (jukugo)</button>
+              </div>
+            </div>
+            <div class="kj-opt">
+              <p class="kj-opt-label" id="lbl-q">Questions</p>
+              <div class="kj-checks" role="group" aria-labelledby="lbl-q">
+                <label class="kj-check"><input type="checkbox" data-question="meaning"><span>Meaning <small>multiple choice</small></span></label>
+                <label class="kj-check"><input type="checkbox" data-question="reading"><span>Reading <small>multiple choice</small></span></label>
+                <label class="kj-check"><input type="checkbox" data-question="reverse"><span>Meaning → kanji <small>multiple choice</small></span></label>
+                <label class="kj-check"><input type="checkbox" data-question="typed"><span>Type the reading <small>romaji or kana</small></span></label>
+                <label class="kj-check"><input type="checkbox" data-question="writing"><span>Writing <small>stroke by stroke</small></span></label>
+              </div>
+            </div>
+            <div class="kj-opt" id="opt-writing-level">
+              <p class="kj-opt-label" id="lbl-w">Writing help</p>
+              <div class="kj-seg" role="radiogroup" aria-labelledby="lbl-w" data-setting="writingLevel">
+                <button role="radio" data-value="trace">Trace</button>
+                <button role="radio" data-value="guided">Guided</button>
+                <button role="radio" data-value="memory">From memory</button>
+              </div>
+              <p class="kj-opt-note" id="writing-level-note"></p>
+            </div>
+            <div class="kj-opt kj-opt-row">
+              <label class="kj-num-label">New per day
+                <input type="number" id="opt-new" class="kj-num" min="0" max="200" step="1" inputmode="numeric">
+              </label>
+              <label class="kj-num-label">Questions per session
+                <select id="opt-size" class="kj-select">
+                  <option value="10">10</option><option value="20">20</option>
+                  <option value="30">30</option><option value="50">50</option>
+                </select>
+              </label>
+              <label class="kj-toggle"><input type="checkbox" id="opt-auto"> <span>Auto-advance when right</span></label>
+            </div>
+          </div>
+        </section>
+
+        <!-- Mastery -->
+        <section class="kj-section">
+          <div class="section-label"><span class="section-label-text">Progress</span></div>
+          <h2 class="section-title reveal">Every kanji, at a glance.</h2>
+          <p class="kj-help">Tap any kanji for readings, words and its stroke order.</p>
+          <p class="kj-legend" aria-hidden="true">
+            <span class="kj-cell-demo m0"></span> new
+            <span class="kj-cell-demo m1"></span> learning
+            <span class="kj-cell-demo m2"></span> familiar
+            <span class="kj-cell-demo m3"></span> strong
+            <span class="kj-cell-demo m4"></span> mastered
+          </p>
+          <div id="mastery-grid" class="kj-grid"></div>
+          <button class="btn-link" id="btn-grid-more" hidden></button>
+        </section>
+
+        <section class="kj-section">
+          <div class="section-label"><span class="section-label-text">Trouble spots</span></div>
+          <h2 class="section-title reveal">What you miss most.</h2>
+          <div id="trouble"></div>
+        </section>
+
+        <section class="kj-section">
+          <div class="section-label"><span class="section-label-text">Stats</span></div>
+          <h2 class="section-title reveal">The numbers.</h2>
+          <div class="kj-stats" id="stats"></div>
+        </section>
+
+        <section class="kj-section" id="data">
+          <div class="section-label"><span class="section-label-text">Data</span></div>
+          <h2 class="section-title reveal">Your progress, yours.</h2>
+          <div class="kj-data">
+            <div class="kj-data-actions">
+              <button class="btn-link" id="btn-export">Export progress</button>
+              <button class="btn-link" id="btn-import">Import backup</button>
+              <button class="btn-link kj-danger" id="btn-reset">Reset all data</button>
+              <input type="file" id="import-file" accept="application/json,.json" hidden>
+            </div>
+            <p class="kj-backup" id="backup-status" aria-live="polite"></p>
+            <p class="kj-help">Progress stays in this browser only. Export a backup now and then, and import it here on any device to pick up where you left off.</p>
+          </div>
+        </section>
+
+        <p class="kj-credits">
+          Kanji data from <a href="https://github.com/mifunetoshiro/kanjium" target="_blank" rel="noopener">Kanjium</a>
+          (built on <a href="https://www.edrdg.org/" target="_blank" rel="noopener">EDRDG</a> KANJIDIC/JMdict),
+          stroke order from <a href="https://kanjivg.tagaini.net" target="_blank" rel="noopener">KanjiVG</a>,
+          JLPT levels from <a href="http://www.tanos.co.uk/" target="_blank" rel="noopener">Jonathan Waller</a>
+          via <a href="https://github.com/davidluzgouveia/kanji-data" target="_blank" rel="noopener">kanji-data</a>.
+          Data shared under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>.
+        </p>
+      </section>
+
+      <!-- ===================== REVIEW ===================== -->
+      <section id="view-review" hidden>
+        <div class="kj-hud">
+          <button class="btn-link kj-hud-back" id="btn-end">← End</button>
+          <div class="kj-hud-stats">
+            <span id="hud-mode" class="kj-hud-mode"></span>
+            <span id="hud-count">0 / 0</span>
+            <span id="hud-acc">— %</span>
+          </div>
+        </div>
+        <div class="kj-bar" aria-hidden="true"><div id="session-bar"></div></div>
+
+        <div class="kj-zone" id="card-zone">
+          <p class="kj-qlabel" id="q-label"></p>
+          <div class="kj-prompt" id="q-prompt" lang="ja"></div>
+          <p class="kj-qsub" id="q-sub"></p>
+          <div class="kj-body" id="q-body"></div>
+          <p class="kj-feedback" id="feedback" aria-live="polite"></p>
+          <div class="kj-after" id="after" hidden></div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Kanji detail -->
+  <div class="kj-overlay" id="detail-overlay" hidden>
+    <div class="kj-sheet" role="dialog" aria-modal="true" aria-labelledby="detail-char">
+      <button class="kj-close" id="detail-close" aria-label="Close">×</button>
+      <div id="detail-body"></div>
+    </div>
+  </div>
+
+  <!-- Add a list -->
+  <div class="kj-overlay" id="import-overlay" hidden>
+    <div class="kj-sheet" role="dialog" aria-modal="true" aria-labelledby="import-title">
+      <button class="kj-close" id="import-close" aria-label="Close">×</button>
+      <p class="eyebrow">your list</p>
+      <h2 class="kj-sheet-title" id="import-title">Add your own list.</h2>
+      <label class="kj-field">
+        <span class="kj-opt-label">Name</span>
+        <input type="text" id="list-name" maxlength="40" placeholder="e.g. Chapter 3 vocab">
+      </label>
+      <label class="kj-field">
+        <span class="kj-opt-label">Paste kanji or words</span>
+        <textarea id="list-text" rows="6" lang="ja" placeholder="学 校 先 生&#10;or one word per line:&#10;学校　がっこう　school"></textarea>
+      </label>
+      <div class="kj-file-row">
+        <label class="btn-link kj-file-btn">Upload CSV or Excel <input type="file" id="list-file" accept=".csv,.tsv,.txt,.xlsx,.xlsm,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></label>
+        <span class="kj-help" id="list-file-name"></span>
+      </div>
+      <p class="kj-help">Every kanji found is added. Words (two or more characters) are kept for word practice; add a kana reading and an English meaning in the same row or line if you have them.</p>
+      <p class="kj-preview" id="list-preview" aria-live="polite"></p>
+      <div class="kj-sheet-actions">
+        <button class="btn btn-primary" id="list-save" disabled>Save list</button>
+        <button class="btn-link" id="list-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Session summary -->
+  <div class="kj-overlay" id="summary-overlay" hidden>
+    <div class="kj-sheet kj-summary" role="dialog" aria-modal="true" aria-labelledby="summary-title">
+      <p class="eyebrow">session done</p>
+      <h2 class="kj-sheet-title" id="summary-title">Nice work.</h2>
+      <div id="summary-body"></div>
+      <div class="kj-sheet-actions">
+        <button class="btn btn-primary" id="summary-again">Keep going</button>
+        <button class="btn-link" id="summary-done">Back to dashboard</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="kj-toasts" id="toasts" aria-live="polite"></div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-left">
+        <a href="../../" class="nav-logo">
+          <span class="nav-logo-mark"></span>
+          <span>jared</span>
+        </a>
+        <p>Made with care.</p>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <p class="footer-heading">Site</p>
+          <a href="../../about/">About</a>
+          <a href="../../projects/">Projects</a>
+          <a href="../../tools/">Tools</a>
+          <a href="../../blog/">Blog</a>
+          <a href="../../sponsorships/">Sponsorships</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-heading">Find me</p>
+          <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a>
+          <a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a>
+          <a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-heading">Other</p>
+          <a href="../../contact/">Contact</a>
+          <a href="#">RSS</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-baseline">
+      © 2026 Jared P. · Built with love
+    </div>
+  </footer>
+
+  <script src="../../scripts/site.js"></script>
+  <script type="module" src="../../scripts/kanji/app.js?v=1"></script>
+</body>
+</html>

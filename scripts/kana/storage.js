@@ -1,4 +1,6 @@
 // storage.js — versioned localStorage persistence with debounced writes.
+import { downloadJSON } from '../study-backup.js';
+
 const KEY = 'jareddesu.kana.v1';
 
 export function defaultStore() {
@@ -11,6 +13,7 @@ export function defaultStore() {
       reviewCount: 0, totalCorrect: 0,
       sessionDates: [], dailyCounts: {}, studyTimeMs: 0,
       newByDay: {},
+      lastExportAt: 0, reviewsAtExport: 0,   // backup reminders
     },
     kana: {},
     confusions: {},
@@ -65,7 +68,12 @@ function write(store) {
     const nd = Object.keys(store.global.newByDay).sort();
     for (const d of nd.slice(0, Math.max(0, nd.length - 90))) delete store.global.newByDay[d];
   }
-  try { localStorage.setItem(KEY, JSON.stringify(store)); } catch {}
+  try {
+    localStorage.setItem(KEY, JSON.stringify(store));
+  } catch (e) {
+    // private mode / storage full: tell the app so it can warn the user
+    window.dispatchEvent(new CustomEvent('study-save-failed', { detail: e }));
+  }
 }
 
 export function flushOnHide(store) {
@@ -77,20 +85,45 @@ export function flushOnHide(store) {
 }
 
 export function exportJSON(store) {
-  const blob = new Blob([JSON.stringify(store, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `kana-trainer-${new Date().toISOString().slice(0, 10)}.json`;
-  a.click();
-  URL.revokeObjectURL(a.href);
+  store.global.lastExportAt = Date.now();
+  store.global.reviewsAtExport = store.global.reviewCount;
+  save(store, { now: true });
+  downloadJSON(`kana-trainer-${new Date().toISOString().slice(0, 10)}.json`,
+    { ...store, app: 'jareddesu-kana', exportedAt: new Date().toISOString() });
 }
 
+// Validates a backup and returns the store it would restore — without
+// writing, so the caller can confirm first. Throws with a readable message.
+export function parseImport(text) {
+  let data;
+  try { data = JSON.parse(text); } catch { throw new Error('That file isn\'t valid JSON.'); }
+  if (!data || typeof data !== 'object' || typeof data.kana !== 'object' || typeof data.global !== 'object') {
+    throw new Error(data && data.app === 'jareddesu-kanji'
+      ? 'That\'s a Kanji Trainer backup. Import it on the Kanji Trainer page.'
+      : 'Not a Kana Trainer backup.');
+  }
+  const base = defaultStore();
+  const { app, exportedAt, ...rest } = data;
+  return {
+    store: {
+      ...base, ...rest, version: 1,
+      settings: { ...base.settings, ...rest.settings },
+      overrides: { ...base.overrides, ...rest.overrides },
+      global: { ...base.global, ...rest.global },
+    },
+    exportedAt: exportedAt || null,
+    reviews: rest.global.reviewCount || 0,
+  };
+}
+
+export function commitImport(store) {
+  localStorage.setItem(KEY, JSON.stringify(store));   // throws if storage is unavailable
+  return store;
+}
+
+// Kept for older callers
 export function importJSON(text) {
-  const data = JSON.parse(text); // throws on bad input — caller handles
-  if (typeof data !== 'object' || !data.kana) throw new Error('Not a Kana Trainer export.');
-  const merged = { ...defaultStore(), ...data, version: 1 };
-  localStorage.setItem(KEY, JSON.stringify(merged));
-  return merged;
+  return commitImport(parseImport(text).store);
 }
 
 export function reset() {
