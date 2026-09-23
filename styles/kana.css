@@ -51,6 +51,23 @@
   box-sizing: border-box;
 }
 
+/* .btn-link is used on <button>s here: drop the browser's default grey
+   button box so they read as links, and keep the underline under the text */
+.kt button.btn-link {
+  background: none;
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+  padding-left: 0;
+  padding-right: 0;   /* text-aligned with the content edge; still 44px tall */
+}
+.kt .btn-link::after { bottom: 10px; }
+
+/* The trainer's views are alternate screens, not stacked sections:
+   base.css's section + section spacing pushed the review screen down and
+   cut off its bottom */
+.container.kt > section + section { margin-top: 0; }
+
 /* ====================== continue card ====================== */
 .kt-continue {
   display: flex; align-items: center; justify-content: space-between; gap: 24px;
@@ -246,7 +263,8 @@
 }
 .kt-toggle { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: var(--ink-soft); cursor: pointer; }
 .kt-toggle small { color: var(--muted); }
-.kt-toggle input { accent-color: var(--page-color); width: 16px; height: 16px; }
+/* Checkboxes only: this used to hit the number input too and shrink it to a 16px circle */
+.kt-toggle input[type="checkbox"] { accent-color: var(--page-color); width: 16px; height: 16px; }
 .kt-prefs { display: flex; flex-direction: column; gap: 12px; }
 .kt-select {
   font: 500 0.9rem 'Inter', sans-serif;
@@ -328,11 +346,11 @@ body.kt-focus .container.kt {
 
 .kt-session-bar {
   flex-shrink: 0;
-  width: 100%; max-width: 720px; margin-left: auto; margin-right: auto;
+  width: 100%; max-width: 720px;
   height: 4px; border-radius: 999px;
   background: var(--page-color-soft);
   overflow: hidden;
-  margin: 2px 0 10px;
+  margin: 2px auto 10px;   /* centered under the HUD */
 }
 .kt-session-bar > div {
   height: 100%; width: 0%;
@@ -507,6 +525,7 @@ body.kt-focus .container.kt {
 
 @media (max-width: 640px) {
   .kt-continue { flex-direction: column; align-items: flex-start; padding: 22px; }
+  .kt-continue-actions { flex-wrap: wrap; gap: 8px 18px; }
   .kt-cell { width: 38px; height: 38px; font-size: 0.95rem; }
   .kt-summary { padding: 28px 22px; }
   .kt-settings { flex-direction: column; align-items: flex-start; }
