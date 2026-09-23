@@ -9,6 +9,16 @@
 const NS = 'http://www.w3.org/2000/svg';
 const N = 24;
 const TOL = { trace: 14, guided: 17, memory: 21 };
+// Stroke checking, chosen by the learner:
+//   mult  — scales the allowed distance from the reference stroke
+//   len   — allowed length ratio (drawn / reference)
+//   forgive* — lenient mode counts a stroke drawn backwards or out of
+//              order, but still points it out
+const CHECKING = {
+  lenient: { mult: 1.4, len: [0.25, 2.8], forgiveDirection: true, forgiveOrder: true },
+  standard: { mult: 1, len: [0.35, 2.2] },
+  strict: { mult: 0.72, len: [0.5, 1.7] },
+};
 const HINT_AFTER = { trace: 1, guided: 1, memory: 2 };
 const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -62,7 +72,7 @@ function samplePath(pathEl) {
   return { pts, len: total };
 }
 
-function compare(user, ref, tol) {
+function compare(user, ref, tol, lenRange = [0.35, 2.2]) {
   const u = resample(user);
   const r = ref.pts;
   const t = ref.len < 20 ? tol + 4 : tol;
@@ -75,9 +85,15 @@ function compare(user, ref, tol) {
   const avg = sum / N;
   const avgRev = sumRev / N;
   const lenU = length(user);
-  const lenOk = lenU >= ref.len * 0.35 && lenU <= ref.len * 2.2 + 12;
-  const ok = avg <= t && dist(u[0], r[0]) <= t * 1.6 && dist(u[N - 1], r[N - 1]) <= t * 1.6 && lenOk;
-  const reversed = !ok && avgRev <= t && lenOk;
+  const lenOk = lenU >= ref.len * lenRange[0] && lenU <= ref.len * lenRange[1] + 12;
+  // Direction: for anything longer than a dot, the drawn stroke must point
+  // the same way as the reference (a loose tolerance alone can let a short
+  // backwards stroke pass)
+  const du = [u[N - 1][0] - u[0][0], u[N - 1][1] - u[0][1]];
+  const dr = [r[N - 1][0] - r[0][0], r[N - 1][1] - r[0][1]];
+  const backwards = ref.len >= 15 && Math.hypot(...du) > 6 && (du[0] * dr[0] + du[1] * dr[1]) < 0;
+  const ok = !backwards && avg <= t && dist(u[0], r[0]) <= t * 1.6 && dist(u[N - 1], r[N - 1]) <= t * 1.6 && lenOk;
+  const reversed = !ok && lenOk && (avgRev <= t || (backwards && avg <= t * 1.5));
   return { ok, reversed, avg };
 }
 
@@ -134,9 +150,10 @@ export function strokeAnimation(container, paths, { strokeMs = 420, gapMs = 120,
 
 // ---------------------------------------------------------------- pad
 export class WritingPad {
-  constructor(container, { level = 'guided', onDone, onFeedback } = {}) {
+  constructor(container, { level = 'guided', checking = 'standard', onDone, onFeedback } = {}) {
     this.container = container;
     this.level = level;
+    this.checking = CHECKING[checking] ? checking : 'standard';
     this.onDone = onDone || (() => {});
     this.onFeedback = onFeedback || (() => {});
   }
@@ -144,6 +161,8 @@ export class WritingPad {
   load(paths) {
     this.paths = paths;
     this.index = 0;
+    this.done = paths.map(() => false);
+    this.slips = 0;       // forgiven direction/order mistakes (lenient)
     this.misses = 0;
     this.strokeMisses = 0;
     this.hints = 0;
@@ -202,32 +221,43 @@ export class WritingPad {
     this.drawing = null;
     if (!pts || this.finished) return;
     if (length(pts) < 2.5) { this.live.setAttribute('d', ''); return; }   // a tap, ignore
-    const tol = TOL[this.level] || TOL.guided;
-    const res = compare(pts, this.samples[this.index], tol);
-    if (res.ok) {
-      this.live.setAttribute('d', '');
-      this.accept(this.index);
+    const cfg = CHECKING[this.checking];
+    const tol = (TOL[this.level] || TOL.guided) * cfg.mult;
+    const res = compare(pts, this.samples[this.index], tol, cfg.len);
+    this.live.setAttribute('d', '');
+    if (res.ok) { this.accept(this.index); return; }
+    if (res.reversed && cfg.forgiveDirection) {
+      this.slips++;
+      this.accept(this.index, 'Counted. Tip: this stroke goes the other way.');
       return;
     }
-    // Why it failed: direction, order, or just off
+    // Did they draw a later stroke instead?
+    let other = -1;
+    for (let j = this.index + 1; j < this.samples.length; j++) {
+      if (!this.done[j] && compare(pts, this.samples[j], tol, cfg.len).ok) { other = j; break; }
+    }
+    if (other >= 0 && cfg.forgiveOrder) {
+      this.slips++;
+      this.accept(other, `Counted, but that's stroke ${other + 1}. Stroke ${this.index + 1} comes first.`);
+      return;
+    }
+    this.live.setAttribute('d', pts.length ? `M${pts.map((p) => p.map((v) => v.toFixed(1)).join(',')).join(' L')}` : '');
     let msg = 'Not quite. Try that stroke again.';
     if (res.reversed) msg = 'Right stroke, wrong direction.';
-    else {
-      for (let j = this.index + 1; j < this.samples.length; j++) {
-        if (compare(pts, this.samples[j], tol).ok) { msg = `That's stroke ${j + 1}. Stroke ${this.index + 1} comes first.`; break; }
-      }
-    }
+    else if (other >= 0) msg = `That's stroke ${other + 1}. Stroke ${this.index + 1} comes first.`;
     this.miss(msg);
   }
 
-  accept(i) {
+  accept(i, note = '') {
     const p = el('path', { d: this.paths[i] }, this.doneG);
     p.classList.add('just-done');
     this.hintG.replaceChildren();
     this.strokeMisses = 0;
-    this.index++;
-    this.onFeedback('', 'ok');
-    if (this.index >= this.paths.length) this.finish();
+    this.done[i] = true;
+    const next = this.done.indexOf(false);
+    this.index = next === -1 ? this.paths.length : next;
+    this.onFeedback(note, note ? 'note' : 'ok');
+    if (next === -1) this.finish();
   }
 
   miss(msg) {
@@ -254,7 +284,9 @@ export class WritingPad {
     if (this.finished) return;
     this.revealed = true;
     this.hintG.replaceChildren();
-    for (let i = this.index; i < this.paths.length; i++) {
+    for (let i = 0; i < this.paths.length; i++) {
+      if (this.done[i]) continue;
+      this.done[i] = true;
       const p = el('path', { d: this.paths[i] }, this.doneG);
       p.classList.add('revealed');
       await animateStroke(p, 300);
@@ -266,7 +298,7 @@ export class WritingPad {
   finish() {
     this.finished = true;
     this.svg.classList.add('is-finished');
-    this.onDone({ misses: this.misses, hints: this.hints, revealed: this.revealed });
+    this.onDone({ misses: this.misses, hints: this.hints, revealed: this.revealed, slips: this.slips });
   }
 }
 

@@ -14,6 +14,7 @@ export function defaultStore() {
       itemType: 'kanji',                      // 'kanji' | 'words'
       questions: { meaning: true, reading: true, reverse: false, typed: false, writing: false },
       writingLevel: 'guided',                 // 'trace' | 'guided' | 'memory'
+      strokeCheck: 'standard',                // 'lenient' | 'standard' | 'strict'
       newPerDay: 10,
       sessionSize: 20,
       autoAdvance: true,
