@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-23T12:00:00Z",
+  "generatedBy": "manual-seed",
+  "channel": {
+    "id": "UCSIxTP9PCM2kcTszONRxZ1w",
+    "handle": "@jareddesu",
+    "title": "まだまだJared",
+    "url": "https://www.youtube.com/@jareddesu"
+  },
+  "metrics": {
+    "subscribers": {
+      "value": 13500,
+      "unit": "count",
+      "label": "Subscribers",
+      "period": { "start": null, "end": "2026-09-23", "display": "As of Sep 23, 2026" },
+      "source": "manual",
+      "asOf": "2026-09-23"
+    },
+    "longFormViews": {
+      "value": 33000,
+      "unit": "count",
+      "label": "Long-form views a month (average)",
+      "period": { "start": "2026-06-01", "end": "2026-09-21", "display": "Jun 1–Sep 21, 2026" },
+      "source": "manual",
+      "asOf": "2026-09-23"
+    },
+    "viewsAllFormats": {
+      "value": 146000,
+      "unit": "count",
+      "label": "Views, all formats",
+      "period": { "start": "2026-06-23", "end": "2026-09-21", "display": "Jun 23–Sep 21, 2026" },
+      "source": "manual",
+      "asOf": "2026-09-23"
+    },
+    "topCountries": {
+      "value": [
+        { "code": "US", "share": 0.30 },
+        { "code": "JP", "share": 0.09 },
+        { "code": "GB", "share": 0.04 },
+        { "code": "CA", "share": 0.03 },
+        { "code": "AU", "share": 0.02 }
+      ],
+      "unit": "share-list",
+      "label": "Views by country",
+      "period": { "start": "2026-06-23", "end": "2026-09-21", "display": "Jun 23–Sep 21, 2026" },
+      "source": "manual",
+      "asOf": "2026-09-23"
+    },
+    "englishSpeakingShare": {
+      "value": 0.39,
+      "unit": "percent",
+      "label": "Views from the US, UK, Canada & Australia",
+      "period": { "start": "2026-06-23", "end": "2026-09-21", "display": "Jun 23–Sep 21, 2026" },
+      "source": "manual",
+      "asOf": "2026-09-23"
+    }
+  },
+  "videos": {
+    "mjxshJATvi0": {
+      "id": "mjxshJATvi0",
+      "metrics": {
+        "recentViews": {
+          "value": 14300,
+          "unit": "count",
+          "label": "Views",
+          "period": { "start": "2026-06-23", "end": "2026-09-21", "display": "Jun 23–Sep 21, 2026" },
+          "source": "manual",
+          "asOf": "2026-09-23"
+        }
+      }
+    }
+  }
+}
