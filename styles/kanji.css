@@ -324,3 +324,8 @@ body.kj-compact .kj-intro-anim { display: none; }
 .kj-tags { margin-bottom: 6px; }
 .kj-opt-label-2 { margin-top: 18px; }
 .kj-loading { color: var(--muted); font-size: 0.9rem; margin: 0; }
+
+/* Finished drawing shrinks so the answer and Continue fit on screen */
+.kj-pad-holder { transition: width .3s ease; }
+.kj-pad-holder.is-done { width: min(46vw, calc(var(--vvh, 100vh) * 0.24), 170px); }
+@media (hover: none) { .kj-hint-key { display: none; } }   /* no Enter key on phones */

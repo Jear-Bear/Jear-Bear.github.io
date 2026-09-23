@@ -773,6 +773,7 @@ function writing(chars, strokeSets) {
         if (k < kanjiIdx.length) { setTimeout(loadNext, 350); return; }
         drawSlots();
         tools.hidden = true;
+        holder.classList.add('is-done');   // shrink the finished drawing so Continue fits on screen
         current.answered = true;
         settle(gradeWriting({ misses: totalMisses, revealed }), { misses: totalMisses, revealed, slips: totalSlips });
       },
@@ -815,8 +816,10 @@ function settle(result, extra = {}) {
   }
   f.className = `kj-feedback ${result === 'good' ? 'is-ok' : result === 'hard' ? 'is-hard' : 'is-miss'}`;
   showAfter(q);
-  if (result === 'good' && settings.autoAdvance && current.type !== 'writing') {
-    current.autoTimer = setTimeout(advance, 900);
+  if (result === 'good' && settings.autoAdvance) {
+    // Writing: only a clean kanji moves on by itself, after a moment to see it
+    const clean = current.type !== 'writing' || (!extra.misses && !extra.slips);
+    if (clean) current.autoTimer = setTimeout(advance, current.type === 'writing' ? 1500 : 900);
   }
 }
 
@@ -830,14 +833,19 @@ function showAfter(q) {
   } else {
     const c = q.key.slice(2);
     const inf = D.info(c);
+    // After writing, the meaning is already on screen above the pad
+    const meaningLine = current.type === 'writing' ? null : h('p', { class: 'kj-after-meaning' }, shortMeaning(inf.meaning));
     after.append(h('div', { class: 'kj-after-main' },
       h('button', { class: 'kj-after-char', lang: 'ja', title: 'Details', onclick: () => openDetail(c) }, c),
-      h('div', null, h('p', { class: 'kj-after-meaning' }, shortMeaning(inf.meaning)), readingsBlock(inf))));
+      h('div', null, meaningLine, readingsBlock(inf))));
   }
   const btn = h('button', { class: 'btn btn-primary', onclick: advance }, 'Continue');
   after.append(h('div', { class: 'kj-actions' }, btn, h('span', { class: 'kj-hint-key' }, 'Enter')));
   after.hidden = false;
   if (!(current.type === 'typed')) btn.focus({ preventScroll: true });
+  // If the card is still taller than the screen, bring Continue into view
+  // (so there's no scrolling, and no tap spent stopping a scroll)
+  requestAnimationFrame(() => requestAnimationFrame(() => btn.scrollIntoView({ block: 'nearest' })));
 }
 
 function advance() {
