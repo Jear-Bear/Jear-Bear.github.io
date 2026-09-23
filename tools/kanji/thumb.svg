@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="Kanji Trainer">
+  <rect width="1200" height="675" fill="#1f261a"/>
+
+  <!-- ghost kanji, oversized -->
+  <text x="860" y="590" font-family="Hiragino Mincho ProN, Noto Serif JP, Yu Mincho, serif"
+        font-size="560" fill="#7fa35f" opacity="0.10" text-anchor="middle">字</text>
+
+  <!-- writing square with guide lines -->
+  <rect x="200" y="120" width="400" height="400" rx="28" fill="#f4f6ef"/>
+  <line x1="400" y1="140" x2="400" y2="500" stroke="#c9d1bd" stroke-width="3" stroke-dasharray="10 12"/>
+  <line x1="220" y1="320" x2="580" y2="320" stroke="#c9d1bd" stroke-width="3" stroke-dasharray="10 12"/>
+  <text x="400" y="455" font-family="Hiragino Sans, Noto Sans JP, Yu Gothic, sans-serif"
+        font-size="300" font-weight="500" fill="#1f261a" text-anchor="middle">漢</text>
+
+  <!-- stroke-order dots in matsuba green -->
+  <g transform="translate(680, 250)" font-family="Inter, Helvetica, Arial, sans-serif" font-size="30" fill="#f4f6ef">
+    <circle cx="20" cy="20" r="20" fill="#42602d"/><text x="20" y="31" text-anchor="middle">1</text>
+    <circle cx="80" cy="20" r="20" fill="#42602d" opacity="0.8"/><text x="80" y="31" text-anchor="middle">2</text>
+    <circle cx="140" cy="20" r="20" fill="#42602d" opacity="0.6"/><text x="140" y="31" text-anchor="middle">3</text>
+  </g>
+  <g transform="translate(680, 330)" font-family="Hiragino Sans, Noto Sans JP, sans-serif" fill="#f4f6ef">
+    <text font-size="54">かん · カン</text>
+    <text y="70" font-size="34" fill="#a9c28f" font-family="Inter, Helvetica, Arial, sans-serif">Sino-; China</text>
+  </g>
+</svg>
