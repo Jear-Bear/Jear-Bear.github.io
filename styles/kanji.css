@@ -323,3 +323,4 @@ body.kj-compact .kj-intro-anim { display: none; }
 .kj-sheet > .eyebrow { align-self: flex-start; margin-bottom: 0; }
 .kj-tags { margin-bottom: 6px; }
 .kj-opt-label-2 { margin-top: 18px; }
+.kj-loading { color: var(--muted); font-size: 0.9rem; margin: 0; }

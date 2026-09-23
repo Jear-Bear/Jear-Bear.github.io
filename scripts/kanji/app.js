@@ -6,7 +6,7 @@
 // intros). All text from data or user lists is inserted as text, never HTML.
 // =====================================================================
 
-import * as D from './data.js?v=1';
+import * as D from './data.js?v=2';
 import * as S from './storage.js?v=2';
 import * as R from './srs.js?v=1';
 import { toHiragana, finalize } from './romaji.js?v=1';
@@ -397,6 +397,11 @@ async function startSession(mode, keysOverride) {
     toast(mode === 'smart' ? 'Nothing due right now. Try Extra practice, or raise New per day.' : 'Nothing to practice in this selection yet.');
     return;
   }
+  // Download every card's stroke/word file in the background, in order.
+  // Cards never wait on it: the kanji, meaning and readings come from the
+  // index, and strokes/words fill in when they arrive.
+  D.prefetch(queue.flatMap((q) => charsFor(q.key)));
+
   session = {
     mode, queue, i: 0, right: 0, wrong: 0, answered: 0,
     introduced: new Set(), retries: new Map(), missed: new Set(),
@@ -457,14 +462,19 @@ async function showIntro(q) {
   } else {
     const c = q.key.slice(2);
     const inf = D.info(c);
-    const det = await D.detail(c);
+    // Everything from the index shows at once; stroke order and words
+    // fill in when the kanji's file arrives (usually already prefetched)
     $('q-prompt').textContent = c;
     $('q-sub').textContent = shortMeaning(inf.meaning);
     const anim = h('div', { class: 'kj-intro-anim' });
-    zone.append(h('div', { class: 'kj-intro' },
-      det.s.length ? anim : null,
-      h('div', { class: 'kj-intro-info' }, readingsBlock(inf), wordsList(det.w.slice(0, 3)))));
-    if (det.s.length) strokeAnimation(anim, det.s, { strokeMs: 320 });
+    const info = h('div', { class: 'kj-intro-info' }, readingsBlock(inf));
+    zone.append(h('div', { class: 'kj-intro' }, inf.hasStrokes ? anim : null, info));
+    D.detail(c).then((det) => {
+      if (!current || current.q !== q || current.type !== 'intro') return;
+      if (det.s.length) strokeAnimation(anim, det.s, { strokeMs: 320 });
+      const words = wordsList(det.w.slice(0, 3));
+      if (words) info.append(words);
+    });
   }
   const btn = h('button', { class: 'btn btn-primary', onclick: () => {
     R.markIntroduced(store, q.key, q.key.startsWith('w:') ? wordData(q.key) : null);
@@ -526,6 +536,27 @@ async function wordPool(word) {
   return shuffle(words.filter((w) => { if (seen.has(w[0])) return false; seen.add(w[0]); return true; }));
 }
 
+// Shows a small "Loading…" only if the data takes more than a moment
+function loading(promise) {
+  const body = $('q-body');
+  const t = setTimeout(() => {
+    if (!body.children.length) body.append(h('p', { class: 'kj-loading' }, 'Loading…'));
+  }, 250);
+  return promise.finally(() => {
+    clearTimeout(t);
+    const l = body.querySelector('.kj-loading');
+    if (l) l.remove();
+  });
+}
+
+// The card may have moved on (End, skip) while data was loading
+const stillAsking = (q) => session && current && current.q === q;
+
+// Kanji whose files a queue item needs (the kanji itself, or a word's kanji)
+function charsFor(key) {
+  return key.startsWith('k:') ? [key.slice(2)] : [...key.slice(2)].filter(D.isKanji);
+}
+
 async function ask(q) {
   const isWord = q.key.startsWith('w:');
   const types = questionTypes(q.skill);
@@ -579,11 +610,12 @@ async function askKanji(q, type) {
     prompt.textContent = c;
     typedInput(D.acceptedReadings(inf));
   } else if (type === 'writing') {
-    const det = await D.detail(c);
     $('q-label').textContent = 'Write the kanji for…';
     prompt.textContent = shortMeaning(inf.meaning);
     prompt.classList.add('is-text');
     $('q-sub').textContent = [inf.on[0], inf.kun[0] && inf.kun[0].replace('.', '')].filter(Boolean).join(' · ');
+    const det = await loading(D.detail(c));
+    if (!stillAsking(q)) return;
     writing([c], [det.s]);
   }
 }
@@ -599,20 +631,24 @@ async function askWord(q, type) {
   if (type === 'meaning') {
     $('q-label').textContent = 'What does this word mean?';
     prompt.textContent = word;
-    const others = (await wordPool(word)).map((w) => w[2]).filter((m) => m && m !== meaning);
+    const pool0 = await loading(wordPool(word));
+    if (!stillAsking(q)) return;
+    const others = pool0.map((w) => w[2]).filter((m) => m && m !== meaning);
     choices(meaning, [...new Set(others)].slice(0, 3), (t) => h('span', null, t));
   } else if (type === 'reading') {
     $('q-label').textContent = 'How is this word read?';
     prompt.textContent = word;
     const len = [...reading].length;
-    const pool = (await wordPool(word)).filter((w) => w[1] && w[1] !== reading);
+    const pool = (await loading(wordPool(word))).filter((w) => w[1] && w[1] !== reading);
+    if (!stillAsking(q)) return;
     pool.sort((a, b) => Math.abs([...a[1]].length - len) - Math.abs([...b[1]].length - len));
     choices(reading, [...new Set(pool.map((w) => w[1]))].slice(0, 3), (r) => h('span', { lang: 'ja' }, r), true);
   } else if (type === 'reverse') {
     $('q-label').textContent = 'Which word means…';
     prompt.textContent = meaning;
     prompt.classList.add('is-text');
-    const others = (await wordPool(word)).map((w) => w[0]).filter((w) => w !== word);
+    const others = (await loading(wordPool(word))).map((w) => w[0]).filter((w) => w !== word);
+    if (!stillAsking(q)) return;
     choices(word, [...new Set(others)].slice(0, 3), (w) => h('span', { lang: 'ja', class: 'kj-choice-word' }, w));
   } else if (type === 'typed') {
     $('q-label').textContent = 'Type the reading';
@@ -620,12 +656,13 @@ async function askWord(q, type) {
     typedInput(new Set([D.kataToHira(reading)]));
   } else if (type === 'writing') {
     const kanji = [...word].filter(D.isKanji);
-    const dets = await Promise.all(kanji.map((c) => D.detail(c)));
-    if (dets.some((d) => !d.s.length)) { skip(); return; }
     $('q-label').textContent = 'Write the word for…';
     prompt.textContent = meaning;
     prompt.classList.add('is-text');
     $('q-sub').textContent = reading;
+    const dets = await loading(Promise.all(kanji.map((c) => D.detail(c))));
+    if (!stillAsking(q)) return;
+    if (dets.some((d) => !d.s.length)) { skip(); return; }
     writing([...word], dets.map((d) => d.s));
   }
 }
@@ -920,8 +957,13 @@ let detailAnim = null;
 async function openDetail(c) {
   const inf = D.info(c);
   if (!inf) return;
-  const det = await D.detail(c);
   const body = $('detail-body');
+  // Open straight away; fill in once the kanji's file is loaded
+  if (detailAnim) { detailAnim.destroy(); detailAnim = null; }
+  body.replaceChildren(h('p', { class: 'kj-detail-char', lang: 'ja' }, c), h('p', { class: 'kj-loading' }, 'Loading…'));
+  $('detail-overlay').hidden = false;
+  const det = await D.detail(c);
+  if ($('detail-overlay').hidden) return;
   const tags = [
     D.setChars('joyo').includes(c) ? 'Jōyō' : D.setChars('jinmeiyo').includes(c) ? 'Jinmeiyō' : null,
     inf.jlpt ? `JLPT N${inf.jlpt}` : null,
