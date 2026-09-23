@@ -15,7 +15,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=M+PLUS+Rounded+1c:wght@400&family=Shippori+Mincho:wght@500&family=Klee+One:wght@600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="../../styles/base.css">
-  <link rel="stylesheet" href="../../styles/kana.css?v=14">
+  <link rel="stylesheet" href="../../styles/kana.css?v=15">
 </head>
 <body data-page="kana">
 
@@ -161,8 +161,9 @@
               <button class="btn-link" id="btn-export">Export progress</button>
               <button class="btn-link" id="btn-import">Import</button>
               <button class="btn-link kt-danger" id="btn-reset">Reset all data</button>
-              <input type="file" id="import-file" accept="application/json" hidden>
+              <input type="file" id="import-file" accept="application/json,.json" hidden>
             </div>
+            <p class="kt-backup" id="backup-status" aria-live="polite"></p>
           </div>
         </section>
       </section>
@@ -281,6 +282,6 @@
   </footer>
 
   <script src="../../scripts/site.js"></script>
-  <script type="module" src="../../scripts/kana/app.js?v=13"></script>
+  <script type="module" src="../../scripts/kana/app.js?v=14"></script>
 </body>
 </html>
