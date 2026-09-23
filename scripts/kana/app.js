@@ -1,7 +1,8 @@
 // app.js — UI orchestration for the Kana Trainer.
 import { KANA, BY_CHAR, STAGES, stageItems } from './data.js?v=12';
 import * as E from './engine.js?v=12';
-import * as S from './storage.js?v=12';
+import * as S from './storage.js?v=13';
+import { requestPersistence, backupStatus, describeBackup, storageWorks } from '../study-backup.js';
 
 const KT_VERSION = 12;
 console.info(`[Kana Trainer] v${KT_VERSION}`);
@@ -126,7 +127,37 @@ function renderDashboard() {
   renderGrid();
   renderTrouble();
   renderStats();
+  renderBackup();
 }
+
+// ---------------------------------------------------------------- backups
+// Is storage already protected from eviction? (Checking never prompts.)
+let persisted = false;
+if (navigator.storage && navigator.storage.persisted) {
+  navigator.storage.persisted().then((p) => { persisted = p; renderBackup(); }).catch(() => {});
+}
+
+function renderBackup() {
+  const el = $('backup-status');
+  if (!el) return;
+  const g = store.global;
+  const { text, nudge } = backupStatus({
+    lastExportAt: g.lastExportAt,
+    reviewsSince: g.reviewCount - (g.reviewsAtExport || 0),
+    persisted,
+  });
+  el.textContent = nudge ? `${text} Time for a backup: export your progress.` : text;
+  el.classList.toggle('is-nudge', nudge);
+}
+
+let saveWarned = false;
+function warnSaveFailed() {
+  if (saveWarned) return;
+  saveWarned = true;
+  toast('Progress can\'t be saved in this browser (private mode or storage full). Export it to keep it.', 'kt-toast-error');
+}
+window.addEventListener('study-save-failed', warnSaveFailed);
+if (!storageWorks()) setTimeout(warnSaveFailed, 800);
 
 function renderContinue() {
   const due = E.dueCount(store);
@@ -563,6 +594,11 @@ function showSummary() {
 
 function endSession() {
   S.save(store, { now: true });
+  // After real use, ask the browser to keep this data (Chrome/Safari decide
+  // silently; Firefox may ask once)
+  if (!persisted && store.global.reviewCount > 0) {
+    requestPersistence().then((p) => { persisted = p; renderBackup(); });
+  }
   session = null;
   $('summary-overlay').hidden = true;
   renderDashboard();
@@ -851,18 +887,29 @@ $('mastery-grid').addEventListener('click', (e) => {
   startSession('smart', rowPool(kana), `Row drill · ${kana.char}`);
 });
 
-$('btn-export').addEventListener('click', () => S.exportJSON(store));
+$('btn-export').addEventListener('click', () => {
+  S.exportJSON(store);
+  renderBackup();
+  toast('Backup downloaded. Keep the file somewhere safe.');
+});
 $('btn-import').addEventListener('click', () => $('import-file').click());
 $('import-file').addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
   try {
-    const merged = S.importJSON(await file.text());
-    Object.assign(store, merged);
-    toast('Progress imported.');
+    const backup = S.parseImport(await file.text());
+    const current = store.global.reviewCount || 0;
+    if (current > 0 && !confirm(
+      `Replace your current progress (${current} reviews) with ${describeBackup(backup)}?\n\n` +
+      'Tip: export your current progress first if you might want it back.')) {
+      e.target.value = '';
+      return;
+    }
+    Object.assign(store, S.commitImport(backup.store));
+    toast('Progress restored from backup.');
     renderDashboard();
   } catch (err) {
-    toast(`Import failed — ${err.message}`, 'kt-toast-error');
+    toast(`Import failed: ${escapeHTML(err.message)}`, 'kt-toast-error');
   }
   e.target.value = '';
 });

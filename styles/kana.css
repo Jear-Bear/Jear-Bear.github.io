@@ -556,3 +556,7 @@ body.kt-compact .kt-hint { display: none; }
   .kt-toasts { left: 16px; right: 16px; align-items: stretch; }
   .kt-toast { max-width: none; }
 }
+/* Backup status under the Data buttons */
+.kt-backup { flex-basis: 100%; margin: 0; font-size: 0.85rem; color: var(--muted); }
+.kt-backup.is-nudge { color: var(--ink); }
+.kt-backup.is-nudge::before { content: "● "; color: var(--page-color); }
