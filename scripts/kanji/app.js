@@ -7,7 +7,7 @@
 // =====================================================================
 
 import * as D from './data.js?v=2';
-import * as S from './storage.js?v=2';
+import * as S from './storage.js?v=3';
 import * as R from './srs.js?v=1';
 import { toHiragana, finalize } from './romaji.js?v=1';
 import { WritingPad, strokeAnimation, gradeWriting } from './writing.js?v=2';

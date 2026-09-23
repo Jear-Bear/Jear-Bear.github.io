@@ -1,0 +1,97 @@
+/* Nandoku Trainer — 藍色 ai-iro, indigo. Built on kanji.css (kj-* components). */
+:root {
+  --page-color: #165e83;
+  --page-color-soft: rgba(22, 94, 131, 0.10);
+  --nd-mincho: 'Nandoku Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', 'BIZ UDPMincho', 'MS PMincho', 'Noto Serif JP', serif;
+  --nd-paper: #fdfbf5;
+}
+
+.nd-mincho { font-family: var(--nd-mincho) !important; font-weight: 400; }
+
+/* ---------------------------------------------------------------- level progress */
+.nd-levels { display: flex; flex-direction: column; gap: 16px; max-width: 720px; }
+.nd-level-head { display: flex; justify-content: space-between; align-items: baseline; gap: 6px 16px; flex-wrap: wrap; margin-bottom: 6px; }
+.nd-level-name { font-family: 'Fraunces', serif; font-size: 1.15rem; color: var(--ink); }
+.nd-level-nums { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.nd-level-bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: var(--surface); border: 1px solid var(--border); }
+.nd-level-bar > span { min-width: 0; flex-basis: 0; }
+.nd-level-bar > .m4 { min-width: 3px; }
+.nd-level-bar > .nd-rest { background: transparent; }
+
+/* ---------------------------------------------------------------- the word, game style */
+.nd-board {
+  position: relative; flex-shrink: 0; width: 100%; max-width: 560px;
+  padding: clamp(18px, calc(var(--vvh, 100vh) * 0.035), 34px) 20px;
+  background: var(--nd-paper); border: 1px solid var(--border); border-radius: 16px;
+  box-shadow: var(--shadow-sm), inset 0 0 0 5px var(--nd-paper), inset 0 0 0 6px color-mix(in srgb, var(--page-color) 22%, transparent);
+  overflow: hidden;
+}
+.nd-term {
+  font-family: var(--nd-mincho); font-weight: 400; color: var(--ink); line-height: 1.15;
+  font-size: min(clamp(64px, calc(var(--vvh, 100vh) * 0.15), 132px), 26vw);
+  overflow-wrap: anywhere; transition: opacity .15s;
+}
+.nd-term[data-len="3"] { font-size: min(clamp(56px, calc(var(--vvh, 100vh) * 0.13), 116px), 22vw); }
+.nd-term[data-len="4"] { font-size: min(clamp(48px, calc(var(--vvh, 100vh) * 0.11), 100px), 18vw); }
+.nd-term[data-len="5"] { font-size: min(clamp(42px, calc(var(--vvh, 100vh) * 0.095), 88px), 14.5vw); }
+.nd-term[data-len="6"] { font-size: min(clamp(38px, calc(var(--vvh, 100vh) * 0.085), 76px), 12.5vw); }
+.nd-term[data-len="7"], .nd-term[data-len="8"] { font-size: min(clamp(34px, calc(var(--vvh, 100vh) * 0.075), 64px), 10.5vw); }
+.nd-term.is-loading { opacity: 0; }
+
+/* challenge timer: a thin bar across the top of the board */
+.nd-timer { position: absolute; left: 0; right: 0; top: 0; height: 5px; background: var(--page-color-soft); }
+.nd-timer > div { height: 100%; width: 100%; background: var(--page-color); }
+.nd-timer > div.is-low { background: var(--kj-no); }
+
+.nd-lives { color: var(--kj-no); letter-spacing: 2px; }
+.nd-streak { color: var(--page-color); font-weight: 500; }
+.nd-streak:empty { display: none; }
+
+/* ---------------------------------------------------------------- answering */
+.nd-typed { max-width: 460px; }
+.nd-field { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; }
+.nd-affix { font-size: 1.6rem; color: var(--ink-soft); flex-shrink: 0; }
+.nd-affix-note { margin: -4px 0 0; }
+.nd-giveup { font-size: 14px; color: var(--muted) !important; }
+.nd-choices { grid-template-columns: 1fr; max-width: 560px; }
+.nd-choices .kj-choice { font-family: 'Noto Sans JP', sans-serif; font-size: 0.98rem; line-height: 1.5; }
+
+/* ---------------------------------------------------------------- answer card */
+.nd-answer {
+  width: 100%; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+}
+.nd-answer-term { font-size: 1.9rem; line-height: 1.2; color: var(--ink); background: none; border: 0; padding: 0; cursor: pointer; }
+.nd-answer-reading { margin: 0; font: 500 1.2rem 'Noto Sans JP', sans-serif; color: var(--page-color); }
+.nd-answer-meaning { margin: 2px 0 0; font: 400 0.98rem/1.55 'Noto Sans JP', sans-serif; color: var(--ink); max-width: 40ch; }
+.nd-answer-note { margin: 0; font: 400 0.85rem/1.5 'Noto Sans JP', sans-serif; color: var(--muted); max-width: 44ch; }
+.nd-answer-vars { margin: 2px 0 0; font-size: 0.85rem; color: var(--muted); }
+.nd-answer-vars .nd-mincho { font-size: 1.1rem; color: var(--ink-soft); }
+.nd-override { margin: 0; font-size: 0.9rem; color: var(--muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.nd-override .btn-link { min-height: 36px; padding: 6px 0; font-size: 0.9rem; }
+.nd-override .btn-link::after { bottom: 6px; }
+
+/* ---------------------------------------------------------------- detail + dashboard */
+#detail-overlay { z-index: 250; }   /* opens over the session summary */
+.nd-detail-term { font-size: clamp(3rem, 12vw, 4.6rem); line-height: 1.15; color: var(--ink); margin: 0; overflow-wrap: anywhere; }
+.nd-detail-vars { font-size: 1.6rem; line-height: 1.5; color: var(--ink); margin: 0; overflow-wrap: anywhere; }
+#detail-body { display: flex; flex-direction: column; gap: 10px; }
+#detail-body .eyebrow { margin-bottom: 0; align-self: flex-start; margin-right: 44px; }
+.nd .kj-trouble-item, .kj-summary .kj-trouble-item { font-size: 1.25rem; }
+.nd #level-picker { margin-bottom: 4px; }
+
+/* ---------------------------------------------------------------- compact (keyboard open) */
+body.kj-compact .nd-board { padding: 12px 14px; }
+body.kj-compact .nd-term { font-size: min(clamp(40px, 16vw, 96px), calc(var(--vvh, 100vh) * 0.13)); }
+body.kj-compact .nd-term[data-len="5"], body.kj-compact .nd-term[data-len="6"],
+body.kj-compact .nd-term[data-len="7"], body.kj-compact .nd-term[data-len="8"] { font-size: min(11vw, calc(var(--vvh, 100vh) * 0.09)); }
+body.kj-compact .nd-affix-note { display: none; }
+body.kj-compact .nd-answer { padding: 8px 12px; }
+body.kj-compact .nd-answer-term { font-size: 1.5rem; }
+body.kj-compact .nd-answer-note { display: none; }
+
+@media (max-width: 640px) {
+  .nd-choices { grid-template-columns: 1fr; }
+  .nd-affix { font-size: 1.3rem; }
+}
+.nd-typed-was { color: var(--ink); }
