@@ -1,6 +1,7 @@
-# Refreshes data/sponsorships/stats.public.json from the YouTube Data and
-# Analytics APIs. Commits only when the data changed. If any API call fails
-# the script exits before writing, so the last good file stays live.
+# Refreshes data/sponsorships/stats.public.json (public page) and
+# stats.private.enc.json (encrypted sponsor dashboard) from the YouTube Data
+# and Analytics APIs. Commits only when the data changed. If any API call
+# fails the script exits before writing, so the last good files stay live.
 # Setup: docs/sponsor-stats-setup.md
 name: Sponsor stats
 
@@ -32,16 +33,18 @@ jobs:
           YT_OAUTH_CLIENT_ID: ${{ secrets.YT_OAUTH_CLIENT_ID }}
           YT_OAUTH_CLIENT_SECRET: ${{ secrets.YT_OAUTH_CLIENT_SECRET }}
           YT_OAUTH_REFRESH_TOKEN: ${{ secrets.YT_OAUTH_REFRESH_TOKEN }}
+          DASHBOARD_PASSWORD: ${{ secrets.DASHBOARD_PASSWORD }}
 
       - name: Commit if changed
         run: |
-          if git diff --quiet -- data/sponsorships/stats.public.json; then
+          git add data/sponsorships/stats.public.json
+          git add data/sponsorships/stats.private.enc.json 2>/dev/null || true
+          if git diff --cached --quiet; then
             echo "No changes to commit."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/sponsorships/stats.public.json
           git commit -m "Update sponsor stats"
           git pull --rebase origin "${GITHUB_REF_NAME}"
           git push origin "HEAD:${GITHUB_REF_NAME}"

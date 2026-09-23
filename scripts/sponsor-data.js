@@ -3,9 +3,10 @@
 //
 // Loads data/sponsorships/stats.public.json (written daily by the
 // sponsor-stats Action), applies data/sponsorships/overrides.json (manual
-// values win), and exposes formatting helpers. The public page and the
-// About counter use it today; a future sponsor dashboard can call
-// SponsorData.load({ statsUrl }) with a private stats file instead.
+// values win), and exposes formatting helpers. The public page, the About
+// counter and the sponsor dashboard use it. The dashboard also calls
+// SponsorData.loadPrivate(password), which decrypts stats.private.enc.json
+// in the browser (PBKDF2-SHA256 → AES-256-GCM, written by the Action).
 //
 // Every metric is { value, unit, label, period: { start, end, display },
 // source, asOf }.
@@ -70,6 +71,38 @@ window.SponsorData = (function () {
     return { stats: applyOverrides(stats, overrides), content };
   }
 
+  // --- Encrypted dashboard data ---------------------------------------------
+  const unb64 = (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0));
+
+  async function decrypt(file, password) {
+    if (!file || file.format !== 'jareddesu-sponsor-dashboard' || file.version !== 1) {
+      throw new Error('Unrecognized dashboard file');
+    }
+    const { subtle } = window.crypto;
+    const base = await subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']);
+    const key = await subtle.deriveKey(
+      { name: 'PBKDF2', hash: file.kdf.hash, salt: unb64(file.kdf.salt), iterations: file.kdf.iterations },
+      base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']
+    );
+    let plain;
+    try {
+      plain = await subtle.decrypt({ name: 'AES-GCM', iv: unb64(file.cipher.iv) }, key, unb64(file.ciphertext));
+    } catch (err) {
+      const wrong = new Error('Wrong password');
+      wrong.code = 'WRONG_PASSWORD';
+      throw wrong;
+    }
+    return JSON.parse(new TextDecoder().decode(plain));
+  }
+
+  // Resolves to the decrypted private stats, or null if no file exists yet
+  async function loadPrivate(password, url = BASE + 'stats.private.enc.json') {
+    const res = await fetch(url, { cache: 'no-cache' });
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error(`${url}: ${res.status}`);
+    return decrypt(await res.json(), password);
+  }
+
   // --- Formatting -------------------------------------------------------
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -120,10 +153,15 @@ window.SponsorData = (function () {
     switch (metric.unit) {
       case 'percent': return `${Math.round(v * 100)}%`;
       case 'hours': return `${compact.format(v)} hrs`;
+      case 'seconds': {
+        const m = Math.floor(v / 60);
+        const sec = Math.round(v % 60);
+        return m ? `${m}m ${String(sec).padStart(2, '0')}s` : `${sec}s`;
+      }
       case 'text': return String(v);
       default: return typeof v === 'number' ? compact.format(v) : String(v);
     }
   }
 
-  return { load, applyOverrides, hasValue, formatValue, formatPeriod, formatDate, formatRange };
+  return { load, loadPrivate, decrypt, applyOverrides, hasValue, formatValue, formatPeriod, formatDate, formatRange };
 })();
