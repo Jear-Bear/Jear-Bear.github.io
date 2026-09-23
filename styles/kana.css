@@ -297,10 +297,11 @@ body.kt-focus .container.kt {
   height: var(--vvh, 100%);
   display: flex;
   flex-direction: column;
-  padding: max(10px, env(safe-area-inset-top)) 20px env(safe-area-inset-bottom);
+  padding: max(10px, env(safe-area-inset-top)) 20px max(12px, env(safe-area-inset-bottom));
   overflow: hidden;
   overscroll-behavior: none;
   touch-action: manipulation;
+  gap: 4px;
 }
 
 .kt-hud {
@@ -342,7 +343,7 @@ body.kt-focus .container.kt {
 
 .kt-stage-progress {
   flex-shrink: 0;
-  text-align: center; color: var(--muted); font-size: 0.9rem; margin-top: 16px;
+  text-align: center; color: var(--muted); font-size: 0.9rem; margin-top: 6px;
 }
 
 .kt-card-zone {
@@ -351,7 +352,8 @@ body.kt-focus .container.kt {
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   text-align: center;
-  padding: 0 8px;
+  padding: clamp(8px, 3vh, 32px) 8px;
+  gap: clamp(8px, 2.5vh, 22px);
 }
 .kt-speedbar {
   width: 100%; height: 3px; border-radius: 999px;
@@ -362,12 +364,13 @@ body.kt-focus .container.kt {
 @keyframes kt-drain { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 
 .kt-kana {
-  font-size: min(clamp(84px, 22vw, 160px), calc(var(--vvh, 100vh) * 0.26));
+  font-size: min(clamp(72px, 20vw, 150px), calc(var(--vvh, 100vh) * 0.22));
   line-height: 1.1;
   color: var(--ink);
   font-family: 'Noto Sans JP', sans-serif;
   user-select: none;
   transition: color .25s;
+  flex-shrink: 0;
 }
 .kt-kana.enter { animation: kt-enter .18s ease-out; }
 @keyframes kt-enter {
@@ -383,11 +386,12 @@ body.kt-focus .container.kt {
 }
 
 .kt-feedback {
-  min-height: 2.2em; margin: 14px 0 6px;
+  min-height: 2.2em; margin: 0;
   font-size: 1rem; color: var(--muted);
   opacity: 0; transform: translateY(-4px);
   transition: opacity .18s, transform .18s;
   display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; align-items: baseline;
+  flex-shrink: 0;
 }
 .kt-feedback.show { opacity: 1; transform: none; }
 .kt-feedback .ok { color: var(--kt-ok); font-weight: 500; }
