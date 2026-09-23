@@ -28,12 +28,15 @@ Outputs:
 
 terms.json:
     { "levels": { "05": 1700, … },
-      "terms": [[id, term, reading, ask, pre, suf, alts, vars, meaning, note, level], …] }
+      "terms": [[id, term, reading, ask, pre, suf, alts, vars, meaning, note, level, of], …] }
     reading   the reading as listed (may contain kanji: 'あくる日')
     ask       the part that is typed (kana); pre/suf are fixed text shown around
               the answer box, e.g. '[あくる]日'
     alts      other accepted answers (別解), same shape as ask
     vars      other spellings of the term (別表記)
+    level     '05'…'07', or 'alt' for the 別表記 set: every other spelling as its own
+              question, with the reading and meaning of the word it spells
+    of        for 'alt' questions, the id of that word ('' otherwise)
 """
 
 import argparse
@@ -121,6 +124,37 @@ for path in args.terms:
                       info.get('意味', ''), info.get('追記', ''), level])
         levels[level] += 1
 
+# ---------------------------------------------------------------- 別表記 set
+# Every other spelling becomes its own question. Skipped: spellings that are
+# already a main word, have no kanji, or are descriptions ('⿰虫𢏣', '[⿱寸寸]…').
+DESCRIPTION = re.compile(r'[\u2ff0-\u2fff\[\]{}<>?]')
+main_terms = {t[1] for t in terms}
+alt_rows = {}
+for t in terms:
+    tid, term, reading, ask, pre, suf, alts, vars_, meaning, note, level = t
+    t.append('')
+    for j, v in enumerate(vars_):
+        if v in main_terms or DESCRIPTION.search(v) or not HAS_KANJI.search(v):
+            continue
+        vpre, vask, vsuf = split_reading(v, reading)
+        if not is_kana(vask):
+            continue
+        vpre2, vsuf2 = vpre, vsuf
+        answers = [vask] + [a for a in alts]
+        if v in alt_rows:
+            # the same spelling of another word: accept its readings too
+            row = alt_rows[v]
+            if (row[4], row[5]) == (vpre, vsuf):
+                for a in answers:
+                    if a != row[3] and a not in row[6]:
+                        row[6].append(a)
+            continue
+        others = [term] + [x for x in vars_ if x != v]
+        alt_rows[v] = [f'{tid}_v{j + 1}', v, vpre + vask + vsuf, vask, vpre, vsuf, list(alts), others,
+                       meaning, note, 'alt', tid]
+terms.extend(alt_rows.values())
+levels['alt'] = len(alt_rows)
+
 ids = Counter(t[0] for t in terms)
 assert all(v == 1 for v in ids.values()), [k for k, v in ids.items() if v > 1]
 
@@ -147,8 +181,8 @@ for name in ('Jigmo.ttf', 'Jigmo2.ttf', 'Jigmo3.ttf'):
     p = os.path.join(args.jigmo, name)
     jigmo.append((p, TTFont(p, lazy=True).getBestCmap()))
 
-# Characters in order of first use: main terms level by level, then the other
-# spellings (only shown on the answer card). Variation selectors are left out:
+# Characters in order of first use: the questions set by set, then any other
+# spellings that aren't questions themselves (shown on the answer card). Variation selectors are left out:
 # the pop face has one form per character.
 order, seen, uses = [], set(), Counter()
 for pass_ in ('main', 'vars'):
@@ -158,7 +192,8 @@ for pass_ in ('main', 'vars'):
                 cp = ord(c)
                 if cp in VS or cp < 0x80:
                     continue
-                uses[cp] += 1
+                if pass_ == 'main':
+                    uses[cp] += 1
                 if cp not in seen:
                     seen.add(cp)
                     order.append(cp)

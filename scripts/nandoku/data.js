@@ -1,6 +1,6 @@
 // data.js — Nandoku Trainer word data and answer checking.
 //
-// terms.json rows: [id, term, reading, ask, pre, suf, alts, vars, meaning, note, level]
+// terms.json rows: [id, term, reading, ask, pre, suf, alts, vars, meaning, note, level, of]
 // (see scripts/nandoku/build-data.py)
 
 let levels = {};
@@ -8,7 +8,7 @@ let byId = new Map();
 let byLevel = new Map();
 
 export async function load() {
-  const res = await fetch('../../data/nandoku/terms.json?v=1');
+  const res = await fetch('../../data/nandoku/terms.json?v=2');
   if (!res.ok) throw new Error(`terms.json: ${res.status}`);
   const data = await res.json();
   levels = data.levels;
@@ -17,7 +17,7 @@ export async function load() {
   for (const r of data.terms) {
     const t = {
       id: r[0], term: r[1], reading: r[2], ask: r[3], pre: r[4], suf: r[5],
-      alts: r[6], vars: r[7], meaning: r[8], note: r[9], level: r[10],
+      alts: r[6], vars: r[7], meaning: r[8], note: r[9], level: r[10], of: r[11] || '',
     };
     byId.set(t.id, t);
     if (!byLevel.has(t.level)) byLevel.set(t.level, []);
@@ -29,7 +29,8 @@ export const levelList = () => Object.keys(levels).sort();
 export const levelCount = (lv) => levels[lv] || 0;
 export const get = (id) => byId.get(id);
 export const inLevel = (lv) => byLevel.get(lv) || [];
-export const levelName = (lv) => `Level ${Number(lv)}`;
+// 'alt' is the 別表記 set: other spellings of the level 5–7 words
+export const levelName = (lv) => (lv === 'alt' ? '別表記' : `Level ${Number(lv)}`);
 
 // ---------------------------------------------------------------- answers
 export const kataToHira = (s) => s.replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));

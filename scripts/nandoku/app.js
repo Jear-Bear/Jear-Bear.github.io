@@ -7,7 +7,7 @@
 // scores). All text from the data is inserted as text, never HTML.
 // =====================================================================
 
-import * as D from './data.js?v=1';
+import * as D from './data.js?v=2';
 import * as S from './storage.js?v=1';
 import * as R from '../kanji/srs.js?v=1';
 import { toHiragana, finalize } from '../kanji/romaji.js?v=1';
@@ -762,12 +762,15 @@ function openDetail(id) {
   const progress = ['reading', 'meaning'].map((sk) => h('li', null, h('span', null, sk),
     h('span', null, c[sk] ? `${c[sk].right} right · ${c[sk].wrong} missed · ${when(c[sk].due)}` : 'not started')));
   $('detail-body').replaceChildren(...[
-    h('p', { class: 'eyebrow' }, `${D.levelName(t.level)} · ${t.id.replace('_', ' #')}`),
+    h('p', { class: 'eyebrow' }, t.of ? `別表記 · ${t.of.replace('_', ' #')}` : `${D.levelName(t.level)} · ${t.id.replace('_', ' #')}`),
     h('p', { class: 'nd-detail-term nd-pop', id: 'detail-term', lang: 'ja' }, t.term),
     h('p', { class: 'nd-answer-reading', lang: 'ja' }, D.readingsText(t)),
     h('p', { class: 'nd-answer-meaning', lang: 'ja' }, t.meaning),
     t.note ? h('p', { class: 'nd-answer-note', lang: 'ja' }, t.note) : null,
-    t.vars.length ? h('div', null, h('p', { class: 'kj-opt-label' }, 'Also written'),
+    t.of && D.get(t.of) ? h('p', { class: 'kj-help nd-of' }, 'Another spelling of ',
+      h('button', { class: 'btn-link nd-pop', lang: 'ja', onclick: () => openDetail(t.of) }, D.get(t.of).term),
+      ` (${D.levelName(D.get(t.of).level)}).`) : null,
+    t.vars.length ? h('div', null, h('p', { class: 'kj-opt-label' }, t.of ? 'Main spelling and others' : 'Also written'),
       h('p', { class: 'nd-detail-vars nd-pop', lang: 'ja' }, t.vars.join('　'))) : null,
     h('div', null, h('p', { class: 'kj-opt-label' }, 'Your progress'), h('ul', { class: 'kj-progress' }, progress))].filter(Boolean));
   $('detail-overlay').hidden = false;
