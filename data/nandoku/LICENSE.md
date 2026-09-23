@@ -16,7 +16,9 @@ to their creators.
 Changes: four readings with a scraping glitch were corrected
 (躪り書き, 鬨の声, 犂牛の喩え, 亥豕の譌), 24 words the game shows only as images
 (characters Unicode doesn't have) were left out, and placeholder spellings
-such as `<6文字指定>` were dropped.
+such as `<6文字指定>` were dropped. The 別表記 set turns each other spelling
+into its own question with the reading and meaning of the word it spells
+(spellings that are descriptions, like `⿰虫𢏣`, are left out).
 
 ## Font (`fonts/`)
 
