@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-23T21:26:26.236Z",
+  "generatedAt": "2026-09-23T21:40:31.854Z",
   "generatedBy": "sponsor-stats-action",
   "channel": {
     "id": "UCSIxTP9PCM2kcTszONRxZ1w",
@@ -312,7 +312,7 @@
       "publishedAt": "2026-08-28T12:30:05Z",
       "metrics": {
         "views": {
-          "value": 21571,
+          "value": 21570,
           "unit": "count",
           "label": "Views",
           "period": {
@@ -404,7 +404,7 @@
       "publishedAt": "2025-04-18T14:01:10Z",
       "metrics": {
         "views": {
-          "value": 62960,
+          "value": 62965,
           "unit": "count",
           "label": "Views",
           "period": {
@@ -720,7 +720,7 @@
       "publishedAt": "2025-10-17T13:30:41Z",
       "metrics": {
         "views": {
-          "value": 57777,
+          "value": 57776,
           "unit": "count",
           "label": "Views",
           "period": {
@@ -878,7 +878,7 @@
       "publishedAt": "2025-03-30T14:00:30Z",
       "metrics": {
         "views": {
-          "value": 45746,
+          "value": 45737,
           "unit": "count",
           "label": "Views",
           "period": {
@@ -890,7 +890,7 @@
           "asOf": "2026-09-23"
         },
         "likes": {
-          "value": 2408,
+          "value": 2407,
           "unit": "count",
           "label": "Likes",
           "period": {
@@ -1036,7 +1036,7 @@
       "publishedAt": "2026-01-31T14:00:48Z",
       "metrics": {
         "views": {
-          "value": 16482,
+          "value": 16481,
           "unit": "count",
           "label": "Views",
           "period": {
@@ -1194,7 +1194,7 @@
       "publishedAt": "2025-09-19T14:01:21Z",
       "metrics": {
         "views": {
-          "value": 32459,
+          "value": 32458,
           "unit": "count",
           "label": "Views",
           "period": {
@@ -1423,7 +1423,7 @@
       "publishedAt": "2025-11-21T13:30:20Z",
       "metrics": {
         "views": {
-          "value": 58795,
+          "value": 58792,
           "unit": "count",
           "label": "Views",
           "period": {
@@ -1851,7 +1851,7 @@
       "publishedAt": "2026-09-12T13:00:27Z",
       "metrics": {
         "views": {
-          "value": 1930,
+          "value": 1932,
           "unit": "count",
           "label": "Views",
           "period": {
