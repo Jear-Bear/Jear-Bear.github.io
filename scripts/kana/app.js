@@ -1,13 +1,23 @@
 // app.js — UI orchestration for the Kana Trainer.
-import { KANA, BY_CHAR, STAGES, stageItems } from './data.js?v=11';
-import * as E from './engine.js?v=11';
-import * as S from './storage.js?v=11';
+import { KANA, BY_CHAR, STAGES, stageItems } from './data.js?v=12';
+import * as E from './engine.js?v=12';
+import * as S from './storage.js?v=12';
 
-const KT_VERSION = 11;
+const KT_VERSION = 12;
 console.info(`[Kana Trainer] v${KT_VERSION}`);
 
 const $ = (id) => document.getElementById(id);
 const store = S.load();
+
+// Haptics — a short buzz on submit. Mobile only (the Vibration API is a no-op
+// or absent on desktop), gated behind a persisted, mobile-only setting.
+const IS_TOUCH = (('ontouchstart' in window) || navigator.maxTouchPoints > 0) &&
+  /iphone|ipad|ipod|android|mobile/i.test(navigator.userAgent);
+const CAN_VIBRATE = typeof navigator.vibrate === 'function'; // absent on iOS Safari
+function buzz(correct) {
+  if (!store.settings.haptics || !IS_TOUCH) return;
+  if (CAN_VIBRATE) navigator.vibrate(correct ? 18 : [22, 40, 22]); // 1 pulse vs 2
+}
 S.flushOnHide(store);
 
 // ---------------------------------------------------------------- state
@@ -389,6 +399,7 @@ function submitAnswer() {
     session.correct++;
     session.combo++;
     session.bestCombo = Math.max(session.bestCombo, session.combo);
+    buzz(true);
     if (session.finite) {
       session.queue = session.queue.filter((c) => c !== kana.char);
       session.cleared++;
@@ -405,6 +416,7 @@ function submitAnswer() {
     }, 380);
   } else {
     session.combo = 0;
+    buzz(false);
     // finite session: re-queue a missed kana so it comes back — but cap how
     // many times, so a persistently-missed card can't make the session endless.
     if (session.finite) {
@@ -769,6 +781,20 @@ wire('opt-fonts', (el) => {
     S.save(store);
   });
 });
+
+// Haptics toggle: only shown on mobile devices; persisted like every setting.
+if (IS_TOUCH) {
+  const wrap = $('opt-haptics-wrap');
+  if (wrap) wrap.hidden = false;
+  wire('opt-haptics', (el) => {
+    el.checked = store.settings.haptics !== false;
+    el.addEventListener('change', (e) => {
+      store.settings.haptics = e.target.checked;
+      S.save(store);
+      if (e.target.checked) buzz(true); // let them feel it
+    });
+  });
+}
 
 wire('opt-auto', (el) => {
   el.checked = store.settings.autoSubmit !== false;
