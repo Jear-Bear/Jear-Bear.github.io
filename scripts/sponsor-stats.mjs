@@ -356,6 +356,10 @@ async function buildPrivate(token, featured, video90, generatedAt) {
     ...range90, metrics: 'viewerPercentage', dimensions: 'ageGroup,gender',
   });
 
+  // Only counts go to the (public) Action log, never the percentages
+  console.warn(`Demographics: ${new Set(demo.map((r) => r.ageGroup)).size} age groups × ` +
+    `${new Set(demo.map((r) => r.gender)).size} genders (${demo.length} rows)`);
+
   const sumBy = (rows, key) => {
     const out = {};
     rows.forEach((r) => { out[r[key]] = (out[r[key]] || 0) + r.viewerPercentage; });
@@ -378,6 +382,13 @@ async function buildPrivate(token, featured, video90, generatedAt) {
       'Viewers by age', last90, ANALYTICS_API),
     genders: metric(sumBy(demo, 'gender').sort((a, b) => b.share - a.share), 'share-list',
       'Viewers by gender', last90, ANALYTICS_API),
+    // Cross-tab for the age × gender chart: share of all viewers per cell
+    ageGender: metric(
+      demo
+        .filter((r) => r.viewerPercentage > 0)
+        .map((r) => ({ age: String(r.ageGroup), gender: String(r.gender), share: Math.round(r.viewerPercentage * 10) / 1000 }))
+        .sort((a, b) => a.age.localeCompare(b.age) || a.gender.localeCompare(b.gender)),
+      'age-gender-list', 'Viewers by age and gender', last90, ANALYTICS_API),
   };
 
   const videos = {};
