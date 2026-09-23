@@ -214,7 +214,21 @@ async function build({ includePrivate }) {
     ...range28, metrics: 'views', dimensions: 'creatorContentType',
   });
   if (!byType.length && totals.views > 0) throw new Error('analytics content types: no rows');
-  const typeViews = (t) => byType.filter((r) => r.creatorContentType === t).reduce((s, r) => s + r.views, 0);
+  // Match content types loosely (API casing/naming varies) and log what came back
+  console.log(`Content types: ${byType.map((r) => `${r.creatorContentType}=${r.views}`).join(', ') || 'none'}`);
+  const norm = (v) => String(v).toLowerCase().replace(/[^a-z]/g, '');
+  const typeViews = (aliases) => byType
+    .filter((r) => aliases.includes(norm(r.creatorContentType)))
+    .reduce((s, r) => s + r.views, 0);
+  const LONG_FORM = ['videoondemand', 'longform', 'longformcontent', 'vod'];
+  const SHORTS = ['shorts', 'short', 'shortform'];
+  const LIVE = ['livestream', 'live'];
+  // If none of the returned types is recognized, leave these metrics out
+  // rather than publish zeros
+  const typesKnown = typeViews([...LONG_FORM, ...SHORTS, ...LIVE]) > 0;
+  if (!typesKnown && totals.views > 0) {
+    console.warn('No recognized content types; omitting long-form/Shorts/live views this run.');
+  }
 
   const countries = await report('countries', token, {
     ...range28, metrics: 'views', dimensions: 'country', sort: '-views', maxResults: '250',
@@ -242,9 +256,6 @@ async function build({ includePrivate }) {
     subscribers: metric(int(s.subscriberCount), 'count', 'Subscribers', period(null, RUN_DATE), DATA_API),
     totalViews: metric(int(s.viewCount), 'count', 'Total channel views', lifetime(null), DATA_API),
     videoCount: metric(int(s.videoCount), 'count', 'Public videos', period(null, RUN_DATE), DATA_API),
-    longFormViews: metric(typeViews('VIDEO_ON_DEMAND'), 'count', 'Long-form views', last28, ANALYTICS_API),
-    shortsViews: metric(typeViews('SHORTS'), 'count', 'Shorts views', last28, ANALYTICS_API),
-    liveViews: metric(typeViews('LIVE_STREAM'), 'count', 'Live views', last28, ANALYTICS_API),
     viewsAllFormats: metric(totals.views, 'count', 'Views, all formats', last28, ANALYTICS_API),
     watchTimeHours: metric(Math.round(totals.estimatedMinutesWatched / 60), 'hours', 'Watch time', last28, ANALYTICS_API),
     subscribersGained: metric(totals.subscribersGained, 'count', 'Subscribers gained', last28, ANALYTICS_API),
@@ -255,6 +266,11 @@ async function build({ includePrivate }) {
     englishSpeakingShare: metric(Math.round(englishShare * 1000) / 1000, 'percent',
       'Views from the US, UK, Canada & Australia', last28, ANALYTICS_API),
   };
+  if (typesKnown) {
+    metrics.longFormViews = metric(typeViews(LONG_FORM), 'count', 'Long-form views', last28, ANALYTICS_API);
+    metrics.shortsViews = metric(typeViews(SHORTS), 'count', 'Shorts views', last28, ANALYTICS_API);
+    metrics.liveViews = metric(typeViews(LIVE), 'count', 'Live views', last28, ANALYTICS_API);
+  }
 
   const videos = {};
   videoItems.forEach((v) => {
