@@ -32,6 +32,18 @@ const TOOLS = [
     thumb: 'thumb.svg',
   },
   {
+    slug: 'nandoku',
+    title: 'Nandoku Trainer',
+    description:
+      'The rare-kanji words from 漢字でGO! (levels 5–7), shown the way the ' +
+      'game shows them. Type the reading, pick the meaning, or play a timed ' +
+      'challenge run for a high score.',
+    tags: ['kanji', 'readings', '漢字でGO!'],
+    glyph: '難',
+    accent: '#165e83',
+    thumb: 'thumb.svg',
+  },
+  {
     slug: 'jis',
     title: 'JIS Grind',
     description:
