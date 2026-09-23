@@ -5,7 +5,6 @@
 // --- Scroll reveal -----------------------------------------------------
 (function initReveal() {
   const reveals = document.querySelectorAll('.reveal, .reveal-bounce');
-  if (!reveals.length) return;
 
   const observer = new IntersectionObserver(
     (entries) => {
@@ -20,6 +19,15 @@
   );
 
   reveals.forEach((el) => observer.observe(el));
+
+  // For content rendered after load (e.g. from JSON): observe any
+  // .reveal / .reveal-bounce elements inside `root`
+  window.observeReveal = function (root) {
+    const els = root.matches && root.matches('.reveal, .reveal-bounce')
+      ? [root]
+      : root.querySelectorAll('.reveal, .reveal-bounce');
+    els.forEach((el) => observer.observe(el));
+  };
 })();
 
 // --- Mobile nav --------------------------------------------------------

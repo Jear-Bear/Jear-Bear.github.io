@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sponsor dashboard · まだまだJared</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="referrer" content="no-referrer" />
+
+  <link rel="icon" href="../../images/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,30..100;1,9..144,300..700,30..100&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500&text=%E3%81%BE%E3%81%A0&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../../styles/base.css">
+  <link rel="stylesheet" href="../../styles/sponsorships.css">
+  <link rel="stylesheet" href="../../styles/dashboard.css">
+</head>
+<body data-page="sponsor-dashboard">
+
+  <nav class="navbar">
+    <a href="../../" class="nav-logo">
+      <span class="nav-logo-mark"></span>
+      <span>jared</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="../../about/">About</a></li>
+      <li><a href="../../projects/">Projects</a></li>
+      <li><a href="../../tools/">Tools</a></li>
+      <li><a href="../../blog/">Blog</a></li>
+      <li><a href="../../sponsorships/" class="active">Sponsorships</a></li>
+      <li><a href="../../contact/">Contact</a></li>
+    </ul>
+    <button class="nav-burger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+  <ul class="nav-mobile">
+    <li><a href="../../about/">About</a></li>
+    <li><a href="../../projects/">Projects</a></li>
+    <li><a href="../../tools/">Tools</a></li>
+    <li><a href="../../blog/">Blog</a></li>
+    <li><a href="../../sponsorships/">Sponsorships</a></li>
+    <li><a href="../../contact/">Contact</a></li>
+  </ul>
+
+  <main>
+    <div class="container">
+
+      <!-- Password gate: the data file is encrypted; the password decrypts it here -->
+      <section class="gate" id="gate">
+        <p class="eyebrow">sponsor dashboard</p>
+        <h1 class="gate-title">Channel analytics for partners.</h1>
+        <p class="gate-intro">
+          Detailed audience and performance numbers for まだまだJared, shared with sponsors.
+          Need access? Email <a href="mailto:Jared@jareddesu.com" class="inline-link">Jared@jareddesu.com</a>.
+        </p>
+
+        <form class="gate-form" id="gate-form" autocomplete="on">
+          <!-- Lets password managers save the entry -->
+          <input type="text" name="username" value="sponsor" autocomplete="username" hidden />
+          <label>
+            <span class="form-label">Password</span>
+            <input type="password" name="password" id="gate-password" autocomplete="current-password" required />
+          </label>
+          <button type="submit" class="btn btn-primary" id="gate-submit">
+            <span class="submit-text">Open dashboard</span>
+          </button>
+          <p class="form-meta" id="gate-status" role="status" aria-live="polite"></p>
+        </form>
+        <noscript><p class="gate-intro">The dashboard needs JavaScript to decrypt its data.</p></noscript>
+      </section>
+
+      <!-- Dashboard: filled in by dashboard.js after unlocking -->
+      <section class="dash" id="dash" hidden>
+        <header class="dash-header">
+          <div>
+            <p class="eyebrow">sponsor dashboard</p>
+            <h1 class="dash-title">まだまだJared, by the numbers.</h1>
+            <p class="data-note"><span class="data-dot" aria-hidden="true"></span><span id="dash-updated"></span></p>
+          </div>
+          <button type="button" class="btn-link" id="dash-lock">Lock <span class="arrow">→</span></button>
+        </header>
+
+        <div class="dash-block">
+          <div class="section-label"><span class="section-label-text">Overview</span></div>
+          <div class="stat-grid dash-stats" id="dash-overview"></div>
+        </div>
+
+        <div class="dash-block">
+          <div class="section-label"><span class="section-label-text">Audience</span></div>
+          <div class="dash-grid">
+            <div class="panel" data-bars="countries"></div>
+            <div class="panel" data-bars="ages"></div>
+            <div class="panel" data-bars="genders"></div>
+            <div class="panel" data-bars="subscribed"></div>
+          </div>
+        </div>
+
+        <div class="dash-block">
+          <div class="section-label"><span class="section-label-text">Discovery</span></div>
+          <div class="dash-grid">
+            <div class="panel" data-bars="traffic"></div>
+            <div class="panel" data-bars="devices"></div>
+          </div>
+        </div>
+
+        <div class="dash-block">
+          <div class="section-label"><span class="section-label-text">Featured videos</span></div>
+          <div class="panel">
+            <h3 class="panel-title">How the featured videos perform</h3>
+            <p class="panel-sub" id="video-period"></p>
+            <div class="table-wrap">
+              <table class="dash-table" id="video-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Video</th>
+                    <th scope="col">Views</th>
+                    <th scope="col">Watch time</th>
+                    <th scope="col">Avg. view</th>
+                    <th scope="col">Avg. % viewed</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <p class="dash-footnote">
+          From the YouTube Data and Analytics APIs, updated daily. Analytics periods end
+          3 days before each update because YouTube's data lags. Please keep these numbers
+          to yourself.
+        </p>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-baseline">
+      © 2026 Jared P. · <a href="../../sponsorships/">Sponsorships</a>
+    </div>
+  </footer>
+
+  <script src="../../scripts/site.js"></script>
+  <script src="../../scripts/sponsor-data.js"></script>
+  <script src="../../scripts/dashboard.js"></script>
+</body>
+</html>
