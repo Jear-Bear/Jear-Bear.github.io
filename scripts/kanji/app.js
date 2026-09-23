@@ -7,10 +7,10 @@
 // =====================================================================
 
 import * as D from './data.js?v=1';
-import * as S from './storage.js?v=1';
+import * as S from './storage.js?v=2';
 import * as R from './srs.js?v=1';
 import { toHiragana, finalize } from './romaji.js?v=1';
-import { WritingPad, strokeAnimation, gradeWriting } from './writing.js?v=1';
+import { WritingPad, strokeAnimation, gradeWriting } from './writing.js?v=2';
 import { parseFile, parseText } from './importer.js?v=1';
 import { requestPersistence, backupStatus, describeBackup, storageWorks, readFileText } from '../study-backup.js';
 
@@ -153,6 +153,11 @@ function renderOptions() {
   $('opt-size').value = String(settings.sessionSize);
   $('opt-auto').checked = settings.autoAdvance;
   $('opt-writing-level').hidden = !settings.questions.writing;
+  $('stroke-check-note').textContent = {
+    lenient: 'Rough shapes pass. Wrong direction or order is pointed out but still counts.',
+    standard: 'Shape and placement need to be close. Wrong direction or order counts as a miss.',
+    strict: 'Tighter placement and proportions. Wrong direction or order counts as a miss.',
+  }[settings.strokeCheck] || '';
   $('writing-level-note').textContent = {
     trace: 'The outline is shown. Draw over it in the right order.',
     guided: 'A blank square. After a miss, the next stroke is shown.',
@@ -665,10 +670,16 @@ function typedInput(accepted) {
     type: 'text', class: 'kj-typed-input', lang: 'ja', autocapitalize: 'off', autocorrect: 'off',
     spellcheck: 'false', placeholder: 'reading…', 'aria-label': 'Type the reading',
   });
-  input.addEventListener('input', () => {
+  // Convert romaji as you type, but never while a Japanese keyboard is still
+  // composing a character (rewriting the value then garbles the input)
+  let composing = false;
+  const convert = () => {
     const conv = toHiragana(input.value);
     if (conv !== input.value) input.value = conv;
-  });
+  };
+  input.addEventListener('compositionstart', () => { composing = true; });
+  input.addEventListener('compositionend', () => { composing = false; convert(); });
+  input.addEventListener('input', (e) => { if (!composing && !e.isComposing) convert(); });
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     if (current.answered) { advance(); return; }
@@ -700,6 +711,7 @@ function writing(chars, strokeSets) {
   const kanjiIdx = chars.map((c, i) => (D.isKanji(c) ? i : -1)).filter((i) => i >= 0);
   let k = 0;
   let totalMisses = 0;
+  let totalSlips = 0;
   let revealed = false;
   const drawSlots = () => {
     slots.replaceChildren(...chars.map((c, i) => h('span', {
@@ -710,20 +722,22 @@ function writing(chars, strokeSets) {
     drawSlots();
     pad = new WritingPad(holder, {
       level: settings.writingLevel,
+      checking: settings.strokeCheck,
       onFeedback: (msg, kind) => {
         const f = $('feedback');
         f.textContent = msg;
-        f.className = `kj-feedback${kind === 'miss' ? ' is-miss' : ''}`;
+        f.className = `kj-feedback${kind === 'miss' ? ' is-miss' : kind === 'note' ? ' is-hard' : ''}`;
       },
       onDone: (r) => {
         totalMisses += r.misses;
+        totalSlips += r.slips || 0;
         revealed = revealed || r.revealed;
         k++;
         if (k < kanjiIdx.length) { setTimeout(loadNext, 350); return; }
         drawSlots();
         tools.hidden = true;
         current.answered = true;
-        settle(gradeWriting({ misses: totalMisses, revealed }), { misses: totalMisses, revealed });
+        settle(gradeWriting({ misses: totalMisses, revealed }), { misses: totalMisses, revealed, slips: totalSlips });
       },
     });
     pad.load(strokeSets[k]);
@@ -755,6 +769,7 @@ function settle(result, extra = {}) {
   const f = $('feedback');
   if (current.type === 'writing') {
     f.textContent = extra.revealed ? 'Shown. You\'ll see it again soon.'
+      : result === 'good' && extra.slips ? `Counted, with ${extra.slips} direction/order slip${extra.slips === 1 ? '' : 's'}.`
       : result === 'good' ? 'Clean. Every stroke right.'
       : result === 'hard' ? `Done, with ${extra.misses} miss${extra.misses === 1 ? '' : 'es'}.`
       : 'Keep practicing this one.';

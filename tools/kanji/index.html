@@ -15,7 +15,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Klee+One:wght@600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="../../styles/base.css">
-  <link rel="stylesheet" href="../../styles/kanji.css?v=1">
+  <link rel="stylesheet" href="../../styles/kanji.css?v=2">
 </head>
 <body data-page="kanji">
 
@@ -116,6 +116,13 @@
                 <button role="radio" data-value="memory">From memory</button>
               </div>
               <p class="kj-opt-note" id="writing-level-note"></p>
+              <p class="kj-opt-label kj-opt-label-2" id="lbl-sc">Stroke checking</p>
+              <div class="kj-seg" role="radiogroup" aria-labelledby="lbl-sc" data-setting="strokeCheck">
+                <button role="radio" data-value="lenient">Lenient</button>
+                <button role="radio" data-value="standard">Standard</button>
+                <button role="radio" data-value="strict">Strict</button>
+              </div>
+              <p class="kj-opt-note" id="stroke-check-note"></p>
             </div>
             <div class="kj-opt kj-opt-row">
               <label class="kj-num-label">New per day
@@ -297,6 +304,6 @@
   </footer>
 
   <script src="../../scripts/site.js"></script>
-  <script type="module" src="../../scripts/kanji/app.js?v=1"></script>
+  <script type="module" src="../../scripts/kanji/app.js?v=2"></script>
 </body>
 </html>
