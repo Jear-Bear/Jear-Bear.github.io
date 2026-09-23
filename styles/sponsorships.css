@@ -821,3 +821,13 @@ main { padding-top: var(--nav-h, 64px); }
   .video-trend { padding-left: 132px; }
   .video .video-trend .sparkline { margin-left: 0; width: 100%; }
 }
+
+/* Age × gender (dashboard): one bar per age group, split by gender */
+.ag-legend { list-style: none; display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 0 0 18px; }
+.ag-legend li { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.ag-frame { position: relative; }
+.ag-track { background: none; overflow: visible; }
+.ag-stack { display: flex; gap: 2px; height: 100%; min-width: 4px; border-radius: 4px; overflow: hidden; }
+.ag-seg { display: block; flex-basis: 0; min-width: 2px; transition: filter .15s; }
+.ag-seg:hover { filter: brightness(1.15); }
+.ag-track { height: 12px; }
