@@ -154,7 +154,7 @@ Know the limits:
 
 Contents: overview (subscribers, views, long-form and Shorts views, watch
 time, subscribers gained, average view duration, average % viewed), top
-countries, age, gender, subscribed vs. not subscribed, traffic sources,
+countries, age × gender (one bar per age group split by gender, last 90 days), subscribed vs. not subscribed, traffic sources,
 devices, and for each featured video: 90-day views, watch time, average view
 duration and average % viewed.
 

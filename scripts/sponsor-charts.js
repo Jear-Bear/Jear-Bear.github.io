@@ -5,6 +5,7 @@
 //   SponsorCharts.sparkline(metric)        tiny line for a video card
 //   SponsorCharts.mix(el, parts)           one bar split into formats
 //   SponsorCharts.overview(stats, SD)      fills #trend-panel / #mix-panel
+//   SponsorCharts.ageGender(el, metric, SD) age rows split by gender (dashboard)
 //
 // No libraries. Marks use the page accent; text stays in ink tokens.
 // All labels are inserted as text, never HTML.
@@ -295,5 +296,102 @@ window.SponsorCharts = (function () {
     if ((hasTrend || hasMix) && window.observeReveal) window.observeReveal(wrap);
   }
 
-  return { trend, sparkline, mix, overview };
+  // --- Age × gender: one bar per age group, split by gender ----------------
+  // Fixed gender order and colors (same validated trio as the format mix)
+  const GENDERS = [
+    { code: 'female', label: 'Female', color: '#95483f' },
+    { code: 'male', label: 'Male', color: '#3f7fb0' },
+    { code: 'user_specified', label: 'User-specified', color: '#c9a227' },
+  ];
+  const ageLabel = (code) => String(code).replace(/^age/, '').replace(/-$/, '+').replace('-', '–');
+  const pct = (v) => (v > 0 && v < 0.005 ? '<1%' : `${Math.round(v * 100)}%`);
+
+  function ageGender(container, metric, SD) {
+    const cells = Array.isArray(metric && metric.value) ? metric.value.filter((c) => c.share > 0) : [];
+    if (!cells.length) return false;
+
+    const ages = [...new Set(cells.map((c) => c.age))].sort();
+    const known = GENDERS.map((g) => g.code);
+    // Any gender code we don't know gets a neutral color at the end
+    const genders = GENDERS.filter((g) => cells.some((c) => c.gender === g.code))
+      .concat([...new Set(cells.map((c) => c.gender))].filter((g) => !known.includes(g))
+        .map((g) => ({ code: g, label: g.replace(/_/g, ' '), color: '#b0a99c' })));
+    const share = (age, gender) => cells.filter((c) => c.age === age && c.gender === gender).reduce((t, c) => t + c.share, 0);
+    const ageTotal = (age) => cells.filter((c) => c.age === age).reduce((t, c) => t + c.share, 0);
+    const genderTotal = (gender) => cells.filter((c) => c.gender === gender).reduce((t, c) => t + c.share, 0);
+    const maxAge = Math.max(...ages.map(ageTotal));
+
+    const title = el('h3', 'panel-title', metric.label);
+    const sub = el('p', 'panel-sub', `Share of viewers · ${SD.formatPeriod(metric.period)}`);
+
+    const legend = el('ul', 'ag-legend');
+    genders.forEach((g) => {
+      const li = el('li');
+      const key = el('span', 'mix-key');
+      key.style.background = g.color;
+      li.append(key, el('span', 'mix-label', g.label), el('span', 'mix-value', pct(genderTotal(g.code))));
+      legend.append(li);
+    });
+
+    const frame = el('div', 'ag-frame');
+    const tip = el('div', 'chart-tip');
+    tip.hidden = true;
+    const rows = el('ol', 'bar-list ag-rows');
+    ages.forEach((age) => {
+      const total = ageTotal(age);
+      const li = el('li', 'bar-row');
+      const track = el('span', 'bar-track ag-track');
+      track.setAttribute('aria-hidden', 'true');
+      const stack = el('span', 'ag-stack');
+      stack.style.width = `${((total / maxAge) * 100).toFixed(1)}%`;
+      genders.forEach((g) => {
+        const v = share(age, g.code);
+        if (!v) return;
+        const seg = el('span', 'ag-seg');
+        // Scale up: flex-grow values summing to < 1 only fill that fraction of the bar
+        seg.style.flexGrow = String(Math.round(v * 10000));
+        seg.style.background = g.color;
+        seg.addEventListener('pointerenter', () => {
+          tip.replaceChildren(el('strong', null, `${pct(v)} of viewers`), el('span', null, `${g.label}, ${ageLabel(age)}`));
+          tip.hidden = false;
+        });
+        seg.addEventListener('pointermove', (e) => {
+          const r = frame.getBoundingClientRect();
+          const x = Math.min(Math.max(e.clientX - r.left - tip.offsetWidth / 2, 0), r.width - tip.offsetWidth);
+          tip.style.left = `${x}px`;
+          tip.style.top = `${e.clientY - r.top - tip.offsetHeight - 12}px`;
+        });
+        seg.addEventListener('pointerleave', () => { tip.hidden = true; });
+        stack.append(seg);
+      });
+      track.append(stack);
+      li.append(el('span', 'bar-label', ageLabel(age)), track, el('span', 'bar-value', pct(total)));
+      rows.append(li);
+    });
+    frame.append(rows, tip);
+
+    // Every value, without hovering
+    const details = el('details', 'chart-table');
+    details.append(el('summary', null, 'Show all numbers'));
+    const wrap = el('div', 'chart-table-wrap');
+    const t = el('table');
+    const hr = el('tr');
+    hr.append(el('th', null, 'Age'), ...genders.map((g) => el('th', null, g.label)), el('th', null, 'Total'));
+    const thead = el('thead');
+    thead.append(hr);
+    const tbody = el('tbody');
+    ages.forEach((age) => {
+      const tr = el('tr');
+      tr.append(el('td', null, ageLabel(age)), ...genders.map((g) => el('td', null, share(age, g.code) ? pct(share(age, g.code)) : '—')), el('td', null, pct(ageTotal(age))));
+      tbody.append(tr);
+    });
+    t.append(thead, tbody);
+    wrap.append(t);
+    details.append(wrap);
+
+    container.replaceChildren(title, sub, legend, frame, details);
+    return true;
+  }
+
+  return { trend, sparkline, mix, overview, ageGender };
 })();
