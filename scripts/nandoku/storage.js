@@ -1,31 +1,29 @@
-// storage.js — Kanji Trainer persistence (localStorage, debounced writes)
+// storage.js — Nandoku Trainer persistence (localStorage, debounced writes)
 // plus export/import of backups.
 import { downloadJSON } from '../study-backup.js';
 
-const KEY = 'jareddesu.kanji.v1';
-const APP = 'jareddesu-kanji';
+const KEY = 'jareddesu.nandoku.v1';
+const APP = 'jareddesu-nandoku';
 
 export function defaultStore() {
   return {
     version: 1,
     createdAt: Date.now(),
     settings: {
-      selection: ['jlpt:5'],
-      itemType: 'kanji',                      // 'kanji' | 'words'
-      questions: { meaning: true, reading: true, reverse: false, typed: false, writing: false },
-      writingLevel: 'guided',                 // 'trace' | 'guided' | 'memory'
-      strokeCheck: 'standard',                // 'lenient' | 'standard' | 'strict'
-      newPerDay: 10,
+      levels: ['05'],
+      questions: { reading: true, meaning: true },
+      newPerDay: 15,
       sessionSize: 20,
       autoAdvance: true,
+      timer: 20,             // challenge: seconds per word, 0 = no timer
     },
-    custom: [],        // [{ id, name, chars, words: [[word, reading, meaning]], createdAt }]
-    cards: {},         // 'k:学' | 'w:大学' -> { meaning|reading|writing: { box, due, right, wrong, last } }
-    misses: {},        // key -> recent miss count (trouble spots)
+    cards: {},         // term id -> { reading|meaning: { box, due, right, wrong, last }, added }
+    misses: {},        // term id -> recent miss count (trouble spots)
+    best: {},          // challenge high scores: '05+06' -> { score, at }
     global: {
       reviewCount: 0, totalCorrect: 0,
       dailyCounts: {}, newByDay: {}, studyTimeMs: 0, sessionDates: [],
-      lastExportAt: 0, reviewsAtExport: 0,
+      lastExportAt: 0, reviewsAtExport: 0, games: 0,
     },
   };
 }
@@ -41,7 +39,7 @@ function mergeDefaults(data) {
     global: { ...base.global, ...data.global },
     cards: data.cards || {},
     misses: data.misses || {},
-    custom: Array.isArray(data.custom) ? data.custom : [],
+    best: data.best || {},
   };
 }
 
@@ -91,7 +89,7 @@ export function exportJSON(store) {
   store.global.lastExportAt = Date.now();
   store.global.reviewsAtExport = store.global.reviewCount;
   save(store, { now: true });
-  downloadJSON(`kanji-trainer-${new Date().toISOString().slice(0, 10)}.json`,
+  downloadJSON(`nandoku-trainer-${new Date().toISOString().slice(0, 10)}.json`,
     { app: APP, exportedAt: new Date().toISOString(), ...store });
 }
 
@@ -100,14 +98,14 @@ export function exportJSON(store) {
 export function parseImport(text) {
   let data;
   try { data = JSON.parse(text); } catch { throw new Error('That file isn\'t valid JSON.'); }
-  if (!data || typeof data !== 'object') throw new Error('Not a Kanji Trainer backup.');
+  if (!data || typeof data !== 'object') throw new Error('Not a Nandoku Trainer backup.');
   if (data.app === 'jareddesu-kana' || (data.kana && !data.cards)) {
     throw new Error('That\'s a Kana Trainer backup. Import it on the Kana Trainer page.');
   }
-  if (data.app === 'jareddesu-nandoku') {
-    throw new Error('That\'s a Nandoku Trainer backup. Import it on the Nandoku Trainer page.');
+  if (data.app === 'jareddesu-kanji') {
+    throw new Error('That\'s a Kanji Trainer backup. Import it on the Kanji Trainer page.');
   }
-  if (data.app !== APP && !(data.cards && data.global)) throw new Error('Not a Kanji Trainer backup.');
+  if (data.app !== APP) throw new Error('Not a Nandoku Trainer backup.');
   if (typeof data.cards !== 'object' || typeof data.global !== 'object') throw new Error('This backup is incomplete.');
   const { app, exportedAt, ...rest } = data;
   return { store: mergeDefaults(rest), exportedAt: exportedAt || null, reviews: rest.global.reviewCount || 0 };
