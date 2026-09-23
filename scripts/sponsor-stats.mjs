@@ -9,14 +9,17 @@
 //   YT_OAUTH_CLIENT_ID      OAuth client for the YouTube Analytics API
 //   YT_OAUTH_CLIENT_SECRET
 //   YT_OAUTH_REFRESH_TOKEN  from scripts/get-refresh-token.mjs
+//   DASHBOARD_PASSWORD      optional; when set, also writes the encrypted
+//                           sponsor-dashboard file stats.private.enc.json
 //
 //   node scripts/sponsor-stats.mjs            write the file if data changed
 //   node scripts/sponsor-stats.mjs --dry-run  print the result, write nothing
 //
-// The repo and site are public: the output is built field by field from
-// an allowlist. Never add revenue, traffic sources, demographics or
-// retention here. If any request fails the script exits non-zero before
-// writing, so the last good file stays in place.
+// The repo and site are public: stats.public.json is built field by field
+// from an allowlist. Traffic sources, demographics and retention go only in
+// the encrypted private file. Revenue is never fetched: the OAuth scope
+// (yt-analytics.readonly) can't read it. If any request fails the script
+// exits non-zero before writing, so the last good files stay in place.
 // =====================================================================
 
 import { readFile, writeFile } from 'node:fs/promises';
@@ -29,9 +32,15 @@ const ENGLISH_SPEAKING = ['US', 'GB', 'CA', 'AU'];
 
 const ROOT = new URL('../', import.meta.url);
 const OUT_FILE = new URL('data/sponsorships/stats.public.json', ROOT);
+const PRIVATE_FILE = new URL('data/sponsorships/stats.private.enc.json', ROOT);
 const CONTENT_FILE = new URL('data/sponsorships/content.json', ROOT);
 
 const DRY_RUN = process.argv.includes('--dry-run');
+
+// Anyone can download the encrypted file and guess offline, so the
+// password must be long and random (e.g. `openssl rand -base64 18`)
+const MIN_PASSWORD_LENGTH = 16;
+const PBKDF2_ITERATIONS = 600000;
 
 // --- Dates -----------------------------------------------------------------
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -68,7 +77,7 @@ function period(start, end, display) {
 }
 
 function metric(value, unit, label, per, source) {
-  if (unit !== 'share-list' && (typeof value !== 'number' || !Number.isFinite(value) || value < 0)) {
+  if (!unit.endsWith('-list') && (typeof value !== 'number' || !Number.isFinite(value) || value < 0)) {
     throw new Error(`Invalid value for "${label}": ${value}`);
   }
   return { value, unit, label, period: per, source, asOf: RUN_DATE };
@@ -80,6 +89,15 @@ const lifetime = (publishedAt) =>
   period(publishedAt ? publishedAt.slice(0, 10) : null, RUN_DATE, `All time · as of ${fmtDate(RUN_DATE)}`);
 const last28 = period(A_START_28, A_END);
 const last90 = period(A_START_90, A_END);
+
+// Rows → [{ code, share, views }] sorted by views, shares of the rows' total
+function shareList(rows, dim) {
+  const total = rows.reduce((s, r) => s + r.views, 0);
+  return rows
+    .filter((r) => r.views > 0)
+    .sort((a, b) => b.views - a.views)
+    .map((r) => ({ code: String(r[dim]), share: total ? Math.round((r.views / total) * 1000) / 1000 : 0, views: r.views }));
+}
 
 // --- HTTP --------------------------------------------------------------------
 // Error messages never include URLs (the Data API key is a query param).
@@ -174,7 +192,7 @@ function featuredVideoIds(content) {
 
 function int(v) { return Number.parseInt(v, 10); }
 
-async function build() {
+async function build({ includePrivate }) {
   const content = JSON.parse(await readFile(CONTENT_FILE, 'utf8'));
   const featured = featuredVideoIds(content);
 
@@ -207,7 +225,8 @@ async function build() {
 
   const video90 = featured.length
     ? await report('featured videos', token, {
-        startDate: A_START_90, endDate: A_END, metrics: 'views', dimensions: 'video',
+        startDate: A_START_90, endDate: A_END, dimensions: 'video',
+        metrics: 'views,estimatedMinutesWatched,averageViewDuration,averageViewPercentage',
         filters: `video==${featured.join(',')}`, sort: '-views', maxResults: '200',
       })
     : [];
@@ -253,9 +272,10 @@ async function build() {
   const missing = featured.filter((id) => !videos[id]);
   if (missing.length) console.warn(`Featured videos not returned (private or deleted?): ${missing.join(', ')}`);
 
-  return {
+  const generatedAt = new Date().toISOString();
+  const pub = {
     schemaVersion: 1,
-    generatedAt: new Date().toISOString(),
+    generatedAt,
     generatedBy: 'sponsor-stats-action',
     channel: {
       id: CHANNEL_ID,
@@ -268,6 +288,103 @@ async function build() {
     recentUploads: recent,
     videos,
   };
+
+  if (!includePrivate) return { pub, priv: null };
+  return { pub, priv: await buildPrivate(token, featured, video90, generatedAt) };
+}
+
+// --- Private (encrypted) dashboard data -------------------------------------
+// No revenue: the token's scope can't read it, and nothing here asks for it.
+async function buildPrivate(token, featured, video90, generatedAt) {
+  const range28 = { startDate: A_START_28, endDate: A_END };
+  const range90 = { startDate: A_START_90, endDate: A_END };
+
+  const [retention] = await report('retention', token, {
+    ...range28, metrics: 'averageViewDuration,averageViewPercentage',
+  });
+  const traffic = await report('traffic sources', token, {
+    ...range28, metrics: 'views', dimensions: 'insightTrafficSourceType',
+  });
+  const subscribed = await report('subscribed status', token, {
+    ...range28, metrics: 'views', dimensions: 'subscribedStatus',
+  });
+  const devices = await report('devices', token, {
+    ...range28, metrics: 'views', dimensions: 'deviceType',
+  });
+  // Demographics are sparse over 28 days, so use 90
+  const demo = await report('demographics', token, {
+    ...range90, metrics: 'viewerPercentage', dimensions: 'ageGroup,gender',
+  });
+
+  const sumBy = (rows, key) => {
+    const out = {};
+    rows.forEach((r) => { out[r[key]] = (out[r[key]] || 0) + r.viewerPercentage; });
+    return Object.entries(out)
+      .map(([code, pct]) => ({ code, share: Math.round(pct * 10) / 1000 }))
+      .filter((r) => r.share > 0);
+  };
+
+  const metrics = {
+    averageViewDuration: metric(Math.round(retention ? retention.averageViewDuration : 0), 'seconds',
+      'Average view duration', last28, ANALYTICS_API),
+    averageViewPercentage: metric(Math.round(retention ? retention.averageViewPercentage : 0) / 100, 'percent',
+      'Average percentage viewed', last28, ANALYTICS_API),
+    trafficSources: metric(shareList(traffic, 'insightTrafficSourceType'), 'share-list',
+      'How viewers find the videos', last28, ANALYTICS_API),
+    subscribedStatus: metric(shareList(subscribed, 'subscribedStatus'), 'share-list',
+      'Views from subscribers vs. non-subscribers', last28, ANALYTICS_API),
+    deviceTypes: metric(shareList(devices, 'deviceType'), 'share-list', 'Views by device', last28, ANALYTICS_API),
+    ageGroups: metric(sumBy(demo, 'ageGroup').sort((a, b) => a.code.localeCompare(b.code)), 'share-list',
+      'Viewers by age', last90, ANALYTICS_API),
+    genders: metric(sumBy(demo, 'gender').sort((a, b) => b.share - a.share), 'share-list',
+      'Viewers by gender', last90, ANALYTICS_API),
+  };
+
+  const videos = {};
+  video90.forEach((r) => {
+    if (!featured.includes(r.video)) return;
+    videos[r.video] = {
+      id: r.video,
+      metrics: {
+        watchTimeHours: metric(Math.round(r.estimatedMinutesWatched / 60), 'hours', 'Watch time', last90, ANALYTICS_API),
+        averageViewDuration: metric(Math.round(r.averageViewDuration), 'seconds', 'Average view duration', last90, ANALYTICS_API),
+        averageViewPercentage: metric(Math.round(r.averageViewPercentage) / 100, 'percent', 'Average percentage viewed', last90, ANALYTICS_API),
+      },
+    };
+  });
+
+  return { schemaVersion: 1, generatedAt, metrics, videos };
+}
+
+// --- Encryption (same format the dashboard decrypts with WebCrypto) ---------
+const { subtle } = globalThis.crypto;
+const b64 = (bytes) => Buffer.from(bytes).toString('base64');
+const unb64 = (str) => new Uint8Array(Buffer.from(str, 'base64'));
+
+async function deriveKey(password, salt, iterations) {
+  const base = await subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']);
+  return subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations },
+    base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+
+async function encrypt(obj, password) {
+  const salt = globalThis.crypto.getRandomValues(new Uint8Array(16));
+  const iv = globalThis.crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKey(password, salt, PBKDF2_ITERATIONS);
+  const data = await subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(obj)));
+  return {
+    format: 'jareddesu-sponsor-dashboard',
+    version: 1,
+    kdf: { name: 'PBKDF2', hash: 'SHA-256', iterations: PBKDF2_ITERATIONS, salt: b64(salt) },
+    cipher: { name: 'AES-GCM', iv: b64(iv) },
+    ciphertext: b64(new Uint8Array(data)),
+  };
+}
+
+async function decrypt(file, password) {
+  const key = await deriveKey(password, unb64(file.kdf.salt), file.kdf.iterations);
+  const data = await subtle.decrypt({ name: 'AES-GCM', iv: unb64(file.cipher.iv) }, key, unb64(file.ciphertext));
+  return JSON.parse(new TextDecoder().decode(data));
 }
 
 // Compare everything except run timestamps, so an unchanged day is a no-op
@@ -276,21 +393,39 @@ function comparable(obj) {
 }
 
 async function main() {
-  const next = await build();
-  const json = `${JSON.stringify(next, null, 2)}\n`;
+  const password = process.env.DASHBOARD_PASSWORD || '';
+  if (password && password.length < MIN_PASSWORD_LENGTH) {
+    throw new Error(`DASHBOARD_PASSWORD must be at least ${MIN_PASSWORD_LENGTH} characters (use a random one).`);
+  }
+  if (!password) console.warn('DASHBOARD_PASSWORD not set; skipping the sponsor dashboard file.');
+
+  // Everything is fetched before anything is written
+  const { pub, priv } = await build({ includePrivate: Boolean(password) });
 
   if (DRY_RUN) {
-    process.stdout.write(json);
+    process.stdout.write(`${JSON.stringify({ public: pub, private: priv }, null, 2)}\n`);
     return;
   }
 
   const prev = await readFile(OUT_FILE, 'utf8').then(JSON.parse).catch(() => null);
-  if (prev && comparable(prev) === comparable(next)) {
+  if (prev && comparable(prev) === comparable(pub)) {
     console.log('No data changes; leaving stats.public.json as is.');
+  } else {
+    await writeFile(OUT_FILE, `${JSON.stringify(pub, null, 2)}\n`);
+    console.log(`Wrote stats.public.json (analytics window ${A_START_28} to ${A_END}).`);
+  }
+
+  if (!priv) return;
+  // Each encryption is different (random salt/IV), so compare the decrypted
+  // contents. A file that no longer decrypts (password changed) is replaced.
+  const prevEnc = await readFile(PRIVATE_FILE, 'utf8').then(JSON.parse).catch(() => null);
+  const prevPriv = prevEnc ? await decrypt(prevEnc, password).catch(() => null) : null;
+  if (prevPriv && comparable(prevPriv) === comparable(priv)) {
+    console.log('No data changes; leaving stats.private.enc.json as is.');
     return;
   }
-  await writeFile(OUT_FILE, json);
-  console.log(`Wrote stats.public.json (analytics window ${A_START_28} to ${A_END}).`);
+  await writeFile(PRIVATE_FILE, `${JSON.stringify(await encrypt(priv, password), null, 2)}\n`);
+  console.log('Wrote stats.private.enc.json (encrypted).');
 }
 
 main().catch((err) => {
