@@ -51,6 +51,23 @@
   box-sizing: border-box;
 }
 
+/* .btn-link is used on <button>s here: drop the browser's default grey
+   button box so they read as links, and keep the underline under the text */
+.kt button.btn-link {
+  background: none;
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+  padding-left: 0;
+  padding-right: 0;   /* text-aligned with the content edge; still 44px tall */
+}
+.kt .btn-link::after { bottom: 10px; }
+
+/* The trainer's views are alternate screens, not stacked sections:
+   base.css's section + section spacing pushed the review screen down and
+   cut off its bottom */
+.container.kt > section + section { margin-top: 0; }
+
 /* ====================== continue card ====================== */
 .kt-continue {
   display: flex; align-items: center; justify-content: space-between; gap: 24px;
@@ -246,7 +263,8 @@
 }
 .kt-toggle { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: var(--ink-soft); cursor: pointer; }
 .kt-toggle small { color: var(--muted); }
-.kt-toggle input { accent-color: var(--page-color); width: 16px; height: 16px; }
+/* Checkboxes only: this used to hit the number input too and shrink it to a 16px circle */
+.kt-toggle input[type="checkbox"] { accent-color: var(--page-color); width: 16px; height: 16px; }
 .kt-prefs { display: flex; flex-direction: column; gap: 12px; }
 .kt-select {
   font: 500 0.9rem 'Inter', sans-serif;
@@ -328,11 +346,11 @@ body.kt-focus .container.kt {
 
 .kt-session-bar {
   flex-shrink: 0;
-  width: 100%; max-width: 720px; margin-left: auto; margin-right: auto;
+  width: 100%; max-width: 720px;
   height: 4px; border-radius: 999px;
   background: var(--page-color-soft);
   overflow: hidden;
-  margin: 2px 0 10px;
+  margin: 2px auto 10px;   /* centered under the HUD */
 }
 .kt-session-bar > div {
   height: 100%; width: 0%;
@@ -350,11 +368,19 @@ body.kt-focus .container.kt {
   width: 100%; max-width: 560px; margin: 0 auto;
   flex: 1; min-height: 0;
   display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+  align-items: center; justify-content: flex-start;
   text-align: center;
-  padding: clamp(8px, 3vh, 32px) 8px;
-  gap: clamp(8px, 2.5vh, 22px);
+  /* Sized from the *visible* height (--vvh shrinks when the keyboard opens);
+     plain vh stays at full-screen size and overfilled the zone */
+  padding: clamp(6px, calc(var(--vvh, 100vh) * 0.03), 32px) 8px;
+  gap: clamp(6px, calc(var(--vvh, 100vh) * 0.025), 22px);
+  overflow: hidden;
 }
+/* Flexible spacers center the card when there's room; when there isn't they
+   collapse to 0, so content can only run off the bottom — never up over the HUD
+   (justify-content: center overflowed in both directions) */
+.kt-card-zone::before,
+.kt-card-zone::after { content: ''; flex: 1 1 0; min-height: 0; }
 .kt-speedbar {
   width: 100%; height: 3px; border-radius: 999px;
   background: var(--page-color-soft); overflow: hidden; margin-bottom: 24px;
@@ -421,7 +447,21 @@ body.kt-focus .container.kt {
   box-shadow: 0 0 0 3px var(--page-color-soft);
 }
 #answer-input::placeholder { color: var(--muted); opacity: .6; }
-.kt-hint { margin-top: 16px; font-size: 0.78rem; color: var(--muted); opacity: .7; }
+.kt-hint { margin-top: 4px; font-size: 0.78rem; color: var(--muted); opacity: .7; }
+
+/* Compact review: set by app.js when the visible height is short (phone
+   keyboard open, landscape). One-row HUD, smaller kana, no keyboard-shortcut
+   hint (phone keyboards have no Esc) */
+body.kt-compact .kt-hud { flex-wrap: nowrap; padding: 4px 0; gap: 10px; }
+body.kt-compact .kt .kt-hud-back { min-height: 36px; font-size: 13px; }
+body.kt-compact .kt-hud-stats { gap: 10px; font-size: 0.8rem; }
+body.kt-compact .kt-hud-mode { display: none; }
+body.kt-compact .kt-session-bar { margin: 0 auto 4px; }
+body.kt-compact .kt-stage-progress { margin-top: 0; font-size: 0.8rem; }
+body.kt-compact .kt-kana { font-size: min(clamp(56px, 20vw, 150px), calc(var(--vvh, 100vh) * 0.2)); }
+body.kt-compact .kt-feedback { min-height: 1.6em; }
+body.kt-compact #answer-input { padding: 10px 16px; font-size: 1.2rem; }   /* stays >16px so iOS doesn't zoom */
+body.kt-compact .kt-hint { display: none; }
 
 /* ====================== summary overlay ====================== */
 .kt-overlay {
@@ -507,6 +547,7 @@ body.kt-focus .container.kt {
 
 @media (max-width: 640px) {
   .kt-continue { flex-direction: column; align-items: flex-start; padding: 22px; }
+  .kt-continue-actions { flex-wrap: wrap; gap: 8px 18px; }
   .kt-cell { width: 38px; height: 38px; font-size: 0.95rem; }
   .kt-summary { padding: 28px 22px; }
   .kt-settings { flex-direction: column; align-items: flex-start; }
