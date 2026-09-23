@@ -5,22 +5,25 @@ build-data.py — builds the Nandoku Trainer's data and fonts in data/nandoku/.
 Run locally whenever the sources update. Needs:
 
     git clone --depth 1 https://github.com/MarvNC/kanjidego-yomitan-anki
+    Mochiy Pop One (MochiyPopOne-Regular.ttf, OFL), from https://github.com/fontdasu/Mochiypop
     IPAmj Mincho (ipamjm.ttf, IPA Font License v1.0), from https://moji.or.jp/mojikiban/font/
     Jigmo (Jigmo.ttf, Jigmo2.ttf, Jigmo3.ttf, CC0), from https://kamichikoichi.github.io/jigmo/
-    pip install fonttools brotli
+    pip install fonttools brotli shapely skia-pathops
 
     python3 scripts/nandoku/build-data.py \
         --terms ../kanjidego-yomitan-anki/export/termData.json \
-        --ipamj ../ipamjm.ttf --jigmo ../Jigmo
+        --pop ../MochiyPopOne-Regular.ttf --ipamj ../ipamjm.ttf --jigmo ../Jigmo
 
     More levels: pass --terms several times (same termData.json format).
 
 Outputs:
     data/nandoku/terms.json        every question (format below)
-    data/nandoku/fonts/*.woff2     "Nandoku Mincho": IPAmj Mincho subset to the
-                                   characters used, split into chunks so a browser
-                                   downloads only the chunks it needs; Jigmo fills
-                                   characters IPAmj doesn't have (CJK Ext. G/H…)
+    data/nandoku/fonts/*.woff2     "Nandoku Pop", a heavy rounded face close to the
+                                   game's lettering: Mochiy Pop One, plus the rare
+                                   kanji it lacks taken from IPAmj Mincho / Jigmo and
+                                   thickened to match (embolden.py). Subset to the
+                                   characters used and split into chunks so a
+                                   browser downloads only the chunks it needs.
     data/nandoku/fonts/fonts.css   the @font-face rules with unicode-range
 
 terms.json:
@@ -41,6 +44,7 @@ from collections import Counter
 
 ap = argparse.ArgumentParser()
 ap.add_argument('--terms', action='append', required=True)
+ap.add_argument('--pop', required=True, help='MochiyPopOne-Regular.ttf')
 ap.add_argument('--ipamj', required=True)
 ap.add_argument('--jigmo', required=True, help='folder with Jigmo.ttf, Jigmo2.ttf, Jigmo3.ttf')
 ap.add_argument('--out', default=os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'nandoku'))
@@ -125,12 +129,18 @@ with open(os.path.join(OUT, 'terms.json'), 'w', encoding='utf-8') as f:
 print('terms', len(terms), dict(sorted(levels.items())), f'(skipped {len(skipped)} image-only words)')
 
 # ---------------------------------------------------------------- fonts
+import sys
 from fontTools.ttLib import TTFont
 from fontTools import subset
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from embolden import embolden
 
+FAMILY = 'Nandoku Pop'
 VS = set(range(0xFE00, 0xFE10)) | set(range(0xE0100, 0xE01F0))
-BASE = set(range(0x3041, 0x3097)) | set(range(0x30A1, 0x30FB)) | set(map(ord, 'ー々〆ヶ・「」『』（）、。〜'))
+BASE = (set(range(0x3041, 0x3097)) | set(range(0x30A1, 0x30FB)) | set(range(0x21, 0x7F))
+        | set(map(ord, 'ー々〆ヶ・「」『』（）、。〜〇')))
 
+pop_cmap = TTFont(args.pop, lazy=True).getBestCmap()
 ipamj_cmap = TTFont(args.ipamj, lazy=True).getBestCmap()
 jigmo = []
 for name in ('Jigmo.ttf', 'Jigmo2.ttf', 'Jigmo3.ttf'):
@@ -138,37 +148,42 @@ for name in ('Jigmo.ttf', 'Jigmo2.ttf', 'Jigmo3.ttf'):
     jigmo.append((p, TTFont(p, lazy=True).getBestCmap()))
 
 # Characters in order of first use: main terms level by level, then the other
-# spellings (only shown on the answer card)
-order, seen, uses, ivs_bases = [], set(), Counter(), set()
+# spellings (only shown on the answer card). Variation selectors are left out:
+# the pop face has one form per character.
+order, seen, uses = [], set(), Counter()
 for pass_ in ('main', 'vars'):
     for t in sorted(terms, key=lambda t: t[10]):
-        texts = [t[1]] if pass_ == 'main' else t[7]
-        for s in texts:
-            cps = [ord(c) for c in s]
-            for j, cp in enumerate(cps):
-                if cp in VS:
-                    if j:
-                        ivs_bases.add(cps[j - 1])
+        for s in ([t[1]] if pass_ == 'main' else t[7]):
+            for c in s:
+                cp = ord(c)
+                if cp in VS or cp < 0x80:
                     continue
                 uses[cp] += 1
                 if cp not in seen:
                     seen.add(cp)
                     order.append(cp)
 
-chunks = [sorted(BASE | ivs_bases | {cp for cp in order if uses[cp] >= 4 and cp in ipamj_cmap})]
-first = set(chunks[0])
-rest = [cp for cp in order if cp not in first and cp in ipamj_cmap]
+pop_order = [cp for cp in order if cp in pop_cmap]
+first = sorted({cp for cp in BASE if cp in pop_cmap} | {cp for cp in pop_order if uses[cp] >= 4})
+chunks = [('pop', args.pop, first)]
+rest = [cp for cp in pop_order if cp not in set(first)]
 for i in range(0, len(rest), args.chunk):
-    chunks.append(rest[i:i + args.chunk])
-fallback = {p: [] for p, _ in jigmo}
+    chunks.append(('pop', args.pop, rest[i:i + args.chunk]))
+
+# Everything the pop face lacks: thickened from IPAmj Mincho, else Jigmo
+by_src = {args.ipamj: []}
+by_src.update({p: [] for p, _ in jigmo})
 missing = []
 for cp in order:
-    if cp in ipamj_cmap:
+    if cp in pop_cmap:
         continue
-    src = next((p for p, cm in jigmo if cp in cm), None)
-    (fallback[src] if src else missing).append(cp)
+    src = args.ipamj if cp in ipamj_cmap else next((p for p, cm in jigmo if cp in cm), None)
+    (by_src[src] if src else missing).append(cp)
 if missing:
     print('no font has:', ''.join(map(chr, missing)))
+for src, cps in by_src.items():
+    for i in range(0, len(cps), args.chunk):
+        chunks.append(('bold', src, cps[i:i + args.chunk]))
 
 
 def ranges(cps):
@@ -184,22 +199,27 @@ def ranges(cps):
     return ','.join(out)
 
 
-FAMILY = 'Nandoku Mincho'
-
-
-def build(src, cps, out_name, with_vs=False):
+def build(kind, src, cps, out_name):
     opts = subset.Options()
     opts.flavor = 'woff2'
-    opts.layout_features = ['*']
-    opts.name_IDs = []            # rename below (IPA license: derived fonts get a new name)
+    opts.layout_features = ['*'] if kind == 'pop' else []
+    opts.name_IDs = []            # renamed below (the IPA license requires a new name)
     opts.notdef_outline = True
+    opts.hinting = False
     font = subset.load_font(src, opts)
     sub = subset.Subsetter(opts)
-    sub.populate(unicodes=list(cps) + (sorted(VS) if with_vs else []))
+    sub.populate(unicodes=cps)
     sub.subset(font)
+    if kind == 'bold':
+        glyf, gs = font['glyf'], font.getGlyphSet()
+        upm = font['head'].unitsPerEm
+        for cp, gname in font.getBestCmap().items():
+            g = embolden(gs, gname, upm, (font['hmtx'][gname][0] / 2, upm * 0.38))
+            g.recalcBounds(glyf)
+            glyf[gname] = g
     name = font['name']
     name.names = []
-    for nid, val in ((1, FAMILY), (2, 'Regular'), (4, FAMILY), (6, 'NandokuMincho-Regular')):
+    for nid, val in ((1, FAMILY), (2, 'Regular'), (4, FAMILY), (6, 'NandokuPop-Regular')):
         name.setName(val, nid, 3, 1, 0x409)
     subset.save_font(font, os.path.join(FONTS, out_name), opts)
     return os.path.getsize(os.path.join(FONTS, out_name))
@@ -209,22 +229,19 @@ for f in os.listdir(FONTS):
     if f.endswith('.woff2'):
         os.remove(os.path.join(FONTS, f))
 
-css = ['/* Generated by scripts/nandoku/build-data.py. "Nandoku Mincho" is a subset of',
-       '   IPAmj Mincho (IPA Font License v1.0) with Jigmo (CC0) for characters IPAmj',
-       '   lacks. See LICENSE.md. */']
+css = ['/* Generated by scripts/nandoku/build-data.py. "Nandoku Pop": Mochiy Pop One',
+       '   (OFL) plus rare kanji from IPAmj Mincho (IPA Font License v1.0) and Jigmo',
+       '   (CC0), thickened to match. See ../LICENSE.md. */']
 total = 0
-for i, cps in enumerate(chunks):
-    name = f'm{i:02d}.woff2'
-    size = build(args.ipamj, cps, name, with_vs=(i == 0))
-    total += size
-    rng = ranges(cps + (sorted(VS) if i == 0 else []))
-    css.append(f"@font-face{{font-family:'{FAMILY}';src:url('{name}') format('woff2');font-display:swap;unicode-range:{rng}}}")
-for j, (p, cps) in enumerate((p, c) for p, c in fallback.items() if c):
-    name = f'j{j:02d}.woff2'
-    size = build(p, cps, name)
-    total += size
-    css.append(f"@font-face{{font-family:'{FAMILY}';src:url('{name}') format('woff2');font-display:swap;unicode-range:{ranges(cps)}}}")
+counts = Counter()
+for kind, src, cps in chunks:
+    tag = 'p' if kind == 'pop' else 'b'
+    out_name = f'{tag}{counts[tag]:02d}.woff2'
+    counts[tag] += 1
+    total += build(kind, src, cps, out_name)
+    css.append(f"@font-face{{font-family:'{FAMILY}';src:url('{out_name}') format('woff2');font-display:block;unicode-range:{ranges(cps)}}}")
+    print(out_name, len(cps), flush=True)
 
 with open(os.path.join(FONTS, 'fonts.css'), 'w', encoding='utf-8') as f:
     f.write('\n'.join(css) + '\n')
-print(f'fonts: {len(chunks)} IPAmj chunks + {sum(1 for c in fallback.values() if c)} Jigmo, {total / 1e6:.2f} MB total')
+print(f'fonts: {counts["p"]} pop chunks + {counts["b"]} thickened, {total / 1e6:.2f} MB total')

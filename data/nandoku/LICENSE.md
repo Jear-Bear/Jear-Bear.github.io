@@ -20,15 +20,21 @@ such as `<6文字指定>` were dropped.
 
 ## Font (`fonts/`)
 
-"Nandoku Mincho" is a derived font made by subsetting and splitting:
+"Nandoku Pop" is a derived web font, subset to the characters used and split
+into chunks. The game itself uses the commercial fonts セイビタカナワB and
+わんぱくルイカ, which can't be redistributed; this is a free lookalike.
 
+- **Mochiy Pop One** by the Mochiypop Project Authors
+  (https://github.com/fontdasu/Mochiypop), **SIL Open Font License 1.1**,
+  included as `fonts/OFL-MochiyPopOne.txt`. Used for kana and most kanji.
 - **IPAmj Mincho** (IPAmj明朝) Ver.003.01 by the Information-technology Promotion
   Agency, Japan, now distributed by the Character Information Technology Promotion
   Council: https://moji.or.jp/mojikiban/font/. Used under the **IPA Font License
-  Agreement v1.0**, included as `fonts/IPA_Font_License_Agreement_v1.0.txt`;
-  the derived font is distributed under the same license. To swap in the original,
-  download IPAmj Mincho from the link above and point `--ipamj` in the build
-  script at it (or use it directly in `fonts/fonts.css`).
+  Agreement v1.0**, included as `fonts/IPA_Font_License_Agreement_v1.0.txt`, for
+  rare kanji Mochiy Pop One lacks. Their outlines are thickened
+  (`scripts/nandoku/embolden.py`) to match; the derived glyphs are distributed
+  under the same license. To use the original instead, download IPAmj Mincho from
+  the link above and point `--ipamj` in the build script at it.
 - **Jigmo** by Koichi Kamichi (https://kamichikoichi.github.io/jigmo/),
-  **CC0 1.0**, for the characters IPAmj Mincho doesn't cover (mostly CJK
-  Extensions G and H).
+  **CC0 1.0**, thickened the same way, for characters neither covers (mostly
+  CJK Extensions G and H).

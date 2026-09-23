@@ -20,7 +20,7 @@ const settings = store.settings;
 
 let selIds = [];            // term ids in the selected levels
 let persisted = false;
-const FONT = '"Nandoku Mincho"';
+const FONT = '"Nandoku Pop"';
 const ALL_LEVELS = ['01', '02', '03', '04', '05', '06', '07', '08'];
 
 // ---------------------------------------------------------------- DOM helper
@@ -46,6 +46,24 @@ const shuffle = (a) => {
 const fmt = new Intl.NumberFormat('en');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const listText = (a) => (a.length <= 1 ? a.join('') : `${a.slice(0, -1).join(', ')} and ${a[a.length - 1]}`);
+
+// The word as the game draws it: kanji runs in <span class="k"> (yellow),
+// kana as plain text (white)
+const KANA = /^[\u3040-\u30ff\uff66-\uff9f]$/;
+function termNodes(term) {
+  const out = [];
+  let run = '';
+  let runKanji = null;
+  for (const ch of term) {
+    if (/[\uFE00-\uFE0F\u{E0100}-\u{E01EF}]/u.test(ch)) { run += ch; continue; }  // variation selector
+    const k = !KANA.test(ch);
+    if (runKanji !== null && k !== runKanji) { out.push(runKanji ? h('span', { class: 'k' }, run) : run); run = ''; }
+    runKanji = k;
+    run += ch;
+  }
+  if (run) out.push(runKanji ? h('span', { class: 'k' }, run) : run);
+  return out;
+}
 
 // Loads the font chunks a word needs (unicode-range), without waiting forever
 function warmFont(text, wait = 0) {
@@ -195,7 +213,7 @@ function renderProgress() {
 function renderTrouble() {
   const list = Object.entries(store.misses).filter(([id, n]) => n > 0 && D.get(id)).sort((a, b) => b[1] - a[1]).slice(0, 30);
   $('trouble').replaceChildren(list.length
-    ? h('div', { class: 'kj-trouble' }, list.map(([id, n]) => h('button', { class: 'kj-trouble-item nd-mincho', lang: 'ja', onclick: () => openDetail(id) },
+    ? h('div', { class: 'kj-trouble' }, list.map(([id, n]) => h('button', { class: 'kj-trouble-item nd-pop', lang: 'ja', onclick: () => openDetail(id) },
       D.get(id).term, h('span', { class: 'kj-trouble-n' }, `×${n}`))))
     : h('p', { class: 'kj-empty' }, 'Nothing yet. Words you miss will show up here.'));
 }
@@ -345,7 +363,8 @@ async function ask(q) {
   const reading = q.skill === 'reading';
   $('q-label').textContent = `${q.isNew ? 'New word · ' : ''}${reading ? 'How is this read?' : 'What does it mean?'}`;
   const prompt = $('q-prompt');
-  prompt.textContent = t.term;
+  prompt.replaceChildren(...termNodes(t.term));
+  prompt.setAttribute('aria-label', t.term);
   prompt.dataset.len = String(Math.min(8, [...t.term.replace(/[︀-️\u{E0100}-\u{E01EF}]/gu, '')].length));
   prompt.classList.add('is-loading');
   await warmFont(t.term, 1500);
@@ -423,9 +442,9 @@ function typedInput(t) {
     settle(ok ? 'good' : 'again');
   });
   const field = h('div', { class: 'nd-field' },
-    t.pre ? h('span', { class: 'nd-affix nd-mincho', lang: 'ja' }, t.pre) : null,
+    t.pre ? h('span', { class: 'nd-affix nd-pop', lang: 'ja' }, t.pre) : null,
     input,
-    t.suf ? h('span', { class: 'nd-affix nd-mincho', lang: 'ja' }, t.suf) : null);
+    t.suf ? h('span', { class: 'nd-affix nd-pop', lang: 'ja' }, t.suf) : null);
   form.append(field, h('button', { class: 'btn btn-primary', type: 'submit' }, 'Check'));
   const giveUp = h('button', {
     class: 'btn-link nd-giveup', type: 'button',
@@ -576,11 +595,11 @@ function showAfter(t, result, extra) {
   after.replaceChildren();
   const s = session;
   after.append(h('div', { class: 'nd-answer' },
-    h('button', { class: 'nd-answer-term nd-mincho', lang: 'ja', title: 'Details', onclick: () => openDetail(t.id) }, t.term),
+    h('button', { class: 'nd-answer-term nd-pop', lang: 'ja', title: 'Details', onclick: () => openDetail(t.id) }, t.term),
     h('p', { class: 'nd-answer-reading', lang: 'ja' }, D.readingsText(t)),
     h('p', { class: 'nd-answer-meaning', lang: 'ja' }, t.meaning),
     t.note ? h('p', { class: 'nd-answer-note', lang: 'ja' }, t.note) : null,
-    t.vars.length ? h('p', { class: 'nd-answer-vars' }, 'Also written ', h('span', { class: 'nd-mincho', lang: 'ja' }, t.vars.slice(0, 6).join('、'))) : null));
+    t.vars.length ? h('p', { class: 'nd-answer-vars' }, 'Also written ', h('span', { class: 'nd-pop', lang: 'ja' }, t.vars.slice(0, 6).join('、'))) : null));
   if (result === 'again' && current.typed && current.q.skill === 'reading') {
     after.append(h('p', { class: 'nd-override' }, 'You typed', h('span', { lang: 'ja', class: 'nd-typed-was' }, current.typed), '·',
       h('button', { class: 'btn-link', type: 'button', onclick: overrideAsRight }, 'I was right')));
@@ -642,7 +661,7 @@ function finish() {
   }
   if (s.missed.size) {
     body.append(h('div', null, h('p', { class: 'kj-help' }, 'Missed this time (tap for details):'),
-      h('div', { class: 'kj-trouble' }, [...s.missed].map((id) => h('button', { class: 'kj-trouble-item nd-mincho', lang: 'ja', onclick: () => openDetail(id) }, D.get(id).term)))));
+      h('div', { class: 'kj-trouble' }, [...s.missed].map((id) => h('button', { class: 'kj-trouble-item nd-pop', lang: 'ja', onclick: () => openDetail(id) }, D.get(id).term)))));
   }
   S.save(store, { now: true });
   if (!persisted) requestPersistence().then((p) => { persisted = p; renderBackup(); });
@@ -744,12 +763,12 @@ function openDetail(id) {
     h('span', null, c[sk] ? `${c[sk].right} right · ${c[sk].wrong} missed · ${when(c[sk].due)}` : 'not started')));
   $('detail-body').replaceChildren(...[
     h('p', { class: 'eyebrow' }, `${D.levelName(t.level)} · ${t.id.replace('_', ' #')}`),
-    h('p', { class: 'nd-detail-term nd-mincho', id: 'detail-term', lang: 'ja' }, t.term),
+    h('p', { class: 'nd-detail-term nd-pop', id: 'detail-term', lang: 'ja' }, t.term),
     h('p', { class: 'nd-answer-reading', lang: 'ja' }, D.readingsText(t)),
     h('p', { class: 'nd-answer-meaning', lang: 'ja' }, t.meaning),
     t.note ? h('p', { class: 'nd-answer-note', lang: 'ja' }, t.note) : null,
     t.vars.length ? h('div', null, h('p', { class: 'kj-opt-label' }, 'Also written'),
-      h('p', { class: 'nd-detail-vars nd-mincho', lang: 'ja' }, t.vars.join('　'))) : null,
+      h('p', { class: 'nd-detail-vars nd-pop', lang: 'ja' }, t.vars.join('　'))) : null,
     h('div', null, h('p', { class: 'kj-opt-label' }, 'Your progress'), h('ul', { class: 'kj-progress' }, progress))].filter(Boolean));
   $('detail-overlay').hidden = false;
   $('detail-close').focus({ preventScroll: true });
