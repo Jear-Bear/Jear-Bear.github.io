@@ -143,6 +143,7 @@
   function render(pub, priv, content) {
     document.getElementById('dash-updated').textContent = `Updated ${SD.formatDate(priv.generatedAt || pub.generatedAt)}`;
     renderOverview(pub, priv);
+    if (window.SponsorCharts) window.SponsorCharts.overview(pub, SD);
     renderBars('countries', pub.metrics.topCountries, country, 8);
     renderBars('ages', priv.metrics.ageGroups, age, 8);
     renderBars('genders', priv.metrics.genders, fromMap(GENDERS), 4);
@@ -192,6 +193,8 @@
     dash.querySelectorAll('[data-bars]').forEach((p) => p.replaceChildren());
     document.getElementById('dash-overview').replaceChildren();
     document.querySelector('#video-table tbody').replaceChildren();
+    ['trend-chart', 'mix-chart'].forEach((id) => document.getElementById(id).replaceChildren());
+    document.getElementById('overview-charts').hidden = true;
     dash.hidden = true;
     gate.hidden = false;
     document.getElementById('gate-password').focus();

@@ -150,6 +150,21 @@
             <p class="stat-period">Jun 23–Sep 21, 2026</p>
           </div>
         </div>
+
+        <!-- Trend + format mix: shown only once the daily Action has written the data -->
+        <div class="chart-grid" id="overview-charts" hidden>
+          <div class="panel reveal" id="trend-panel" hidden>
+            <h3 class="panel-title">Daily views</h3>
+            <p class="panel-sub" id="trend-period"></p>
+            <div id="trend-chart"></div>
+          </div>
+          <div class="panel reveal" id="mix-panel" hidden>
+            <h3 class="panel-title">Views by format</h3>
+            <p class="panel-sub" id="mix-period"></p>
+            <div id="mix-chart"></div>
+          </div>
+        </div>
+
         <p class="data-note reveal" data-render="updated">
           <span class="data-dot" aria-hidden="true"></span>
           Updated Sep 23, 2026 · from a YouTube Studio export
@@ -478,6 +493,7 @@
 
   <script src="../scripts/site.js"></script>
   <script src="../scripts/sponsor-data.js"></script>
+  <script src="../scripts/sponsor-charts.js"></script>
   <script src="../scripts/sponsorships.js"></script>
   <script src="../scripts/contact.js"></script>
 </body>

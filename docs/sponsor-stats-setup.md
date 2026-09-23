@@ -167,7 +167,10 @@ The script writes only these fields (see `scripts/sponsor-stats.mjs`):
 - **Analytics API (last 28 days, ending 3 days before the run):** views split
   into long-form, Shorts and live; total views; watch time; subscribers gained;
   top 10 countries as shares of views; US+UK+CA+AU combined share.
-- **Analytics API (last 90 days):** views for each featured video.
+- **Analytics API (last 90 days):** views for each featured video, plus daily
+  views for the channel and for each featured video (from its publish date if
+  newer). These drive the "Daily views" chart and the small line on each video
+  card.
 
 The public file never contains revenue, traffic sources, age/gender or
 retention. Everything except revenue goes in the encrypted dashboard file

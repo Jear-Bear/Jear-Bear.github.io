@@ -77,7 +77,7 @@ function period(start, end, display) {
 }
 
 function metric(value, unit, label, per, source) {
-  if (!unit.endsWith('-list') && (typeof value !== 'number' || !Number.isFinite(value) || value < 0)) {
+  if (!/-(list|series)$/.test(unit) && (typeof value !== 'number' || !Number.isFinite(value) || value < 0)) {
     throw new Error(`Invalid value for "${label}": ${value}`);
   }
   return { value, unit, label, period: per, source, asOf: RUN_DATE };
@@ -89,6 +89,14 @@ const lifetime = (publishedAt) =>
   period(publishedAt ? publishedAt.slice(0, 10) : null, RUN_DATE, `All time · as of ${fmtDate(RUN_DATE)}`);
 const last28 = period(A_START_28, A_END);
 const last90 = period(A_START_90, A_END);
+
+// Day rows → one number per day from start to end (days without rows are 0)
+function dailySeries(rows, start, end) {
+  const byDay = Object.fromEntries(rows.map((r) => [r.day, r.views]));
+  const out = [];
+  for (let d = start; d <= end; d = addDays(d, 1)) out.push(byDay[d] || 0);
+  return out;
+}
 
 // Rows → [{ code, share, views }] sorted by views, shares of the rows' total
 function shareList(rows, dim) {
@@ -215,7 +223,7 @@ async function build({ includePrivate }) {
   });
   if (!byType.length && totals.views > 0) throw new Error('analytics content types: no rows');
   // Match content types loosely (API casing/naming varies) and log what came back
-  console.log(`Content types: ${byType.map((r) => `${r.creatorContentType}=${r.views}`).join(', ') || 'none'}`);
+  console.warn(`Content types: ${byType.map((r) => `${r.creatorContentType}=${r.views}`).join(', ') || 'none'}`);
   const norm = (v) => String(v).toLowerCase().replace(/[^a-z]/g, '');
   const typeViews = (aliases) => byType
     .filter((r) => aliases.includes(norm(r.creatorContentType)))
@@ -284,6 +292,22 @@ async function build({ includePrivate }) {
     }
     videos[v.id] = { id: v.id, title: String(v.snippet.title), publishedAt: published, metrics: m };
   });
+
+  // Daily views for the trend charts: the channel, and each featured video
+  // (from its publish date if that's inside the 90-day window)
+  const dailyParams = { startDate: A_START_90, endDate: A_END, metrics: 'views', dimensions: 'day', sort: 'day' };
+  const channelDaily = await report('daily views', token, dailyParams);
+  metrics.dailyViews = metric(dailySeries(channelDaily, A_START_90, A_END), 'daily-series', 'Daily views', last90, ANALYTICS_API);
+
+  for (const id of featured) {
+    if (!videos[id]) continue;
+    const published = videos[id].publishedAt.slice(0, 10);
+    const start = published > A_START_90 ? published : A_START_90;
+    if (start > A_END) continue;
+    const rows = await report(`daily views ${id}`, token, { ...dailyParams, startDate: start, filters: `video==${id}` });
+    videos[id].metrics.dailyViews = metric(dailySeries(rows, start, A_END), 'daily-series',
+      'Daily views', period(start, A_END), ANALYTICS_API);
+  }
 
   const missing = featured.filter((id) => !videos[id]);
   if (missing.length) console.warn(`Featured videos not returned (private or deleted?): ${missing.join(', ')}`);
