@@ -243,3 +243,31 @@
 
   .skill-row-title { font-size: 0.85rem; color: var(--muted); }
 }
+/* --- Live subscriber counter (bio) ------------------------------------ */
+.live-count {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.live-dot {
+  display: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--page-color);
+  align-self: center;
+}
+
+.live-count.is-live .live-dot {
+  display: inline-block;
+  animation: live-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--page-color) 45%, transparent); }
+  50%      { box-shadow: 0 0 0 5px color-mix(in srgb, var(--page-color) 0%, transparent); }
+}

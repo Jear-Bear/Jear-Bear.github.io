@@ -1,0 +1,45 @@
+{
+  "_readme": "Manual values. Any metric here with a non-null value replaces the same key in stats.public.json on the page. Set value to null to hide it. Keys starting with _ are ignored. The daily Action never edits this file.",
+  "metrics": {
+    "returningViewers": {
+      "_note": "Not available from the YouTube Analytics API. Copy from YouTube Studio > Analytics > Audience. Example: value 0.42 with unit percent, or 5200 with unit count.",
+      "value": null,
+      "unit": "percent",
+      "label": "Returning viewers",
+      "period": { "start": null, "end": null, "display": "" },
+      "source": "manual",
+      "asOf": null
+    },
+    "audienceAge": {
+      "_note": "Optional, shown under 'Who they are' only when value is set. Free text, e.g. 'Most viewers are 18–34'.",
+      "value": null,
+      "unit": "text",
+      "label": "Age",
+      "period": { "start": null, "end": null, "display": "" },
+      "source": "manual",
+      "asOf": null
+    },
+    "audienceGender": {
+      "_note": "Optional, shown under 'Who they are' only when value is set. Free text.",
+      "value": null,
+      "unit": "text",
+      "label": "Gender",
+      "period": { "start": null, "end": null, "display": "" },
+      "source": "manual",
+      "asOf": null
+    }
+  },
+  "videos": {
+    "c3cJdRWkbdQ": {
+      "firstDaysViews": {
+        "_note": "The page fills in exact dates from the video's publish date once the Action has run.",
+        "value": 9700,
+        "unit": "count",
+        "label": "Views in its first 5 days",
+        "period": { "start": null, "end": null, "display": "First 5 days after publishing", "daysAfterPublish": 5 },
+        "source": "manual",
+        "asOf": "2026-09-23"
+      }
+    }
+  }
+}

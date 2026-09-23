@@ -306,3 +306,12 @@ main { position: relative; z-index: 1; }
     opacity: 0.4;
   }
 }
+
+/* --- Inline links (same as about/tools) ------------------------------ */
+.inline-link {
+  color: var(--page-color);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
+  font-weight: 500;
+}
+.inline-link:hover { border-bottom-color: var(--page-color); }
