@@ -49,10 +49,12 @@ function weakPool() {
 // ---------------------------------------------------------------- views
 // Track the *visual* viewport (shrinks when the mobile keyboard opens) so the
 // review overlay can size itself to the space the keyboard doesn't cover.
+const COMPACT_BELOW = 560;   // px of visible height (keyboard open, landscape)
 function syncViewport() {
   const vv = window.visualViewport;
-  document.documentElement.style.setProperty(
-    '--vvh', `${vv ? vv.height : window.innerHeight}px`);
+  const h = vv ? vv.height : window.innerHeight;
+  document.documentElement.style.setProperty('--vvh', `${h}px`);
+  document.body.classList.toggle('kt-compact', h < COMPACT_BELOW);
   // While the review overlay is up, cancel Safari's focus-pan so the layout
   // and visual viewports stay pinned together at the top. (Chasing the pan
   // with an offset just moves the overlay along with it.)
