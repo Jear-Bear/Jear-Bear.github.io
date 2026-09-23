@@ -145,6 +145,16 @@
     return img;
   }
 
+  // Small daily-views line under a video's numbers, with a caption
+  function videoTrend(m) {
+    if (!has(m) || !window.SponsorCharts) return null;
+    const spark = window.SponsorCharts.sparkline(m);
+    if (!spark) return null;
+    return h('div', { class: 'video-trend' },
+      spark,
+      h('span', { class: 'stat-period' }, `Daily views · ${SD.formatPeriod(m.period)}`));
+  }
+
   function renderVideo(entry, stats) {
     const live = stats.videos[entry.id] || {};
     const metrics = live.metrics || {};
@@ -159,6 +169,7 @@
       ),
       videoMetricLine(highlight, live),
       highlight !== lifetime ? videoMetricLine(lifetime, live) : null,
+      videoTrend(metrics.dailyViews),
       live.publishedAt ? h('p', { class: 'video-published' }, `Published ${SD.formatDate(live.publishedAt)}`) : null
     );
   }
@@ -309,6 +320,7 @@
       renderHeadline(stats, content);
       renderUpdated(stats);
       renderPartners(content);
+      if (window.SponsorCharts) window.SponsorCharts.overview(stats, SD);
       renderCountries(stats, content);
       renderWho(stats, content);
       renderCategories(stats, content);
