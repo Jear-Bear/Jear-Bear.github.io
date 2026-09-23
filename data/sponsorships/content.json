@@ -1,0 +1,168 @@
+{
+  "_readme": "Editable content for /sponsorships/. Change anything here without touching HTML. Metric keys refer to stats.public.json / overrides.json. Keys starting with _ are ignored.",
+
+  "headlineStats": ["subscribers", "longFormViews", "viewsAllFormats", "englishSpeakingShare"],
+
+  "audience": {
+    "regions": [
+      { "code": "US", "label": "United States" },
+      { "code": "GB", "label": "United Kingdom" },
+      { "code": "CA", "label": "Canada" },
+      { "code": "AU", "label": "Australia" },
+      { "code": "JP", "label": "Japan" }
+    ],
+    "whoTheyAre": [
+      "English-speaking Japanese learners",
+      "Learning through immersion: reading, listening and watching Japanese media",
+      "Building their own study setups with tools like Anki and Yomitan"
+    ],
+    "whoMetrics": ["returningViewers", "audienceAge", "audienceGender"],
+    "interests": [
+      "Immersion", "Anki", "Yomitan", "Migaku", "Manga", "Anime",
+      "Reading", "Speaking practice", "Japanese media", "Learning tools"
+    ]
+  },
+
+  "videoCategories": [
+    {
+      "title": "At every level",
+      "description": "Content that meets learners wherever they are, from their first manga to native-level reading.",
+      "videos": [
+        { "id": "8Iv1WBM2vek", "title": "Manga at Every Japanese Level" }
+      ]
+    },
+    {
+      "title": "Tools & setup",
+      "tag": "Evergreen",
+      "description": "Setup guides keep being found through search long after they go up. That's where a tool integration keeps working.",
+      "videos": [
+        { "id": "mjxshJATvi0", "title": "Anki & Yomitan Setup", "highlight": "recentViews" },
+        { "id": "JgIObAxLwMw", "title": "Memorize Japanese Vocab" }
+      ]
+    },
+    {
+      "title": "Guides & resources",
+      "description": "Practical walk-throughs for the parts of learning that people get stuck on.",
+      "videos": [
+        { "id": "f0LGOyPcvNk", "title": "Enjoy Reading" },
+        { "id": "SfnG2M5uYVk", "title": "Study Grammar" },
+        { "id": "V5GBBrj3vrA", "title": "Learn from Anime" }
+      ]
+    },
+    {
+      "title": "Speaking & practical Japanese",
+      "description": "Getting from input to actual conversations.",
+      "videos": [
+        { "id": "n0uYLxvneCg", "title": "Practice with Natives for FREE" },
+        { "id": "c3cJdRWkbdQ", "title": "How to Keep Conversations Going in Japanese", "highlight": "firstDaysViews" }
+      ]
+    },
+    {
+      "title": "Rankings",
+      "description": "Opinionated takes on popular language-learning advice.",
+      "videos": [
+        { "id": "GlCCFm91yO8", "title": "Language Learning Advice Tier List" }
+      ]
+    }
+  ],
+
+  "caseStudies": [
+    {
+      "partner": "italki",
+      "url": "https://www.italki.com",
+      "campaignType": "Flat-fee integration",
+      "video": { "id": "c3cJdRWkbdQ", "title": "How to Keep Conversations Going in Japanese" },
+      "showViews": true,
+      "audienceAction": "",
+      "result": "",
+      "whyItWorked": "The video is about keeping real conversations going, so booking a tutor was the natural next step rather than a detour."
+    },
+    {
+      "partner": "Keychron",
+      "url": "https://www.keychron.com",
+      "campaignType": "Integration + product",
+      "video": { "id": "qfNFMS96UnM", "title": "The Japanese Keyboard Layout Everyone Forgot About" },
+      "showViews": false,
+      "audienceAction": "",
+      "result": "",
+      "whyItWorked": "The keyboard was the subject of the video, not a break from it."
+    },
+    {
+      "partner": "Migaku",
+      "url": "https://migaku.com",
+      "campaignType": "Ongoing affiliate partnership",
+      "video": null,
+      "showViews": false,
+      "audienceAction": "",
+      "result": "",
+      "whyItWorked": "Migaku fits into the immersion workflow I already teach, so recommending it is part of the advice."
+    }
+  ],
+
+  "partners": [
+    { "name": "italki", "url": "https://www.italki.com" },
+    { "name": "Keychron", "url": "https://www.keychron.com" },
+    { "name": "Migaku", "url": "https://migaku.com" }
+  ],
+
+  "packages": [
+    {
+      "id": "integration",
+      "name": "Integration",
+      "priceFrom": 600,
+      "description": "A 60–90 second segment in a relevant guide video."
+    },
+    {
+      "id": "evergreen",
+      "name": "Evergreen package",
+      "priceFrom": 850,
+      "featured": true,
+      "description": "For tools people keep searching for.",
+      "includes": ["Integration", "Sponsored Short", "Pinned comment", "Top description link for 12 months", "90-day make-good"]
+    },
+    {
+      "id": "quarterly",
+      "name": "Quarterly partner",
+      "priceFrom": 1450,
+      "description": "Three integrations, one a month."
+    },
+    {
+      "id": "dedicated",
+      "name": "Dedicated guide video",
+      "priceFrom": 1200,
+      "description": "A full video built around your product. Guide topics only."
+    },
+    {
+      "id": "short",
+      "name": "Sponsored Short",
+      "priceFrom": 200,
+      "description": "A standalone Short built around your product."
+    },
+    {
+      "id": "short-addon",
+      "name": "Short add-on",
+      "priceFrom": 150,
+      "description": "Add a Short to any integration."
+    },
+    {
+      "id": "spring-travel",
+      "name": "Spring travel package",
+      "priceFrom": 1200,
+      "availableUntil": "2027-06-20",
+      "description": "An integration in a trip-prep guide, plus 2 Shorts filmed during the trip."
+    }
+  ],
+  "packagesNote": "Paid-ad usage rights and category exclusivity are priced separately. Custom packages are welcome.",
+
+  "brandFit": [
+    "Japanese tutoring",
+    "Japanese books, manga and e-books",
+    "Japan travel",
+    "Study abroad",
+    "Japanese learning and reading tools",
+    "Keyboards and desk gear, when they fit learning content",
+    "Japan-related subscriptions",
+    "Select creator tools"
+  ],
+  "brandFitExclusions": ["AI tools", "crypto", "NFTs"]
+}
