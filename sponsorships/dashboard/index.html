@@ -87,6 +87,18 @@
         <div class="dash-block">
           <div class="section-label"><span class="section-label-text">Overview</span></div>
           <div class="stat-grid dash-stats" id="dash-overview"></div>
+          <div class="chart-grid" id="overview-charts" hidden>
+            <div class="panel" id="trend-panel" hidden>
+              <h3 class="panel-title">Daily views</h3>
+              <p class="panel-sub" id="trend-period"></p>
+              <div id="trend-chart"></div>
+            </div>
+            <div class="panel" id="mix-panel" hidden>
+              <h3 class="panel-title">Views by format</h3>
+              <p class="panel-sub" id="mix-period"></p>
+              <div id="mix-chart"></div>
+            </div>
+          </div>
         </div>
 
         <div class="dash-block">
@@ -147,6 +159,7 @@
 
   <script src="../../scripts/site.js"></script>
   <script src="../../scripts/sponsor-data.js"></script>
+  <script src="../../scripts/sponsor-charts.js"></script>
   <script src="../../scripts/dashboard.js"></script>
 </body>
 </html>
