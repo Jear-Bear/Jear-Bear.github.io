@@ -145,8 +145,18 @@
     renderOverview(pub, priv);
     if (window.SponsorCharts) window.SponsorCharts.overview(pub, SD);
     renderBars('countries', pub.metrics.topCountries, country, 8);
-    renderBars('ages', priv.metrics.ageGroups, age, 8);
-    renderBars('genders', priv.metrics.genders, fromMap(GENDERS), 4);
+    // Age × gender replaces the separate age and gender panels; files written
+    // before it existed fall back to those two
+    const agPanel = document.getElementById('age-gender-panel');
+    const hasAgeGender = window.SponsorCharts && priv.metrics.ageGender &&
+      window.SponsorCharts.ageGender(agPanel, priv.metrics.ageGender, SD);
+    agPanel.hidden = !hasAgeGender;
+    if (hasAgeGender) {
+      dash.querySelectorAll('[data-bars="ages"], [data-bars="genders"]').forEach((p) => { p.hidden = true; });
+    } else {
+      renderBars('ages', priv.metrics.ageGroups, age, 8);
+      renderBars('genders', priv.metrics.genders, fromMap(GENDERS), 4);
+    }
     renderBars('subscribed', priv.metrics.subscribedStatus, fromMap(SUBSCRIBED), 3);
     renderBars('traffic', priv.metrics.trafficSources, fromMap(TRAFFIC), 8);
     renderBars('devices', priv.metrics.deviceTypes, fromMap(DEVICES), 5);
@@ -193,7 +203,7 @@
     dash.querySelectorAll('[data-bars]').forEach((p) => p.replaceChildren());
     document.getElementById('dash-overview').replaceChildren();
     document.querySelector('#video-table tbody').replaceChildren();
-    ['trend-chart', 'mix-chart'].forEach((id) => document.getElementById(id).replaceChildren());
+    ['trend-chart', 'mix-chart', 'age-gender-panel'].forEach((id) => document.getElementById(id).replaceChildren());
     document.getElementById('overview-charts').hidden = true;
     dash.hidden = true;
     gate.hidden = false;
