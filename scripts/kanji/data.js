@@ -55,6 +55,25 @@ export function detail(char) {
   return detailCache.get(char);
 }
 
+// Background loading: fetch detail files for `chars` in order, a few at a
+// time, so they're cached before the learner reaches them. Calling again
+// (e.g. a new session) replaces the pending list.
+let prefetchQueue = [];
+let prefetchRunning = 0;
+const PREFETCH_PARALLEL = 4;
+
+export function prefetch(chars) {
+  prefetchQueue = [...new Set(chars)].filter((c) => !detailCache.has(c));
+  for (let i = prefetchRunning; i < PREFETCH_PARALLEL; i++) pump();
+}
+
+function pump() {
+  const c = prefetchQueue.shift();
+  if (!c) return;
+  prefetchRunning++;
+  detail(c).finally(() => { prefetchRunning--; pump(); });
+}
+
 // ---------------------------------------------------------------- entries
 // Index entry: [strokes, on, kun, meaning, jlpt, kanken, freq, hasStrokes]
 export function info(char) {

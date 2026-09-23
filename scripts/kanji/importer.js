@@ -8,7 +8,7 @@
 // .xlsx is a zip of XML files; it's read here with the browser's built-in
 // DecompressionStream and DOMParser, so no spreadsheet library is needed.
 
-import { isKanji, hasKanji, isKana } from './data.js?v=1';
+import { isKanji, hasKanji, isKana } from './data.js?v=2';
 
 // ---------------------------------------------------------------- entry
 export async function parseFile(file) {
