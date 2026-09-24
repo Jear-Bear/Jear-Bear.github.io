@@ -19,9 +19,9 @@ Each wiki entry looks like:
     ※この問題は現在非表示です！                 no longer asked in the game → skipped
 
 Output: a list of
-    { id, set, term, segs, readings, meaning, note, vars, hint, tags }
+    { id, set, term, segs, readings, cores, meaning, note, vars, hint, tags }
 where segs splits term into alternating [yellow, white, yellow, …] runs, as the
-game colours them.
+game colours them, and cores are the readings of the yellow part alone.
 """
 
 import html
@@ -90,12 +90,19 @@ def parse_page(path, set_):
         num = int(m.group(2))
         reading_text = re.sub(r'\s+', '', m.group(3))
         reading_text = re.sub(r'等$', '', reading_text)
+        # the same readings without their red (white-on-screen) parts: what's
+        # left is the reading of the yellow part alone, e.g. とちぎ for 栃木県
+        core_head = re.sub(r'\s+', ' ', plain(RED.sub('', re.sub(r'<!--.*?-->', '', parts[i], flags=re.S))))
+        cm = re.match(r'ID[:：]\s*(?:Lv\d+_)?\d+\s*(.*)', core_head)
+        core_text = re.sub(r'等$', '', re.sub(r'\s+', '', cm.group(1))) if cm else ''
+        full_list, core_list = split_list(reading_text), split_list(core_text)
+        cores = [c for f, c in zip(full_list, core_list) if c and c != f] if len(full_list) == len(core_list) else []
         body = parts[i + 1]
         if '現在非表示' in body:
             continue
         e = {
             'id': f'{"Lv" + set_ if set_.isdigit() else set_}_{num:04d}',
-            'set': set_, 'term': '', 'segs': [], 'readings': split_list(reading_text),
+            'set': set_, 'term': '', 'segs': [], 'readings': full_list, 'cores': cores,
             'meaning': '', 'note': [], 'vars': [], 'hint': 0, 'tags': [],
         }
         for line in re.split(r'<br\s*/?>|</div>|<div[^>]*>', body):
