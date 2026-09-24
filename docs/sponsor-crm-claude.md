@@ -50,9 +50,15 @@ expire after 30 days idle.
 
 ## Scheduled tasks
 
-Create these in Claude as scheduled tasks (in Cowork, type `/schedule`, or use
-the Scheduled section), with the **Sponsor desk** and **Gmail** connectors on.
-They're written to be short so each run uses little of your plan's usage.
+Create each one in the Claude app (Pro or above; desktop, web or mobile) by
+starting a **new chat** with the **Sponsor desk** and **Gmail** connectors on
+and pasting the prompt below, preceded by a schedule line such as
+`Every weekday at 7:30 AM Central time, run this task:`. Claude proposes the
+schedule; check the time and tap **Schedule**. If it asks for an approval mode,
+let the tools run without asking (their writes only fill the review queue).
+On desktop you can instead use **Cowork → Scheduled → New task → Set up
+manually**. (`/schedule` is not a command in regular chats or Claude Code.)
+The prompts are short so each run uses little of your plan's usage.
 
 ### 1. Email sync: weekdays at 7:30 AM (Central)
 
