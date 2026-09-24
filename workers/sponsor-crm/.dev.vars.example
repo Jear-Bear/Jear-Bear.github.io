@@ -1,0 +1,4 @@
+# Copy to .dev.vars for `npm run dev` (never commit .dev.vars).
+# Use throwaway values locally; the real ones live only in GitHub secrets.
+SPONSOR_MANAGEMENT_PASSWORD=local-dev-password-change-me
+CRM_SESSION_KEY=local-dev-session-key-at-least-32-characters-long
