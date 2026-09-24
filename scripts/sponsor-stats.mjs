@@ -143,7 +143,7 @@ async function dataApi(name, path, params) {
 }
 
 async function fetchChannel() {
-  const body = await dataApi('channels', 'channels', { part: 'statistics,contentDetails', id: CHANNEL_ID });
+  const body = await dataApi('channels', 'channels', { part: 'snippet,statistics,contentDetails', id: CHANNEL_ID });
   const ch = body.items && body.items[0];
   if (!ch) throw new Error('channels: channel not found');
   if (ch.statistics.hiddenSubscriberCount) throw new Error('channels: subscriber count is hidden');
@@ -188,6 +188,31 @@ async function report(name, token, params) {
   const body = await request(`analytics ${name}`, url, { headers: { Authorization: `Bearer ${token}` } });
   const cols = (body.columnHeaders || []).map((c) => c.name);
   return (body.rows || []).map((row) => Object.fromEntries(row.map((v, i) => [cols[i], v])));
+}
+
+// The Data API rounds subscriber counts down to three significant figures
+// (13,5xx -> 13,500). Lifetime gained minus lost from Analytics gives the
+// exact count as of A_END. Use it only when it agrees with the rounded count
+// (allowing for the rounding and a few days of growth); otherwise publish
+// the rounded one.
+async function exactSubscribers(token, channel) {
+  const rounded = int(channel.statistics.subscriberCount);
+  const fallback = metric(rounded, 'count', 'Subscribers', period(null, RUN_DATE), DATA_API);
+  const since = String(channel.snippet.publishedAt || '').slice(0, 10);
+  if (!since || since > A_END) return fallback;
+
+  const [row] = await report('lifetime subscribers', token, {
+    startDate: since, endDate: A_END, metrics: 'subscribersGained,subscribersLost',
+  });
+  const net = row ? row.subscribersGained - row.subscribersLost : NaN;
+  const unit = 10 ** Math.max(0, String(rounded).length - 3);
+  if (!Number.isFinite(net) || Math.abs(net - rounded) > unit + rounded * 0.03) {
+    console.warn(`Exact subscriber count ${net} disagrees with ${rounded}; publishing the rounded count.`);
+    return fallback;
+  }
+  const m = metric(net, 'count', 'Subscribers', period(null, A_END), ANALYTICS_API);
+  m.exact = true;
+  return m;
 }
 
 // --- Build ---------------------------------------------------------------------
@@ -254,6 +279,8 @@ async function build({ includePrivate }) {
     : [];
   const views90 = Object.fromEntries(video90.map((r) => [r.video, r.views]));
 
+  const subscribers = await exactSubscribers(token, channel);
+
   // Allowlisted output
   const s = channel.statistics;
   const englishShare = countries
@@ -261,7 +288,7 @@ async function build({ includePrivate }) {
     .reduce((sum, r) => sum + r.views, 0) / countryTotal;
 
   const metrics = {
-    subscribers: metric(int(s.subscriberCount), 'count', 'Subscribers', period(null, RUN_DATE), DATA_API),
+    subscribers,
     totalViews: metric(int(s.viewCount), 'count', 'Total channel views', lifetime(null), DATA_API),
     videoCount: metric(int(s.videoCount), 'count', 'Public videos', period(null, RUN_DATE), DATA_API),
     viewsAllFormats: metric(totals.views, 'count', 'Views, all formats', last28, ANALYTICS_API),
