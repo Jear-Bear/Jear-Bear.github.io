@@ -47,10 +47,10 @@
       .map((key) => stats.metrics[key])
       .filter(has)
       .map((m) =>
-        h('div', { class: 'stat-card reveal' },
-          h('p', { class: 'stat-value' }, SD.formatValue(m)),
-          h('p', { class: 'stat-label' }, m.label),
-          h('p', { class: 'stat-period' }, SD.formatPeriod(m.period))
+        h('div', { class: 'ledger-item' },
+          h('dt', { class: 'ledger-label' }, m.label),
+          h('dd', { class: 'ledger-fig' }, SD.formatValue(m)),
+          SD.formatPeriod(m.period) ? h('dd', { class: 'ledger-note' }, SD.formatPeriod(m.period)) : null
         )
       );
     fill('headline-stats', cards);
@@ -61,10 +61,7 @@
     const source = stats.generatedBy === 'manual-seed'
       ? 'from a YouTube Studio export'
       : 'from YouTube, refreshed daily';
-    fill('updated', [
-      h('span', { class: 'data-dot', 'aria-hidden': 'true' }),
-      `Updated ${SD.formatDate(stats.generatedAt)} · ${source}`,
-    ]);
+    fill('updated', [`Updated ${SD.formatDate(stats.generatedAt)} · ${source}`]);
   }
 
   function renderPartners(content) {
@@ -176,7 +173,7 @@
 
   function renderCategories(stats, content) {
     fill('categories', (content.videoCategories || []).map((cat) =>
-      h('article', { class: 'category reveal' },
+      h('article', { class: 'category' },
         h('div', { class: 'category-head' },
           h('h3', null, cat.title, cat.tag ? h('span', { class: 'category-tag' }, cat.tag) : null),
           cat.description ? h('p', null, cat.description) : null
@@ -204,7 +201,7 @@
         ? h('span', null, `${SD.formatValue(views)} views `, h('span', { class: 'stat-period' }, SD.formatPeriod(views.period, live)))
         : null;
 
-      return h('article', { class: 'case-card reveal' },
+      return h('article', { class: 'case' },
         h('h3', { class: 'case-partner' }, c.partner),
         h('dl', { class: 'case-fields' },
           field('Campaign', c.campaignType),
@@ -224,19 +221,26 @@
     return (content.packages || []).filter((p) => !p.availableUntil || now <= p.availableUntil);
   }
 
+  // Set like a 品書き: name, dotted leader, price; details underneath
   function renderPackages(content) {
     fill('packages', activePackages(content).map((p) =>
-      h('article', { class: 'package-card reveal' + (p.featured ? ' is-featured' : '') },
-        h('h3', null, p.name),
-        typeof p.priceFrom === 'number'
-          ? h('p', { class: 'package-price' }, h('span', null, 'From '), usd.format(p.priceFrom))
-          : null,
-        p.description ? h('p', { class: 'package-desc' }, p.description) : null,
-        p.availableUntil
-          ? h('p', { class: 'package-availability' }, `Available through ${SD.formatDate(p.availableUntil)}`)
-          : null,
+      h('li', { class: 'menu-item' + (p.featured ? ' is-featured' : '') },
+        h('div', { class: 'menu-line' },
+          h('h3', { class: 'menu-name' }, p.name),
+          p.featured
+            ? h('span', { class: 'menu-stamp' }, h('span', { lang: 'ja' }, 'おすすめ'), h('span', { class: 'visually-hidden' }, ' (recommended)'))
+            : null,
+          typeof p.priceFrom === 'number' ? h('span', { class: 'menu-leader', 'aria-hidden': 'true' }) : null,
+          typeof p.priceFrom === 'number'
+            ? h('span', { class: 'menu-price' }, h('small', null, 'from'), usd.format(p.priceFrom))
+            : null
+        ),
+        p.description ? h('p', { class: 'menu-desc' }, p.description) : null,
         p.includes && p.includes.length
-          ? h('ul', { class: 'package-includes' }, p.includes.map((i) => h('li', null, i)))
+          ? h('p', { class: 'menu-includes' }, h('span', { class: 'menu-includes-label' }, 'Includes '), p.includes.join(' · '))
+          : null,
+        p.availableUntil
+          ? h('p', { class: 'menu-availability' }, `Available through ${SD.formatDate(p.availableUntil)}`)
           : null
       )
     ));
@@ -273,13 +277,13 @@
     let current = null;
 
     function setOffsets() {
-      const navH = navbar ? navbar.offsetHeight : 64;
+      const navH = navbar ? navbar.offsetHeight : 0;   // the masthead scrolls away
       document.documentElement.style.setProperty('--nav-h', `${navH}px`);
       document.documentElement.style.setProperty('--section-nav-h', `${nav.offsetHeight}px`);
     }
 
     function update() {
-      const line = (navbar ? navbar.offsetHeight : 64) + nav.offsetHeight + 24;
+      const line = (navbar ? navbar.offsetHeight : 0) + nav.offsetHeight + 24;
       let idx = 0;
       sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= line) idx = i; });
       const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;

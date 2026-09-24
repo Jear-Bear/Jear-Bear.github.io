@@ -2,69 +2,57 @@
 // JaredDesu.com — shared site behavior
 // =====================================================================
 
-// --- Scroll reveal -----------------------------------------------------
-(function initReveal() {
-  const reveals = document.querySelectorAll('.reveal, .reveal-bounce');
+// Scroll reveals were retired with the redesign. Scripts that render
+// content later still call this; it has nothing left to do.
+window.observeReveal = function () {};
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('active');
-          observer.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.15, rootMargin: '0px 0px -60px 0px' }
-  );
+// --- Mobile menu (masthead) ---------------------------------------------
+(function initMenu() {
+  const toggle = document.querySelector('.menu-toggle');
+  const sheet = document.getElementById('site-menu');
+  if (!toggle || !sheet) return;
+  const close = sheet.querySelector('.menu-close');
 
-  reveals.forEach((el) => observer.observe(el));
+  function open() {
+    sheet.hidden = false;
+    toggle.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+    (sheet.querySelector('nav a') || close).focus();
+  }
+  function shut() {
+    sheet.hidden = true;
+    toggle.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+    toggle.focus();
+  }
 
-  // For content rendered after load (e.g. from JSON): observe any
-  // .reveal / .reveal-bounce elements inside `root`
-  window.observeReveal = function (root) {
-    const els = root.matches && root.matches('.reveal, .reveal-bounce')
-      ? [root]
-      : root.querySelectorAll('.reveal, .reveal-bounce');
-    els.forEach((el) => observer.observe(el));
-  };
+  toggle.addEventListener('click', open);
+  if (close) close.addEventListener('click', shut);
+  sheet.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => {
+    sheet.hidden = true;
+    toggle.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !sheet.hidden) shut(); });
 })();
 
-// --- Mobile nav --------------------------------------------------------
-(function initMobileNav() {
+// --- Old navbar menu (pages not yet on the masthead) --------------------
+(function initLegacyNav() {
   const burger = document.querySelector('.nav-burger');
   const mobileNav = document.querySelector('.nav-mobile');
   if (!burger || !mobileNav) return;
-
-  burger.addEventListener('click', (e) => {
-    e.stopPropagation();
-    mobileNav.classList.toggle('open');
-  });
-
-  mobileNav.querySelectorAll('a').forEach((link) => {
-    link.addEventListener('click', () => mobileNav.classList.remove('open'));
-  });
-
-  document.addEventListener('click', (e) => {
-    if (!mobileNav.contains(e.target) && !burger.contains(e.target)) {
-      mobileNav.classList.remove('open');
-    }
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') mobileNav.classList.remove('open');
-  });
+  burger.addEventListener('click', (e) => { e.stopPropagation(); mobileNav.classList.toggle('open'); });
+  mobileNav.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => mobileNav.classList.remove('open')));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') mobileNav.classList.remove('open'); });
 })();
 
-// --- Active nav link highlighting --------------------------------------
-(function initActiveLink() {
+// --- Current page in the navigation --------------------------------------
+(function markCurrent() {
   const path = window.location.pathname.replace(/\/$/, '').toLowerCase();
-  const allLinks = document.querySelectorAll('.nav-links a, .nav-mobile a');
-
-  allLinks.forEach((link) => {
-    const href = link.getAttribute('href') || '';
-    const cleaned = href.replace(/^\.\.\//, '/').replace(/\/$/, '').toLowerCase();
-    if (cleaned && path.endsWith(cleaned)) {
+  document.querySelectorAll('.masthead-nav a, .menu-sheet a, .nav-links a, .nav-mobile a').forEach((link) => {
+    const href = (link.getAttribute('href') || '').replace(/^(\.\.\/)+/, '/').replace(/\/$/, '').toLowerCase();
+    if (href && href !== '/' && path.endsWith(href)) {
+      link.setAttribute('aria-current', 'page');
       link.classList.add('active');
     }
   });
