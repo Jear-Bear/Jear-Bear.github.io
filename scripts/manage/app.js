@@ -3,12 +3,13 @@
 // is shown until the Worker accepts the password.
 
 import { h, clear, $ } from './dom.js';
-import { api, login, hasSession, clearSession, whenSignedOut, API_BASE } from './api.js';
+import { api, request, login, hasSession, clearSession, whenSignedOut, API_BASE } from './api.js';
 import { store, reload, subscribe } from './store.js';
 import { dashboardView, pipelineView, companiesView, videosView, paymentsView, ratesView } from './views.js';
 import { openDeal, openCompany } from './panels.js';
 import { openImport, exportAs, CSV_TABLES } from './io.js';
 import { calendarView } from './cal-view.js';
+import { reviewView, refreshReviewCount, whenReviewCountChanges } from './review.js';
 import { closePanel, panelOpen, panelDirty, toast, button, busy } from './ui.js';
 
 // Refuse to run inside a frame (GitHub Pages can't send frame-ancestors)
@@ -19,6 +20,7 @@ if (window.top !== window.self) {
 
 const VIEWS = [
   { id: 'dashboard', label: 'Dashboard', render: dashboardView },
+  { id: 'review', label: 'Review', render: reviewView },
   { id: 'calendar', label: 'Calendar', render: calendarView },
   { id: 'pipeline', label: 'Pipeline', render: pipelineView },
   { id: 'companies', label: 'Companies', render: companiesView },
@@ -68,7 +70,15 @@ whenSignedOut(() => showLogin('Your session ended. Sign in again.'));
 // --- Shell -----------------------------------------------------------------------------
 function shell() {
   const nav = h('nav', { class: 'crm-tabs', 'aria-label': 'Sections' },
-    VIEWS.map((v) => h('a', { href: `#/${v.id}`, dataset: { view: v.id } }, v.label)));
+    VIEWS.map((v) => h('a', { href: `#/${v.id}`, dataset: { view: v.id } }, v.label,
+      v.id === 'review' ? h('span', { class: 'crm-badge', id: 'crm-review-badge', hidden: true }) : null)));
+  whenReviewCountChanges((n) => {
+    const b = document.getElementById('crm-review-badge');
+    if (!b) return;
+    b.textContent = n > 99 ? '99+' : String(n);
+    b.hidden = !n;
+    b.setAttribute('aria-label', `${n} to review`);
+  });
   const signOut = h('button', { type: 'button', class: 'crm-link-btn', onclick: () => { clearSession(); showLogin('Signed out.'); } }, 'Sign out');
   const sync = h('span', { class: 'crm-sync', 'aria-live': 'polite' });
   subscribe((s) => { sync.textContent = s.loading ? 'Syncing…' : s.error ? 'Offline' : ''; });
@@ -105,6 +115,7 @@ async function start() {
     return;
   }
   route();
+  refreshReviewCount();
 }
 
 // Re-render the current view whenever the data changes
@@ -158,6 +169,21 @@ function settingsView(root) {
       await reload();
       toast('Saved', { kind: 'ok', ms: 2500 });
     });
+    const mcpUrl = h('input', { type: 'text', readonly: true, value: `${API_BASE}/mcp`, 'aria-label': 'Connector URL' });
+    const copyBtn = button('Copy', async () => { try { await navigator.clipboard.writeText(mcpUrl.value); toast('Copied', { kind: 'ok', ms: 1500 }); } catch { mcpUrl.select(); } }, { kind: 'chip' });
+    const grantsEl = h('ul', { class: 'crm-mini-list' }, h('li', { class: 'crm-note is-muted' }, 'Loading…'));
+    const drawGrants = async () => {
+      try {
+        const grants = await request('GET', 'claude/grants');
+        grantsEl.replaceChildren(...(grants.length ? grants.map((g) => h('li', { class: 'crm-grant' },
+          h('span', {}, h('strong', {}, g.client), h('span', { class: 'crm-muted' }, ` · connected ${new Date(g.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`)),
+          button('Revoke', async () => {
+            if (!window.confirm(`Disconnect ${g.client}? Claude will need your password to connect again.`)) return;
+            try { await request('DELETE', `claude/grants/${encodeURIComponent(g.id)}`); toast('Disconnected'); drawGrants(); } catch (err) { toast(err.message, { kind: 'error' }); }
+          }, { kind: 'chip' }))) : [h('li', { class: 'crm-note is-muted' }, 'No Claude sessions connected.')]));
+      } catch (err) { grantsEl.replaceChildren(h('li', { class: 'crm-note is-error' }, err.message)); }
+    };
+    drawGrants();
     const outAll = button('Sign out on every device', async () => {
       if (!window.confirm('Sign out everywhere, including this browser?')) return;
       await busy(outAll, () => api.logoutAll());
@@ -187,12 +213,17 @@ function settingsView(root) {
       h('section', { class: 'crm-section' }, h('h2', { class: 'crm-section-title' }, 'Categories'),
         h('p', { class: 'crm-note is-muted' }, 'One per line. Used for company categories and the same-category conflict check.'),
         cats, h('div', { class: 'crm-row-actions' }, saveCats)),
+      h('section', { class: 'crm-section' }, h('h2', { class: 'crm-section-title' }, 'Claude connector'),
+        h('p', { class: 'crm-note' }, 'Add this address in Claude (Customize → Connectors → Add custom connector). Claude will ask for this password once.'),
+        h('div', { class: 'crm-add-row' }, mcpUrl, copyBtn),
+        h('h3', { class: 'crm-subhead' }, 'Connected sessions'),
+        grantsEl),
       h('section', { class: 'crm-section' }, h('h2', { class: 'crm-section-title' }, 'Security'),
         h('p', { class: 'crm-note' }, 'Sessions last 12 hours and end when you close this tab.'),
         outAll),
       h('section', { class: 'crm-section' }, h('h2', { class: 'crm-section-title' }, 'Keyboard'),
         h('dl', { class: 'crm-keys' },
-          [['n', 'New record in this section'], ['/', 'Search'], ['Esc', 'Close the panel'], ['g then d / k / p / c / v', 'Go to Dashboard, Calendar, Pipeline, Companies, Videos']]
+          [['n', 'New record in this section'], ['/', 'Search'], ['Esc', 'Close the panel'], ['g then d / r / k / p / c / v', 'Go to Dashboard, Review, Calendar, Pipeline, Companies, Videos']]
             .map(([k, d]) => [h('dt', {}, h('kbd', {}, k)), h('dd', {}, d)]))),
     );
   };
@@ -217,7 +248,7 @@ document.addEventListener('keydown', (e) => {
   } else if (e.key === 'g') {
     gPressed = Date.now();
   } else if (Date.now() - gPressed < 1200) {
-    const to = { d: 'dashboard', k: 'calendar', p: 'pipeline', c: 'companies', v: 'videos' }[e.key];
+    const to = { d: 'dashboard', r: 'review', k: 'calendar', p: 'pipeline', c: 'companies', v: 'videos' }[e.key];
     if (to) { e.preventDefault(); location.hash = `#/${to}`; }
     gPressed = 0;
   }
