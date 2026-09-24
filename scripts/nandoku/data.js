@@ -1,36 +1,40 @@
 // data.js — Nandoku Trainer word data and answer checking.
 //
-// terms.json rows: [id, term, reading, ask, pre, suf, alts, vars, meaning, note, level, of]
+// terms.json rows: [id, term, segs, readings, meaning, note, vars, hint, tags, set, of]
 // (see scripts/nandoku/build-data.py)
 
-let levels = {};
+let sets = {};
 let byId = new Map();
-let byLevel = new Map();
+let bySet = new Map();
 
 export async function load() {
-  const res = await fetch('../../data/nandoku/terms.json?v=2');
+  const res = await fetch('../../data/nandoku/terms.json?v=3');
   if (!res.ok) throw new Error(`terms.json: ${res.status}`);
   const data = await res.json();
-  levels = data.levels;
+  sets = data.sets;
   byId = new Map();
-  byLevel = new Map();
+  bySet = new Map();
   for (const r of data.terms) {
     const t = {
-      id: r[0], term: r[1], reading: r[2], ask: r[3], pre: r[4], suf: r[5],
-      alts: r[6], vars: r[7], meaning: r[8], note: r[9], level: r[10], of: r[11] || '',
+      id: r[0], term: r[1], segs: r[2], readings: r[3], meaning: r[4], note: r[5],
+      vars: r[6], hint: r[7], tags: r[8], level: r[9], of: r[10] || '',
     };
     byId.set(t.id, t);
-    if (!byLevel.has(t.level)) byLevel.set(t.level, []);
-    byLevel.get(t.level).push(t);
+    if (!bySet.has(t.level)) bySet.set(t.level, []);
+    bySet.get(t.level).push(t);
   }
 }
 
-export const levelList = () => Object.keys(levels).sort();
-export const levelCount = (lv) => levels[lv] || 0;
+// Numbered levels first, then 別表記 and the casual-mode set
+export const levelList = () => Object.keys(sets).sort();
+export const levelCount = (lv) => sets[lv] || 0;
 export const get = (id) => byId.get(id);
-export const inLevel = (lv) => byLevel.get(lv) || [];
-// 'alt' is the 別表記 set: other spellings of the level 5–7 words
-export const levelName = (lv) => (lv === 'alt' ? '別表記' : `Level ${Number(lv)}`);
+export const inLevel = (lv) => bySet.get(lv) || [];
+const SET_NAMES = { alt: '別表記', kokoro: 'こころのリテラシー' };
+export const levelName = (lv) => SET_NAMES[lv] || `Level ${Number(lv)}`;
+
+// Meaning questions need a definition that says something ("字義未詳" = meaning unknown)
+export const hasMeaning = (t) => !!t.meaning && !/^字義未詳/.test(t.meaning);
 
 // ---------------------------------------------------------------- answers
 export const kataToHira = (s) => s.replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
@@ -56,8 +60,8 @@ export function normalize(s) {
 
 export function accepts(t, typed) {
   const v = normalize(typed);
-  return [t.ask, ...t.alts].some((a) => normalize(a) === v);
+  return t.readings.some((a) => normalize(a) === v);
 }
 
-// Readings to show on the answer card: the main one plus 別解
-export const readingsText = (t) => [t.reading, ...t.alts.map((a) => t.pre + a + t.suf)].join('、');
+// Readings to show on the answer card
+export const readingsText = (t) => t.readings.join('、');
