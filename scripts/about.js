@@ -11,6 +11,10 @@
       if (!window.SponsorData.hasValue(m)) return;
       el.title = `YouTube subscribers · ${window.SponsorData.formatPeriod(m.period)}`;
       num.textContent = Math.round(m.value).toLocaleString('en-US');
+      el.classList.add('is-live');
+      // An exact count doesn't need the "About"
+      const about = document.querySelector('.live-about');
+      if (m.exact && about) about.remove();
     })
     .catch((err) => console.error('Subscriber count failed to load:', err));
 })();
