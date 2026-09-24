@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-24T14:15:59.881Z",
+  "generatedAt": "2026-09-24T17:22:16.625Z",
   "generatedBy": "sponsor-stats-action",
   "channel": {
     "id": "UCSIxTP9PCM2kcTszONRxZ1w",
@@ -21,16 +21,17 @@
   },
   "metrics": {
     "subscribers": {
-      "value": 13500,
+      "value": 13562,
       "unit": "count",
       "label": "Subscribers",
       "period": {
         "start": null,
-        "end": "2026-09-24",
-        "display": "As of Sep 24, 2026"
+        "end": "2026-09-21",
+        "display": "As of Sep 21, 2026"
       },
-      "source": "youtube-data-api",
-      "asOf": "2026-09-24"
+      "source": "youtube-analytics-api",
+      "asOf": "2026-09-24",
+      "exact": true
     },
     "totalViews": {
       "value": 1680753,
@@ -45,7 +46,7 @@
       "asOf": "2026-09-24"
     },
     "videoCount": {
-      "value": 383,
+      "value": 384,
       "unit": "count",
       "label": "Public videos",
       "period": {
@@ -298,12 +299,12 @@
     }
   },
   "recentUploads": [
+    "kGCUpnS3G-g",
     "c3cJdRWkbdQ",
     "ejFE8tnLwxE",
     "gFTuqGQASOY",
     "kYhFB1YvZiA",
-    "96-f10W3NB8",
-    "ntG13AdEp8I"
+    "96-f10W3NB8"
   ],
   "videos": {
     "8Iv1WBM2vek": {
@@ -312,7 +313,7 @@
       "publishedAt": "2026-08-28T12:30:05Z",
       "metrics": {
         "views": {
-          "value": 21598,
+          "value": 21600,
           "unit": "count",
           "label": "Views",
           "period": {
@@ -405,7 +406,7 @@
       "publishedAt": "2025-04-18T14:01:10Z",
       "metrics": {
         "views": {
-          "value": 63104,
+          "value": 63129,
           "unit": "count",
           "label": "Views",
           "period": {
@@ -563,7 +564,7 @@
       "publishedAt": "2025-08-29T14:00:29Z",
       "metrics": {
         "views": {
-          "value": 19945,
+          "value": 19946,
           "unit": "count",
           "label": "Views",
           "period": {
@@ -721,7 +722,7 @@
       "publishedAt": "2025-10-17T13:30:41Z",
       "metrics": {
         "views": {
-          "value": 57833,
+          "value": 57852,
           "unit": "count",
           "label": "Views",
           "period": {
@@ -879,7 +880,7 @@
       "publishedAt": "2025-03-30T14:00:30Z",
       "metrics": {
         "views": {
-          "value": 45842,
+          "value": 45870,
           "unit": "count",
           "label": "Views",
           "period": {
@@ -891,7 +892,7 @@
           "asOf": "2026-09-24"
         },
         "likes": {
-          "value": 2410,
+          "value": 2411,
           "unit": "count",
           "label": "Likes",
           "period": {
@@ -1037,7 +1038,7 @@
       "publishedAt": "2026-01-31T14:00:48Z",
       "metrics": {
         "views": {
-          "value": 16524,
+          "value": 16536,
           "unit": "count",
           "label": "Views",
           "period": {
@@ -1195,7 +1196,7 @@
       "publishedAt": "2025-09-19T14:01:21Z",
       "metrics": {
         "views": {
-          "value": 32462,
+          "value": 32463,
           "unit": "count",
           "label": "Views",
           "period": {
@@ -1353,7 +1354,7 @@
       "publishedAt": "2026-09-18T13:30:36Z",
       "metrics": {
         "views": {
-          "value": 10913,
+          "value": 10938,
           "unit": "count",
           "label": "Views",
           "period": {
@@ -1365,7 +1366,7 @@
           "asOf": "2026-09-24"
         },
         "likes": {
-          "value": 182,
+          "value": 183,
           "unit": "count",
           "label": "Likes",
           "period": {
@@ -1377,7 +1378,7 @@
           "asOf": "2026-09-24"
         },
         "comments": {
-          "value": 37,
+          "value": 38,
           "unit": "count",
           "label": "Comments",
           "period": {
@@ -1425,7 +1426,7 @@
       "publishedAt": "2025-11-21T13:30:20Z",
       "metrics": {
         "views": {
-          "value": 58828,
+          "value": 58830,
           "unit": "count",
           "label": "Views",
           "period": {
@@ -1719,6 +1720,49 @@
         }
       }
     },
+    "kGCUpnS3G-g": {
+      "id": "kGCUpnS3G-g",
+      "title": "Steam please fix #gaming #shorts #japanese",
+      "publishedAt": "2026-09-24T14:43:12Z",
+      "metrics": {
+        "views": {
+          "value": 418,
+          "unit": "count",
+          "label": "Views",
+          "period": {
+            "start": "2026-09-24",
+            "end": "2026-09-24",
+            "display": "All time · as of Sep 24, 2026"
+          },
+          "source": "youtube-data-api",
+          "asOf": "2026-09-24"
+        },
+        "likes": {
+          "value": 11,
+          "unit": "count",
+          "label": "Likes",
+          "period": {
+            "start": "2026-09-24",
+            "end": "2026-09-24",
+            "display": "All time · as of Sep 24, 2026"
+          },
+          "source": "youtube-data-api",
+          "asOf": "2026-09-24"
+        },
+        "comments": {
+          "value": 1,
+          "unit": "count",
+          "label": "Comments",
+          "period": {
+            "start": "2026-09-24",
+            "end": "2026-09-24",
+            "display": "All time · as of Sep 24, 2026"
+          },
+          "source": "youtube-data-api",
+          "asOf": "2026-09-24"
+        }
+      }
+    },
     "ejFE8tnLwxE": {
       "id": "ejFE8tnLwxE",
       "title": "This might be my biggest Japanese blunder yet #shorts #japanese #languagelearning",
@@ -1883,49 +1927,6 @@
           "label": "Comments",
           "period": {
             "start": "2026-09-12",
-            "end": "2026-09-24",
-            "display": "All time · as of Sep 24, 2026"
-          },
-          "source": "youtube-data-api",
-          "asOf": "2026-09-24"
-        }
-      }
-    },
-    "ntG13AdEp8I": {
-      "id": "ntG13AdEp8I",
-      "title": "鬢 (びん) — the hair at your temples | Japanese Word of the Day #shorts #learnjapanese",
-      "publishedAt": "2026-09-11T13:00:05Z",
-      "metrics": {
-        "views": {
-          "value": 1478,
-          "unit": "count",
-          "label": "Views",
-          "period": {
-            "start": "2026-09-11",
-            "end": "2026-09-24",
-            "display": "All time · as of Sep 24, 2026"
-          },
-          "source": "youtube-data-api",
-          "asOf": "2026-09-24"
-        },
-        "likes": {
-          "value": 41,
-          "unit": "count",
-          "label": "Likes",
-          "period": {
-            "start": "2026-09-11",
-            "end": "2026-09-24",
-            "display": "All time · as of Sep 24, 2026"
-          },
-          "source": "youtube-data-api",
-          "asOf": "2026-09-24"
-        },
-        "comments": {
-          "value": 6,
-          "unit": "count",
-          "label": "Comments",
-          "period": {
-            "start": "2026-09-11",
             "end": "2026-09-24",
             "display": "All time · as of Sep 24, 2026"
           },
