@@ -18,6 +18,17 @@ export const VIDEO_STATUS_LABELS = { open: 'Open', pitched: 'Pitched', booked: '
 export const VIDEO_FORMATS = ['guide', 'milestone', 'story', 'other'];
 export const ACTIVITY_KINDS = ['note', 'call', 'meeting', 'form', 'email', 'system'];
 
+// Calendar
+export const CAL_TYPES = ['task', 'event', 'deliverable', 'milestone'];
+export const CAL_TYPE_LABELS = { task: 'Task', event: 'Event', deliverable: 'Sponsor deliverable', milestone: 'Plan milestone' };
+export const CAL_KINDS = ['meeting', 'call', 'filming', 'editing', 'publishing', 'other'];
+export const CAL_STATUSES = ['not_started', 'in_progress', 'done', 'skipped', 'cancelled'];
+export const CAL_STATUS_LABELS = { not_started: 'Not started', in_progress: 'In progress', done: 'Done', skipped: 'Skipped', cancelled: 'Cancelled' };
+export const CAL_SOURCES = ['plan', 'rules', 'claude', 'me'];
+export const CAL_SOURCE_LABELS = { plan: 'Plan', rules: 'Rules', claude: 'Claude (suggested)', me: 'Me' };
+export const FREQS = ['daily', 'weekly', 'monthly'];
+export const WEEKDAYS = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
+
 // Starting category list; the app keeps the editable list in settings
 export const DEFAULT_CATEGORIES = [
   'Tutoring & lessons', 'E-books, manga & import', 'Japan travel', 'Study abroad & schools',
@@ -116,6 +127,48 @@ export const ENTITIES = {
       sort: { type: 'int', label: 'Order', min: 0, max: 999 },
     },
   },
+  cal_items: {
+    table: 'cal_items', label: 'Calendar item',
+    fields: {
+      type: oneOf('Type', CAL_TYPES, { required: true }),
+      kind: oneOf('Event kind', CAL_KINDS),
+      title: text('Title', 200, { required: true }),
+      notes: long('Notes', 5000),
+      start: { type: 'wall', label: 'Start', required: true },
+      end: { type: 'wall', label: 'End' },
+      all_day: { type: 'bool', label: 'All day' },
+      status: oneOf('Status', CAL_STATUSES),
+      counts_hours: { type: 'bool', label: 'Counts toward channel hours' },
+      company_id: ref('Company', 'companies'),
+      deal_id: ref('Deal', 'deals'),
+      video_id: ref('Video', 'videos'),
+      checklist: { type: 'checklist', label: 'Checklist' },
+      hidden: { type: 'bool', label: 'Hidden' },
+    },
+  },
+  cal_series: {
+    table: 'cal_series', label: 'Recurring item',
+    fields: {
+      type: oneOf('Type', CAL_TYPES, { required: true }),
+      kind: oneOf('Event kind', CAL_KINDS),
+      title: text('Title', 200, { required: true }),
+      notes: long('Notes', 5000),
+      dtstart: { type: 'date', label: 'Starts on', required: true },
+      start_time: { type: 'time', label: 'Start time' },
+      duration_min: { type: 'int', label: 'Length (minutes)', min: 0, max: 24 * 60 },
+      freq: oneOf('Repeats', FREQS, { required: true }),
+      interval: { type: 'int', label: 'Every', min: 1, max: 12 },
+      byday: { type: 'byday', label: 'On' },
+      until: date('Until'),
+      status: oneOf('Status', ['active', 'cancelled']),
+      counts_hours: { type: 'bool', label: 'Counts toward channel hours' },
+      company_id: ref('Company', 'companies'),
+      deal_id: ref('Deal', 'deals'),
+      video_id: ref('Video', 'videos'),
+      checklist: { type: 'checklist', label: 'Checklist' },
+      hidden: { type: 'bool', label: 'Hidden' },
+    },
+  },
   activities: {
     table: 'activities', label: 'Activity',
     fields: {
@@ -200,6 +253,36 @@ function clean(field, raw) {
       return field.values.includes(raw) ? { value: raw } : { error: `must be one of: ${field.values.join(', ')}` };
     case 'ref':
       return isUuid(raw) ? { value: raw.toLowerCase() } : { error: 'must be a record ID' };
+    case 'wall': {
+      const v = String(raw);
+      if (isIsoDate(v)) return { value: v };
+      const m = v.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})/);
+      if (m && isIsoDate(m[1]) && +m[2] < 24 && +m[3] < 60) return { value: `${m[1]}T${m[2]}:${m[3]}` };
+      return { error: 'must be a date or date and time' };
+    }
+    case 'time': {
+      const m = String(raw).match(/^(\d{1,2}):(\d{2})$/);
+      return m && +m[1] < 24 && +m[2] < 60 ? { value: `${m[1].padStart(2, '0')}:${m[2]}` } : { error: 'must be a time (HH:MM)' };
+    }
+    case 'bool':
+      return typeof raw === 'boolean' ? { value: raw } : { error: 'must be true or false' };
+    case 'byday': {
+      const list = Array.isArray(raw) ? raw : String(raw).split(',');
+      const days = [...new Set(list.map((d) => String(d).trim().toUpperCase()).filter(Boolean))];
+      return days.length && days.every((d) => WEEKDAYS.includes(d)) ? { value: days.join(',') } : { error: 'must be weekdays like MO,WE' };
+    }
+    case 'checklist': {
+      const list = typeof raw === 'string' ? (() => { try { return JSON.parse(raw); } catch { return null; } })() : raw;
+      if (!Array.isArray(list) || list.length > 50) return { error: 'must be a list of up to 50 items' };
+      const out = [];
+      for (const it of list) {
+        const t = String((it && it.text) || '').trim().replace(/\s+/g, ' ');
+        if (!t) continue;
+        if (t.length > 300) return { error: 'items must be 300 characters or fewer' };
+        out.push({ text: t, done: Boolean(it.done) });
+      }
+      return { value: out };
+    }
     case 'domains': {
       const list = Array.isArray(raw) ? raw : String(raw).split(/[\s,;]+/);
       if (list.length > 20) return { error: 'has too many domains' };
