@@ -4,6 +4,7 @@
 
 import { ENTITIES, validate, isUuid, DEFAULT_CATEGORIES } from '../../../scripts/manage/schema.js';
 import { defaultTargets, todayIn, DEFAULT_TZ } from '../../../scripts/manage/rules.js';
+import { DEFAULT_CAPACITY, DEFAULT_JOB_HOURS } from '../../../scripts/manage/calendar.js';
 
 export class HttpError extends Error {
   constructor(status, message, details) { super(message); this.status = status; this.details = details; }
@@ -49,7 +50,20 @@ function validCategories(list) {
   }
   return [...new Set(list.map((c) => c.trim()))];
 }
-const SETTING_VALIDATORS = { targets: validTargets, categories: validCategories };
+function validCapacity(c) {
+  if (!c || typeof c !== 'object' || ![c.min, c.max].every((n) => typeof n === 'number' && n >= 0 && n <= 80) || c.min > c.max) {
+    throw new HttpError(400, 'Capacity needs a min and max in hours');
+  }
+  return { min: c.min, max: c.max };
+}
+function validJobHours(j) {
+  const t = /^([01]\d|2[0-3]):[0-5]\d$/;
+  if (!j || !Array.isArray(j.days) || !j.days.every((d) => Number.isInteger(d) && d >= 0 && d <= 6) || !t.test(j.start) || !t.test(j.end) || j.end <= j.start) {
+    throw new HttpError(400, 'Job hours need days (0 = Sunday) and HH:MM start and end');
+  }
+  return { days: [...new Set(j.days)].sort(), start: j.start, end: j.end };
+}
+const SETTING_VALIDATORS = { targets: validTargets, categories: validCategories, capacity: validCapacity, jobHours: validJobHours };
 
 export async function putSetting(db, key, value) {
   const check = SETTING_VALIDATORS[key];
@@ -61,10 +75,18 @@ export async function putSetting(db, key, value) {
 
 export async function settingsFor(db) {
   const tz = DEFAULT_TZ;
+  const rows = await db.prepare('SELECT key, value FROM settings').all();
+  const get = (key, fallback) => {
+    const r = rows.results.find((x) => x.key === key);
+    if (!r) return fallback;
+    try { return JSON.parse(r.value); } catch { return fallback; }
+  };
   return {
     tz,
-    targets: await getSetting(db, 'targets', defaultTargets(todayIn(tz))),
-    categories: await getSetting(db, 'categories', DEFAULT_CATEGORIES),
+    targets: get('targets', defaultTargets(todayIn(tz))),
+    categories: get('categories', DEFAULT_CATEGORIES),
+    capacity: get('capacity', DEFAULT_CAPACITY),
+    jobHours: get('jobHours', DEFAULT_JOB_HOURS),
   };
 }
 
@@ -100,22 +122,49 @@ async function exists(db, table, id) {
   return Boolean(await db.prepare(`SELECT 1 FROM ${table} WHERE id = ?`).bind(id).first());
 }
 
-async function checkRefs(db, entityName, values, pending = null) {
+// Existence checks either query D1 (single writes) or use a snapshot loaded
+// in one batch (bulk imports). On the free plan every D1 call counts toward
+// the 50-subrequests-per-request limit, so imports must not query per row.
+function liveLookup(db) {
+  return {
+    has: (table, id) => exists(db, table, id),
+    domainOwner: async (d) => {
+      const r = await db.prepare('SELECT company_id FROM company_domains WHERE domain = ?').bind(d).first();
+      return r ? r.company_id : null;
+    },
+    add() {},
+    claimDomain() {},
+  };
+}
+
+export async function snapshotLookup(db) {
+  const tables = ['companies', 'contacts', 'videos', 'deals', 'payments', 'rate_card'];
+  const res = await db.batch([...tables.map((t) => db.prepare(`SELECT id FROM ${t}`)), db.prepare('SELECT domain, company_id FROM company_domains')]);
+  const ids = new Map(tables.map((t, i) => [t, new Set(res[i].results.map((r) => r.id))]));
+  const domains = new Map(res[tables.length].results.map((r) => [r.domain, r.company_id]));
+  return {
+    has: async (table, id) => ids.get(table).has(id),
+    domainOwner: async (d) => domains.get(d) || null,
+    add: (table, id) => ids.get(table).add(id),
+    claimDomain: (d, companyId) => domains.set(d, companyId),
+  };
+}
+
+async function checkRefs(entityName, values, lookup) {
   const fields = ENTITIES[entityName].fields;
   for (const [key, field] of Object.entries(fields)) {
     if (field.type !== 'ref' || values[key] == null) continue;
-    const table = ENTITIES[field.entity].table;
-    if (pending && pending.has(`${table}:${values[key]}`)) continue;
-    if (!(await exists(db, table, values[key]))) throw new HttpError(400, `${field.label} doesn't exist`);
+    if (!(await lookup.has(ENTITIES[field.entity].table, values[key]))) throw new HttpError(400, `${field.label} doesn't exist`);
   }
 }
 
-async function domainStmts(db, companyId, domains, { replace }) {
+async function domainStmts(db, companyId, domains, { replace, lookup }) {
   const stmts = [];
   if (replace) stmts.push(db.prepare('DELETE FROM company_domains WHERE company_id = ?').bind(companyId));
   for (const d of domains) {
-    const owner = await db.prepare('SELECT company_id FROM company_domains WHERE domain = ?').bind(d).first();
-    if (owner && owner.company_id !== companyId) throw new HttpError(409, `${d} already belongs to another company`);
+    const owner = await lookup.domainOwner(d);
+    if (owner && owner !== companyId) throw new HttpError(409, `${d} already belongs to another company`);
+    lookup.claimDomain(d, companyId);
     stmts.push(db.prepare('INSERT OR IGNORE INTO company_domains (domain, company_id) VALUES (?, ?)').bind(d, companyId));
   }
   return stmts;
@@ -153,17 +202,18 @@ function derive(entityName, values, before = {}) {
   return values;
 }
 
-async function createStmts(db, entityName, input, pending = null) {
+export async function createStmts(db, entityName, input, lookup = liveLookup(db)) {
   const v = validate(entityName, input);
   if (!v.ok) throw new HttpError(400, 'Some fields need fixing', v.errors);
   const id = input.id ? String(input.id).toLowerCase() : crypto.randomUUID();
   const table = ENTITIES[entityName].table;
-  if (input.id && (await exists(db, table, id))) throw new HttpError(409, 'That ID is already used');
-  await checkRefs(db, entityName, v.values, pending);
+  if (input.id && (await lookup.has(table, id))) throw new HttpError(409, 'That ID is already used');
+  await checkRefs(entityName, v.values, lookup);
   const values = derive(entityName, v.values);
   const stmts = [insertStmt(db, entityName, id, values)];
+  lookup.add(table, id);
   if (entityName === 'companies' && values.domains && values.domains.length) {
-    stmts.push(...(await domainStmts(db, id, values.domains, { replace: false })));
+    stmts.push(...(await domainStmts(db, id, values.domains, { replace: false, lookup })));
   }
   if (entityName === 'deals') {
     stmts.push(activityStmt(db, { company_id: values.company_id, deal_id: id, kind: 'system', title: `Deal created · ${values.stage}` }));
@@ -193,7 +243,7 @@ export async function updateRecord(db, entityName, id, input) {
   const before = await getRecord(db, entityName, id);
   const v = validate(entityName, input, { partial: true });
   if (!v.ok) throw new HttpError(400, 'Some fields need fixing', v.errors);
-  await checkRefs(db, entityName, v.values);
+  await checkRefs(entityName, v.values, liveLookup(db));
   const values = derive(entityName, v.values, before);
   const table = ENTITIES[entityName].table;
   const cols = Object.keys(values).filter((k) => !ENTITIES[entityName].fields[k].virtual);
@@ -204,7 +254,7 @@ export async function updateRecord(db, entityName, id, input) {
     stmts.push(db.prepare(`UPDATE ${table} SET ${cols.map((c) => `${c} = ?`).join(', ')}${stamp} WHERE id = ?`).bind(...binds));
   }
   if (entityName === 'companies' && values.domains) {
-    stmts.push(...(await domainStmts(db, id, values.domains, { replace: true })));
+    stmts.push(...(await domainStmts(db, id, values.domains, { replace: true, lookup: liveLookup(db) })));
   }
   if (entityName === 'deals' && values.stage && values.stage !== before.stage) {
     stmts.push(activityStmt(db, {
@@ -237,10 +287,7 @@ export async function importAll(db, body) {
   if (!body || typeof body !== 'object') throw new HttpError(400, 'Expected an object');
   const total = IMPORT_ORDER.reduce((s, [k]) => s + (Array.isArray(body[k]) ? body[k].length : 0), 0);
   if (total > MAX_IMPORT_ROWS) throw new HttpError(413, `Import at most ${MAX_IMPORT_ROWS} rows at a time`);
-  const pending = new Set();
-  IMPORT_ORDER.forEach(([k, entity]) => (body[k] || []).forEach((r) => {
-    if (r && isUuid(r.id)) pending.add(`${ENTITIES[entity].table}:${String(r.id).toLowerCase()}`);
-  }));
+  const lookup = await snapshotLookup(db);
   const stmts = [];
   const counts = {};
   const errors = [];
@@ -253,14 +300,14 @@ export async function importAll(db, body) {
       try {
         if (entity === 'rate_card' && list[i] && list[i].replaceId) {
           const { replaceId, ...rest } = list[i];
-          if (!isUuid(replaceId) || !(await exists(db, 'rate_card', replaceId))) throw new HttpError(400, 'Unknown package to replace');
+          if (!isUuid(replaceId) || !(await lookup.has('rate_card', replaceId))) throw new HttpError(400, 'Unknown package to replace');
           const v = validate('rate_card', rest, { partial: true });
           if (!v.ok) throw new HttpError(400, 'Some fields need fixing', v.errors);
           const cols = Object.keys(v.values);
           stmts.push(db.prepare(`UPDATE rate_card SET ${cols.map((c) => `${c} = ?`).join(', ')}, updated_at = ? WHERE id = ?`)
             .bind(...cols.map((c) => v.values[c]), nowIso(), replaceId));
         } else {
-          const r = await createStmts(db, entity, list[i], pending);
+          const r = await createStmts(db, entity, list[i], lookup);
           stmts.push(...r.stmts);
         }
         counts[key] += 1;
@@ -283,7 +330,11 @@ export async function importAll(db, body) {
 // --- Export -------------------------------------------------------------------------
 export async function exportAll(db) {
   const state = await loadState(db);
-  const acts = await db.prepare('SELECT * FROM activities ORDER BY occurred_at').all();
+  const [acts, series, items] = await db.batch([
+    db.prepare('SELECT * FROM activities ORDER BY occurred_at'),
+    db.prepare('SELECT * FROM cal_series ORDER BY dtstart'),
+    db.prepare('SELECT * FROM cal_items ORDER BY start'),
+  ]);
   delete state.activitySummary;
-  return { exportedAt: nowIso(), ...state, activities: acts.results.map(fromRow) };
+  return { exportedAt: nowIso(), ...state, activities: acts.results.map(fromRow), calendarSeries: series.results, calendarItems: items.results };
 }

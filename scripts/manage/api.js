@@ -66,4 +66,5 @@ export const api = {
   import: (payload) => request('POST', 'import', payload),
   export: () => request('GET', 'export'),
   logoutAll: () => request('POST', 'logout-all'),
+  plan: (data) => request('POST', 'plan', data),
 };

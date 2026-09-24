@@ -8,6 +8,7 @@ import { store, reload, subscribe } from './store.js';
 import { dashboardView, pipelineView, companiesView, videosView, paymentsView, ratesView } from './views.js';
 import { openDeal, openCompany } from './panels.js';
 import { openImport, exportAs, CSV_TABLES } from './io.js';
+import { calendarView } from './cal-view.js';
 import { closePanel, panelOpen, panelDirty, toast, button, busy } from './ui.js';
 
 // Refuse to run inside a frame (GitHub Pages can't send frame-ancestors)
@@ -18,6 +19,7 @@ if (window.top !== window.self) {
 
 const VIEWS = [
   { id: 'dashboard', label: 'Dashboard', render: dashboardView },
+  { id: 'calendar', label: 'Calendar', render: calendarView },
   { id: 'pipeline', label: 'Pipeline', render: pipelineView },
   { id: 'companies', label: 'Companies', render: companiesView },
   { id: 'videos', label: 'Videos', render: videosView },
@@ -124,6 +126,38 @@ function settingsView(root) {
       ['Excel (.xlsx)', 'xlsx'], ['JSON', 'json'],
     ].map(([label, f]) => { const b = button(label, () => exportAs(f, b), { kind: 'chip' }); return b; });
     const csvBtns = CSV_TABLES.map((t) => { const b = button(t, () => exportAs(t, b), { kind: 'chip' }); return b; });
+    const planInput = h('input', {
+      type: 'file', accept: '.json,application/json', 'aria-label': 'Plan file',
+      onchange: async (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        try {
+          if (f.size > 2 * 1024 * 1024) throw new Error('That file is too large for a plan.');
+          const plan = JSON.parse(await f.text());
+          const n = await api.plan(plan);
+          toast(`Plan imported: ${n.items} items, ${n.series} recurring blocks, ${n.videos} videos${n.skipped ? ` (${n.skipped} already there)` : ''}.`, { kind: 'ok', ms: 9000 });
+          await reload();
+        } catch (err) {
+          toast(Array.isArray(err.details) ? `${err.message}: ${err.details.slice(0, 3).join(' · ')}` : err.message || 'Couldn’t read that plan file', { kind: 'error', ms: 12000 });
+        } finally { e.target.value = ''; }
+      },
+    });
+    const cap = s.settings.capacity || { min: 10, max: 15 };
+    const job = s.settings.jobHours || { days: [1, 2, 3, 4, 5], start: '08:00', end: '17:00' };
+    const capMin = h('input', { type: 'number', min: 0, max: 80, step: 0.5, value: cap.min });
+    const capMax = h('input', { type: 'number', min: 0, max: 80, step: 0.5, value: cap.max });
+    const jobStart = h('input', { type: 'time', value: job.start, step: 900 });
+    const jobEnd = h('input', { type: 'time', value: job.end, step: 900 });
+    const jobDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d, i) => h('label', { class: 'crm-check' },
+      h('input', { type: 'checkbox', value: i, checked: job.days.includes(i) }), ` ${d}`));
+    const saveHours = button('Save', async () => {
+      await busy(saveHours, async () => {
+        await api.setting('capacity', { min: Number(capMin.value), max: Number(capMax.value) });
+        await api.setting('jobHours', { days: jobDays.map((l) => l.querySelector('input')).filter((i) => i.checked).map((i) => Number(i.value)), start: jobStart.value, end: jobEnd.value });
+      });
+      await reload();
+      toast('Saved', { kind: 'ok', ms: 2500 });
+    });
     const outAll = button('Sign out on every device', async () => {
       if (!window.confirm('Sign out everywhere, including this browser?')) return;
       await busy(outAll, () => api.logoutAll());
@@ -135,6 +169,16 @@ function settingsView(root) {
       h('section', { class: 'crm-section' }, h('h2', { class: 'crm-section-title' }, 'Import'),
         h('p', { class: 'crm-note' }, 'Bring in your spreadsheet tracker. You’ll see how each column maps, and a preview, before anything is saved. Re-importing skips deals that are already here.'),
         button('Import a tracker…', () => openImport(), { kind: 'primary' })),
+      h('section', { class: 'crm-section' }, h('h2', { class: 'crm-section-title' }, 'Plan'),
+        h('p', { class: 'crm-note' }, 'Import your private plan file (.json) to put the plan’s objectives, weekly checklist, recurring blocks, publish dates, KPI gates and videos on the calendar. Importing again only adds what’s missing; it never overwrites your changes.'),
+        planInput),
+      h('section', { class: 'crm-section' }, h('h2', { class: 'crm-section-title' }, 'Channel hours'),
+        h('p', { class: 'crm-note is-muted' }, 'The weekly budget for the capacity bar, and the day-job hours shaded on the calendar.'),
+        h('div', { class: 'crm-form-grid is-narrow' },
+          h('label', { class: 'crm-field' }, 'Budget from (h)', capMin), h('label', { class: 'crm-field' }, 'to (h)', capMax),
+          h('label', { class: 'crm-field' }, 'Job starts', jobStart), h('label', { class: 'crm-field' }, 'Job ends', jobEnd)),
+        h('div', { class: 'crm-chip-row' }, jobDays),
+        h('div', { class: 'crm-row-actions' }, saveHours)),
       h('section', { class: 'crm-section' }, h('h2', { class: 'crm-section-title' }, 'Export'),
         h('p', { class: 'crm-note' }, 'Everything, including archived records and the activity timeline.'),
         h('div', { class: 'crm-chip-row' }, exportBtns),
@@ -148,7 +192,7 @@ function settingsView(root) {
         outAll),
       h('section', { class: 'crm-section' }, h('h2', { class: 'crm-section-title' }, 'Keyboard'),
         h('dl', { class: 'crm-keys' },
-          [['n', 'New record in this section'], ['/', 'Search'], ['Esc', 'Close the panel'], ['g then d / p / c / v', 'Go to Dashboard, Pipeline, Companies, Videos']]
+          [['n', 'New record in this section'], ['/', 'Search'], ['Esc', 'Close the panel'], ['g then d / k / p / c / v', 'Go to Dashboard, Calendar, Pipeline, Companies, Videos']]
             .map(([k, d]) => [h('dt', {}, h('kbd', {}, k)), h('dd', {}, d)]))),
     );
   };
@@ -173,7 +217,7 @@ document.addEventListener('keydown', (e) => {
   } else if (e.key === 'g') {
     gPressed = Date.now();
   } else if (Date.now() - gPressed < 1200) {
-    const to = { d: 'dashboard', p: 'pipeline', c: 'companies', v: 'videos' }[e.key];
+    const to = { d: 'dashboard', k: 'calendar', p: 'pipeline', c: 'companies', v: 'videos' }[e.key];
     if (to) { e.preventDefault(); location.hash = `#/${to}`; }
     gPressed = 0;
   }

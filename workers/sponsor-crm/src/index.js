@@ -11,6 +11,13 @@
 //   PUT  /api/settings/:key         targets | categories
 //   POST /api/import                spreadsheet rows parsed in the browser
 //   GET  /api/export                everything, for .xlsx / CSV / JSON export
+//   GET  /api/calendar?from=…&to=…  one-off items, exceptions and series
+//   POST|PATCH|DELETE /api/cal-items[/:id]      (plan items can't be deleted)
+//   POST /api/cal-items/:id/accept|dismiss      Claude suggestions
+//   POST|PATCH|DELETE /api/cal-series[/:id]
+//   PUT  /api/cal-series/:id/occurrences/:date  change one occurrence
+//   DELETE /api/cal-series/:id/occurrences/:date  undo that change
+//   POST /api/plan                  import the private plan file
 //
 // Every route but /api/login and /api/health needs a Bearer session token.
 
@@ -22,6 +29,10 @@ import {
   importAll, exportAll, getSetting, settingsFor,
 } from './data.js';
 import { dashboard, todayIn } from '../../../scripts/manage/rules.js';
+import {
+  loadCalendar, createItem, updateItem, deleteItem, decideSuggestion,
+  createSeries, updateSeries, deleteSeries, editOccurrence, importPlan,
+} from './calendar.js';
 
 const TYPES = {
   companies: 'companies', contacts: 'contacts', deals: 'deals', payments: 'payments',
@@ -91,7 +102,7 @@ async function requireSession(request, env) {
 async function route(request, env, url) {
   const parts = url.pathname.replace(/\/+$/, '').split('/').filter(Boolean); // ['api', …]
   if (parts[0] !== 'api') throw new HttpError(404, 'Not found');
-  const [, a, b, c] = parts;
+  const [, a, b, c, d, e] = parts;
   const m = request.method;
 
   if (m === 'GET' && a === 'health') return { ok: true, configured: configured(env) };
@@ -120,6 +131,27 @@ async function route(request, env, url) {
   if (m === 'POST' && a === 'import' && !b) return importAll(db, await readJson(request));
   if (m === 'GET' && a === 'export' && !b) return exportAll(db);
 
+  if (a === 'calendar' && !b && m === 'GET') return loadCalendar(db, url.searchParams.get('from'), url.searchParams.get('to'));
+  if (a === 'plan' && !b && m === 'POST') return importPlan(db, await readJson(request));
+  if (a === 'cal-items') {
+    if (m === 'POST' && !b) return createItem(db, await readJson(request));
+    if (m === 'PATCH' && b && !c) return updateItem(db, b, await readJson(request));
+    if (m === 'DELETE' && b && !c) return deleteItem(db, b);
+    if (m === 'POST' && b && (c === 'accept' || c === 'dismiss') && !d) return decideSuggestion(db, b, c === 'accept');
+  }
+  if (a === 'cal-series') {
+    if (m === 'POST' && !b) return createSeries(db, await readJson(request));
+    if (m === 'PATCH' && b && !c) return updateSeries(db, b, await readJson(request));
+    if (m === 'DELETE' && b && !c) return deleteSeries(db, b);
+    if (m === 'PUT' && b && c === 'occurrences' && d && !e) return editOccurrence(db, b, d, await readJson(request));
+    if (m === 'DELETE' && b && c === 'occurrences' && d && !e) {
+      const ex = await db.prepare('SELECT id FROM cal_items WHERE series_id = ? AND original_date = ?').bind(b, d).first();
+      if (!ex) throw new HttpError(404, 'No change to undo');
+      await db.prepare('DELETE FROM cal_items WHERE id = ?').bind(ex.id).run();
+      return { deleted: ex.id };
+    }
+  }
+
   const type = TYPES[a];
   if (type) {
     if (m === 'POST' && !b) return createRecord(db, type, await readJson(request));
@@ -140,7 +172,7 @@ export default {
         status: 204,
         headers: {
           'Access-Control-Allow-Origin': origin,
-          'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, OPTIONS',
+          'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
           'Access-Control-Allow-Headers': 'Authorization, Content-Type',
           'Access-Control-Max-Age': '86400',
           Vary: 'Origin',
