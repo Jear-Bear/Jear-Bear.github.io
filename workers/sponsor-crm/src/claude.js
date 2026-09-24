@@ -10,11 +10,12 @@ const clip = (v, n) => (v == null ? null : String(v).replace(/\u0000/g, '').trim
 const json = (v) => JSON.stringify(v);
 const parse = (v, fallback = null) => { try { return v ? JSON.parse(v) : fallback; } catch { return fallback; } };
 
-export const PROPOSAL_KINDS = ['stage_change', 'amounts', 'dates', 'next_action', 'new_contact', 'add_domain', 'new_company_deal'];
+export const PROPOSAL_KINDS = ['stage_change', 'amounts', 'dates', 'next_action', 'new_contact', 'add_domain', 'new_deal', 'new_company_deal'];
 export const LOW_RISK_KINDS = ['next_action', 'new_contact', 'add_domain'];
 const CONFIDENCE = ['low', 'medium', 'high'];
 
 // Fields each proposal kind may set, and on which record
+const NEW_DEAL_FIELDS = ['source', 'stage', 'package', 'slot_note', 'pitched_on', 'replied_on', 'quoted', 'next_action', 'next_action_date', 'notes'];
 const KIND_FIELDS = {
   stage_change: { entity: 'deals', fields: ['stage'] },
   amounts: { entity: 'deals', fields: ['quoted', 'final'] },
@@ -114,6 +115,11 @@ export async function createProposal(db, input) {
   if (kind === 'new_company_deal') {
     proposed = validateNewCompanyDeal(input.values);
     dealId = null; companyId = null;
+  } else if (kind === 'new_deal') {
+    if (!companyId) throw new HttpError(400, 'new_deal needs company_id (for a new brand use new_company_deal)');
+    if (!(await db.prepare('SELECT 1 FROM companies WHERE id = ?').bind(companyId).first())) throw new HttpError(400, 'company_id doesn’t exist');
+    proposed = checkFields('deals', NEW_DEAL_FIELDS, { source: 'Inbound', stage: 'In conversation', ...(input.values || {}) });
+    dealId = null;
   } else if (kind === 'add_domain') {
     if (!companyId) throw new HttpError(400, 'add_domain needs company_id');
     if (!(await db.prepare('SELECT 1 FROM companies WHERE id = ?').bind(companyId).first())) throw new HttpError(400, 'company_id doesn’t exist');
@@ -221,6 +227,12 @@ export async function passProposal(db, id, edited) {
     applied = { company_id: company.id, contact_id: contactId, deal_id: deal.id };
     summary = `Approved by me: new company ${company.name} and inbound deal (Claude proposal)`;
     await logApproval(db, company.id, deal.id, summary);
+  } else if (p.kind === 'new_deal') {
+    const values = checkFields('deals', NEW_DEAL_FIELDS, edited || proposed);
+    const d = await createRecord(db, 'deals', { stage: 'In conversation', ...values, company_id: p.company_id });
+    applied = { deal_id: d.id, ...values };
+    summary = `Approved by me: new ${values.source || ''} deal (Claude proposal)`.replace('  ', ' ');
+    await logApproval(db, p.company_id, d.id, summary);
   } else if (p.kind === 'add_domain') {
     const domain = normalizeDomain((edited || proposed).domain);
     if (!domain) throw new HttpError(400, 'Not a valid domain');
