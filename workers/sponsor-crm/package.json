@@ -8,5 +8,11 @@
   },
   "devDependencies": {
     "wrangler": "4.139.0"
+  },
+  "dependencies": {
+    "@cloudflare/workers-oauth-provider": "^1.1.0",
+    "@modelcontextprotocol/server": "^2.0.0",
+    "agents": "^0.24.0",
+    "zod": "^4.6.5"
   }
 }

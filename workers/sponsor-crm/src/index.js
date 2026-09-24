@@ -36,6 +36,11 @@ import {
   createSeries, updateSeries, deleteSeries, editOccurrence, importPlan,
 } from './calendar.js';
 import { listUploads, refreshUploads } from './youtube.js';
+import { OAuthProvider } from '@cloudflare/workers-oauth-provider';
+import { createMcpHandler } from 'agents/mcp/server';
+import { createServer } from './mcp.js';
+import { handleAuthorize, redirectAllowed } from './authorize.js';
+import { listReview, passProposal, dismissProposal, decideIdea } from './claude.js';
 
 const TYPES = {
   companies: 'companies', contacts: 'contacts', deals: 'deals', payments: 'payments',
@@ -157,6 +162,35 @@ async function route(request, env, url) {
     }
   }
 
+  // Review queue (what Claude filed)
+  if (a === 'review' && !b && m === 'GET') return listReview(db);
+  if (a === 'proposals' && b === 'pass-batch' && !c && m === 'POST') {
+    const { ids } = await readJson(request);
+    if (!Array.isArray(ids) || !ids.length || ids.length > 5) throw new HttpError(400, 'Pass 1–5 proposal IDs at a time');
+    const results = [];
+    for (const id of ids) {
+      try { results.push({ id, ...(await passProposal(db, id, null)) }); } catch (err) { results.push({ id, error: err.message }); }
+    }
+    return { results };
+  }
+  if (a === 'proposals' && b && c === 'pass' && !d && m === 'POST') return passProposal(db, b, (await readJson(request)).values || null);
+  if (a === 'proposals' && b && c === 'dismiss' && !d && m === 'POST') return dismissProposal(db, b, (await readJson(request)).reason);
+  if (a === 'ideas' && b && (c === 'keep' || c === 'dismiss') && !d && m === 'POST') return decideIdea(db, b, c === 'keep');
+
+  // Connected Claude sessions (OAuth grants)
+  if (a === 'claude' && b === 'grants') {
+    const oauth = env.OAUTH_PROVIDER;
+    if (!oauth) throw new HttpError(503, 'The connector isn’t set up');
+    if (m === 'GET' && !c) {
+      const list = await oauth.listUserGrants('owner');
+      return Promise.all(list.items.map(async (g) => {
+        const client = await oauth.lookupClient(g.clientId).catch(() => null);
+        return { id: g.id, client: (client && client.clientName) || (g.metadata && g.metadata.label) || 'Unknown app', createdAt: g.createdAt * 1000, expiresAt: g.expiresAt ? g.expiresAt * 1000 : null, scope: g.scope };
+      }));
+    }
+    if (m === 'DELETE' && c && !d) { const gid = decodeURIComponent(c); await oauth.revokeGrant(gid, 'owner'); return { revoked: gid }; }
+  }
+
   const type = TYPES[a];
   if (type) {
     if (m === 'POST' && !b) return createRecord(db, type, await readJson(request));
@@ -166,9 +200,13 @@ async function route(request, env, url) {
   throw new HttpError(404, 'Not found');
 }
 
-export default {
+const app = {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === '/authorize') {
+      if (!configured(env)) return new Response('Not configured', { status: 503 });
+      return handleAuthorize(request, env);
+    }
     const origin = allowedOrigin(env, request.headers.get('Origin'));
 
     if (request.method === 'OPTIONS') {
@@ -197,5 +235,52 @@ export default {
       console.error('Unhandled error', err && err.message);
       return json({ error: 'Something went wrong' }, 500, origin);
     }
+  },
+};
+
+// --- Claude connector: OAuth around a remote MCP server at /mcp -----------------------------
+// The provider owns /oauth/token, /oauth/register and the discovery documents;
+// /authorize (above) is ours; /mcp needs a token; everything else is the app.
+const mcpHandler = {
+  fetch(request, env, ctx) {
+    return createMcpHandler(() => createServer(env), { route: '/mcp' })(request, env, ctx);
+  },
+};
+
+let provider = null;
+function oauthProvider(env, origin) {
+  if (!provider) {
+    const base = env.PUBLIC_ORIGIN || origin;
+    provider = new OAuthProvider({
+      apiRoute: '/mcp',
+      apiHandler: mcpHandler,
+      defaultHandler: app,
+      authorizeEndpoint: '/authorize',
+      tokenEndpoint: '/oauth/token',
+      clientRegistrationEndpoint: '/oauth/register',
+      scopesSupported: ['crm'],
+      resourceMetadata: { resource: `${base}/mcp`, authorization_servers: [base], scopes_supported: ['crm'] },
+      clientIdMetadataDocumentEnabled: true,
+      accessTokenTTL: 60 * 60,
+      refreshTokenTTL: 60 * 60 * 24 * 90,
+      refreshTokenIdleTTL: 60 * 60 * 24 * 30,
+      // Only register clients that return to Claude (or localhost, for testing)
+      clientRegistrationCallback: ({ clientMetadata }) => {
+        const uris = Array.isArray(clientMetadata.redirect_uris) ? clientMetadata.redirect_uris : [];
+        if (!uris.length || !uris.every((u) => typeof u === 'string' && redirectAllowed(u))) {
+          return { error: 'invalid_redirect_uri', error_description: 'Only Claude can register with Sponsor desk' };
+        }
+        return undefined;
+      },
+    });
+  }
+  return provider;
+}
+
+export default {
+  fetch(request, env, ctx) {
+    // Without the OAuth store (e.g. before KV is set up) serve the app alone
+    if (!env.OAUTH_KV) return app.fetch(request, env, ctx);
+    return oauthProvider(env, new URL(request.url).origin).fetch(request, env, ctx);
   },
 };

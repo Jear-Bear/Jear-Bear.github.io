@@ -4,6 +4,7 @@
 name = "sponsor-crm"
 main = "src/index.js"
 compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
 workers_dev = true
 preview_urls = false
 
@@ -11,6 +12,7 @@ preview_urls = false
 ALLOWED_ORIGINS = "https://www.jareddesu.com,https://jareddesu.com"
 ALLOW_LOCALHOST = "true"
 YT_CHANNEL_ID = "UCSIxTP9PCM2kcTszONRxZ1w"   # public channel ID
+PUBLIC_ORIGIN = "https://sponsor-crm.jared-65b.workers.dev"
 
 [[d1_databases]]
 binding = "DB"
@@ -20,3 +22,8 @@ migrations_dir = "migrations"
 
 [observability]
 enabled = false
+
+# OAuth tokens for the Claude connector (hashed; props encrypted)
+[[kv_namespaces]]
+binding = "OAUTH_KV"
+id = "00000000000000000000000000000000"   # replaced at deploy time

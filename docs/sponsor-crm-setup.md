@@ -117,6 +117,14 @@ deleted. The same import adds the plan's videos to **Videos**.
 
 ---
 
+## Claude connector
+
+The same Worker serves a remote MCP server at `/mcp` for Claude, protected by
+OAuth (tokens in the `sponsor-crm-oauth` KV namespace, which the deploy
+creates). How to add it and the scheduled-task prompts:
+[`docs/sponsor-crm-claude.md`](sponsor-crm-claude.md). What Claude files shows
+up under **Review**.
+
 ## YouTube uploads
 
 **Videos → Uploads** lists the channel's public uploads from the YouTube Data
