@@ -296,3 +296,102 @@ kbd { font: 12px var(--font-gothic); padding: 1px 6px; border: 1px solid var(--r
   .crm-tile { padding: 10px 12px; }
   .crm-tile-value { font-size: 1.35rem; }
 }
+
+/* --- Calendar (FullCalendar 7, classic theme on the site palette) ---------------------- */
+.crm-cal {
+  --fc-classic-button: transparent;
+  --fc-classic-button-border: var(--rule-strong);
+  --fc-classic-button-strong: var(--ink);
+  --fc-classic-button-strong-border: var(--ink);
+  --fc-classic-button-outline: color-mix(in srgb, var(--page-color) 40%, transparent);
+  --fc-classic-button-foreground: var(--ink);
+  --fc-classic-primary: var(--page-color);
+  --fc-classic-primary-foreground: var(--paper-light);
+  --fc-classic-event: var(--ink);
+  --fc-classic-event-contrast: var(--paper-light);
+  --fc-classic-background-event: var(--ink);
+  --fc-classic-background-event-opacity: 5%;
+  --fc-classic-background-event-foreground-opacity: 45%;
+  --fc-classic-highlight: color-mix(in srgb, var(--page-color) 12%, transparent);
+  --fc-classic-today: color-mix(in srgb, var(--page-color) 6%, transparent);
+  --fc-classic-now: var(--page-color);
+  --fc-classic-small-dot-width: 8px;
+  --fc-classic-large-dot-width: 10px;
+  --fc-classic-background: var(--paper);
+  --fc-classic-faint: #00000008;
+  --fc-classic-muted: #00000010;
+  --fc-classic-strong: #0000001c;
+  --fc-classic-foreground: var(--ink);
+  --fc-classic-faint-foreground: var(--faint);
+  --fc-classic-muted-foreground: var(--muted);
+  --fc-classic-border: var(--rule);
+  --fc-classic-strong-border: var(--rule-strong);
+  --fc-classic-ring-color: var(--page-color);
+  font-size: 13px;
+  margin-top: 8px;
+}
+.crm-cal button { font-family: var(--font-gothic); }
+.crm-cal h2 { font-family: var(--font-mincho); font-weight: 500; font-size: 1.15rem; }
+
+/* Sources: plan = 鳶 solid, me = ink solid, rules = dashed amber, Claude = dashed plum */
+.crm-ev.src-rules, .crm-ev.src-claude.is-suggested {
+  --fc-event-color: transparent !important;
+  background: var(--paper-light) !important;
+  border: 1px dashed currentColor !important;
+}
+.crm-ev.src-rules { color: var(--due) !important; }
+.crm-ev.src-claude.is-suggested { color: #6a4c93 !important; }
+.crm-ev.src-rules *, .crm-ev.src-claude.is-suggested * { color: inherit !important; }
+.crm-ev.is-overdue { color: var(--bad) !important; font-weight: 500; }
+.crm-ev.st-done { opacity: 0.55; }
+.crm-ev.st-skipped { opacity: 0.45; font-style: italic; }
+.crm-ev.st-cancelled { opacity: 0.4; text-decoration: line-through; }
+.crm-ev.ty-milestone { font-weight: 600; }
+.crm-job { pointer-events: none; }
+
+.crm-cal-filters { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; margin: 4px 0 6px; }
+.crm-src-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-soft); cursor: pointer; }
+.crm-src-swatch { width: 12px; height: 12px; display: inline-block; }
+.crm-src-chip.src-plan .crm-src-swatch { background: #95483f; }
+.crm-src-chip.src-me .crm-src-swatch { background: var(--ink); }
+.crm-src-chip.src-rules .crm-src-swatch { border: 1px dashed var(--due); }
+.crm-src-chip.src-claude .crm-src-swatch { border: 1px dashed #6a4c93; }
+.crm-cal-help { margin-top: 10px; }
+
+/* Capacity bar */
+.crm-cap { display: grid; grid-template-columns: auto minmax(120px, 1fr) auto; gap: 4px 14px; align-items: center; padding: 10px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.crm-cap-label { font-size: 12.5px; color: var(--ink-soft); }
+.crm-cap-bar { position: relative; height: 8px; background: var(--paper-deep); }
+.crm-cap-band { position: absolute; top: -3px; bottom: -3px; border-left: 1px solid var(--muted); border-right: 1px solid var(--muted); }
+.crm-cap-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--ink-soft); }
+.crm-cap.is-ok .crm-cap-fill { background: var(--ok); }
+.crm-cap.is-over .crm-cap-fill { background: var(--bad); }
+.crm-cap-value { font-family: var(--font-mincho); font-weight: 600; font-size: 15px; white-space: nowrap; }
+.crm-cap-warn { grid-column: 1 / -1; font-size: 12.5px; color: var(--bad); }
+@media (max-width: 520px) { .crm-cap { grid-template-columns: 1fr auto; } .crm-cap-bar { grid-column: 1 / -1; order: 3; } }
+
+/* Item panel */
+.crm-status { display: flex; flex-wrap: wrap; gap: 4px; }
+.crm-status-btn { font: 12px var(--font-gothic); padding: 5px 9px; border: 1px solid var(--rule-strong); background: transparent; color: var(--ink-soft); cursor: pointer; min-height: 32px; }
+.crm-status-btn.is-on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.crm-cal-status { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0 6px; }
+.crm-move { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0; }
+.crm-checklist { list-style: none; margin: 0 0 8px; }
+.crm-checklist li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--rule); font-size: 13.5px; }
+.crm-checklist label { display: flex; gap: 8px; align-items: baseline; }
+.crm-suggested-note { border-left: 2px dashed #6a4c93; padding-left: 10px; }
+.crm-form .crm-check { margin: 8px 0; }
+.crm-form-grid.is-narrow { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+.crm-form-grid.is-narrow .crm-field input { width: 100%; }
+.crm-field label { display: flex; flex-direction: column; gap: 3px; }
+
+/* Dialog */
+.crm-dialog { margin: auto; border: 1px solid var(--rule-strong); background: var(--paper); color: var(--ink); padding: 20px 22px; width: min(420px, calc(100vw - 32px)); }
+.crm-dialog::backdrop { background: rgba(31, 28, 24, 0.35); }
+.crm-dialog h2 { font-size: 1.15rem; margin-bottom: 4px; }
+
+/* Toolbar: the pressed view button reads as paper on ink */
+.crm-cal [aria-pressed="true"], .crm-cal [aria-selected="true"] { color: var(--paper) !important; }
+.crm-add-row { display: flex; gap: 8px; align-items: center; }
+.crm-add-row input { flex: 1; font: inherit; font-size: 16px; min-height: 36px; padding: 6px 9px; border: 1px solid var(--rule-strong); background: var(--paper-light); }
+@media (min-width: 900px) { .crm-add-row input { font-size: 14px; } }

@@ -103,6 +103,18 @@ secret; the password protects the data.
 Re-importing skips deals that are already in the CRM (same company, package
 and slot), so it's safe to run again.
 
+## 8. Put the plan on the calendar
+
+The plan's items (monthly objectives, the week-by-week checklist, recurring
+blocks like the Wednesday sales block, publish dates, month-end KPI gates, the
+go-full-time check and the trip) come from a private plan file (`.json`) that
+Claude generates from your plan document. It's never committed.
+
+**Settings → Plan → choose the file.** Importing again only adds what's
+missing and never overwrites anything you've moved or completed. Plan items
+can be moved, resized, completed, skipped, cancelled or hidden, but not
+deleted. The same import adds the plan's videos to **Videos**.
+
 ---
 
 ## Changing the password
@@ -153,7 +165,12 @@ to the local Worker automatically. Local data lives in
 |---|---|---|
 | Workers | 100,000 requests/day, 10 ms CPU per request | One person: a few hundred to a few thousand requests a day. Spreadsheet parsing and export run in the browser. |
 | D1 | 5 million rows read and 100,000 written per day, 5 GB | Tiny |
+| Subrequests | 50 per request (each D1 query counts; a batch counts once) | Imports check everything in one batch and write in one batch |
 | GitHub Actions | Free for public repos | A deploy takes about a minute |
+
+Calendar libraries (FullCalendar 7 standard, MIT, and `temporal-polyfill`,
+MIT) are vendored in `vendor/fullcalendar/` and load only when you open the
+calendar. SheetJS (Apache-2.0) is in `vendor/sheetjs/`.
 
 On the free plan nothing is ever billed: past a limit, requests fail until the
 daily reset (00:00 UTC).
