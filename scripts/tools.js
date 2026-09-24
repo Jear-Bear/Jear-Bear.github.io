@@ -35,9 +35,9 @@ const TOOLS = [
     slug: 'nandoku',
     title: 'Nandoku Trainer',
     description:
-      'The rare-kanji words from 漢字でGO! (levels 5–7), shown the way the ' +
-      'game shows them. Type the reading, pick the meaning, or play a timed ' +
-      'challenge run for a high score.',
+      'Every level of 漢字でGO!, 1 through 8, plus the 別表記 spellings: ' +
+      '10,000+ words shown the way the game shows them. Type the reading, ' +
+      'pick the meaning, or play a timed challenge run.',
     tags: ['kanji', 'readings', '漢字でGO!'],
     glyph: '難',
     accent: '#165e83',

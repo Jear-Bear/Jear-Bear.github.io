@@ -2,11 +2,12 @@
 :root {
   --page-color: #165e83;
   --page-color-soft: rgba(22, 94, 131, 0.10);
-  --nd-mincho: 'Nandoku Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', 'BIZ UDPMincho', 'MS PMincho', 'Noto Serif JP', serif;
-  --nd-paper: #fdfbf5;
+  --nd-pop: 'Nandoku Pop', 'Hiragino Maru Gothic ProN', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+  --nd-kanji: #f7ee8e;        /* the game's yellow kanji */
+  --nd-outline: #17130f;
 }
 
-.nd-mincho { font-family: var(--nd-mincho) !important; font-weight: 400; }
+.nd-pop { font-family: var(--nd-pop) !important; font-weight: 400; }
 
 /* ---------------------------------------------------------------- level progress */
 .nd-levels { display: flex; flex-direction: column; gap: 16px; max-width: 720px; }
@@ -19,28 +20,53 @@
 .nd-level-bar > .nd-rest { background: transparent; }
 
 /* ---------------------------------------------------------------- the word, game style */
+/* A little 漢字でGO! scene: sky, clouds, a road into the distance, and the
+   word in heavy pop letters, yellow kanji and white kana with a thick outline */
 .nd-board {
-  position: relative; flex-shrink: 0; width: 100%; max-width: 560px;
-  padding: clamp(18px, calc(var(--vvh, 100vh) * 0.035), 34px) 20px;
-  background: var(--nd-paper); border: 1px solid var(--border); border-radius: 16px;
-  box-shadow: var(--shadow-sm), inset 0 0 0 5px var(--nd-paper), inset 0 0 0 6px color-mix(in srgb, var(--page-color) 22%, transparent);
-  overflow: hidden;
+  position: relative; flex-shrink: 0; width: 100%; max-width: 620px;
+  padding: clamp(22px, calc(var(--vvh, 100vh) * 0.05), 48px) 14px clamp(30px, calc(var(--vvh, 100vh) * 0.07), 64px);
+  border-radius: 18px; overflow: hidden; isolation: isolate;
+  background:
+    radial-gradient(60px 22px at 18% 30%, rgba(255,255,255,.85) 60%, transparent 62%),
+    radial-gradient(44px 18px at 25% 26%, rgba(255,255,255,.85) 60%, transparent 62%),
+    radial-gradient(70px 24px at 80% 22%, rgba(255,255,255,.8) 60%, transparent 62%),
+    radial-gradient(40px 16px at 72% 27%, rgba(255,255,255,.8) 60%, transparent 62%),
+    linear-gradient(#5f8fef 0%, #8db6f6 62%, #b8d4f8 72%, #6fbf55 72%, #4f9f3d 100%);
+  box-shadow: var(--shadow-md);
+}
+/* the road */
+.nd-board::before {
+  content: ''; position: absolute; z-index: -1; left: 0; right: 0; bottom: 0; height: 28%;
+  background: linear-gradient(#e2d2ae, #cdb88c);
+  clip-path: polygon(47% 0, 53% 0, 78% 100%, 22% 100%);
+}
+/* palm-ish trees on both sides, very simple */
+.nd-board::after {
+  content: ''; position: absolute; z-index: -1; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(90px 120px at -2% 70%, #7cc05c 60%, transparent 62%),
+    radial-gradient(90px 120px at 102% 70%, #7cc05c 60%, transparent 62%),
+    radial-gradient(60px 80px at 8% 78%, #5fa847 60%, transparent 62%),
+    radial-gradient(60px 80px at 92% 78%, #5fa847 60%, transparent 62%);
 }
 .nd-term {
-  font-family: var(--nd-mincho); font-weight: 400; color: var(--ink); line-height: 1.15;
-  font-size: min(clamp(64px, calc(var(--vvh, 100vh) * 0.15), 132px), 26vw);
+  font-family: var(--nd-pop); font-weight: 400; line-height: 1.2; letter-spacing: 0.01em;
+  color: #fff; -webkit-text-stroke: 0.15em var(--nd-outline); paint-order: stroke fill;
+  text-shadow: 0 0.05em 0 var(--nd-outline);
+  font-size: min(clamp(64px, calc(var(--vvh, 100vh) * 0.15), 136px), 26vw);
   overflow-wrap: anywhere; transition: opacity .15s;
 }
-.nd-term[data-len="3"] { font-size: min(clamp(56px, calc(var(--vvh, 100vh) * 0.13), 116px), 22vw); }
-.nd-term[data-len="4"] { font-size: min(clamp(48px, calc(var(--vvh, 100vh) * 0.11), 100px), 18vw); }
-.nd-term[data-len="5"] { font-size: min(clamp(42px, calc(var(--vvh, 100vh) * 0.095), 88px), 14.5vw); }
-.nd-term[data-len="6"] { font-size: min(clamp(38px, calc(var(--vvh, 100vh) * 0.085), 76px), 12.5vw); }
-.nd-term[data-len="7"], .nd-term[data-len="8"] { font-size: min(clamp(34px, calc(var(--vvh, 100vh) * 0.075), 64px), 10.5vw); }
+.nd-term .k { color: var(--nd-kanji); }
+.nd-term[data-len="3"] { font-size: min(clamp(56px, calc(var(--vvh, 100vh) * 0.13), 120px), 22vw); }
+.nd-term[data-len="4"] { font-size: min(clamp(48px, calc(var(--vvh, 100vh) * 0.115), 108px), 18.5vw); }
+.nd-term[data-len="5"] { font-size: min(clamp(42px, calc(var(--vvh, 100vh) * 0.1), 94px), 15vw); }
+.nd-term[data-len="6"] { font-size: min(clamp(38px, calc(var(--vvh, 100vh) * 0.09), 82px), 12.8vw); }
+.nd-term[data-len="7"], .nd-term[data-len="8"] { font-size: min(clamp(34px, calc(var(--vvh, 100vh) * 0.08), 70px), 10.8vw); }
 .nd-term.is-loading { opacity: 0; }
 
 /* challenge timer: a thin bar across the top of the board */
-.nd-timer { position: absolute; left: 0; right: 0; top: 0; height: 5px; background: var(--page-color-soft); }
-.nd-timer > div { height: 100%; width: 100%; background: var(--page-color); }
+.nd-timer { position: absolute; left: 0; right: 0; top: 0; height: 7px; background: rgba(23, 19, 15, .25); }
+.nd-timer > div { height: 100%; width: 100%; background: #f7ee8e; }
 .nd-timer > div.is-low { background: var(--kj-no); }
 
 .nd-lives { color: var(--kj-no); letter-spacing: 2px; }
@@ -49,9 +75,6 @@
 
 /* ---------------------------------------------------------------- answering */
 .nd-typed { max-width: 460px; }
-.nd-field { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; }
-.nd-affix { font-size: 1.6rem; color: var(--ink-soft); flex-shrink: 0; }
-.nd-affix-note { margin: -4px 0 0; }
 .nd-giveup { font-size: 14px; color: var(--muted) !important; }
 .nd-choices { grid-template-columns: 1fr; max-width: 560px; }
 .nd-choices .kj-choice { font-family: 'Noto Sans JP', sans-serif; font-size: 0.98rem; line-height: 1.5; }
@@ -66,7 +89,7 @@
 .nd-answer-meaning { margin: 2px 0 0; font: 400 0.98rem/1.55 'Noto Sans JP', sans-serif; color: var(--ink); max-width: 40ch; }
 .nd-answer-note { margin: 0; font: 400 0.85rem/1.5 'Noto Sans JP', sans-serif; color: var(--muted); max-width: 44ch; }
 .nd-answer-vars { margin: 2px 0 0; font-size: 0.85rem; color: var(--muted); }
-.nd-answer-vars .nd-mincho { font-size: 1.1rem; color: var(--ink-soft); }
+.nd-answer-vars .nd-pop { font-size: 1.1rem; color: var(--ink-soft); }
 .nd-override { margin: 0; font-size: 0.9rem; color: var(--muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: center; }
 .nd-override .btn-link { min-height: 36px; padding: 6px 0; font-size: 0.9rem; }
 .nd-override .btn-link::after { bottom: 6px; }
@@ -81,17 +104,23 @@
 .nd #level-picker { margin-bottom: 4px; }
 
 /* ---------------------------------------------------------------- compact (keyboard open) */
-body.kj-compact .nd-board { padding: 12px 14px; }
+body.kj-compact .nd-board { padding: 12px 14px 18px; }
 body.kj-compact .nd-term { font-size: min(clamp(40px, 16vw, 96px), calc(var(--vvh, 100vh) * 0.13)); }
 body.kj-compact .nd-term[data-len="5"], body.kj-compact .nd-term[data-len="6"],
 body.kj-compact .nd-term[data-len="7"], body.kj-compact .nd-term[data-len="8"] { font-size: min(11vw, calc(var(--vvh, 100vh) * 0.09)); }
-body.kj-compact .nd-affix-note { display: none; }
 body.kj-compact .nd-answer { padding: 8px 12px; }
 body.kj-compact .nd-answer-term { font-size: 1.5rem; }
 body.kj-compact .nd-answer-note { display: none; }
 
 @media (max-width: 640px) {
   .nd-choices { grid-template-columns: 1fr; }
-  .nd-affix { font-size: 1.3rem; }
 }
 .nd-typed-was { color: var(--ink); }
+.nd-of { margin: 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.nd-of .btn-link { font-size: 1.3rem; min-height: 40px; padding: 4px 0; }
+.nd-hint {
+  position: absolute; right: 12px; bottom: 10px; padding: 3px 12px; border-radius: 999px;
+  background: rgba(23, 19, 15, .6); color: #fff; font: 500 14px 'Noto Sans JP', sans-serif;
+}
+.nd-hint:empty { display: none; }
+.nd-tags { justify-content: center; margin: 2px 0 0; }
