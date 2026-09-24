@@ -7,7 +7,7 @@
 // scores). All text from the data is inserted as text, never HTML.
 // =====================================================================
 
-import * as D from './data.js?v=3';
+import * as D from './data.js?v=4';
 import * as S from './storage.js?v=1';
 import * as R from '../kanji/srs.js?v=1';
 import { toHiragana, finalize } from '../kanji/romaji.js?v=1';
@@ -559,7 +559,8 @@ function settle(result, extra = {}) {
   f.className = `kj-feedback ${result === 'good' ? 'is-ok' : 'is-miss'}`;
   showAfter(t, result, extra);
   const gameOver = s.mode === 'challenge' && s.lives <= 0;
-  if (result === 'good' && !gameOver && (settings.autoAdvance || s.mode === 'challenge')) {
+  // Meaning questions wait for Continue, so there's time to read the definition
+  if (result === 'good' && !gameOver && q.skill === 'reading' && (settings.autoAdvance || s.mode === 'challenge')) {
     current.autoTimer = setTimeout(advance, s.mode === 'challenge' ? 700 : 1100);
   }
 }

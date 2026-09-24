@@ -29,7 +29,7 @@ Outputs:
 
 terms.json:
     { "sets": { "01": 100, …, "08": 99, "alt": …, "kokoro": … },
-      "terms": [[id, term, segs, readings, meaning, note, vars, hint, tags, set, of], …] }
+      "terms": [[id, term, segs, readings, meaning, note, vars, hint, tags, set, of, cores], …] }
     segs      the term split into [yellow, white, yellow, …] runs as the game colours
               it (white: okurigana and given parts); [] = colour kanji/kana automatically
     readings  accepted answers, full readings in kana; the first is the main one
@@ -39,6 +39,7 @@ terms.json:
     set       '01'…'08', 'kokoro' (こころのリテラシー), or 'alt': every other spelling
               as its own question, with the readings and meaning of the word it spells
     of        for 'alt' questions, the id of that word ('' otherwise)
+    cores     readings of the yellow part alone (とちぎ for 栃木県), also accepted
 """
 
 import argparse
@@ -113,7 +114,11 @@ for e in json.load(open(args.wiki, encoding='utf-8')):
         note = note or info.get('追記', '')
         meaning = meaning or info.get('意味', '')
     segs = e['segs'] if len(e['segs']) > 1 else []
-    terms.append([e['id'], term, segs, readings, meaning, note, vars_, e['hint'], e['tags'], e['set'], ''])
+    # Only when the yellow part is all kanji: then the wiki's red marks on the
+    # word and on its reading line up (ほほ笑む marks む differently in each)
+    yellow_ok = segs and not any(is_kana(ch) for run in segs[0::2] for ch in run)
+    cores = [c for c in map(clean_reading, e.get('cores', [])) if c and is_kana(c) and c not in readings] if yellow_ok else []
+    terms.append([e['id'], term, segs, readings, meaning, note, vars_, e['hint'], e['tags'], e['set'], '', cores])
 
 # ---------------------------------------------------------------- 別表記 set
 # Every other spelling becomes its own question, unless it's already a word
@@ -121,7 +126,7 @@ for e in json.load(open(args.wiki, encoding='utf-8')):
 main_terms = {t[1] for t in terms}
 alt_rows = {}
 for t in terms:
-    tid, term, segs, readings, meaning, note, vars_, hint, tags, set_, _ = t
+    tid, term, segs, readings, meaning, note, vars_, hint, tags, set_, _, _ = t
     for j, v in enumerate(vars_):
         if v in main_terms:
             continue
@@ -132,7 +137,7 @@ for t in terms:
                 row[7] = 0
             continue
         others = [term] + [x for x in vars_ if x != v]
-        alt_rows[v] = [f'{tid}_v{j + 1}', v, [], list(readings), meaning, note, others, hint, list(tags), 'alt', tid]
+        alt_rows[v] = [f'{tid}_v{j + 1}', v, [], list(readings), meaning, note, others, hint, list(tags), 'alt', tid, []]
 terms.extend(alt_rows.values())
 
 sets = Counter(t[9] for t in terms)
