@@ -10,62 +10,74 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,30..100;1,9..144,300..700,30..100&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="../styles/base.css">
-  <link rel="stylesheet" href="../styles/blog.css">
+  <link rel="stylesheet" href="../styles/base.css?v=2">
+  <link rel="stylesheet" href="../styles/blog.css?v=2">
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body data-page="blog">
 
-  <nav class="navbar">
-    <a href="../" class="nav-logo">
-      <span class="nav-logo-mark"></span>
-      <span>jared</span>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="masthead">
+    <a href="../" class="mark" aria-label="まだまだJared, home">
+      <span class="mark-ja" lang="ja">まだまだ</span>
+      <span class="mark-en">Jared</span>
     </a>
-    <ul class="nav-links">
-      <li><a href="../about/">About</a></li>
-      <li><a href="../projects/">Projects</a></li>
-      <li><a href="../tools/">Tools</a></li>
-      <li><a href="../blog/">Blog</a></li>
-      <li><a href="../sponsorships/">Sponsorships</a></li>
-      <li><a href="../contact/">Contact</a></li>
-    </ul>
-    <button class="nav-burger" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
-  <ul class="nav-mobile">
-    <li><a href="../about/">About</a></li>
-    <li><a href="../projects/">Projects</a></li>
-    <li><a href="../tools/">Tools</a></li>
-    <li><a href="../blog/">Blog</a></li>
-    <li><a href="../sponsorships/">Sponsorships</a></li>
-    <li><a href="../contact/">Contact</a></li>
-  </ul>
+    <nav class="masthead-nav" aria-label="Site">
+      <ul>
+        <li><a href="../about/">About</a></li>
+        <li><a href="../projects/">Projects</a></li>
+        <li><a href="../tools/">Tools</a></li>
+        <li><a href="../blog/">Blog</a></li>
+        <li><a href="../sponsorships/">Sponsorships</a></li>
+        <li><a href="../contact/">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Menu</button>
+  </header>
 
-  <main>
+  <div class="menu-sheet" id="site-menu" hidden>
+    <div class="menu-sheet-head">
+      <a href="../" class="mark" aria-label="まだまだJared, home">
+        <span class="mark-ja" lang="ja">まだまだ</span>
+        <span class="mark-en">Jared</span>
+      </a>
+      <button class="menu-toggle menu-close" type="button">Close</button>
+    </div>
+    <nav aria-label="Site">
+      <ul>
+        <li><a href="../about/">About <span lang="ja">自己紹介</span></a></li>
+        <li><a href="../projects/">Projects <span lang="ja">制作</span></a></li>
+        <li><a href="../tools/">Tools <span lang="ja">ツール</span></a></li>
+        <li><a href="../blog/">Blog <span lang="ja">ブログ</span></a></li>
+        <li><a href="../sponsorships/">Sponsorships <span lang="ja">スポンサー</span></a></li>
+        <li><a href="../contact/">Contact <span lang="ja">お問い合わせ</span></a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <main id="main">
     <div class="container">
-
-      <header class="page-header">
-        <p class="eyebrow reveal">blog</p>
-        <h1 class="page-title reveal">
-          Notes on <em>nothing in particular</em>.
-        </h1>
-        <p class="page-intro reveal">
-          Japanese, hobbies, technology, food, occasional travel. Posts arrive when
-          something feels worth writing about.
-        </p>
+      <header class="page-head">
+        <div class="page-head-copy">
+          <h1 class="page-title">Notes on <em>nothing in particular</em>.</h1>
+          <p class="page-intro">
+            Japanese, hobbies, technology, food, occasional travel. Posts arrive when
+            something feels worth writing about.
+          </p>
+        </div>
+        <p class="page-v"><span class="page-v-ja" lang="ja">ブログ</span><span class="page-v-en">Blog</span></p>
       </header>
 
-      <section class="blog-section">
+      <section class="blog-section" aria-label="Posts">
         <div class="post-list" id="post-list">
           <!-- Posts inserted by blog.js -->
           <div class="post-loading">loading posts…</div>
         </div>
       </section>
-
     </div>
   </main>
 
@@ -85,43 +97,34 @@
     </article>
   </div>
 
-  <footer class="site-footer">
-    <div class="footer-grid">
-      <div class="footer-left">
-        <a href="../" class="nav-logo">
-          <span class="nav-logo-mark"></span>
-          <span>jared</span>
-        </a>
-        <p>Made with care.</p>
-      </div>
-      <div class="footer-cols">
-        <div class="footer-col">
-          <p class="footer-heading">Site</p>
-          <a href="../about/">About</a>
-          <a href="../projects/">Projects</a>
-          <a href="../tools/">Tools</a>
-          <a href="../blog/">Blog</a>
-          <a href="../sponsorships/">Sponsorships</a>
-        </div>
-        <div class="footer-col">
-          <p class="footer-heading">Find me</p>
-          <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a>
-          <a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a>
-          <a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a>
-        </div>
-        <div class="footer-col">
-          <p class="footer-heading">Other</p>
-          <a href="../contact/">Contact</a>
-          <a href="#">RSS</a>
-        </div>
-      </div>
-    </div>
-    <div class="footer-baseline">
-      © 2026 Jared P. · Built with love
+  <footer class="colophon">
+    <nav class="colophon-links" aria-label="Footer">
+      <ul>
+        <li><a href="../about/">About</a></li>
+        <li><a href="../projects/">Projects</a></li>
+        <li><a href="../tools/">Tools</a></li>
+        <li><a href="../blog/">Blog</a></li>
+        <li><a href="../sponsorships/">Sponsorships</a></li>
+        <li><a href="../contact/">Contact</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a></li>
+        <li><a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a></li>
+        <li><a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a></li>
+        <li><a href="#">RSS</a></li>
+      </ul>
+    </nav>
+    <div class="colophon-box">
+      <p class="colophon-title" lang="ja">奥付</p>
+      <dl>
+        <div><dt>Site / <span lang="ja">サイト</span></dt><dd>jareddesu.com</dd></div>
+        <div><dt>Author / <span lang="ja">著者</span></dt><dd>Jared P. (<span lang="ja">まだまだ</span>Jared)</dd></div>
+        <div><dt>Published / <span lang="ja">発行</span></dt><dd>© 2026</dd></div>
+      </dl>
     </div>
   </footer>
 
-  <script src="../scripts/site.js"></script>
-  <script src="../scripts/blog.js"></script>
+  <script src="../scripts/site.js?v=2"></script>
+  <script src="../scripts/blog.js?v=2"></script>
 </body>
 </html>

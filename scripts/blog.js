@@ -16,18 +16,6 @@
 
   if (!list) return;
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.15, rootMargin: '0px 0px -30px 0px' }
-  );
-
   // Category → CSS class mapping (preserves existing colors)
   function categoryClass(category) {
     const c = (category || '').trim().toLowerCase();
@@ -125,8 +113,7 @@
 
     const cat = document.createElement('span');
     cat.className = `post-category-tag ${categoryClass(meta.category)}`;
-    cat.style.background = colors.bg;
-    cat.style.color = colors.fg;
+    cat.style.color = colors.fg;        // the category's colour, as text only
     cat.textContent = meta.category || 'Misc';
     metaCol.appendChild(cat);
 
@@ -152,7 +139,14 @@
     item.appendChild(content);
     item.appendChild(time);
 
+    // Keyboard users can open a post too
+    item.tabIndex = 0;
+    item.setAttribute('role', 'button');
+    item.setAttribute('aria-label', `${meta.folder}, ${meta.readTime} min read`);
     item.addEventListener('click', () => openPost(meta));
+    item.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPost(meta); }
+    });
     return item;
   }
 
@@ -174,7 +168,6 @@
   function openPost(meta) {
     const colors = categoryColors(meta.category);
     modalCategory.textContent = meta.category || 'Misc';
-    modalCategory.style.background = colors.bg;
     modalCategory.style.color = colors.fg;
     modalDate.textContent = formatDate(meta.date);
     modalTitle.textContent = meta.folder;
@@ -229,7 +222,6 @@
     valid.forEach((meta) => {
       const item = buildPostItem(meta);
       list.appendChild(item);
-      observer.observe(item);
     });
   });
 })();

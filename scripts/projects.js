@@ -11,18 +11,6 @@
   loading.textContent = 'loading projects…';
   grid.appendChild(loading);
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
-  );
-
   async function fetchProjects() {
     try {
       const url = 'https://api.github.com/repos/Jear-Bear/Jear-Bear.github.io/contents/Project_Showcase';
@@ -72,8 +60,6 @@
 
       tile.appendChild(content);
       grid.appendChild(tile);
-
-      observer.observe(tile);
 
       // Fetch description in parallel
       fetch(`../Project_Showcase/${folder}/description.txt`)

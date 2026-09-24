@@ -10,138 +10,135 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,30..100;1,9..144,300..700,30..100&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="../styles/base.css">
-  <link rel="stylesheet" href="../styles/projects.css">
+  <link rel="stylesheet" href="../styles/base.css?v=2">
+  <link rel="stylesheet" href="../styles/projects.css?v=2">
 </head>
 <body data-page="projects">
 
   <!-- Navbar (same across all pages) -->
-  <nav class="navbar">
-    <a href="../" class="nav-logo">
-      <span class="nav-logo-mark"></span>
-      <span>jared</span>
-    </a>
-    <ul class="nav-links">
-      <li><a href="../about/">About</a></li>
-      <li><a href="../projects/">Projects</a></li>
-      <li><a href="../tools/">Tools</a></li>
-      <li><a href="../blog/">Blog</a></li>
-      <li><a href="../sponsorships/">Sponsorships</a></li>
-      <li><a href="../contact/">Contact</a></li>
-    </ul>
-    <button class="nav-burger" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
-  <ul class="nav-mobile">
-    <li><a href="../about/">About</a></li>
-    <li><a href="../projects/">Projects</a></li>
-    <li><a href="../tools/">Tools</a></li>
-    <li><a href="../blog/">Blog</a></li>
-    <li><a href="../sponsorships/">Sponsorships</a></li>
-    <li><a href="../contact/">Contact</a></li>
-  </ul>
+  <a class="skip-link" href="#main">Skip to content</a>
 
-  <main>
+  <header class="masthead">
+    <a href="../" class="mark" aria-label="まだまだJared, home">
+      <span class="mark-ja" lang="ja">まだまだ</span>
+      <span class="mark-en">Jared</span>
+    </a>
+    <nav class="masthead-nav" aria-label="Site">
+      <ul>
+        <li><a href="../about/">About</a></li>
+        <li><a href="../projects/">Projects</a></li>
+        <li><a href="../tools/">Tools</a></li>
+        <li><a href="../blog/">Blog</a></li>
+        <li><a href="../sponsorships/">Sponsorships</a></li>
+        <li><a href="../contact/">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Menu</button>
+  </header>
+
+  <div class="menu-sheet" id="site-menu" hidden>
+    <div class="menu-sheet-head">
+      <a href="../" class="mark" aria-label="まだまだJared, home">
+        <span class="mark-ja" lang="ja">まだまだ</span>
+        <span class="mark-en">Jared</span>
+      </a>
+      <button class="menu-toggle menu-close" type="button">Close</button>
+    </div>
+    <nav aria-label="Site">
+      <ul>
+        <li><a href="../about/">About <span lang="ja">自己紹介</span></a></li>
+        <li><a href="../projects/">Projects <span lang="ja">制作</span></a></li>
+        <li><a href="../tools/">Tools <span lang="ja">ツール</span></a></li>
+        <li><a href="../blog/">Blog <span lang="ja">ブログ</span></a></li>
+        <li><a href="../sponsorships/">Sponsorships <span lang="ja">スポンサー</span></a></li>
+        <li><a href="../contact/">Contact <span lang="ja">お問い合わせ</span></a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <main id="main">
     <div class="container">
 
-      <!-- Page header -->
-      <header class="page-header">
-        <p class="eyebrow reveal">projects</p>
-        <h1 class="page-title reveal">
-          Side <em>experiments</em>.
-        </h1>
-        <p class="page-intro reveal">
-          Things I've built, mostly losing sleep over at night.
-          The good ones turn into long-term projects. The rest (still pretty good) stay in this list as a record.
-        </p>
+      <header class="page-head">
+        <div class="page-head-copy">
+          <h1 class="page-title">Side <em>experiments</em>.</h1>
+          <p class="page-intro">
+            Things I've built, mostly losing sleep over at night.
+            The good ones turn into long-term projects. The rest (still pretty good) stay in this list as a record.
+          </p>
+        </div>
+        <p class="page-v"><span class="page-v-ja" lang="ja">制作</span><span class="page-v-en">Projects</span></p>
       </header>
 
-      <!-- Featured: hako -->
-      <section class="featured-section">
-        <div class="section-label">
-          <span class="section-label-text">Featured</span>
-        </div>
-
-        <a href="https://hakoshop.com" target="_blank" rel="noopener" class="featured-card reveal">
-          <div class="featured-glow"></div>
-          <div class="featured-image">
-            <img src="../images/hako-hero.png" alt="hako device"
-                 onerror="this.style.display='none'; this.parentElement.classList.add('placeholder');" />
-            <div class="featured-placeholder">箱</div>
-          </div>
+      <!-- 一 Featured: hako -->
+      <section class="sec featured-section" aria-labelledby="featured-title">
+        <p class="sec-mark"><span class="sec-num" lang="ja">一</span><span class="sec-label">Featured / <span lang="ja"><ruby>注目<rt>ちゅうもく</rt></ruby></span></span></p>
+        <div class="featured">
+          <figure class="featured-photo mist">
+            <picture>
+              <source type="image/webp" srcset="../images/photos/hako-matrix-700.webp 700w, ../images/photos/hako-matrix-1200.webp 1200w" sizes="(min-width: 900px) 45vw, 100vw">
+              <img src="../images/photos/hako-matrix-1200.jpg" width="1200" height="1200" loading="lazy"
+                   alt="hako: a 64×64 LED matrix showing a week-by-week grid of Anki reviews">
+            </picture>
+          </figure>
           <div class="featured-content">
             <p class="featured-eyebrow">an ongoing project</p>
-            <h2 class="featured-title">hako — an ambient Anki companion</h2>
+            <h2 id="featured-title" class="featured-title">hako — an ambient Anki companion</h2>
             <p class="featured-desc">
               A small wooden box that shows your daily Anki progress on a 64×64 LED matrix.
               Handmade enclosure, Raspberry Pi inside, talks to AnkiConnect over Wi-Fi.
               Currently in closed beta with ~5 testers; first batch drops spring 2027.
             </p>
-            <div class="featured-tags">
-              <span>Python</span><span>Hardware</span><span>Anki</span><span>Japanese</span>
-            </div>
-            <span class="featured-link">
-              hakoshop.com <span class="arrow">→</span>
-            </span>
+            <p class="featured-tags"><span>Python</span><span>Hardware</span><span>Anki</span><span>Japanese</span></p>
+            <a href="https://hakoshop.com" target="_blank" rel="noopener" class="text-link">
+              hakoshop.com <span class="arrow" aria-hidden="true">→</span>
+            </a>
           </div>
-        </a>
+        </div>
       </section>
 
-      <!-- Other projects (dynamically loaded from GitHub) -->
-      <section class="projects-section">
-        <div class="section-label">
-          <span class="section-label-text">Other things</span>
-        </div>
-        <h2 class="section-title reveal">More stuff I've made.</h2>
-
+      <!-- 二 Other projects (dynamically loaded from GitHub) -->
+      <section class="sec projects-section" aria-labelledby="projects-title">
+        <p class="sec-mark"><span class="sec-num" lang="ja">二</span><span class="sec-label">Other things / <span lang="ja">その<ruby>他<rt>ほか</rt></ruby></span></span></p>
+        <h2 id="projects-title" class="sec-title">More stuff I've made.</h2>
         <div class="projects-grid" id="projects-grid">
-          <!-- Tiles inserted by projects.js, fetched from /Project_Showcase/ -->
+          <!-- Entries inserted by projects.js, fetched from /Project_Showcase/ -->
         </div>
       </section>
 
     </div>
   </main>
 
-  <footer class="site-footer">
-    <div class="footer-grid">
-      <div class="footer-left">
-        <a href="../" class="nav-logo">
-          <span class="nav-logo-mark"></span>
-          <span>jared</span>
-        </a>
-        <p>Made with care.</p>
-      </div>
-      <div class="footer-cols">
-        <div class="footer-col">
-          <p class="footer-heading">Site</p>
-          <a href="../about/">About</a>
-          <a href="../projects/">Projects</a>
-          <a href="../tools/">Tools</a>
-          <a href="../blog/">Blog</a>
-          <a href="../sponsorships/">Sponsorships</a>
-        </div>
-        <div class="footer-col">
-          <p class="footer-heading">Find me</p>
-          <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a>
-          <a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a>
-          <a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a>
-        </div>
-        <div class="footer-col">
-          <p class="footer-heading">Other</p>
-          <a href="../contact/">Contact</a>
-          <a href="#">RSS</a>
-        </div>
-      </div>
-    </div>
-    <div class="footer-baseline">
-      © 2026 Jared P. · Built with love
+  <footer class="colophon">
+    <nav class="colophon-links" aria-label="Footer">
+      <ul>
+        <li><a href="../about/">About</a></li>
+        <li><a href="../projects/">Projects</a></li>
+        <li><a href="../tools/">Tools</a></li>
+        <li><a href="../blog/">Blog</a></li>
+        <li><a href="../sponsorships/">Sponsorships</a></li>
+        <li><a href="../contact/">Contact</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a></li>
+        <li><a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a></li>
+        <li><a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a></li>
+        <li><a href="#">RSS</a></li>
+      </ul>
+    </nav>
+    <div class="colophon-box">
+      <p class="colophon-title" lang="ja">奥付</p>
+      <dl>
+        <div><dt>Site / <span lang="ja">サイト</span></dt><dd>jareddesu.com</dd></div>
+        <div><dt>Author / <span lang="ja">著者</span></dt><dd>Jared P. (<span lang="ja">まだまだ</span>Jared)</dd></div>
+        <div><dt>Published / <span lang="ja">発行</span></dt><dd>© 2026</dd></div>
+      </dl>
     </div>
   </footer>
 
-  <script src="../scripts/site.js"></script>
-  <script src="../scripts/projects.js"></script>
+  <script src="../scripts/site.js?v=2"></script>
+  <script src="../scripts/projects.js?v=2"></script>
 </body>
 </html>

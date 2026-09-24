@@ -2,9 +2,8 @@
  *
  * Adding a new tool:
  *   1. Drop the tool in /tools/<slug>/
- *   2. Add one entry to TOOLS below
- *   3. (Optional) put a thumb.png (16:9) in the tool's folder —
- *      if missing, the tile falls back to the glyph automatically.
+ *   2. Add one entry to TOOLS below (the glyph is shown large on the index;
+ *      thumb is only used elsewhere, e.g. for sharing)
  */
 
 const TOOLS = [
@@ -51,7 +50,7 @@ const TOOLS = [
       'you hit the matching physical key (detected by position, so your IME ' +
       'stays put). Weak kana surface more often.',
     tags: ['JIS', 'typing', 'kana'],
-    glyph: 'あ',
+    glyph: 'ぬ',                 // the first key on a JIS keyboard
     accent: '#e4332b',
     thumb: 'thumb.svg',
   }
@@ -83,29 +82,23 @@ const TOOLS = [
   const grid = document.getElementById('tools-grid');
   if (!grid) return;
 
+  // A catalogue entry per tool: its character set large, like a type
+  // specimen, with the tool's own colour as a small stamp
   grid.innerHTML = TOOLS.map((t) => {
     const accent = t.accent || 'var(--page-color)';
-    const thumb = `./${t.slug}/${t.thumb || 'thumb.png'}`;
     return `
-      <a class="tool-tile" href="./${t.slug}/" style="--tile-color:${accent}">
-        <div class="tool-thumb">
-          <img src="${thumb}" alt="" loading="lazy"
-               onerror="this.style.display='none'; this.parentElement.classList.add('placeholder');" />
-          <span class="tool-thumb-glyph" lang="ja" aria-hidden="true">${t.glyph || t.title[0]}</span>
-        </div>
-        <div class="tool-body">
-          <h2 class="tool-title">${t.title}<span class="arrow"> →</span></h2>
-          <p class="tool-desc">${t.description}</p>
-          ${t.tags && t.tags.length
-            ? `<div class="tool-tags">${t.tags.map((tag) => `<span class="tool-tag">${tag}</span>`).join('')}</div>`
-            : ''}
-        </div>
-      </a>`;
+      <li class="tool-entry" style="--tile-color:${accent}">
+        <a class="tool-link" href="./${t.slug}/">
+          <span class="tool-glyph" lang="ja" aria-hidden="true">${t.glyph || t.title[0]}</span>
+          <span class="tool-body">
+            <span class="tool-title">${t.title}</span>
+            <span class="tool-desc">${t.description}</span>
+            ${t.tags && t.tags.length
+              ? `<span class="tool-tags">${t.tags.map((tag) => `<span class="tool-tag">${tag}</span>`).join('')}</span>`
+              : ''}
+          </span>
+          <span class="tool-open">Open <span aria-hidden="true">→</span></span>
+        </a>
+      </li>`;
   }).join('');
-
-  // Self-contained staggered entrance — dynamically injected elements can't
-  // use the site's .reveal system (site.js has already collected those).
-  grid.querySelectorAll('.tool-tile').forEach((el, i) => {
-    setTimeout(() => el.classList.add('is-in'), 80 + i * 90);
-  });
 })();

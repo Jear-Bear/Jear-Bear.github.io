@@ -10,64 +10,77 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,30..100;1,9..144,300..700,30..100&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="../styles/base.css">
-  <link rel="stylesheet" href="../styles/about.css">
+  <link rel="stylesheet" href="../styles/base.css?v=2">
+  <link rel="stylesheet" href="../styles/about.css?v=2">
 </head>
 <body data-page="about">
 
   <!-- ============================================================== -->
   <!-- NAVBAR                                                          -->
   <!-- ============================================================== -->
-  <nav class="navbar">
-    <a href="../" class="nav-logo">
-      <span class="nav-logo-mark"></span>
-      <span>jared</span>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="masthead">
+    <a href="../" class="mark" aria-label="まだまだJared, home">
+      <span class="mark-ja" lang="ja">まだまだ</span>
+      <span class="mark-en">Jared</span>
     </a>
-  <ul class="nav-links">
-    <li><a href="../about/">About</a></li>
-    <li><a href="../projects/">Projects</a></li>
-    <li><a href="../tools/">Tools</a></li>
-    <li><a href="../blog/">Blog</a></li>
-    <li><a href="../sponsorships/">Sponsorships</a></li>
-    <li><a href="../contact/">Contact</a></li>
-  </ul>
-    <button class="nav-burger" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
-  <ul class="nav-mobile">
-    <li><a href="../about/">About</a></li>
-    <li><a href="../projects/">Projects</a></li>
-    <li><a href="../tools/">Tools</a></li>
-    <li><a href="../blog/">Blog</a></li>
-    <li><a href="../sponsorships/">Sponsorships</a></li>
-    <li><a href="../contact/">Contact</a></li>
-  </ul>
+    <nav class="masthead-nav" aria-label="Site">
+      <ul>
+        <li><a href="../about/">About</a></li>
+        <li><a href="../projects/">Projects</a></li>
+        <li><a href="../tools/">Tools</a></li>
+        <li><a href="../blog/">Blog</a></li>
+        <li><a href="../sponsorships/">Sponsorships</a></li>
+        <li><a href="../contact/">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Menu</button>
+  </header>
+
+  <div class="menu-sheet" id="site-menu" hidden>
+    <div class="menu-sheet-head">
+      <a href="../" class="mark" aria-label="まだまだJared, home">
+        <span class="mark-ja" lang="ja">まだまだ</span>
+        <span class="mark-en">Jared</span>
+      </a>
+      <button class="menu-toggle menu-close" type="button">Close</button>
+    </div>
+    <nav aria-label="Site">
+      <ul>
+        <li><a href="../about/">About <span lang="ja">自己紹介</span></a></li>
+        <li><a href="../projects/">Projects <span lang="ja">制作</span></a></li>
+        <li><a href="../tools/">Tools <span lang="ja">ツール</span></a></li>
+        <li><a href="../blog/">Blog <span lang="ja">ブログ</span></a></li>
+        <li><a href="../sponsorships/">Sponsorships <span lang="ja">スポンサー</span></a></li>
+        <li><a href="../contact/">Contact <span lang="ja">お問い合わせ</span></a></li>
+      </ul>
+    </nav>
+  </div>
 
   <!-- ============================================================== -->
   <!-- MAIN                                                            -->
   <!-- ============================================================== -->
-  <main>
+  <main id="main">
     <div class="container">
 
-      <!-- Page header -->
-      <header class="page-header">
-        <p class="eyebrow reveal">about me</p>
-        <h1 class="page-title reveal">
-          Hi, I'm <em class="wobble">Jared</em>.
-        </h1>
-        <p class="page-intro reveal">
-          A Japanese learner, YouTuber, and student-maker. I build things late
-          at night that nobody asked for (yet).
-        </p>
+      <header class="page-head">
+        <div class="page-head-copy">
+          <h1 class="page-title">Hi, I'm <em>Jared</em>.</h1>
+          <p class="page-intro">
+            A Japanese learner, YouTuber, and student-maker. I build things late
+            at night that nobody asked for (yet).
+          </p>
+        </div>
+        <p class="page-v"><span class="page-v-ja" lang="ja">自己紹介</span><span class="page-v-en">About</span></p>
       </header>
 
       <!-- Bio + portrait -->
-      <section class="bio-section">
+      <section class="bio-section" aria-label="About Jared">
         <div class="bio-grid">
-          <div class="bio-text reveal">
+          <div class="bio-text prose">
             <p>
               I run <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener" class="inline-link">@jareddesu</a> on YouTube, where I document my journey learning Japanese
               through AJATT-style immersion. About <span class="live-count" data-live-subscribers title="YouTube subscribers"><span class="live-dot" aria-hidden="true"></span><span class="live-count-num">13,500</span></span> of you have decided to come along
@@ -83,64 +96,45 @@
               and whatever side project has captured my attention this month.
             </p>
           </div>
-          <div class="bio-portrait reveal">
-            <div class="portrait-frame">
-              <!-- Replace with real portrait at /images/jared.jpg -->
-              <img src="../images/jared.jpg" alt="Jared"
-                   onerror="this.style.display='none'; this.parentElement.classList.add('placeholder');" />
-              <div class="portrait-placeholder">J</div>
-            </div>
-          </div>
+          <figure class="bio-portrait">
+            <img src="../images/jared.jpg" alt="Jared" width="400" height="400"
+                 onerror="this.parentElement.hidden = true;" />
+          </figure>
         </div>
       </section>
 
-      <!-- Currently -->
-      <section class="currently-section">
-        <div class="section-label">
-          <span class="section-label-text">Currently</span>
-        </div>
-        <h2 class="section-title reveal">What I'm up to right now.</h2>
+      <!-- 一 Currently -->
+      <section class="sec now-section" aria-labelledby="now-title">
+        <p class="sec-mark"><span class="sec-num" lang="ja">一</span><span class="sec-label">Currently / <span lang="ja"><ruby>近況<rt>きんきょう</rt></ruby></span></span></p>
+        <span class="sec-kanji" aria-hidden="true" lang="ja">今</span>
+        <h2 id="now-title" class="sec-title">What I'm up to right now.</h2>
         <ul class="now-list">
-          <li class="now-item reveal">
-            <span class="now-marker">→</span>
-            <div>
-              <strong>Shipping hako's first batch.</strong>
-              <span>~25 handmade units of an ambient Anki device. Drops spring 2027.</span>
-            </div>
+          <li class="now-item">
+            <strong>Shipping hako's first batch.</strong>
+            <span>~25 handmade units of an ambient Anki device. Drops spring 2027.</span>
           </li>
-          <li class="now-item reveal">
-            <span class="now-marker">→</span>
-            <div>
-              <strong>Reading 吾輩は猫である in Japanese.</strong>
-              <span>Slowly. Looking up 4-5 words per page but it's fine. 🙃</span>
-            </div>
+          <li class="now-item">
+            <strong>Reading <span lang="ja">吾輩は猫である</span> in Japanese.</strong>
+            <span>Slowly. Looking up 4-5 words per page but it's fine. 🙃</span>
           </li>
-          <li class="now-item reveal">
-            <span class="now-marker">→</span>
-            <div>
-              <strong>Pushing my reading speed.</strong>
-              <span>Tracking characters per hour. The graph is going up.... mostly.</span>
-            </div>
+          <li class="now-item">
+            <strong>Pushing my reading speed.</strong>
+            <span>Tracking characters per hour. The graph is going up.... mostly.</span>
           </li>
-          <li class="now-item reveal">
-            <span class="now-marker">→</span>
-            <div>
-              <strong>Sharing my AJATT journey.</strong>
-              <span>Everything else happens between Japanese.</span>
-            </div>
+          <li class="now-item">
+            <strong>Sharing my AJATT journey.</strong>
+            <span>Everything else happens between Japanese.</span>
           </li>
         </ul>
       </section>
 
-      <!-- Skills -->
-      <section class="skills-section">
-        <div class="section-label">
-          <span class="section-label-text">Tools &amp; tech</span>
-        </div>
-        <h2 class="section-title reveal">Things I build with.</h2>
+      <!-- 二 Tools & tech -->
+      <section class="sec skills-section" aria-labelledby="skills-title">
+        <p class="sec-mark"><span class="sec-num" lang="ja">二</span><span class="sec-label">Tools &amp; tech / <span lang="ja"><ruby>道具<rt>どうぐ</rt></ruby></span></span></p>
+        <h2 id="skills-title" class="sec-title">Things I build with.</h2>
 
         <div class="skills-grid">
-          <div class="skill-row reveal">
+          <div class="skill-row">
             <h3 class="skill-row-title">Languages</h3>
             <div class="skill-row-items">
               <div class="skill-pill"><img src="../images/Skills/JavaScript.svg" alt="JavaScript" /><span>JavaScript</span></div>
@@ -152,7 +146,7 @@
             </div>
           </div>
 
-          <div class="skill-row reveal">
+          <div class="skill-row">
             <h3 class="skill-row-title">Libraries &amp; tools</h3>
             <div class="skill-row-items">
               <div class="skill-pill"><img src="../images/Skills/OpenCV-Dark.svg" alt="OpenCV" /><span>OpenCV</span></div>
@@ -160,7 +154,7 @@
             </div>
           </div>
 
-          <div class="skill-row reveal">
+          <div class="skill-row">
             <h3 class="skill-row-title">IDEs</h3>
             <div class="skill-row-items">
               <div class="skill-pill"><img src="../images/Skills/VSCode-Dark.svg" alt="VSCode" /><span>VSCode</span></div>
@@ -172,7 +166,7 @@
             </div>
           </div>
 
-          <div class="skill-row reveal">
+          <div class="skill-row">
             <h3 class="skill-row-title">Creative tools</h3>
             <div class="skill-row-items">
               <div class="skill-pill"><img src="../images/Skills/Unity-Dark.svg" alt="Unity" /><span>Unity</span></div>
@@ -185,20 +179,25 @@
         </div>
       </section>
 
-      <!-- Find me -->
+      <!-- Closing: find me -->
       <section class="find-me-section">
-        <div class="find-me-box reveal">
-          <h2 class="section-title">Want to chat?</h2>
-          <p>
-            I'm easiest to reach on Discord or YouTube comments. Email works too,
-            but I check it in batches.
-          </p>
-          <div class="find-me-actions">
-            <a href="../contact/" class="btn btn-primary">Get in touch</a>
-            <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener" class="btn-link">
-              YouTube <span class="arrow">→</span>
-            </a>
+        <div class="seal-close">
+          <div>
+            <h2 class="sec-title">Want to chat?</h2>
+            <p class="lede">
+              I'm easiest to reach on Discord or YouTube comments. Email works too,
+              but I check it in batches.
+            </p>
+            <p class="find-me-links">
+              <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener" class="text-link">
+                YouTube <span class="arrow" aria-hidden="true">→</span>
+              </a>
+            </p>
           </div>
+          <a class="seal" href="../contact/">
+            <span class="seal-ja" lang="ja"><span>お問い</span><span>合わせ</span></span>
+            <span class="seal-en">Get in touch</span>
+          </a>
         </div>
       </section>
 
@@ -208,44 +207,35 @@
   <!-- ============================================================== -->
   <!-- FOOTER                                                          -->
   <!-- ============================================================== -->
-  <footer class="site-footer">
-    <div class="footer-grid">
-      <div class="footer-left">
-        <a href="../" class="nav-logo">
-          <span class="nav-logo-mark"></span>
-          <span>jared</span>
-        </a>
-        <p>Made with care.</p>
-      </div>
-      <div class="footer-cols">
-        <div class="footer-col">
-          <p class="footer-heading">Site</p>
-          <a href="../about/">About</a>
-          <a href="../projects/">Projects</a>
-          <a href="../tools/">Tools</a>
-          <a href="../blog/">Blog</a>
-          <a href="../sponsorships/">Sponsorships</a>
-        </div>
-        <div class="footer-col">
-          <p class="footer-heading">Find me</p>
-          <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a>
-          <a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a>
-          <a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a>
-        </div>
-        <div class="footer-col">
-          <p class="footer-heading">Other</p>
-          <a href="../contact/">Contact</a>
-          <a href="#">RSS</a>
-        </div>
-      </div>
-    </div>
-    <div class="footer-baseline">
-      © 2026 Jared P. · Built with love
+  <footer class="colophon">
+    <nav class="colophon-links" aria-label="Footer">
+      <ul>
+        <li><a href="../about/">About</a></li>
+        <li><a href="../projects/">Projects</a></li>
+        <li><a href="../tools/">Tools</a></li>
+        <li><a href="../blog/">Blog</a></li>
+        <li><a href="../sponsorships/">Sponsorships</a></li>
+        <li><a href="../contact/">Contact</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a></li>
+        <li><a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a></li>
+        <li><a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a></li>
+        <li><a href="#">RSS</a></li>
+      </ul>
+    </nav>
+    <div class="colophon-box">
+      <p class="colophon-title" lang="ja">奥付</p>
+      <dl>
+        <div><dt>Site / <span lang="ja">サイト</span></dt><dd>jareddesu.com</dd></div>
+        <div><dt>Author / <span lang="ja">著者</span></dt><dd>Jared P. (<span lang="ja">まだまだ</span>Jared)</dd></div>
+        <div><dt>Published / <span lang="ja">発行</span></dt><dd>© 2026</dd></div>
+      </dl>
     </div>
   </footer>
 
-  <script src="../scripts/site.js"></script>
+  <script src="../scripts/site.js?v=2"></script>
   <script src="../scripts/sponsor-data.js"></script>
-  <script src="../scripts/about.js"></script>
+  <script src="../scripts/about.js?v=2"></script>
 </body>
 </html>
