@@ -17,9 +17,22 @@
 .bio-portrait { margin: clamp(0px, 10vh, 120px) 0 0; }
 .bio-portrait img { width: 100%; height: auto; filter: saturate(0.9); }
 
-/* Subscriber count: just the number, set in Mincho */
+/* Subscriber count in Mincho, with a pulsing dot once the live number loads */
 .live-count { white-space: nowrap; }
-.live-dot { display: none; }
+.live-dot {
+  display: none;
+  width: 7px;
+  height: 7px;
+  margin: 0 6px 0 2px;
+  border-radius: 50%;
+  background: var(--page-color);
+  vertical-align: 0.12em;
+}
+.live-count.is-live .live-dot { display: inline-block; animation: live-pulse 2.4s ease-in-out infinite; }
+@keyframes live-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--page-color) 45%, transparent); }
+  50%      { box-shadow: 0 0 0 5px color-mix(in srgb, var(--page-color) 0%, transparent); }
+}
 .live-count-num { font-family: var(--font-mincho); font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
 
 /* --- 一 Currently: a ruled list --------------------------------------- */
@@ -54,8 +67,23 @@
 .find-me-section { margin-top: clamp(110px, 18vh, 220px); }
 .find-me-links { margin-top: 20px; }
 
+.head-portrait { display: none; }
+
+/* Phones: the portrait leads the page, centred between the mark and the
+   vertical title; the heading and intro run full width underneath */
 @media (max-width: 899px) {
+  .page-head { grid-template-areas: "photo v" "copy copy"; row-gap: 40px; }
+  .page-head .page-v { grid-area: v; }
+  .page-head .page-head-copy { grid-area: copy; padding-left: 0 !important; }
+  .head-portrait {
+    display: block;
+    grid-area: photo;
+    justify-self: center;
+    width: min(58vw, 240px);
+    margin: 0 0 0 40px;
+  }
+  .head-portrait img { width: 100%; height: auto; filter: saturate(0.9); }
   .bio-grid { grid-template-columns: 1fr; margin-left: 0; gap: 32px; }
-  .bio-portrait { margin: 0 0 0 auto; width: min(60%, 220px); }
+  .bio-portrait { display: none; }
   .now-item, .skill-row { grid-template-columns: 1fr; gap: 2px; }
 }
