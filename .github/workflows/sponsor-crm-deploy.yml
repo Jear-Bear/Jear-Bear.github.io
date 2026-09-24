@@ -1,0 +1,74 @@
+# Deploys the sponsor CRM Worker (workers/sponsor-crm) to Cloudflare's free
+# plan: finds or creates the D1 database, applies migrations, deploys, then
+# pushes the secrets from this repo's GitHub secrets to the Worker.
+# Nothing private is stored in the repo. Setup: docs/sponsor-crm-setup.md
+name: Sponsor CRM deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'workers/sponsor-crm/**'
+      - 'scripts/manage/schema.js'
+      - 'scripts/manage/rules.js'
+      - '.github/workflows/sponsor-crm-deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sponsor-crm-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: workers/sponsor-crm
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      SPONSOR_MANAGEMENT_PASSWORD: ${{ secrets.SPONSOR_MANAGEMENT_PASSWORD }}
+      CRM_SESSION_KEY: ${{ secrets.CRM_SESSION_KEY }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Check secrets
+        run: |
+          missing=0
+          for name in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID SPONSOR_MANAGEMENT_PASSWORD CRM_SESSION_KEY; do
+            if [ -z "${!name}" ]; then echo "::error::Missing GitHub secret $name"; missing=1; fi
+          done
+          [ "$missing" = 0 ] || exit 1
+          if [ "${#SPONSOR_MANAGEMENT_PASSWORD}" -lt 16 ]; then echo "::error::SPONSOR_MANAGEMENT_PASSWORD must be at least 16 characters"; exit 1; fi
+          if [ "${#CRM_SESSION_KEY}" -lt 32 ]; then echo "::error::CRM_SESSION_KEY must be at least 32 characters"; exit 1; fi
+
+      # ubuntu-latest ships Node 20+; wrangler is pinned in package-lock.json
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: Find or create the D1 database
+        run: |
+          find_id() { npx wrangler d1 list --json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const db=JSON.parse(s).find(d=>d.name==="sponsor-crm");process.stdout.write(db?db.uuid:"")})'; }
+          id="$(find_id)"
+          if [ -z "$id" ]; then
+            npx wrangler d1 create sponsor-crm > /dev/null
+            id="$(find_id)"
+          fi
+          if [ -z "$id" ]; then echo "::error::Couldn't find or create the sponsor-crm D1 database"; exit 1; fi
+          sed -i "s/00000000-0000-0000-0000-000000000000/$id/" wrangler.toml
+
+      - name: Apply migrations
+        run: npx wrangler d1 migrations apply sponsor-crm --remote
+
+      - name: Deploy
+        run: npx wrangler deploy
+
+      - name: Push secrets
+        run: |
+          printf '%s' "$SPONSOR_MANAGEMENT_PASSWORD" | npx wrangler secret put SPONSOR_MANAGEMENT_PASSWORD
+          printf '%s' "$CRM_SESSION_KEY" | npx wrangler secret put CRM_SESSION_KEY

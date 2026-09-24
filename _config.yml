@@ -1,0 +1,5 @@
+# GitHub Pages (Jekyll) settings. Only keeps the sponsor CRM Worker's source
+# and tooling out of the published site; everything else is unchanged.
+exclude:
+  - workers/
+  - .github/

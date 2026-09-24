@@ -1,0 +1,21 @@
+# Sponsor CRM Worker. Deployed by .github/workflows/sponsor-crm-deploy.yml,
+# which fills in the real D1 database_id at deploy time and pushes the
+# secrets. Setup: docs/sponsor-crm-setup.md
+name = "sponsor-crm"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+workers_dev = true
+preview_urls = false
+
+[vars]
+ALLOWED_ORIGINS = "https://www.jareddesu.com,https://jareddesu.com"
+ALLOW_LOCALHOST = "true"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sponsor-crm"
+database_id = "00000000-0000-0000-0000-000000000000"   # replaced at deploy time
+migrations_dir = "migrations"
+
+[observability]
+enabled = false

@@ -1,0 +1,12 @@
+{
+  "name": "sponsor-crm",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler d1 migrations apply sponsor-crm --local && wrangler dev --port 8787",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.139.0"
+  }
+}
