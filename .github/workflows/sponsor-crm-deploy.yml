@@ -65,6 +65,17 @@ jobs:
           if [ -z "$id" ]; then echo "::error::Couldn't find or create the sponsor-crm D1 database"; exit 1; fi
           sed -i "s/00000000-0000-0000-0000-000000000000/$id/" wrangler.toml
 
+      - name: Find or create the OAuth KV namespace
+        run: |
+          find_kv() { npx wrangler kv namespace list | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s.slice(s.indexOf("[")));const n=j.find(x=>x.title==="sponsor-crm-oauth"||x.title.endsWith("-sponsor-crm-oauth"));process.stdout.write(n?n.id:"")})'; }
+          id="$(find_kv)"
+          if [ -z "$id" ]; then
+            npx wrangler kv namespace create sponsor-crm-oauth > /dev/null
+            id="$(find_kv)"
+          fi
+          if [ -z "$id" ]; then echo "::error::Couldn't find or create the sponsor-crm-oauth KV namespace"; exit 1; fi
+          sed -i "s/00000000000000000000000000000000/$id/" wrangler.toml
+
       - name: Apply migrations
         run: npx wrangler d1 migrations apply sponsor-crm --remote
 

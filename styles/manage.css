@@ -428,3 +428,30 @@ body.is-dragging-upload .crm-videos-planned .crm-row.is-video:not(.is-head) { ou
 @media (max-width: 480px) { .crm-upload { grid-template-columns: 72px minmax(0, 1fr); } .crm-upload-thumb { width: 72px; height: 41px; } .crm-upload > .crm-btn { grid-column: 2; justify-self: start; } }
 .crm-dialog .crm-field { display: grid; gap: 4px; margin-top: 12px; font-size: 12.5px; color: var(--ink-soft); }
 .crm-dialog select { font: inherit; font-size: 15px; padding: 7px 8px; border: 1px solid var(--rule-strong); background: var(--paper-light); color: var(--ink); width: 100%; }
+
+/* Review queue */
+.crm-badge { display: inline-block; margin-left: 6px; min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--page-color); color: var(--paper-light); font-size: 11px; line-height: 18px; text-align: center; }
+.crm-badge[hidden] { display: none; }
+.crm-review-list { display: grid; gap: 14px; }
+.crm-review-card { border: 1px solid var(--rule-strong); background: var(--paper-light); padding: 14px 16px; }
+.crm-review-card.is-low { border-style: dashed; }
+.crm-review-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.crm-review-kind { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+.crm-review-head h3 { font-size: 1.05rem; }
+.crm-conf { font-size: 11px; padding: 1px 7px; border: 1px solid currentColor; white-space: nowrap; text-transform: capitalize; }
+.crm-conf.is-high { color: var(--ok); } .crm-conf.is-medium { color: var(--warn); } .crm-conf.is-low { color: var(--bad); }
+.crm-flag.is-ok { color: var(--ok); }
+.crm-review-reason { font-size: 13.5px; color: var(--ink); margin: 6px 0; }
+.crm-evidence { border-left: 2px solid #3b5b9c; padding: 4px 0 4px 10px; margin: 8px 0 10px; font-size: 12.5px; }
+.crm-evidence-meta { color: var(--muted); font-size: 12px; margin: 0; }
+.crm-evidence blockquote { margin: 4px 0; color: var(--ink-soft); font-style: italic; white-space: pre-wrap; word-break: break-word; }
+.crm-evidence a { font-size: 12px; text-decoration: underline; text-underline-offset: 0.2em; }
+.crm-review-card .crm-field input, .crm-review-card .crm-field select, .crm-review-card .crm-field textarea { background: var(--paper); }
+.crm-dismiss-reason { font: inherit; font-size: 14px; padding: 6px 8px; border: 1px solid var(--rule-strong); background: var(--paper); flex: 1 1 180px; }
+.crm-batch-pick { margin-left: auto; }
+.crm-sugg-list { list-style: none; }
+.crm-sugg-list > li { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; padding: 10px 0; border-bottom: 1px solid var(--rule); }
+.crm-sugg-main { flex: 1 1 280px; }
+.crm-sugg-main .crm-flag { margin-left: 8px; }
+.crm-subhead { font-size: 14px; font-weight: 600; margin: 14px 0 4px; }
+.crm-grant { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; }
