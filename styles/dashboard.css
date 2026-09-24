@@ -1,56 +1,24 @@
 /* Sponsor dashboard — builds on sponsorships.css (same tobi-iro accent) */
 
-main { padding-top: calc(var(--nav-h, 64px) + clamp(32px, 6vh, 72px)); }
-
 [hidden] { display: none !important; }
 
-/* --- Password gate ----------------------------------------------------- */
-.gate {
-  max-width: 560px;
-  margin: 0 auto;
-  padding: clamp(24px, 6vh, 64px) 0;
-}
-
-.gate-title {
-  font-size: clamp(2.2rem, 6vw, 3.4rem);
-  color: var(--ink);
-  margin-bottom: 16px;
-}
-
-.gate-intro { color: var(--muted); margin-bottom: 28px; }
-
-.gate-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: clamp(22px, 4vw, 32px);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-}
-
-.gate-form label { display: flex; flex-direction: column; gap: 8px; }
-
+/* --- Password gate: the page head, with one underlined field ------------ */
+.gate-intro { color: var(--ink-soft); margin-bottom: 36px; }
+.gate-form { display: grid; gap: 22px; max-width: 24rem; }
+.gate-form label { display: flex; flex-direction: column; gap: 4px; }
 .gate-form input[type="password"] {
   width: 100%;
-  padding: 14px 18px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  padding: 8px 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--ink);
+  border-radius: 0;
   color: var(--ink);
-  font-family: inherit;
-  font-size: 15px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font: 15px var(--font-gothic);
 }
-
-.gate-form input:focus {
-  outline: none;
-  border-color: var(--page-color);
-  box-shadow: 0 0 0 4px var(--page-color-soft);
-}
-
-.gate-form .btn { align-self: flex-start; }
-.gate-form .btn:disabled { opacity: 0.6; cursor: default; transform: none; }
+.gate-form input:focus { outline: 2px solid var(--page-color); outline-offset: 4px; }
+.gate-form .btn { justify-self: start; }
+.gate-form .btn:disabled { opacity: 0.6; cursor: default; }
 .gate-form .form-meta:empty { display: none; }
 
 /* --- Dashboard --------------------------------------------------------- */
@@ -60,13 +28,14 @@ main { padding-top: calc(var(--nav-h, 64px) + clamp(32px, 6vh, 72px)); }
   justify-content: space-between;
   gap: 24px;
   flex-wrap: wrap;
-  margin-bottom: clamp(32px, 5vh, 48px);
+  padding-top: clamp(48px, 10vh, 120px);
+  margin-bottom: clamp(48px, 8vh, 88px);
 }
 
 .dash-title {
-  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-size: clamp(1.9rem, 3.8vw, 2.9rem);
   color: var(--ink);
-  font-family: 'Fraunces', 'Noto Serif JP', Georgia, serif;
+  font-family: var(--font-mincho);
 }
 
 .dash-header .btn-link {
@@ -76,14 +45,14 @@ main { padding-top: calc(var(--nav-h, 64px) + clamp(32px, 6vh, 72px)); }
   font-family: inherit;
 }
 
-.dash-block + .dash-block { margin-top: clamp(40px, 6vh, 64px); }
+.dash-block + .dash-block { margin-top: clamp(64px, 11vh, 130px); }
 
 .dash-stats { grid-template-columns: repeat(4, 1fr); }
 
 .dash-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 44px clamp(32px, 5vw, 72px);
   align-items: start;
 }
 
@@ -107,9 +76,8 @@ main { padding-top: calc(var(--nav-h, 64px) + clamp(32px, 6vh, 72px)); }
 }
 
 .dash-table thead th {
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.02em;
   color: var(--muted);
   font-weight: 500;
 }
@@ -133,9 +101,7 @@ main { padding-top: calc(var(--nav-h, 64px) + clamp(32px, 6vh, 72px)); }
   max-width: 70ch;
 }
 
-.site-footer { margin-top: clamp(60px, 10vh, 100px); padding-top: 0; }
-.site-footer .footer-baseline { margin-top: 0; }
-.site-footer .footer-baseline a:hover { color: var(--page-color); }
+
 
 @media (max-width: 1100px) {
   .dash-stats { grid-template-columns: repeat(2, 1fr); }

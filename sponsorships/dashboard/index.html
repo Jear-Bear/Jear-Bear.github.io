@@ -11,48 +11,63 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,30..100;1,9..144,300..700,30..100&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500&text=%E3%81%BE%E3%81%A0&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="../../styles/base.css">
-  <link rel="stylesheet" href="../../styles/sponsorships.css">
-  <link rel="stylesheet" href="../../styles/dashboard.css">
+  <link rel="stylesheet" href="../../styles/base.css?v=2">
+  <link rel="stylesheet" href="../../styles/sponsorships.css?v=3">
+  <link rel="stylesheet" href="../../styles/dashboard.css?v=2">
 </head>
 <body data-page="sponsor-dashboard">
 
-  <nav class="navbar">
-    <a href="../../" class="nav-logo">
-      <span class="nav-logo-mark"></span>
-      <span>jared</span>
-    </a>
-    <ul class="nav-links">
-      <li><a href="../../about/">About</a></li>
-      <li><a href="../../projects/">Projects</a></li>
-      <li><a href="../../tools/">Tools</a></li>
-      <li><a href="../../blog/">Blog</a></li>
-      <li><a href="../../sponsorships/" class="active">Sponsorships</a></li>
-      <li><a href="../../contact/">Contact</a></li>
-    </ul>
-    <button class="nav-burger" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
-  <ul class="nav-mobile">
-    <li><a href="../../about/">About</a></li>
-    <li><a href="../../projects/">Projects</a></li>
-    <li><a href="../../tools/">Tools</a></li>
-    <li><a href="../../blog/">Blog</a></li>
-    <li><a href="../../sponsorships/">Sponsorships</a></li>
-    <li><a href="../../contact/">Contact</a></li>
-  </ul>
+  <a class="skip-link" href="#main">Skip to content</a>
 
-  <main>
+  <header class="masthead">
+    <a href="../../" class="mark" aria-label="まだまだJared, home">
+      <span class="mark-ja" lang="ja">まだまだ</span>
+      <span class="mark-en">Jared</span>
+    </a>
+    <nav class="masthead-nav" aria-label="Site">
+      <ul>
+        <li><a href="../../about/">About</a></li>
+        <li><a href="../../projects/">Projects</a></li>
+        <li><a href="../../tools/">Tools</a></li>
+        <li><a href="../../blog/">Blog</a></li>
+        <li><a href="../../sponsorships/">Sponsorships</a></li>
+        <li><a href="../../contact/">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Menu</button>
+  </header>
+
+  <div class="menu-sheet" id="site-menu" hidden>
+    <div class="menu-sheet-head">
+      <a href="../../" class="mark" aria-label="まだまだJared, home">
+        <span class="mark-ja" lang="ja">まだまだ</span>
+        <span class="mark-en">Jared</span>
+      </a>
+      <button class="menu-toggle menu-close" type="button">Close</button>
+    </div>
+    <nav aria-label="Site">
+      <ul>
+        <li><a href="../../about/">About <span lang="ja">自己紹介</span></a></li>
+        <li><a href="../../projects/">Projects <span lang="ja">制作</span></a></li>
+        <li><a href="../../tools/">Tools <span lang="ja">ツール</span></a></li>
+        <li><a href="../../blog/">Blog <span lang="ja">ブログ</span></a></li>
+        <li><a href="../../sponsorships/">Sponsorships <span lang="ja">スポンサー</span></a></li>
+        <li><a href="../../contact/">Contact <span lang="ja">お問い合わせ</span></a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <main id="main">
     <div class="container">
 
       <!-- Password gate: the data file is encrypted; the password decrypts it here -->
-      <section class="gate" id="gate">
-        <p class="eyebrow">sponsor dashboard</p>
-        <h1 class="gate-title">Channel analytics for partners.</h1>
+      <section class="gate page-head" id="gate">
+        <p class="page-v"><span class="page-v-ja" lang="ja">スポンサー</span><span class="page-v-en">Sponsor dashboard</span></p>
+        <div class="page-head-copy">
+        <h1 class="gate-title page-title">Channel analytics for partners.</h1>
         <p class="gate-intro">
           Detailed audience and performance numbers for まだまだJared, shared with sponsors.
           Need access? Email <a href="mailto:Jared@jareddesu.com" class="inline-link">Jared@jareddesu.com</a>.
@@ -71,21 +86,21 @@
           <p class="form-meta" id="gate-status" role="status" aria-live="polite"></p>
         </form>
         <noscript><p class="gate-intro">The dashboard needs JavaScript to decrypt its data.</p></noscript>
+        </div>
       </section>
 
       <!-- Dashboard: filled in by dashboard.js after unlocking -->
       <section class="dash" id="dash" hidden>
         <header class="dash-header">
           <div>
-            <p class="eyebrow">sponsor dashboard</p>
             <h1 class="dash-title">まだまだJared, by the numbers.</h1>
-            <p class="data-note"><span class="data-dot" aria-hidden="true"></span><span id="dash-updated"></span></p>
+            <p class="data-note"><span id="dash-updated"></span></p>
           </div>
           <button type="button" class="btn-link" id="dash-lock">Lock <span class="arrow">→</span></button>
         </header>
 
-        <div class="dash-block">
-          <div class="section-label"><span class="section-label-text">Overview</span></div>
+        <div class="dash-block sec">
+          <p class="sec-mark"><span class="sec-num" lang="ja">一</span><span class="sec-label">Overview / <span lang="ja"><ruby>概要<rt>がいよう</rt></ruby></span></span></p>
           <div class="stat-grid dash-stats" id="dash-overview"></div>
           <div class="chart-grid" id="overview-charts" hidden>
             <div class="panel" id="trend-panel" hidden>
@@ -101,8 +116,8 @@
           </div>
         </div>
 
-        <div class="dash-block">
-          <div class="section-label"><span class="section-label-text">Audience</span></div>
+        <div class="dash-block sec">
+          <p class="sec-mark"><span class="sec-num" lang="ja">二</span><span class="sec-label">Audience / <span lang="ja"><ruby>視聴者<rt>しちょうしゃ</rt></ruby></span></span></p>
           <div class="dash-grid">
             <div class="panel" data-bars="countries"></div>
             <div class="panel" id="age-gender-panel" hidden></div>
@@ -112,16 +127,16 @@
           </div>
         </div>
 
-        <div class="dash-block">
-          <div class="section-label"><span class="section-label-text">Discovery</span></div>
+        <div class="dash-block sec">
+          <p class="sec-mark"><span class="sec-num" lang="ja">三</span><span class="sec-label">Discovery / <span lang="ja"><ruby>流入元<rt>りゅうにゅうもと</rt></ruby></span></span></p>
           <div class="dash-grid">
             <div class="panel" data-bars="traffic"></div>
             <div class="panel" data-bars="devices"></div>
           </div>
         </div>
 
-        <div class="dash-block">
-          <div class="section-label"><span class="section-label-text">Featured videos</span></div>
+        <div class="dash-block sec">
+          <p class="sec-mark"><span class="sec-num" lang="ja">四</span><span class="sec-label">Featured videos / <span lang="ja"><ruby>注目<rt>ちゅうもく</rt></ruby>の<ruby>動画<rt>どうが</rt></ruby></span></span></p>
           <div class="panel">
             <h3 class="panel-title">How the featured videos perform</h3>
             <p class="panel-sub" id="video-period"></p>
@@ -152,13 +167,34 @@
     </div>
   </main>
 
-  <footer class="site-footer">
-    <div class="footer-baseline">
-      © 2026 Jared P. · <a href="../../sponsorships/">Sponsorships</a>
+  <footer class="colophon">
+    <nav class="colophon-links" aria-label="Footer">
+      <ul>
+        <li><a href="../../about/">About</a></li>
+        <li><a href="../../projects/">Projects</a></li>
+        <li><a href="../../tools/">Tools</a></li>
+        <li><a href="../../blog/">Blog</a></li>
+        <li><a href="../../sponsorships/">Sponsorships</a></li>
+        <li><a href="../../contact/">Contact</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a></li>
+        <li><a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a></li>
+        <li><a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a></li>
+        <li><a href="#">RSS</a></li>
+      </ul>
+    </nav>
+    <div class="colophon-box">
+      <p class="colophon-title" lang="ja">奥付</p>
+      <dl>
+        <div><dt>Site / <span lang="ja">サイト</span></dt><dd>jareddesu.com</dd></div>
+        <div><dt>Author / <span lang="ja">著者</span></dt><dd>Jared P. (<span lang="ja">まだまだ</span>Jared)</dd></div>
+        <div><dt>Published / <span lang="ja">発行</span></dt><dd>© 2026</dd></div>
+      </dl>
     </div>
   </footer>
 
-  <script src="../../scripts/site.js"></script>
+  <script src="../../scripts/site.js?v=2"></script>
   <script src="../../scripts/sponsor-data.js"></script>
   <script src="../../scripts/sponsor-charts.js"></script>
   <script src="../../scripts/dashboard.js"></script>

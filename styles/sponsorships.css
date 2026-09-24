@@ -3,17 +3,7 @@
    the current section, one mark per chart. */
 :root { --page-color: #95483f; }
 
-.skip-link {
-  position: absolute;
-  left: 16px;
-  top: -60px;
-  z-index: 300;
-  padding: 8px 12px;
-  background: var(--ink);
-  color: var(--paper);
-  font-size: 13px;
-}
-.skip-link:focus { top: 12px; }
+
 
 .sp-section { scroll-margin-top: calc(var(--section-nav-h, 48px) + 20px); }
 
@@ -52,34 +42,8 @@
 
 .sp-hero-copy .lede { margin-bottom: 32px; font-size: 15px; }
 
-/* Vertical page title, standing against the photo's misted edge */
-.page-v {
-  grid-column: 2;
-  grid-row: 1;
-  align-self: start;
-  display: flex;
-  flex-direction: row-reverse;
-  gap: 12px;
-  margin-top: 8px;
-}
-.page-v-ja {
-  writing-mode: vertical-rl;
-  font-family: var(--font-mincho);
-  font-weight: 600;
-  font-size: clamp(26px, 2.4vw, 34px);
-  letter-spacing: 0.32em;
-  color: var(--ink);
-  line-height: 1;
-}
-.page-v-en {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  color: var(--muted);
-  line-height: 1;
-  padding-top: 6px;
-}
+/* Vertical page title (base.css), standing against the photo's misted edge */
+.sp-hero .page-v { margin-top: 8px; }
 
 .sp-hero-photo {
   --mist-mask: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.5) 18%, #000 38%);
@@ -158,7 +122,7 @@
 .data-dot { display: none; }
 
 /* Legacy stat cards (sponsor dashboard) — the same ledger treatment */
-.stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 2px solid var(--ink); border-bottom: 1px solid var(--ink); }
+.stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 2px solid var(--page-color); border-bottom: 1px solid var(--ink); }
 .stat-card { padding: 18px 20px 20px; border-left: 1px solid var(--rule); display: flex; flex-direction: column; }
 .stat-card:first-child { border-left: 0; padding-left: 0; }
 .stat-value { order: -1; font-family: var(--font-mincho); font-weight: 500; font-size: clamp(1.7rem, 2.6vw, 2.2rem); line-height: 1.2; color: var(--ink); font-variant-numeric: tabular-nums; margin-bottom: 8px; }
@@ -208,7 +172,7 @@
 .chip-list li:not(:last-child)::after { content: "・"; color: var(--muted); margin: 0 0.35em; }
 
 /* --- 三 What performs ------------------------------------------------------ */
-.category-list { border-top: 2px solid var(--ink); }
+.category-list { border-top: 2px solid var(--page-color); }
 .category {
   display: grid;
   grid-template-columns: minmax(180px, 1fr) minmax(0, 2.6fr);
@@ -245,7 +209,7 @@
 .fallback-links a:hover { color: var(--page-ink); }
 
 /* --- 四 Past partnerships ---------------------------------------------------- */
-.case-list { border-top: 2px solid var(--ink); max-width: 56rem; }
+.case-list { border-top: 2px solid var(--page-color); max-width: 56rem; }
 .case {
   display: grid;
   grid-template-columns: minmax(0, 13rem) minmax(0, 1fr);
@@ -329,76 +293,6 @@
 .why-item h3 { font-size: 1.05rem; margin-bottom: 4px; }
 .why-item p { font-size: 14px; line-height: 1.9; }
 
-/* --- 八 Contact: fields on the paper, the message on manuscript paper ------ */
-.sp-form {
-  display: grid;
-  gap: 26px;
-  max-width: 46rem;
-}
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 26px 40px; }
-.sp-form label { display: flex; flex-direction: column; gap: 4px; }
-.form-label { font-size: 13px; color: var(--ink-soft); letter-spacing: 0.02em; }
-
-.sp-form input[type="text"],
-.sp-form input[type="email"],
-.sp-form select {
-  width: 100%;
-  padding: 8px 0;
-  background: transparent;
-  border: 0;
-  border-bottom: 1px solid var(--ink);
-  border-radius: 0;
-  color: var(--ink);
-  font: 15px var(--font-gothic);
-}
-.sp-form select {
-  appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, var(--ink) 50%), linear-gradient(135deg, var(--ink) 50%, transparent 50%);
-  background-position: calc(100% - 10px) 55%, calc(100% - 5px) 55%;
-  background-size: 5px 5px;
-  background-repeat: no-repeat;
-  padding-right: 28px;
-}
-.sp-form ::placeholder { color: var(--muted); opacity: 1; }
-.sp-form input:focus, .sp-form select:focus, .sp-form textarea:focus {
-  outline: 2px solid var(--page-color);
-  outline-offset: 4px;
-  border-bottom-color: var(--page-color);
-}
-
-/* 原稿用紙: squares like manuscript paper, once on the site */
-.sp-form textarea {
-  --cell: 30px;
-  width: 100%;
-  min-height: calc(var(--cell) * 6 + 2px);
-  resize: vertical;
-  padding: 0 4px;
-  border: 1px solid color-mix(in srgb, var(--page-color) 45%, transparent);
-  border-radius: 0;
-  background-color: var(--paper-light);
-  background-image:
-    linear-gradient(to right, color-mix(in srgb, var(--page-color) 22%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in srgb, var(--page-color) 22%, transparent) 1px, transparent 1px);
-  background-size: var(--cell) var(--cell);
-  background-attachment: local;
-  color: var(--ink);
-  font: 15px/var(--cell) var(--font-gothic);
-}
-
-.form-fieldset { border: 0; display: grid; gap: 10px; }
-.check-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 4px 24px; }
-.sp-form label.check { flex-direction: row; align-items: center; gap: 10px; padding: 6px 0; font-size: 14px; color: var(--ink-soft); cursor: pointer; }
-.sp-form label.check:has(input:checked) { color: var(--ink); }
-.check input { appearance: none; width: 15px; height: 15px; border: 1px solid var(--ink); background: var(--paper-light); flex-shrink: 0; display: grid; place-items: center; cursor: pointer; margin: 0; }
-.check input:checked { background: var(--page-color); border-color: var(--page-color); }
-.check input:checked::after { content: ""; width: 5px; height: 5px; background: var(--paper); }
-
-.honeypot { position: absolute !important; left: -9999px !important; width: 1px !important; height: 1px !important; opacity: 0 !important; }
-
-.form-actions { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; margin-top: 6px; }
-.form-actions .btn:disabled { opacity: 0.6; cursor: default; }
-.form-meta { font-size: 12px; color: var(--muted); margin: 0; }
-
 /* --- Charts (sponsor-charts.js) ------------------------------------------ */
 .chart-grid { display: grid; grid-template-columns: 1fr; gap: 40px; margin-top: 48px; }
 .chart-grid.has-trend { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); align-items: start; }
@@ -412,10 +306,10 @@
 .chart-svg:focus-visible { outline: 2px solid var(--page-color); outline-offset: 4px; }
 .chart-gridline { stroke: var(--rule); stroke-width: 1; }
 .chart-axis { font-family: var(--font-gothic); font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
-.chart-line { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
-.chart-area { fill: var(--ink); fill-opacity: 0.05; stroke: none; }
+.chart-line { fill: none; stroke: var(--page-color); stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+.chart-area { fill: var(--page-color); fill-opacity: 0.06; stroke: none; }
 .chart-cross { stroke: var(--rule-strong); stroke-width: 1; }
-.chart-dot { fill: var(--page-color); stroke: var(--paper); stroke-width: 2; }
+.chart-dot { fill: var(--ink); stroke: var(--paper); stroke-width: 2; }
 .chart-tip {
   position: absolute; pointer-events: none; display: flex; flex-direction: column; gap: 1px;
   padding: 6px 10px; background: var(--paper-light); border: 1px solid var(--ink);
@@ -483,7 +377,6 @@
   .video-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .case { grid-template-columns: 1fr; gap: 8px; }
   .why-list { columns: 1; }
-  .form-row { grid-template-columns: 1fr; }
   .chart-grid.has-trend { grid-template-columns: 1fr; }
   .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .stat-card { border-left: 0; padding: 16px 0 18px; border-bottom: 1px solid var(--rule); }

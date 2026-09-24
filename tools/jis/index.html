@@ -10,68 +10,67 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,30..100;1,9..144,300..700,30..100&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
 
 <!-- site shell (navbar + footer only) -->
-<link rel="stylesheet" href="../../styles/base.css">
+<link rel="stylesheet" href="../../styles/base.css?v=2">
 
 <style>
   :root{
     --case:#0c0c0e;        /* keyboard case / page */
-    --panel:#15151a;       /* raised panels */
-    --panel-2:#1d1d24;
-    --line:#2a2a33;        /* hairlines */
+    --panel:transparent;   /* panels sit on the paper */
+    --panel-2:var(--paper-deep);
+    --line:var(--rule);    /* hairlines */
     --cap:#dcd8cf;         /* keycap cream (his caps) */
     --cap-edge:#b7b3a8;    /* keycap side wall */
     --cap-dim:#3a3a42;     /* unused keys */
     --cap-dim-edge:#26262d;
-    --ink:#26262b;         /* legend on cream caps */
+    --cap-ink:#26262b;     /* legend on cream caps */
     --ink-dim:#8a8a93;     /* legend on dark caps */
     --red:#e4332b;         /* the ESC key — heat / target */
-    --red-soft:#ff5a4d;
+    --red-soft:#b8261f;    /* red as text on paper (5.6:1) */
     --go:#5bbf6f;          /* correct */
-    --txt:#e9e7e1;
-    --txt-dim:#8f8d86;
+    --txt:var(--ink);
+    --txt-dim:var(--muted);
     --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
-    --jp: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Noto Sans JP", "Meiryo", system-ui, sans-serif;
-    --ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --jp: var(--font-gothic);
+    --ui: var(--font-gothic);
     --u: 46px;             /* base key unit, scaled by JS via --scale */
     --gap: 6px;
   }
-  /* the JIS app owns the page background, but the site navbar/footer keep
-     their own look from base.css. Scope the dark theme to the app wrapper. */
-  html,body{margin:0;background:var(--case);color:var(--txt);-webkit-font-smoothing:antialiased}
-  .jis-app{font-family:var(--ui);display:flex;flex-direction:column;align-items:center;padding:22px 16px 40px;padding-top:var(--jis-navpad,94px)}
+  /* The page is paper like the rest of the site; only the keyboard itself
+     stays dark, as a physical object set on the page. */
+  .jis-app{font-family:var(--ui);display:flex;flex-direction:column;align-items:center;padding:0 16px 40px}
   .jis-app a{color:var(--red-soft)}
 
   /* ---------- top bar ---------- */
-  .jis-app header{width:100%;max-width:1040px;display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px}
-  .jis-app .brand{display:flex;align-items:baseline;gap:12px;line-height:1}
+  .jis-app header{width:100%;max-width:1040px;display:flex;align-items:flex-end;justify-content:flex-end;gap:18px;flex-wrap:wrap;margin-bottom:18px}
+  .jis-app .brand{display:none}   /* the page head carries the title now */
   .jis-app .brand .mark{
     font-family:var(--mono);font-weight:700;font-size:26px;letter-spacing:-.5px;
-    color:var(--txt);padding:6px 9px;border:1.5px solid var(--red);border-radius:7px;
+    color:var(--txt);padding:6px 9px;border:1.5px solid var(--red);border-radius:2px;
     box-shadow:0 2px 0 var(--red);
   }
   .jis-app .brand .mark b{color:var(--red)}
   .jis-app .brand .sub{font-size:13px;color:var(--txt-dim);font-family:var(--mono)}
   .jis-app .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  .jis-app .seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px}
+  .jis-app .seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:2px;padding:3px;gap:2px}
   .jis-app .seg button{
     font:600 13px/1 var(--ui);color:var(--txt-dim);background:none;border:0;cursor:pointer;
-    padding:7px 12px;border-radius:7px;transition:background .12s,color .12s}
+    padding:7px 12px;border-radius:2px;transition:background .12s,color .12s}
   .jis-app .seg button[aria-pressed="true"]{background:var(--red);color:#fff}
   .jis-app .seg button:focus-visible{outline:2px solid var(--red-soft);outline-offset:2px}
   .jis-app .ghost{font:600 13px/1 var(--ui);color:var(--txt-dim);background:var(--panel);border:1px solid var(--line);
-    border-radius:9px;padding:8px 12px;cursor:pointer}
+    border-radius:2px;padding:8px 12px;cursor:pointer}
   .jis-app .ghost:hover{color:var(--txt)}
   .jis-app .ghost:focus-visible{outline:2px solid var(--red-soft);outline-offset:2px}
 
   /* ---------- stage / prompt ---------- */
-  .jis-app .stage{width:100%;max-width:1040px;background:linear-gradient(180deg,var(--panel),#101015);
-    border:1px solid var(--line);border-radius:16px;padding:24px 26px 20px;margin-bottom:16px;position:relative;overflow:hidden}
+  .jis-app .stage{width:100%;max-width:1040px;background:none;
+    border-top:2px solid var(--red);border-bottom:1px solid var(--line);padding:24px 0 20px;margin-bottom:28px;position:relative;overflow:hidden}
   .jis-app .scopebar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
   .jis-app .chip{font:600 12.5px/1 var(--ui);color:var(--txt-dim);background:var(--panel-2);border:1px solid var(--line);
-    border-radius:999px;padding:7px 12px;cursor:pointer;transition:.12s}
+    border-radius:0;padding:7px 12px;cursor:pointer;transition:.12s}
   .jis-app .chip[aria-pressed="true"]{color:var(--txt);border-color:var(--red);box-shadow:inset 0 0 0 1px var(--red)}
   .jis-app .chip.jp{font-family:var(--jp);font-size:14px}
   .jis-app .chip:focus-visible{outline:2px solid var(--red-soft);outline-offset:2px}
@@ -79,7 +78,7 @@
 
   .jis-app .promptwrap{display:flex;align-items:center;gap:28px;flex-wrap:wrap}
   .jis-app .target{font-family:var(--jp);font-weight:600;font-size:118px;line-height:.9;min-width:120px;text-align:center;
-    color:var(--txt);text-shadow:0 4px 30px rgba(228,51,43,.25);transition:transform .08s}
+    color:var(--txt);transition:transform .08s}
   .jis-app .target.hit{color:var(--go);transform:scale(1.04)}
   .jis-app .target.miss{color:var(--red);animation:shake .3s}
   @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
@@ -90,7 +89,7 @@
   .jis-app .reading.hidden-hint{visibility:hidden}
 
   /* heat / combo meter — the redline nod */
-  .jis-app .heat{height:12px;border-radius:7px;background:var(--panel-2);border:1px solid var(--line);overflow:hidden;position:relative}
+  .jis-app .heat{height:12px;border-radius:2px;background:var(--panel-2);border:1px solid var(--line);overflow:hidden;position:relative}
   .jis-app .heat .fill{height:100%;width:0%;background:linear-gradient(90deg,#4a8f5a,#cbb24a 55%,var(--red));transition:width .18s ease-out}
   .jis-app .heat .redline{position:absolute;top:0;bottom:0;right:8%;width:2px;background:var(--red);opacity:.5}
   .jis-app .combo{font-family:var(--mono);font-size:13px;color:var(--txt-dim)}
@@ -98,9 +97,9 @@
   .jis-app .combo.redlining b{color:var(--red);animation:pulse .6s infinite}
   @keyframes pulse{50%{opacity:.55}}
 
-  .jis-app .startveil{position:absolute;inset:0;background:rgba(10,10,12,.86);backdrop-filter:blur(2px);
+  .jis-app .startveil{position:absolute;inset:0;background:color-mix(in srgb, var(--paper) 94%, transparent);
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:5;text-align:center;padding:20px}
-  .jis-app .startveil h2{margin:0;font:600 22px/1.2 var(--ui)}
+  .jis-app .startveil h2{margin:0;font:600 22px/1.4 var(--font-mincho);color:var(--ink)}
   .jis-app .startveil p{margin:0;color:var(--txt-dim);max-width:440px;font-size:14px;line-height:1.5}
   .jis-app .startbtn{font:700 15px/1 var(--ui);color:#fff;background:var(--red);border:0;border-radius:10px;
     padding:13px 22px;cursor:pointer;box-shadow:0 3px 0 #a51f19}
@@ -126,12 +125,12 @@
   }
   .jis-app .key.dim{background:var(--cap-dim);box-shadow:0 3px 0 var(--cap-dim-edge),0 4px 5px rgba(0,0,0,.4)}
   .jis-app .key.esc{background:var(--red);box-shadow:0 3px 0 #a51f19,0 4px 5px rgba(0,0,0,.45)}
-  .jis-app .key .asc{font:600 11px/1 var(--mono);color:var(--ink);opacity:.62}
+  .jis-app .key .asc{font:600 11px/1 var(--mono);color:var(--cap-ink);opacity:.62}
   .jis-app .key.dim .asc{color:var(--ink-dim);opacity:.85;font-size:10px}
   .jis-app .key.esc .asc{color:#fff;opacity:.9}
-  .jis-app .key .kana{font:600 18px/1 var(--jp);color:var(--ink);align-self:flex-end}
+  .jis-app .key .kana{font:600 18px/1 var(--jp);color:var(--cap-ink);align-self:flex-end}
   .jis-app .key .lbl{font:600 11px/1.1 var(--ui);color:var(--ink-dim);align-self:flex-start}
-  .jis-app .key .sml{position:absolute;top:4px;right:6px;font:600 10px/1 var(--jp);color:var(--ink);opacity:.5}
+  .jis-app .key .sml{position:absolute;top:4px;right:6px;font:600 10px/1 var(--jp);color:var(--cap-ink);opacity:.5}
 
   /* states */
   .jis-app .key.target{background:#fff;box-shadow:0 0 0 2px var(--red),0 0 22px 3px rgba(228,51,43,.55),0 3px 0 var(--cap-edge);}
@@ -142,22 +141,22 @@
 
   /* ---------- stats hud ---------- */
   .jis-app .hud{width:100%;max-width:1040px;display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-  .jis-app .stat{flex:1;min-width:120px;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:12px 14px}
-  .jis-app .stat .k{font:600 11px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--txt-dim)}
-  .jis-app .stat .v{font:700 27px/1 var(--mono);margin-top:8px;color:var(--txt)}
+  .jis-app .stat{flex:1;min-width:120px;background:var(--panel);border:1px solid var(--line);border-radius:2px;padding:12px 14px}
+  .jis-app .stat .k{font:500 13px/1.4 var(--ui);color:var(--txt-dim)}
+  .jis-app .stat .v{font:500 27px/1.2 var(--font-mincho);margin-top:6px;color:var(--txt);font-variant-numeric:tabular-nums}
   .jis-app .stat .v small{font-size:14px;color:var(--txt-dim);font-weight:600}
   .jis-app .stat.accent .v{color:var(--red-soft)}
 
   /* mastery strip */
   .jis-app .mastery{width:100%;max-width:1040px;margin-top:14px;background:var(--panel);border:1px solid var(--line);
-    border-radius:11px;padding:14px}
-  .jis-app .mastery h3{margin:0 0 10px;font:600 11px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--txt-dim)}
+    border-radius:2px;padding:14px}
+  .jis-app .mastery h3{margin:0 0 10px;font:600 15px/1.4 var(--font-mincho);color:var(--txt)}
   .jis-app .grid{display:flex;flex-wrap:wrap;gap:4px}
-  .jis-app .cell{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  .jis-app .cell{width:30px;height:30px;border-radius:2px;display:flex;align-items:center;justify-content:center;
     font:600 15px/1 var(--jp);color:#0c0c0e;background:#2a2a33;cursor:default;position:relative}
-  .jis-app .cell[data-seen="0"]{color:#6a6a72;background:#1c1c22;border:1px dashed #33333d}
+  .jis-app .cell[data-seen="0"]{color:var(--muted);background:var(--paper-light);border:1px dashed var(--rule-strong)}
   .jis-app .mastery .legend{display:flex;gap:14px;align-items:center;margin-top:11px;font:600 11px/1 var(--mono);color:var(--txt-dim)}
-  .jis-app .swatch{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  .jis-app .swatch{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 
   .jis-app .foot{width:100%;max-width:1040px;margin-top:22px;color:var(--txt-dim);font-size:12px;line-height:1.6;font-family:var(--mono)}
   .jis-app .foot .row2{display:flex;gap:18px;flex-wrap:wrap}
@@ -174,27 +173,56 @@
 <body data-page="jis">
 
   <!-- NAVBAR (site shell) -->
-  <nav class="navbar">
-    <a href="../../" class="nav-logo"><span class="nav-logo-mark"></span><span>jared</span></a>
-    <ul class="nav-links">
-      <li><a href="../../about/">About</a></li>
-      <li><a href="../../projects/">Projects</a></li>
-      <li><a href="../../tools/">Tools</a></li>
-      <li><a href="../../blog/">Blog</a></li>
-      <li><a href="../../sponsorships/">Sponsorships</a></li>
-      <li><a href="../../contact/">Contact</a></li>
-    </ul>
-    <button class="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
-  </nav>
-  <ul class="nav-mobile">
-    <li><a href="../../about/">About</a></li>
-    <li><a href="../../projects/">Projects</a></li>
-    <li><a href="../../tools/">Tools</a></li>
-    <li><a href="../../blog/">Blog</a></li>
-    <li><a href="../../sponsorships/">Sponsorships</a></li>
-    <li><a href="../../contact/">Contact</a></li>
-  </ul>
+  <a class="skip-link" href="#main">Skip to content</a>
 
+  <header class="masthead">
+    <a href="../../" class="mark" aria-label="まだまだJared, home">
+      <span class="mark-ja" lang="ja">まだまだ</span>
+      <span class="mark-en">Jared</span>
+    </a>
+    <nav class="masthead-nav" aria-label="Site">
+      <ul>
+        <li><a href="../../about/">About</a></li>
+        <li><a href="../../projects/">Projects</a></li>
+        <li><a href="../../tools/">Tools</a></li>
+        <li><a href="../../blog/">Blog</a></li>
+        <li><a href="../../sponsorships/">Sponsorships</a></li>
+        <li><a href="../../contact/">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Menu</button>
+  </header>
+
+  <div class="menu-sheet" id="site-menu" hidden>
+    <div class="menu-sheet-head">
+      <a href="../../" class="mark" aria-label="まだまだJared, home">
+        <span class="mark-ja" lang="ja">まだまだ</span>
+        <span class="mark-en">Jared</span>
+      </a>
+      <button class="menu-toggle menu-close" type="button">Close</button>
+    </div>
+    <nav aria-label="Site">
+      <ul>
+        <li><a href="../../about/">About <span lang="ja">自己紹介</span></a></li>
+        <li><a href="../../projects/">Projects <span lang="ja">制作</span></a></li>
+        <li><a href="../../tools/">Tools <span lang="ja">ツール</span></a></li>
+        <li><a href="../../blog/">Blog <span lang="ja">ブログ</span></a></li>
+        <li><a href="../../sponsorships/">Sponsorships <span lang="ja">スポンサー</span></a></li>
+        <li><a href="../../contact/">Contact <span lang="ja">お問い合わせ</span></a></li>
+      </ul>
+    </nav>
+  </div>
+
+<main id="main">
+<div class="container">
+  <header class="page-head jis-head">
+    <div class="page-head-copy">
+      <h1 class="page-title">JIS Grind</h1>
+      <p class="page-intro">kana → key, until it's muscle memory</p>
+    </div>
+    <p class="page-v"><span class="page-v-ja" lang="ja">JIS配列</span><span class="page-v-en">JIS layout</span></p>
+  </header>
+</div>
 <div class="jis-app">
 <header>
   <div class="brand">
@@ -249,7 +277,7 @@
   <h3>Mastery — weak kana surface more often</h3>
   <div class="grid" id="grid"></div>
   <div class="legend">
-    <span><span class="swatch" style="background:#1c1c22;border:1px dashed #33333d"></span>unseen</span>
+    <span><span class="swatch" style="background:var(--paper-light);border:1px dashed var(--rule-strong)"></span>unseen</span>
     <span><span class="swatch" style="background:#e4332b"></span>cold</span>
     <span><span class="swatch" style="background:#cbb24a"></span>warming</span>
     <span><span class="swatch" style="background:#5bbf6f"></span>locked in</span>
@@ -263,41 +291,39 @@
   </div>
   <div style="margin-top:6px">ー (¥ key) and ろ register as <code>IntlYen</code> / <code>IntlRo</code> — these only fire if your OS sees the board as JIS. If they don't, skip those two with <span class="kbd">Space</span>.</div>
 </div>
-</div><!-- /.jis-app -->
+</div>
+</main>
+<!-- /.jis-app -->
 
   <!-- FOOTER (site shell) -->
-  <footer class="site-footer">
-    <div class="footer-grid">
-      <div class="footer-left">
-        <a href="../../" class="nav-logo"><span class="nav-logo-mark"></span><span>jared</span></a>
-        <p>Made with care.</p>
-      </div>
-      <div class="footer-cols">
-        <div class="footer-col">
-          <p class="footer-heading">Site</p>
-          <a href="../../about/">About</a>
-          <a href="../../projects/">Projects</a>
-          <a href="../../tools/">Tools</a>
-          <a href="../../blog/">Blog</a>
-          <a href="../../sponsorships/">Sponsorships</a>
-        </div>
-        <div class="footer-col">
-          <p class="footer-heading">Find me</p>
-          <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a>
-          <a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a>
-          <a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a>
-        </div>
-        <div class="footer-col">
-          <p class="footer-heading">Other</p>
-          <a href="../../contact/">Contact</a>
-          <a href="#">RSS</a>
-        </div>
-      </div>
+  <footer class="colophon">
+    <nav class="colophon-links" aria-label="Footer">
+      <ul>
+        <li><a href="../../about/">About</a></li>
+        <li><a href="../../projects/">Projects</a></li>
+        <li><a href="../../tools/">Tools</a></li>
+        <li><a href="../../blog/">Blog</a></li>
+        <li><a href="../../sponsorships/">Sponsorships</a></li>
+        <li><a href="../../contact/">Contact</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a></li>
+        <li><a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a></li>
+        <li><a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a></li>
+        <li><a href="#">RSS</a></li>
+      </ul>
+    </nav>
+    <div class="colophon-box">
+      <p class="colophon-title" lang="ja">奥付</p>
+      <dl>
+        <div><dt>Site / <span lang="ja">サイト</span></dt><dd>jareddesu.com</dd></div>
+        <div><dt>Author / <span lang="ja">著者</span></dt><dd>Jared P. (<span lang="ja">まだまだ</span>Jared)</dd></div>
+        <div><dt>Published / <span lang="ja">発行</span></dt><dd>© 2026</dd></div>
+      </dl>
     </div>
-    <div class="footer-baseline">© 2026 Jared P. · Built with love</div>
   </footer>
 
-  <script src="../../scripts/site.js"></script>
+  <script src="../../scripts/site.js?v=2"></script>
 
 <script>
 "use strict";
