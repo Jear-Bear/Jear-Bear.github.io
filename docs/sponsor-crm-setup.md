@@ -117,6 +117,15 @@ deleted. The same import adds the plan's videos to **Videos**.
 
 ---
 
+## YouTube uploads
+
+**Videos → Uploads** lists the channel's public uploads from the YouTube Data
+API, using the same `YT_API_KEY` GitHub secret as the stats Action (the deploy
+copies it to the Worker). Tap **Refresh from YouTube** to update the list and
+view counts. Drag an upload onto a planned video, or use **Assign…** to link it
+to a video or a sponsor deal. Linking to a deal with no video yet reuses a
+planned video published within three days of the upload, or creates one.
+
 ## Changing the password
 
 Update the `SPONSOR_MANAGEMENT_PASSWORD` GitHub secret, then run **Sponsor CRM
