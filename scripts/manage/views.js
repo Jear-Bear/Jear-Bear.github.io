@@ -7,6 +7,7 @@ import { STAGES, OPEN_STAGES, VIDEO_STATUS_LABELS } from './schema.js';
 import { store, reload, live, companyName, deal, dealTitle, dash, dealFlags, videoStatus, company } from './store.js';
 import { openDeal, openCompany, openVideo, openPayment, openPackage } from './panels.js';
 import { button, busy, toast } from './ui.js';
+import { uploadsPanel, dropTarget, linkToVideo, uploadById } from './uploads.js';
 
 // --- Shared bits -------------------------------------------------------------------------
 function viewHead(title, ja, actions = []) {
@@ -244,27 +245,37 @@ export function companiesView(root) {
 
 // --- Videos ----------------------------------------------------------------------------------
 export function videosView(root) {
+  const uploads = uploadsPanel();
   const render = () => {
     const s = store.state;
     const d = dash();
     const conflictVideos = new Set(d.conflicts.flatMap((c) => c.videoIds));
     const videos = live(s.videos).sort((a, b) => (a.publish_date || '9999').localeCompare(b.publish_date || '9999'));
     const sponsorOf = (v) => live(s.deals).filter((x) => x.video_id === v.id && ['Won', 'Delivered', 'Paid', 'Negotiating'].includes(x.stage)).map((x) => companyName(x.company_id)).join(', ');
+    const row = (v) => {
+      const st = videoStatus(v, s.deals);
+      const up = v.youtube_id && uploadById(v.youtube_id);
+      const el = h('button', { type: 'button', class: ['crm-row', 'is-video', conflictVideos.has(v.id) && 'has-flags', v.youtube_id && 'is-published'], onclick: () => openVideo(v) },
+        h('span', { class: 'crm-num' }, v.publish_date ? fmtDate(v.publish_date, { year: true }) : 'No date'),
+        h('span', { class: 'crm-row-main' }, h('strong', {}, v.title),
+          v.youtube_id ? h('span', { class: 'crm-muted crm-yt' }, `▶ on YouTube${up && up.views != null ? ` · ${new Intl.NumberFormat('en').format(up.views)} views` : ''}`) : null),
+        h('span', { class: 'crm-muted' }, v.format || ''),
+        h('span', {}, sponsorOf(v)),
+        h('span', { class: 'crm-flags' }, h('span', { class: ['crm-vstatus', `is-${st}`] }, VIDEO_STATUS_LABELS[st]),
+          conflictVideos.has(v.id) ? h('span', { class: 'crm-flag is-warn' }, 'Check') : null));
+      dropTarget(el, (u) => linkToVideo(u, v));
+      return el;
+    };
     root.replaceChildren(
       viewHead('Videos', '動画', [button('New video', () => openVideo(null), { kind: 'primary' })]),
       h('p', { class: 'crm-note is-muted' }, 'One sponsor per video, paid slots only in guides, and at least one video in four sponsor-free.'),
-      videos.length ? h('div', { class: 'crm-rows' },
-        h('div', { class: 'crm-row is-head is-video', 'aria-hidden': 'true' }, ['Publish', 'Video', 'Format', 'Sponsor', 'Status'].map((t) => h('span', {}, t))),
-        videos.map((v) => {
-          const st = videoStatus(v, s.deals);
-          return h('button', { type: 'button', class: ['crm-row', 'is-video', conflictVideos.has(v.id) && 'has-flags'], onclick: () => openVideo(v) },
-            h('span', { class: 'crm-num' }, v.publish_date ? fmtDate(v.publish_date, { year: true }) : 'No date'),
-            h('span', { class: 'crm-row-main' }, h('strong', {}, v.title)),
-            h('span', { class: 'crm-muted' }, v.format || ''),
-            h('span', {}, sponsorOf(v)),
-            h('span', { class: 'crm-flags' }, h('span', { class: ['crm-vstatus', `is-${st}`] }, VIDEO_STATUS_LABELS[st]),
-              conflictVideos.has(v.id) ? h('span', { class: 'crm-flag is-warn' }, 'Check') : null));
-        })) : emptyState('No videos yet. Add your upcoming uploads to plan sponsor slots.', button('New video', () => openVideo(null), { kind: 'primary' })));
+      h('div', { class: 'crm-videos-layout' },
+        h('section', { class: 'crm-videos-planned', 'aria-label': 'Planned videos' },
+          videos.length ? h('div', { class: 'crm-rows' },
+            h('div', { class: 'crm-row is-head is-video', 'aria-hidden': 'true' }, ['Publish', 'Video', 'Format', 'Sponsor', 'Status'].map((t) => h('span', {}, t))),
+            videos.map(row)) : emptyState('No videos yet. Add your upcoming uploads to plan sponsor slots.', button('New video', () => openVideo(null), { kind: 'primary' }))),
+        uploads.el));
+    uploads.redraw();
   };
   render();
   return render;

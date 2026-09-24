@@ -11,6 +11,7 @@ on:
       - 'workers/sponsor-crm/**'
       - 'scripts/manage/schema.js'
       - 'scripts/manage/rules.js'
+      - 'scripts/manage/calendar.js'
       - '.github/workflows/sponsor-crm-deploy.yml'
   workflow_dispatch:
 
@@ -34,6 +35,7 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || secrets.CLOUDFARE_ACCOUNT_ID }}
       SPONSOR_MANAGEMENT_PASSWORD: ${{ secrets.SPONSOR_MANAGEMENT_PASSWORD }}
       CRM_SESSION_KEY: ${{ secrets.CRM_SESSION_KEY }}
+      YT_API_KEY: ${{ secrets.YT_API_KEY }}      # optional: the Uploads list
     steps:
       - name: Check out
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -73,3 +75,4 @@ jobs:
         run: |
           printf '%s' "$SPONSOR_MANAGEMENT_PASSWORD" | npx wrangler secret put SPONSOR_MANAGEMENT_PASSWORD
           printf '%s' "$CRM_SESSION_KEY" | npx wrangler secret put CRM_SESSION_KEY
+          if [ -n "$YT_API_KEY" ]; then printf '%s' "$YT_API_KEY" | npx wrangler secret put YT_API_KEY; fi

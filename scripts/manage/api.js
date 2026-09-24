@@ -67,4 +67,6 @@ export const api = {
   export: () => request('GET', 'export'),
   logoutAll: () => request('POST', 'logout-all'),
   plan: (data) => request('POST', 'plan', data),
+  uploads: () => request('GET', 'uploads'),
+  refreshUploads: () => request('POST', 'uploads/refresh'),
 };
