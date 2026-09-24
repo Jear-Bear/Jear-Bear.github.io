@@ -1,6 +1,6 @@
 // data.js — Nandoku Trainer word data and answer checking.
 //
-// terms.json rows: [id, term, segs, readings, meaning, note, vars, hint, tags, set, of]
+// terms.json rows: [id, term, segs, readings, meaning, note, vars, hint, tags, set, of, cores]
 // (see scripts/nandoku/build-data.py)
 
 let sets = {};
@@ -8,7 +8,7 @@ let byId = new Map();
 let bySet = new Map();
 
 export async function load() {
-  const res = await fetch('../../data/nandoku/terms.json?v=3');
+  const res = await fetch('../../data/nandoku/terms.json?v=4');
   if (!res.ok) throw new Error(`terms.json: ${res.status}`);
   const data = await res.json();
   sets = data.sets;
@@ -17,7 +17,7 @@ export async function load() {
   for (const r of data.terms) {
     const t = {
       id: r[0], term: r[1], segs: r[2], readings: r[3], meaning: r[4], note: r[5],
-      vars: r[6], hint: r[7], tags: r[8], level: r[9], of: r[10] || '',
+      vars: r[6], hint: r[7], tags: r[8], level: r[9], of: r[10] || '', cores: r[11] || [],
     };
     byId.set(t.id, t);
     if (!bySet.has(t.level)) bySet.set(t.level, []);
@@ -58,9 +58,10 @@ export function normalize(s) {
   return out;
 }
 
+// The full reading, or just the yellow part's (とちぎ for 栃木県)
 export function accepts(t, typed) {
   const v = normalize(typed);
-  return t.readings.some((a) => normalize(a) === v);
+  return t.readings.some((a) => normalize(a) === v) || t.cores.some((a) => normalize(a) === v);
 }
 
 // Readings to show on the answer card
