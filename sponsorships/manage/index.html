@@ -8,7 +8,7 @@
   <meta name="referrer" content="no-referrer">
   <!-- GitHub Pages can't send headers, so the policy lives here. Scripts only
        from this site; data only to the CRM Worker. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://sponsor-crm.jared-65b.workers.dev http://localhost:8787 http://127.0.0.1:8787; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://i.ytimg.com; connect-src https://sponsor-crm.jared-65b.workers.dev http://localhost:8787 http://127.0.0.1:8787; base-uri 'none'; form-action 'none'; object-src 'none'">
   <!-- The Worker's address: set this (and connect-src above) after the first deploy -->
   <meta name="crm-api" content="https://sponsor-crm.jared-65b.workers.dev">
 
@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../styles/base.css?v=3">
-  <link rel="stylesheet" href="../../styles/manage.css?v=2">
+  <link rel="stylesheet" href="../../styles/manage.css?v=3">
 </head>
 <body data-page="sponsor-manage">
   <a class="skip-link" href="#main">Skip to content</a>
@@ -26,6 +26,6 @@
   </div>
   <aside id="crm-panel" class="crm-panel" aria-labelledby="crm-panel-title" hidden></aside>
   <div id="crm-toasts" class="crm-toasts" aria-live="polite"></div>
-  <script type="module" src="../../scripts/manage/app.js?v=2"></script>
+  <script type="module" src="../../scripts/manage/app.js?v=3"></script>
 </body>
 </html>

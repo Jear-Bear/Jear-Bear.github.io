@@ -18,6 +18,8 @@
 //   PUT  /api/cal-series/:id/occurrences/:date  change one occurrence
 //   DELETE /api/cal-series/:id/occurrences/:date  undo that change
 //   POST /api/plan                  import the private plan file
+//   GET  /api/uploads               the channel's uploads (cached)
+//   POST /api/uploads/refresh       refetch them from the YouTube Data API
 //
 // Every route but /api/login and /api/health needs a Bearer session token.
 
@@ -33,6 +35,7 @@ import {
   loadCalendar, createItem, updateItem, deleteItem, decideSuggestion,
   createSeries, updateSeries, deleteSeries, editOccurrence, importPlan,
 } from './calendar.js';
+import { listUploads, refreshUploads } from './youtube.js';
 
 const TYPES = {
   companies: 'companies', contacts: 'contacts', deals: 'deals', payments: 'payments',
@@ -133,6 +136,8 @@ async function route(request, env, url) {
 
   if (a === 'calendar' && !b && m === 'GET') return loadCalendar(db, url.searchParams.get('from'), url.searchParams.get('to'));
   if (a === 'plan' && !b && m === 'POST') return importPlan(db, await readJson(request));
+  if (a === 'uploads' && !b && m === 'GET') return listUploads(db);
+  if (a === 'uploads' && b === 'refresh' && !c && m === 'POST') return refreshUploads(env, db);
   if (a === 'cal-items') {
     if (m === 'POST' && !b) return createItem(db, await readJson(request));
     if (m === 'PATCH' && b && !c) return updateItem(db, b, await readJson(request));
