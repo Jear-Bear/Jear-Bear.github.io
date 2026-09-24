@@ -110,6 +110,85 @@ function field(label, input, { wide = false, hint } = {}) {
   return h('div', { class: ['crm-field', wide && 'is-wide'] }, h('label', {}, label, input), hint ? h('p', { class: 'crm-field-hint' }, hint) : null);
 }
 
+// --- Repeat editor ---------------------------------------------------------------------------------
+const DAY_LABELS = { MO: 'Mon', TU: 'Tue', WE: 'Wed', TH: 'Thu', FR: 'Fri', SA: 'Sat', SU: 'Sun' };
+const weekdayOf = (iso) => WEEKDAYS[(new Date(`${iso}T00:00:00Z`).getUTCDay() + 6) % 7];
+
+export function describeRepeat(s) {
+  if (!s) return '';
+  const days = s.byday ? s.byday.split(',').map((d) => DAY_LABELS[d]).join(', ') : '';
+  const every = s.freq === 'daily' ? (s.interval > 1 ? `Every ${s.interval} days` : 'Every day')
+    : s.freq === 'monthly' ? (s.interval > 1 ? `Every ${s.interval} months` : 'Every month')
+      : `${s.interval > 1 ? `Every ${s.interval} weeks` : 'Every week'}${days ? ` on ${days}` : ''}`;
+  return `${every}${s.until ? `, until ${fmtDate(s.until, { year: true })}` : ''}${s.status === 'cancelled' ? ' (cancelled)' : ''}`;
+}
+
+// { el, value() } — value() is null for "doesn't repeat"
+function repeatEditor({ current = null, dateInput, allowNone = true }) {
+  const mode = !current ? 'none' : current.freq === 'weekly' ? (current.interval === 2 ? 'biweekly' : 'weekly') : current.freq;
+  const opts = [['daily', 'Every day'], ['weekly', 'Every week'], ['biweekly', 'Every 2 weeks'], ['monthly', 'Every month']];
+  const sel = h('select', {}, choice(allowNone ? [['none', 'Doesn’t repeat'], ...opts] : opts, mode));
+  const until = h('input', { type: 'date', value: current && current.until ? current.until : '' });
+  let days = new Set(current && current.byday ? current.byday.split(',') : []);
+  const dayRow = h('div', { class: 'crm-weekdays', role: 'group', 'aria-label': 'On these days' });
+  const drawDays = () => {
+    if (!days.size && dateInput.value) days.add(weekdayOf(dateInput.value));
+    dayRow.replaceChildren(...WEEKDAYS.map((d) => h('label', { class: ['crm-day', days.has(d) && 'is-on'] },
+      h('input', { type: 'checkbox', checked: days.has(d), onchange: (e) => { if (e.target.checked) days.add(d); else if (days.size > 1) days.delete(d); else e.target.checked = true; drawDays(); } }),
+      DAY_LABELS[d])));
+  };
+  const sync = () => {
+    const weekly = sel.value === 'weekly' || sel.value === 'biweekly';
+    dayRow.hidden = !weekly;
+    untilField.hidden = sel.value === 'none';
+    if (weekly) drawDays();
+  };
+  const untilField = field('Until (optional)', until);
+  sel.addEventListener('change', sync);
+  dateInput.addEventListener('change', () => { if (!current && days.size <= 1) { days = new Set(); drawDays(); } });
+  const el = h('div', { class: 'crm-repeat' }, h('div', { class: 'crm-form-grid' }, field('Repeat', sel), untilField), dayRow);
+  sync();
+  return {
+    el,
+    value() {
+      if (sel.value === 'none') return null;
+      const weekly = sel.value === 'weekly' || sel.value === 'biweekly';
+      return {
+        freq: weekly ? 'weekly' : sel.value,
+        interval: sel.value === 'biweekly' ? 2 : 1,
+        byday: weekly ? WEEKDAYS.filter((d) => days.has(d)).join(',') : null,
+        until: until.value || null,
+      };
+    },
+  };
+}
+
+// For items that belong to a series: show the rule and let it be edited
+function seriesRepeatSection(it, onSaved) {
+  const box = h('section', { class: 'crm-section crm-repeat-box' }, h('p', { class: 'crm-note is-muted' }, 'Loading repeat…'));
+  seriesOf(it).then((s) => {
+    const summary = h('p', { class: 'crm-note' }, h('strong', {}, 'Repeats: '), describeRepeat(s));
+    const edit = button('Edit repeat', () => {
+      const probe = h('input', { type: 'date', value: s.dtstart });
+      const ed = repeatEditor({ current: s, dateInput: probe, allowNone: false });
+      const save = button('Save repeat (whole series)', async () => {
+        const v = ed.value();
+        const prev = { freq: s.freq, interval: s.interval, byday: s.byday, until: s.until };
+        try {
+          await busy(save, () => request('PATCH', `cal-series/${s.id}`, v));
+          invalidate(); notify();
+          closePanel({ force: true });
+          toast('Repeat updated', { action: 'Undo', onAction: async () => { try { await request('PATCH', `cal-series/${s.id}`, prev); invalidate(); notify(); } catch (err) { toastError(err); } } });
+          onSaved && onSaved();
+        } catch { /* toast shown */ }
+      }, { kind: 'primary' });
+      box.replaceChildren(h('h3', { class: 'crm-section-title' }, 'Repeat'), ed.el, h('div', { class: 'crm-row-actions' }, save, button('Cancel', () => box.replaceChildren(summary, edit), { kind: 'ghost' })));
+    }, { kind: 'chip' });
+    box.replaceChildren(summary, edit);
+  }).catch((err) => { box.replaceChildren(h('p', { class: 'crm-note is-error' }, err.message)); });
+  return box;
+}
+
 export function openCalItem(it, { preset = {}, onSaved } = {}) {
   const isNew = !it;
   const src = it ? it.source : 'me';
@@ -122,6 +201,7 @@ export function openCalItem(it, { preset = {}, onSaved } = {}) {
   const allDay = h('input', { type: 'checkbox', checked: base.all_day !== false && !timeOf(base.start) });
   const date = h('input', { type: 'date', value: startDate, required: true });
   const endDate = h('input', { type: 'date', value: base.all_day !== false && base.end ? dateOf(base.end) : '' });
+  const repeater = isNew ? repeatEditor({ dateInput: date }) : null;
   const t1 = h('input', { type: 'time', value: timeOf(base.start) || '20:00', step: 900 });
   const t2 = h('input', { type: 'time', value: timeOf(base.end) || (timeOf(base.start) ? timeOf(addMinutes(base.start, 60)) : '21:00'), step: 900 });
   const counts = h('input', { type: 'checkbox', checked: isNew ? base.type === 'event' : Boolean(base.counts_hours) });
@@ -129,8 +209,6 @@ export function openCalItem(it, { preset = {}, onSaved } = {}) {
   const companySel = h('select', {}, choice(live(store.state.companies).sort((a, b) => a.name.localeCompare(b.name)).map((c) => [c.id, c.name]), base.company_id, 'None'));
   const dealSel = h('select', {}, choice(live(store.state.deals).map((d) => [d.id, dealTitle(d)]).sort((a, b) => a[1].localeCompare(b[1])), base.deal_id, 'None'));
   const videoSel = h('select', {}, choice(live(store.state.videos).sort((a, b) => (a.publish_date || '').localeCompare(b.publish_date || '')).map((v) => [v.id, v.title]), base.video_id, 'None'));
-  const repeat = h('select', {}, choice([['none', 'Doesn’t repeat'], ['daily', 'Every day'], ['weekly', 'Every week'], ['biweekly', 'Every 2 weeks'], ['monthly', 'Every month']], 'none'));
-  const until = h('input', { type: 'date' });
 
   // Checklist
   let checklist = (base.checklist || []).map((c) => ({ ...c }));
@@ -207,17 +285,16 @@ export function openCalItem(it, { preset = {}, onSaved } = {}) {
     try {
       await busy(save, async () => {
         if (isNew) {
-          if (repeat.value === 'none') {
+          const rep = repeater ? repeater.value() : null;
+          if (!rep) {
             await request('POST', 'cal-items', v);
           } else {
-            const wd = WEEKDAYS[(new Date(`${date.value}T00:00:00Z`).getUTCDay() + 6) % 7];
             await request('POST', 'cal-series', {
               type: v.type, kind: v.kind, title: v.title, notes: v.notes, counts_hours: v.counts_hours, checklist: v.checklist,
               company_id: v.company_id, deal_id: v.deal_id, video_id: v.video_id,
               dtstart: date.value, start_time: allDay.checked ? null : t1.value,
               duration_min: allDay.checked ? null : Math.max(15, minutesBetween(v.start, v.end)),
-              freq: repeat.value === 'biweekly' ? 'weekly' : repeat.value, interval: repeat.value === 'biweekly' ? 2 : 1,
-              byday: ['weekly', 'biweekly'].includes(repeat.value) ? wd : null, until: until.value || null,
+              ...rep,
             });
           }
           invalidate(); notify();
@@ -304,7 +381,8 @@ export function openCalItem(it, { preset = {}, onSaved } = {}) {
       h('div', { class: 'crm-form-grid' }, field('Title', title, { wide: true }), field('Type', type), kindField),
       h('label', { class: 'crm-check' }, allDay, ' All day'),
       timeRow, moveRow,
-      isNew ? h('div', { class: 'crm-form-grid' }, field('Repeat', repeat), field('Until (optional)', until)) : null,
+      repeater ? repeater.el : null,
+      it && it.series_id ? seriesRepeatSection(it, onSaved) : null,
       h('label', { class: 'crm-check' }, counts, ' Counts toward channel hours'),
       h('fieldset', { class: 'crm-fieldset' }, h('legend', {}, 'Checklist'), listEl, h('div', { class: 'crm-add-row' }, newCheck, button('Add', addCheck, { kind: 'chip' }))),
       h('fieldset', { class: 'crm-fieldset' }, h('legend', {}, 'Linked to'),
