@@ -278,20 +278,55 @@
 .fit-quote::after { content: "」"; right: -0.3em; bottom: -0.2em; }
 .fit-exclusions { margin-top: 28px; padding-left: 1.4em; font-size: 13px; color: var(--muted); }
 
-/* --- 七 Why: a running list in two columns, not a grid of boxes ------------ */
+/* --- 七 Why: set like dictionary entries — a headword kanji, its word, reading
+   and meaning, then the reason. Two columns, the second set a half-step lower. */
 .why-list {
   list-style: none;
-  columns: 2;
-  column-gap: clamp(32px, 6vw, 96px);
-  max-width: 60rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 clamp(32px, 6vw, 96px);
+  max-width: 62rem;
+  counter-reset: why;
 }
 .why-item {
-  break-inside: avoid;
-  padding: 16px 0 22px;
+  display: grid;
+  grid-template-columns: 5.2rem minmax(0, 1fr);
+  grid-template-areas: "kanji word" "kanji head" "kanji text";
+  column-gap: 22px;
+  align-content: start;
+  padding: 26px 0 30px;
   border-top: 1px solid var(--rule);
 }
-.why-item h3 { font-size: 1.05rem; margin-bottom: 4px; }
-.why-item p { font-size: 14px; line-height: 1.9; }
+.why-item:nth-child(even) { transform: translateY(clamp(0px, 7vh, 72px)); }   /* staggered, like a two-column dictionary page */
+.why-kanji {
+  grid-area: kanji;
+  display: grid;
+  place-items: center;
+  width: 5.2rem;
+  aspect-ratio: 1;
+  border: 1px solid var(--rule-strong);
+  font-family: var(--font-mincho);
+  font-weight: 600;
+  font-size: 3rem;
+  line-height: 1;
+  color: var(--ink);
+  background:
+    linear-gradient(var(--rule), var(--rule)) center / 1px 100% no-repeat,
+    linear-gradient(var(--rule), var(--rule)) center / 100% 1px no-repeat;
+}
+.why-item:first-child .why-kanji { color: var(--page-color); border-color: var(--page-color); }   /* one stamp of colour */
+.why-word { grid-area: word; font-size: 13px; color: var(--muted); margin-bottom: 2px; }
+.why-word [lang="ja"] { font-family: var(--font-mincho); font-size: 15px; color: var(--ink-soft); margin-right: 6px; }
+.why-gloss { font-style: italic; }
+.why-item h3 { grid-area: head; font-size: 1.12rem; margin-bottom: 4px; }
+.why-text { grid-area: text; font-size: 14px; line-height: 1.9; }
+
+@media (max-width: 899px) {
+  .why-list { grid-template-columns: 1fr; }
+  .why-item:nth-child(even) { transform: none; }
+  .why-item { grid-template-columns: 4.2rem minmax(0, 1fr); column-gap: 16px; }
+  .why-kanji { width: 4.2rem; font-size: 2.4rem; }
+}
 
 /* --- Charts (sponsor-charts.js) ------------------------------------------ */
 .chart-grid { display: grid; grid-template-columns: 1fr; gap: 40px; margin-top: 48px; }
@@ -376,7 +411,6 @@
   .audience-side, .fit-side { padding-top: 0; }
   .video-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .case { grid-template-columns: 1fr; gap: 8px; }
-  .why-list { columns: 1; }
   .chart-grid.has-trend { grid-template-columns: 1fr; }
   .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .stat-card { border-left: 0; padding: 16px 0 18px; border-bottom: 1px solid var(--rule); }

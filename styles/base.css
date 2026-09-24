@@ -717,6 +717,25 @@ section + section { margin-top: clamp(72px, 12vh, 160px); }
   .sec-kanji { font-size: 11rem; opacity: 0.8; }
 }
 
+/* Phones: lift the title up beside the vertical mark instead of below it,
+   like a title set next to the spine on a book cover. The sponsorship page
+   keeps the stacked layout because its hero photo would sit under the mark. */
+@media (max-width: 899px) {
+  body:has(.page-head:not([hidden])):not([data-page="sponsorships"]) .masthead {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+  body:has(.page-head:not([hidden])):not([data-page="sponsorships"]) .page-head {
+    padding-top: 76px;
+  }
+  body:has(.page-head:not([hidden])):not([data-page="sponsorships"]) .page-head-copy {
+    padding-left: 40px;
+    padding-top: 0;
+  }
+}
+
 @media (max-width: 520px) {
   .footer-cols { grid-template-columns: 1fr; }
   .colophon-box dl div { grid-template-columns: 1fr; gap: 0; margin-bottom: 6px; }
