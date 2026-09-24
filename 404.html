@@ -1,158 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jared P.</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300&display=swap" rel="stylesheet">
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            background-color: #F2F2F2;
-            overflow-y: hidden; /* Disable vertical scrolling */
-        }
-        .navbar {
-            background-color: #FF7D80;
-            height: 80px;
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            z-index: 3; 
-        }
-        .logo {
-            display: flex; 
-            align-items: center; 
-            margin-right: auto; /* Pushes the logo to the left */
-        }
-        .logo img {
-            height: 50px;
-        }
-        .logo-text {
-            margin-left: 10px;
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-        }
-        .navbar ul {
-            list-style: none;
-            display: flex;
-            margin: 0;
-            padding: 0;
-            margin-left: auto; /* Right-justify the list */
-        }
-        .navbar ul li {
-            margin-left: 30px;
-        }
-        .navbar ul li a {
-            color: white;
-            text-decoration: none;
-            font-size: 16px;
-            transition: font-size 0.3s ease; 
-        }
-        .navbar ul li a:hover {
-            text-decoration: underline;
-        }
-        .red-section {
-            background-color: #FF7D80; 
-            padding: 20px; 
-            text-align: center; /* Center content in the red section */
-        }
-        .white-section {
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: flex-start; 
-            min-height: calc(100vh - 80px); /* Adjust for navbar height */
-            background-color: #F2F2F2; 
-            padding: 20px; 
-            box-sizing: border-box; 
-            position: relative; 
-            text-align: center; /* Center text in the white section */
-        }
-        .text-container {
-            width: 80%; 
-            margin: 1% auto; /* Center the container with auto margins */
-            color: #f2f2f2; 
-            font-family: 'Libre Franklin', sans-serif; 
-            font-size: 18px; 
-            line-height: 1.6; 
-            font-weight: 300; 
-        }
-
-        .title-text {
-            margin: 0 auto; /* Center the title */
-            color: #f2f2f2; 
-            font-family: 'Poppins', sans-serif; 
-            font-size: 90px; 
-            font-weight: bold; 
-            z-index: 3; 
-            animation: titleFadeIn 2s forwards; 
-            position: relative; 
-            transition: font-size 0.3s ease;
-        }
-
-        .text-container p::first-letter {
-            font-size: 200%; 
-            font-weight: bold; 
-        }
-
-        /* Make the image responsive to viewport width */
-        .full-width-image {
-            width: 100vw; /* 100% of the viewport width */
-            height: auto; /* Maintain aspect ratio */
-            display: block; /* Remove bottom margin/space */
-        }
-
-        @media (max-width: 600px) {
-            .navbar ul li a {
-                font-size: 14px; /* Smaller text for mobile */
-            }
-            .title-text {
-                font-size: 50px;
-            }
-        }
-    </style>
-    <script> 
-        window.onload = () => {
-            if (window.location.href !== window.location.href.toLowerCase()) {
-                location.replace(window.location.href.toLowerCase());
-            }
-        };
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page not found · Jared P.</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/base.css?v=2">
+  <style>
+    .lost { min-height: 56vh; position: relative; isolation: isolate; }
+    .lost .page-title { font-size: clamp(2.4rem, 6vw, 4.2rem); }
+    .lost .sec-kanji { right: auto; left: 45%; top: 10%; }
+  </style>
 </head>
+<body data-page="404">
+  <a class="skip-link" href="#main">Skip to content</a>
 
-<body>
-    <!-- Navbar -->
-    <div class="navbar">
-        <div class="logo">
-            <a href="../" style="text-decoration: none; color: inherit; display: flex; align-items: center;">
-                <img src="https://github.com/Jear-Bear/Jear-Bear.github.io/blob/b7769460d7fea76491da4b9a26bbecaea342d06b/images/logo.png?raw=true" alt="Logo">
-                <div class="logo-text">Home</div>
-            </a>
-        </div>
-        <ul>
-            <li><a href="../about/">About</a></li>
-            <li><a href="../projects/">Projects</a></li>
-            <li><a href="../blog/">Blog</a></li>
-            <li><a href="/sponsorships/">Sponsorships</a></li>
-            <li><a href="../contact/">Contact</a></li>
-        </ul>
-    </div>
+  <header class="masthead">
+    <a href="/" class="mark" aria-label="まだまだJared, home">
+      <span class="mark-ja" lang="ja">まだまだ</span>
+      <span class="mark-en">Jared</span>
+    </a>
+    <nav class="masthead-nav" aria-label="Site">
+      <ul>
+        <li><a href="/about/">About</a></li>
+        <li><a href="/projects/">Projects</a></li>
+        <li><a href="/tools/">Tools</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/sponsorships/">Sponsorships</a></li>
+        <li><a href="/contact/">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Menu</button>
+  </header>
 
-    <!-- Main Content -->
-    <div class="red-section">
-        <div class="title-text">Uh oh...</div>
-        <div class="text-container">
-            <p>That page doesn't exist! <br> Check out the navbar above and explore the site!</p>
-        </div>
+  <div class="menu-sheet" id="site-menu" hidden>
+    <div class="menu-sheet-head">
+      <a href="/" class="mark" aria-label="まだまだJared, home">
+        <span class="mark-ja" lang="ja">まだまだ</span>
+        <span class="mark-en">Jared</span>
+      </a>
+      <button class="menu-toggle menu-close" type="button">Close</button>
     </div>
-    <div class="white-section">
-        <div class="tiles-container" id="tiles-container">
-            <img src="images/you.png" alt="You" class="full-width-image" style="margin-top: -7%">
+    <nav aria-label="Site">
+      <ul>
+        <li><a href="/about/">About <span lang="ja">自己紹介</span></a></li>
+        <li><a href="/projects/">Projects <span lang="ja">制作</span></a></li>
+        <li><a href="/tools/">Tools <span lang="ja">ツール</span></a></li>
+        <li><a href="/blog/">Blog <span lang="ja">ブログ</span></a></li>
+        <li><a href="/sponsorships/">Sponsorships <span lang="ja">スポンサー</span></a></li>
+        <li><a href="/contact/">Contact <span lang="ja">お問い合わせ</span></a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <main id="main">
+    <div class="container">
+      <header class="page-head lost">
+        <span class="sec-kanji" aria-hidden="true" lang="ja">道</span>
+        <div class="page-head-copy">
+          <h1 class="page-title">Uh oh...</h1>
+          <p class="page-intro">That page doesn't exist! <br> Check out the navbar above and explore the site!</p>
+          <p style="margin-top: 28px;"><a class="text-link" href="/">Home <span class="arrow" aria-hidden="true">→</span></a></p>
         </div>
+        <p class="page-v"><span class="page-v-ja" lang="ja"><ruby>迷子<rt>まいご</rt></ruby></span><span class="page-v-en">Lost</span></p>
+      </header>
     </div>
+  </main>
+
+  <footer class="colophon">
+    <nav class="colophon-links" aria-label="Footer">
+      <ul>
+        <li><a href="/about/">About</a></li>
+        <li><a href="/projects/">Projects</a></li>
+        <li><a href="/tools/">Tools</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/sponsorships/">Sponsorships</a></li>
+        <li><a href="/contact/">Contact</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a></li>
+        <li><a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a></li>
+        <li><a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a></li>
+        <li><a href="#">RSS</a></li>
+      </ul>
+    </nav>
+    <div class="colophon-box">
+      <p class="colophon-title" lang="ja">奥付</p>
+      <dl>
+        <div><dt>Site / <span lang="ja">サイト</span></dt><dd>jareddesu.com</dd></div>
+        <div><dt>Author / <span lang="ja">著者</span></dt><dd>Jared P. (<span lang="ja">まだまだ</span>Jared)</dd></div>
+        <div><dt>Published / <span lang="ja">発行</span></dt><dd>© 2026</dd></div>
+      </dl>
+    </div>
+  </footer>
+
+  <script src="/scripts/site.js?v=2"></script>
 </body>
 </html>
