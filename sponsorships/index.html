@@ -54,50 +54,92 @@
   </script>
 
   <link rel="icon" href="../images/logo.png">
+  <link rel="preload" as="image" href="../images/photos/shrine-gate-1100.webp" type="image/webp" media="(min-width: 900px)">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,30..100;1,9..144,300..700,30..100&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <!-- Only the kana in まだまだ, so the subset stays tiny -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500&text=%E3%81%BE%E3%81%A0&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="../styles/base.css">
-  <link rel="stylesheet" href="../styles/sponsorships.css">
+  <link rel="stylesheet" href="../styles/base.css?v=2">
+  <link rel="stylesheet" href="../styles/sponsorships.css?v=2">
 </head>
 <body data-page="sponsorships">
+  <a class="skip-link" href="#main">Skip to content</a>
 
-  <nav class="navbar">
-    <a href="../" class="nav-logo">
-      <span class="nav-logo-mark"></span>
-      <span>jared</span>
+  <header class="masthead">
+    <a href="../" class="mark" aria-label="まだまだJared, home">
+      <span class="mark-ja" lang="ja">まだまだ</span>
+      <span class="mark-en">Jared</span>
     </a>
-    <ul class="nav-links">
-      <li><a href="../about/">About</a></li>
-      <li><a href="../projects/">Projects</a></li>
-      <li><a href="../tools/">Tools</a></li>
-      <li><a href="../blog/">Blog</a></li>
-      <li><a href="../sponsorships/">Sponsorships</a></li>
-      <li><a href="../contact/">Contact</a></li>
-    </ul>
-    <button class="nav-burger" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
-  <ul class="nav-mobile">
-    <li><a href="../about/">About</a></li>
-    <li><a href="../projects/">Projects</a></li>
-    <li><a href="../tools/">Tools</a></li>
-    <li><a href="../blog/">Blog</a></li>
-    <li><a href="../sponsorships/">Sponsorships</a></li>
-    <li><a href="../contact/">Contact</a></li>
-  </ul>
+    <nav class="masthead-nav" aria-label="Site">
+      <ul>
+        <li><a href="../about/">About</a></li>
+        <li><a href="../projects/">Projects</a></li>
+        <li><a href="../tools/">Tools</a></li>
+        <li><a href="../blog/">Blog</a></li>
+        <li><a href="../sponsorships/">Sponsorships</a></li>
+        <li><a href="../contact/">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Menu</button>
+  </header>
 
-  <main>
+  <div class="menu-sheet" id="site-menu" hidden>
+    <div class="menu-sheet-head">
+      <a href="../" class="mark" aria-label="まだまだJared, home">
+        <span class="mark-ja" lang="ja">まだまだ</span>
+        <span class="mark-en">Jared</span>
+      </a>
+      <button class="menu-toggle menu-close" type="button">Close</button>
+    </div>
+    <nav aria-label="Site">
+      <ul>
+        <li><a href="../about/">About <span lang="ja">自己紹介</span></a></li>
+        <li><a href="../projects/">Projects <span lang="ja">制作</span></a></li>
+        <li><a href="../tools/">Tools <span lang="ja">ツール</span></a></li>
+        <li><a href="../blog/">Blog <span lang="ja">ブログ</span></a></li>
+        <li><a href="../sponsorships/">Sponsorships <span lang="ja">スポンサー</span></a></li>
+        <li><a href="../contact/">Contact <span lang="ja">お問い合わせ</span></a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <main id="main">
+
+    <!-- Hero: text on the paper, the photo fading into it from the right -->
+    <section id="overview" class="sp-hero sp-section" aria-labelledby="sp-title">
+      <div class="sp-hero-text">
+        <p class="page-v"><span class="page-v-ja" lang="ja">スポンサー</span><span class="page-v-en">Sponsorships</span></p>
+        <div class="sp-hero-copy">
+          <h1 id="sp-title" class="sp-title">Partner with <span class="nobr"><span lang="ja">まだまだ</span>Jared.</span></h1>
+          <p class="lede">
+            I create Japanese-immersion content for English-speaking learners who want
+            to make Japanese a part of their everyday life: reading, watching, listening
+            and eventually speaking, with tools and systems they can actually use.
+          </p>
+          <a href="https://www.youtube.com/@jareddesu" target="_blank" rel="noopener" class="text-link">
+            Watch the channel <span class="arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+      <figure class="sp-hero-photo mist">
+        <picture>
+          <source type="image/webp" media="(min-width: 900px)" srcset="../images/photos/shrine-gate-1100.webp 1100w, ../images/photos/shrine-gate-1800.webp 1800w" sizes="55vw">
+          <source type="image/webp" srcset="../images/photos/shrine-gate-700.webp 700w, ../images/photos/shrine-gate-1100.webp 1100w" sizes="100vw">
+          <img src="../images/photos/shrine-gate-1100.jpg" width="1100" height="1246"
+               alt="Jared standing under a vermilion shrine gate in Fukuoka" fetchpriority="high">
+        </picture>
+      </figure>
+      <a class="seal sp-seal" href="#contact">
+        <span class="seal-ja" lang="ja"><span>お問い</span><span>合わせ</span></span>
+        <span class="seal-en">Start a conversation</span>
+      </a>
+    </section>
 
     <!-- Sticky in-page section nav -->
     <nav class="section-nav" aria-label="On this page">
-      <ul class="container section-nav-list">
-        <li><a href="#overview">Overview</a></li>
+      <ul class="section-nav-list">
+        <li><a href="#numbers">Overview</a></li>
         <li><a href="#audience">Audience</a></li>
         <li><a href="#performance">What performs</a></li>
         <li><a href="#partnerships">Past partnerships</a></li>
@@ -108,79 +150,66 @@
       </ul>
     </nav>
 
-    <div class="container">
+    <div class="container sp-body">
 
-      <!-- 1. Overview -->
-      <section id="overview" class="sp-section overview">
-        <header class="page-header">
-          <p class="eyebrow reveal">sponsorships</p>
-          <h1 class="page-title reveal">Partner with <em><span lang="ja">まだまだ</span>Jared</em>.</h1>
-          <p class="page-intro reveal">
-            I create Japanese-immersion content for English-speaking learners who want
-            to make Japanese a part of their everyday life: reading, watching, listening
-            and eventually speaking, with tools and systems they can actually use.
-          </p>
-          <div class="overview-actions reveal">
-            <a href="#contact" class="btn btn-primary">Start a conversation</a>
-            <a href="https://www.youtube.com/@jareddesu" target="_blank" rel="noopener" class="btn-link">
-              Watch the channel <span class="arrow">→</span>
-            </a>
-          </div>
-        </header>
+      <!-- 一 Overview: the channel in figures -->
+      <section id="numbers" class="sec sp-section sp-numbers" aria-labelledby="numbers-title">
+        <p class="sec-mark"><span class="sec-num" lang="ja">一</span><span class="sec-label">Overview / <span lang="ja"><ruby>概要<rt>がいよう</rt></ruby></span></span></p>
+        <h2 id="numbers-title" class="visually-hidden">Overview</h2>
 
-        <div class="stat-grid" data-render="headline-stats">
-          <div class="stat-card reveal">
-            <p class="stat-value">13.5K</p>
-            <p class="stat-label">Subscribers</p>
-            <p class="stat-period">As of Sep 23, 2026</p>
+        <dl class="ledger" data-render="headline-stats">
+          <div class="ledger-item">
+            <dt class="ledger-label">Subscribers</dt>
+            <dd class="ledger-fig">13.5K</dd>
+            <dd class="ledger-note">As of Sep 23, 2026</dd>
           </div>
-          <div class="stat-card reveal">
-            <p class="stat-value">33K</p>
-            <p class="stat-label">Long-form views a month (average)</p>
-            <p class="stat-period">Jun 1–Sep 21, 2026</p>
+          <div class="ledger-item">
+            <dt class="ledger-label">Long-form views a month (average)</dt>
+            <dd class="ledger-fig">33K</dd>
+            <dd class="ledger-note">Jun 1–Sep 21, 2026</dd>
           </div>
-          <div class="stat-card reveal">
-            <p class="stat-value">146K</p>
-            <p class="stat-label">Views, all formats</p>
-            <p class="stat-period">Jun 23–Sep 21, 2026</p>
+          <div class="ledger-item">
+            <dt class="ledger-label">Views, all formats</dt>
+            <dd class="ledger-fig">146K</dd>
+            <dd class="ledger-note">Jun 23–Sep 21, 2026</dd>
           </div>
-          <div class="stat-card reveal">
-            <p class="stat-value">39%</p>
-            <p class="stat-label">Views from the US, UK, Canada &amp; Australia</p>
-            <p class="stat-period">Jun 23–Sep 21, 2026</p>
+          <div class="ledger-item">
+            <dt class="ledger-label">Views from the US, UK, Canada &amp; Australia</dt>
+            <dd class="ledger-fig">39%</dd>
+            <dd class="ledger-note">Jun 23–Sep 21, 2026</dd>
           </div>
-        </div>
+        </dl>
 
         <!-- Trend + format mix: shown only once the daily Action has written the data -->
         <div class="chart-grid" id="overview-charts" hidden>
-          <div class="panel reveal" id="trend-panel" hidden>
+          <div class="panel" id="trend-panel" hidden>
             <h3 class="panel-title">Daily views</h3>
             <p class="panel-sub" id="trend-period"></p>
             <div id="trend-chart"></div>
           </div>
-          <div class="panel reveal" id="mix-panel" hidden>
+          <div class="panel" id="mix-panel" hidden>
             <h3 class="panel-title">Views by format</h3>
             <p class="panel-sub" id="mix-period"></p>
             <div id="mix-chart"></div>
           </div>
         </div>
 
-        <p class="data-note reveal" data-render="updated">
-          <span class="data-dot" aria-hidden="true"></span>
-          Updated Sep 23, 2026 · from a YouTube Studio export
-        </p>
-        <p class="partners-line reveal" data-render="partners">
-          Past partners: <a href="#partnerships">italki</a> · <a href="#partnerships">Keychron</a> · <a href="#partnerships">Migaku</a>
-        </p>
+        <div class="sp-numbers-foot">
+          <p class="data-note" data-render="updated">Updated Sep 23, 2026 · from a YouTube Studio export</p>
+          <p class="partners-line" data-render="partners">
+            Past partners: <a href="#partnerships">italki</a> · <a href="#partnerships">Keychron</a> · <a href="#partnerships">Migaku</a>
+          </p>
+        </div>
       </section>
 
-      <!-- 2. Audience -->
-      <section id="audience" class="sp-section">
-        <div class="section-label"><span class="section-label-text">Audience</span></div>
-        <h2 class="section-title reveal">Who's watching.</h2>
+      <!-- 二 Audience -->
+      <section id="audience" class="sec sp-section" aria-labelledby="audience-title">
+        <p class="sec-mark"><span class="sec-num" lang="ja">二</span><span class="sec-label">Audience / <span lang="ja"><ruby>視聴者<rt>しちょうしゃ</rt></ruby></span></span></p>
+        <span class="sec-kanji" aria-hidden="true" lang="ja">視</span>
+        <h2 id="audience-title" class="sec-title">Who's watching.</h2>
 
         <div class="audience-grid">
-          <div class="panel reveal">
+          <div class="panel">
             <h3 class="panel-title">Where viewers are</h3>
             <p class="panel-sub" data-render="countries-period">Share of views · Jun 23–Sep 21, 2026</p>
             <ol class="bar-list" data-render="countries">
@@ -194,7 +223,7 @@
           </div>
 
           <div class="audience-side">
-            <div class="panel reveal">
+            <div class="panel">
               <h3 class="panel-title">Who they are</h3>
               <ul class="plain-list" data-render="who">
                 <li>English-speaking Japanese learners</li>
@@ -202,7 +231,7 @@
                 <li>Building their own study setups with tools like Anki and Yomitan</li>
               </ul>
             </div>
-            <div class="panel reveal">
+            <div class="panel">
               <h3 class="panel-title">What they're into</h3>
               <ul class="chip-list" data-render="interests">
                 <li>Immersion</li><li>Anki</li><li>Yomitan</li><li>Migaku</li><li>Manga</li>
@@ -213,28 +242,28 @@
         </div>
       </section>
 
-      <!-- 3. What performs -->
-      <section id="performance" class="sp-section">
-        <div class="section-label"><span class="section-label-text">What performs</span></div>
-        <h2 class="section-title reveal">Videos people keep coming back to.</h2>
-        <p class="section-intro reveal">
+      <!-- 三 What performs -->
+      <section id="performance" class="sec sp-section" aria-labelledby="performance-title">
+        <p class="sec-mark"><span class="sec-num" lang="ja">三</span><span class="sec-label">What performs / <span lang="ja"><ruby>人気<rt>にんき</rt></ruby>の<ruby>動画<rt>どうが</rt></ruby></span></span></p>
+        <h2 id="performance-title" class="sec-title">Videos people keep coming back to.</h2>
+        <p class="lede section-intro">
           The channel covers a few kinds of video. Guides and setup videos keep being found
           through search for months after they're published, so an integration in one keeps working.
         </p>
 
         <div class="category-list" data-render="categories">
-          <article class="category reveal">
+          <article class="category">
             <div class="category-head"><h3>At every level</h3></div>
             <ul class="fallback-links"><li><a href="https://www.youtube.com/watch?v=8Iv1WBM2vek">Manga at Every Japanese Level</a></li></ul>
           </article>
-          <article class="category reveal">
+          <article class="category">
             <div class="category-head"><h3>Tools &amp; setup</h3></div>
             <ul class="fallback-links">
               <li><a href="https://www.youtube.com/watch?v=mjxshJATvi0">Anki &amp; Yomitan Setup</a> · 14.3K views, Jun 23–Sep 21, 2026</li>
               <li><a href="https://www.youtube.com/watch?v=JgIObAxLwMw">Memorize Japanese Vocab</a></li>
             </ul>
           </article>
-          <article class="category reveal">
+          <article class="category">
             <div class="category-head"><h3>Guides &amp; resources</h3></div>
             <ul class="fallback-links">
               <li><a href="https://www.youtube.com/watch?v=f0LGOyPcvNk">Enjoy Reading</a></li>
@@ -242,44 +271,45 @@
               <li><a href="https://www.youtube.com/watch?v=V5GBBrj3vrA">Learn from Anime</a></li>
             </ul>
           </article>
-          <article class="category reveal">
+          <article class="category">
             <div class="category-head"><h3>Speaking &amp; practical Japanese</h3></div>
             <ul class="fallback-links">
               <li><a href="https://www.youtube.com/watch?v=n0uYLxvneCg">Practice with Natives for FREE</a></li>
               <li><a href="https://www.youtube.com/watch?v=c3cJdRWkbdQ">How to Keep Conversations Going in Japanese</a> · 9.7K views in its first 5 days</li>
             </ul>
           </article>
-          <article class="category reveal">
+          <article class="category">
             <div class="category-head"><h3>Rankings</h3></div>
             <ul class="fallback-links"><li><a href="https://www.youtube.com/watch?v=GlCCFm91yO8">Language Learning Advice Tier List</a></li></ul>
           </article>
         </div>
       </section>
 
-      <!-- 4. Past partnerships -->
-      <section id="partnerships" class="sp-section">
-        <div class="section-label"><span class="section-label-text">Past partnerships</span></div>
-        <h2 class="section-title reveal">Brands I've worked with.</h2>
-        <p class="section-intro reveal">
+      <!-- 四 Past partnerships -->
+      <section id="partnerships" class="sec sp-section" aria-labelledby="partnerships-title">
+        <p class="sec-mark"><span class="sec-num" lang="ja">四</span><span class="sec-label">Past partnerships / <span lang="ja"><ruby>実績<rt>じっせき</rt></ruby></span></span></p>
+        <span class="sec-kanji" aria-hidden="true" lang="ja">縁</span>
+        <h2 id="partnerships-title" class="sec-title">Brands I've worked with.</h2>
+        <p class="lede section-intro">
           What each campaign was and why it fit the channel. Where I have numbers, they're shown with their dates.
         </p>
 
-        <div class="case-grid" data-render="case-studies">
-          <article class="case-card reveal">
+        <div class="case-list" data-render="case-studies">
+          <article class="case">
             <h3 class="case-partner">italki</h3>
             <dl class="case-fields">
               <div><dt>Campaign</dt><dd>Flat-fee integration</dd></div>
               <div><dt>Video</dt><dd><a href="https://www.youtube.com/watch?v=c3cJdRWkbdQ">How to Keep Conversations Going in Japanese</a></dd></div>
             </dl>
           </article>
-          <article class="case-card reveal">
+          <article class="case">
             <h3 class="case-partner">Keychron</h3>
             <dl class="case-fields">
               <div><dt>Campaign</dt><dd>Integration + product</dd></div>
               <div><dt>Video</dt><dd><a href="https://www.youtube.com/watch?v=qfNFMS96UnM">The Japanese Keyboard Layout Everyone Forgot About</a></dd></div>
             </dl>
           </article>
-          <article class="case-card reveal">
+          <article class="case">
             <h3 class="case-partner">Migaku</h3>
             <dl class="case-fields">
               <div><dt>Campaign</dt><dd>Ongoing affiliate partnership</dd></div>
@@ -288,34 +318,34 @@
         </div>
       </section>
 
-      <!-- 5. Sponsorship opportunities -->
-      <section id="opportunities" class="sp-section">
-        <div class="section-label"><span class="section-label-text">Sponsorship opportunities</span></div>
-        <h2 class="section-title reveal">Ways to work together.</h2>
-        <p class="section-intro reveal">
+      <!-- 五 Opportunities: set like a 品書き -->
+      <section id="opportunities" class="sec sp-section" aria-labelledby="opportunities-title">
+        <p class="sec-mark"><span class="sec-num" lang="ja">五</span><span class="sec-label">Opportunities / <span lang="ja">プラン</span></span></p>
+        <h2 id="opportunities-title" class="sec-title">Ways to work together.</h2>
+        <p class="lede section-intro">
           A starting point for a conversation, not a menu. Prices are where each option starts;
           the final scope depends on the video, timing and what you need.
         </p>
 
-        <div class="package-grid" data-render="packages">
-          <article class="package-card reveal"><h3>Integration</h3><p>A 60–90 second segment in a relevant guide video.</p></article>
-          <article class="package-card reveal"><h3>Evergreen package</h3><p>Integration, Short, pinned comment and a top description link for 12 months.</p></article>
-          <article class="package-card reveal"><h3>Quarterly partner</h3><p>Three integrations, one a month.</p></article>
-          <article class="package-card reveal"><h3>Dedicated guide video</h3><p>A full video built around your product.</p></article>
-          <article class="package-card reveal"><h3>Sponsored Short</h3><p>A standalone Short built around your product.</p></article>
-        </div>
-        <p class="package-note reveal" data-render="packages-note">
+        <ul class="menu-board" data-render="packages">
+          <li class="menu-item"><div class="menu-line"><h3 class="menu-name">Integration</h3></div><p class="menu-desc">A 60–90 second segment in a relevant guide video.</p></li>
+          <li class="menu-item"><div class="menu-line"><h3 class="menu-name">Evergreen package</h3></div><p class="menu-desc">Integration, Short, pinned comment and a top description link for 12 months.</p></li>
+          <li class="menu-item"><div class="menu-line"><h3 class="menu-name">Quarterly partner</h3></div><p class="menu-desc">Three integrations, one a month.</p></li>
+          <li class="menu-item"><div class="menu-line"><h3 class="menu-name">Dedicated guide video</h3></div><p class="menu-desc">A full video built around your product.</p></li>
+          <li class="menu-item"><div class="menu-line"><h3 class="menu-name">Sponsored Short</h3></div><p class="menu-desc">A standalone Short built around your product.</p></li>
+        </ul>
+        <p class="footnote package-note" data-render="packages-note">
           Paid-ad usage rights and category exclusivity are priced separately. Custom packages are welcome.
         </p>
       </section>
 
-      <!-- 6. Brand fit -->
-      <section id="brand-fit" class="sp-section">
-        <div class="section-label"><span class="section-label-text">Brand fit</span></div>
-        <h2 class="section-title reveal">What fits the channel.</h2>
+      <!-- 六 Brand fit -->
+      <section id="brand-fit" class="sec sp-section" aria-labelledby="brand-fit-title">
+        <p class="sec-mark"><span class="sec-num" lang="ja">六</span><span class="sec-label">Brand fit / <span lang="ja"><ruby>相性<rt>あいしょう</rt></ruby></span></span></p>
+        <h2 id="brand-fit-title" class="sec-title">What fits the channel.</h2>
 
         <div class="fit-grid">
-          <ul class="fit-list reveal" data-render="brand-fit">
+          <ul class="fit-list" data-render="brand-fit">
             <li>Japanese tutoring</li>
             <li>Japanese books, manga and e-books</li>
             <li>Japan travel</li>
@@ -325,61 +355,62 @@
             <li>Japan-related subscriptions</li>
             <li>Select creator tools</li>
           </ul>
-          <div class="fit-side reveal">
+          <div class="fit-side">
             <blockquote class="fit-quote">
-              I only take partnerships that make sense for the audience and the video.
+              <p>I only take partnerships that make sense for the audience and the video.
               My goal is for sponsored content to feel like a natural part of the channel
-              rather than an interruption.
+              rather than an interruption.</p>
             </blockquote>
             <p class="fit-exclusions" data-render="brand-fit-exclusions">Not a fit: AI tools, crypto and NFTs.</p>
           </div>
         </div>
       </section>
 
-      <!-- 7. Why JaredDesu -->
-      <section id="why" class="sp-section">
-        <div class="section-label"><span class="section-label-text">Why JaredDesu</span></div>
-        <h2 class="section-title reveal">A learner talking to learners.</h2>
+      <!-- 七 Why JaredDesu -->
+      <section id="why" class="sec sp-section" aria-labelledby="why-title">
+        <p class="sec-mark"><span class="sec-num" lang="ja">七</span><span class="sec-label">Why / <span lang="ja"><ruby>理由<rt>りゆう</rt></ruby></span></span></p>
+        <h2 id="why-title" class="sec-title">A learner talking to learners.</h2>
 
-        <div class="why-grid">
-          <div class="why-item reveal">
+        <ol class="why-list">
+          <li class="why-item">
             <h3>Input first</h3>
             <p>The channel is built on immersion: learning Japanese from things you actually want to read, watch and listen to.</p>
-          </div>
-          <div class="why-item reveal">
+          </li>
+          <li class="why-item">
             <h3>Made for English speakers</h3>
             <p>Videos are in English, for learners in the US, UK, Canada, Australia and everywhere else.</p>
-          </div>
-          <div class="why-item reveal">
+          </li>
+          <li class="why-item">
             <h3>Still learning, on purpose</h3>
             <p><span lang="ja">まだまだ</span> means "still a long way to go." I'm learning alongside the audience, and that's the point.</p>
-          </div>
-          <div class="why-item reveal">
+          </li>
+          <li class="why-item">
             <h3>Not a guru</h3>
             <p>No native-level act and no shortcuts. I recommend what I actually use.</p>
-          </div>
-          <div class="why-item reveal">
+          </li>
+          <li class="why-item">
             <h3>An engaged community</h3>
             <p>Viewers ask questions, share their setups and keep conversations going in the comments and on Discord.</p>
-          </div>
-          <div class="why-item reveal">
+          </li>
+          <li class="why-item">
             <h3>Practical systems</h3>
             <p>Guides end with something viewers can set up and use the same day.</p>
-          </div>
-        </div>
+          </li>
+        </ol>
       </section>
 
-      <!-- 8. Contact -->
-      <section id="contact" class="sp-section">
-        <div class="section-label"><span class="section-label-text">Contact</span></div>
-        <h2 class="section-title reveal">Interested in working together?</h2>
-        <p class="section-intro reveal">
+      <!-- 八 Contact -->
+      <section id="contact" class="sec sp-section" aria-labelledby="contact-title">
+        <p class="sec-mark"><span class="sec-num" lang="ja">八</span><span class="sec-label">Contact / <span lang="ja"><ruby>問<rt>と</rt></ruby>い<ruby>合<rt>あ</rt></ruby>わせ</span></span></p>
+        <span class="sec-kanji" aria-hidden="true" lang="ja">文</span>
+        <h2 id="contact-title" class="sec-title">Interested in working together?</h2>
+        <p class="lede section-intro">
           Tell me a little about your brand and what you have in mind. I reply to every
           sponsorship inquiry, usually within 48 hours. Prefer email? Write to
           <a href="mailto:Jared@jareddesu.com" class="inline-link">Jared@jareddesu.com</a>.
         </p>
 
-        <form class="sp-form reveal" id="sponsor-form" data-web3forms
+        <form class="sp-form" id="sponsor-form" data-web3forms
               data-subject="Sponsorship inquiry — {brand}"
               data-success="Thanks, I'll get back to you within 48 hours.">
           <!-- Honeypot — hidden from humans, bots fill it -->
@@ -438,9 +469,9 @@
             </div>
           </fieldset>
 
-          <label>
+          <label class="message-field">
             <span class="form-label">Message</span>
-            <textarea name="message" rows="5" required placeholder="What would you like to promote, and to whom?"></textarea>
+            <textarea name="message" rows="6" required placeholder="What would you like to promote, and to whom?"></textarea>
           </label>
 
           <div class="form-actions">
@@ -455,46 +486,37 @@
     </div>
   </main>
 
-  <footer class="site-footer">
-    <div class="footer-grid">
-      <div class="footer-left">
-        <a href="../" class="nav-logo">
-          <span class="nav-logo-mark"></span>
-          <span>jared</span>
-        </a>
-        <p>Made with care.</p>
-      </div>
-      <div class="footer-cols">
-        <div class="footer-col">
-          <p class="footer-heading">Site</p>
-          <a href="../about/">About</a>
-          <a href="../projects/">Projects</a>
-          <a href="../tools/">Tools</a>
-          <a href="../blog/">Blog</a>
-          <a href="../sponsorships/">Sponsorships</a>
-        </div>
-        <div class="footer-col">
-          <p class="footer-heading">Find me</p>
-          <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a>
-          <a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a>
-          <a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a>
-        </div>
-        <div class="footer-col">
-          <p class="footer-heading">Other</p>
-          <a href="../contact/">Contact</a>
-          <a href="#">RSS</a>
-        </div>
-      </div>
-    </div>
-    <div class="footer-baseline">
-      © 2026 Jared P. · Built with love
+  <footer class="colophon">
+    <nav class="colophon-links" aria-label="Footer">
+      <ul>
+        <li><a href="../about/">About</a></li>
+        <li><a href="../projects/">Projects</a></li>
+        <li><a href="../tools/">Tools</a></li>
+        <li><a href="../blog/">Blog</a></li>
+        <li><a href="../sponsorships/">Sponsorships</a></li>
+        <li><a href="../contact/">Contact</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a></li>
+        <li><a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a></li>
+        <li><a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a></li>
+        <li><a href="#">RSS</a></li>
+      </ul>
+    </nav>
+    <div class="colophon-box">
+      <p class="colophon-title" lang="ja">奥付</p>
+      <dl>
+        <div><dt>Site / <span lang="ja">サイト</span></dt><dd>jareddesu.com</dd></div>
+        <div><dt>Author / <span lang="ja">著者</span></dt><dd>Jared P. (<span lang="ja">まだまだ</span>Jared)</dd></div>
+        <div><dt>Published / <span lang="ja">発行</span></dt><dd>© 2026</dd></div>
+      </dl>
     </div>
   </footer>
 
-  <script src="../scripts/site.js"></script>
+  <script src="../scripts/site.js?v=2"></script>
   <script src="../scripts/sponsor-data.js"></script>
   <script src="../scripts/sponsor-charts.js"></script>
-  <script src="../scripts/sponsorships.js"></script>
+  <script src="../scripts/sponsorships.js?v=2"></script>
   <script src="../scripts/contact.js"></script>
 </body>
 </html>
