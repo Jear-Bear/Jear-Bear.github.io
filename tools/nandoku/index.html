@@ -15,9 +15,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="../../styles/base.css">
-  <link rel="stylesheet" href="../../data/nandoku/fonts/fonts.css?v=2">
+  <link rel="stylesheet" href="../../data/nandoku/fonts/fonts.css?v=3">
   <link rel="stylesheet" href="../../styles/kanji.css?v=4">
-  <link rel="stylesheet" href="../../styles/nandoku.css?v=2">
+  <link rel="stylesheet" href="../../styles/nandoku.css?v=3">
 </head>
 <body data-page="nandoku">
 
@@ -78,7 +78,7 @@
         <section class="kj-section">
           <div class="section-label"><span class="section-label-text">What to study</span></div>
           <h2 class="section-title reveal">Choose your levels.</h2>
-          <p class="kj-help reveal">Pick one or more. Level 5 is where the game gets hard; 7 is the deep end. 別表記 drills the other ways those words can be written, as separate questions.</p>
+          <p class="kj-help reveal">Pick one or more. Level 5 is where the game gets hard, 7 is the deep end and 8 is the ghost characters. 別表記 drills other ways the words can be written; こころのリテラシー is a casual-mode set.</p>
           <div class="kj-chips" id="level-picker"></div>
           <p class="kj-set-note" id="level-note"></p>
           <p class="kj-selection" id="selection-summary" aria-live="polite"></p>
@@ -162,8 +162,8 @@
         </section>
 
         <p class="kj-credits">
-          Words, readings and meanings from <a href="https://github.com/MarvNC/kanjidego-yomitan-anki" target="_blank" rel="noopener">MarvNC&rsquo;s kanjidego-yomitan-anki</a>,
-          compiled from the <a href="https://w.atwiki.jp/kanjidego/" target="_blank" rel="noopener"><span lang="ja">漢字でGO!</span> fan wiki</a>.
+          Words, readings and meanings from the <a href="https://w.atwiki.jp/yuia_sk/" target="_blank" rel="noopener"><span lang="ja">漢字でGO！ 問題集</span> fan wiki</a>,
+          with other spellings and notes from <a href="https://github.com/MarvNC/kanjidego-yomitan-anki" target="_blank" rel="noopener">MarvNC&rsquo;s kanjidego-yomitan-anki</a>.
           <a href="https://plicy.net/GamePlay/155561" target="_blank" rel="noopener"><span lang="ja">漢字でGO!</span></a> is a free game on PLiCy; this is an unofficial fan study tool.
           Words shown in <a href="https://github.com/fontdasu/Mochiypop" target="_blank" rel="noopener">Mochiy Pop One</a> (OFL),
           with rarer kanji from IPAmj Mincho (<a href="https://moji.or.jp/mojikiban/font/" target="_blank" rel="noopener">IPA Font License</a>)
@@ -190,6 +190,7 @@
           <div class="nd-board" id="q-board">
             <div class="nd-timer" id="q-timer" hidden><div></div></div>
             <div class="nd-term" id="q-prompt" lang="ja"></div>
+            <span class="nd-hint" id="q-hint" lang="ja"></span>
           </div>
           <div class="kj-body" id="q-body"></div>
           <p class="kj-feedback" id="feedback" aria-live="polite"></p>
@@ -260,6 +261,6 @@
   </footer>
 
   <script src="../../scripts/site.js"></script>
-  <script type="module" src="../../scripts/nandoku/app.js?v=3"></script>
+  <script type="module" src="../../scripts/nandoku/app.js?v=4"></script>
 </body>
 </html>

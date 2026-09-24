@@ -75,9 +75,6 @@
 
 /* ---------------------------------------------------------------- answering */
 .nd-typed { max-width: 460px; }
-.nd-field { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; }
-.nd-affix { font-size: 1.6rem; color: var(--ink); flex-shrink: 0; }
-.nd-affix-note { margin: -4px 0 0; }
 .nd-giveup { font-size: 14px; color: var(--muted) !important; }
 .nd-choices { grid-template-columns: 1fr; max-width: 560px; }
 .nd-choices .kj-choice { font-family: 'Noto Sans JP', sans-serif; font-size: 0.98rem; line-height: 1.5; }
@@ -111,15 +108,19 @@ body.kj-compact .nd-board { padding: 12px 14px 18px; }
 body.kj-compact .nd-term { font-size: min(clamp(40px, 16vw, 96px), calc(var(--vvh, 100vh) * 0.13)); }
 body.kj-compact .nd-term[data-len="5"], body.kj-compact .nd-term[data-len="6"],
 body.kj-compact .nd-term[data-len="7"], body.kj-compact .nd-term[data-len="8"] { font-size: min(11vw, calc(var(--vvh, 100vh) * 0.09)); }
-body.kj-compact .nd-affix-note { display: none; }
 body.kj-compact .nd-answer { padding: 8px 12px; }
 body.kj-compact .nd-answer-term { font-size: 1.5rem; }
 body.kj-compact .nd-answer-note { display: none; }
 
 @media (max-width: 640px) {
   .nd-choices { grid-template-columns: 1fr; }
-  .nd-affix { font-size: 1.3rem; }
 }
 .nd-typed-was { color: var(--ink); }
 .nd-of { margin: 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .nd-of .btn-link { font-size: 1.3rem; min-height: 40px; padding: 4px 0; }
+.nd-hint {
+  position: absolute; right: 12px; bottom: 10px; padding: 3px 12px; border-radius: 999px;
+  background: rgba(23, 19, 15, .6); color: #fff; font: 500 14px 'Noto Sans JP', sans-serif;
+}
+.nd-hint:empty { display: none; }
+.nd-tags { justify-content: center; margin: 2px 0 0; }

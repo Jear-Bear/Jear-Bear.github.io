@@ -7,7 +7,7 @@
 // scores). All text from the data is inserted as text, never HTML.
 // =====================================================================
 
-import * as D from './data.js?v=2';
+import * as D from './data.js?v=3';
 import * as S from './storage.js?v=1';
 import * as R from '../kanji/srs.js?v=1';
 import { toHiragana, finalize } from '../kanji/romaji.js?v=1';
@@ -47,14 +47,18 @@ const fmt = new Intl.NumberFormat('en');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const listText = (a) => (a.length <= 1 ? a.join('') : `${a.slice(0, -1).join(', ')} and ${a[a.length - 1]}`);
 
-// The word as the game draws it: kanji runs in <span class="k"> (yellow),
-// kana as plain text (white)
+// The word as the game draws it: yellow runs in <span class="k">, white runs
+// (okurigana, given parts) as plain text. The wiki marks the white runs; for
+// other spellings, kana count as white.
 const KANA = /^[\u3040-\u30ff\uff66-\uff9f]$/;
-function termNodes(term) {
+function termNodes(t) {
+  if (t.segs && t.segs.length) {
+    return t.segs.map((run, i) => (i % 2 ? run : run && h('span', { class: 'k' }, run))).filter(Boolean);
+  }
   const out = [];
   let run = '';
   let runKanji = null;
-  for (const ch of term) {
+  for (const ch of t.term) {
     if (/[\uFE00-\uFE0F\u{E0100}-\u{E01EF}]/u.test(ch)) { run += ch; continue; }  // variation selector
     const k = !KANA.test(ch);
     if (runKanji !== null && k !== runKanji) { out.push(runKanji ? h('span', { class: 'k' }, run) : run); run = ''; }
@@ -115,9 +119,10 @@ function renderLevels() {
     onclick: () => toggleLevel(lv),
   }, D.levelName(lv), h('span', { class: 'kj-chip-count' }, fmt.format(D.levelCount(lv))))));
   const missing = ALL_LEVELS.filter((l) => !D.levelCount(l)).map(Number);
-  $('level-note').textContent = missing.length
-    ? `Level${missing.length === 1 ? '' : 's'} ${listText(ranges(missing))} ${missing.length === 1 ? 'isn\'t' : 'aren\'t'} in the word list this uses yet.`
-    : '';
+  $('level-note').textContent = [
+    missing.length ? `Level${missing.length === 1 ? '' : 's'} ${listText(ranges(missing))} ${missing.length === 1 ? 'isn\'t' : 'aren\'t'} in the word list yet.` : '',
+    'Levels 1–3 are partial: the fan wiki hasn\'t written all of them out yet.',
+  ].filter(Boolean).join(' ');
 }
 
 // [1,2,3,4,8] -> ['1–4', '8']
@@ -359,11 +364,14 @@ async function ask(q) {
   clearCard();
   const t = D.get(q.key);
   if (!t) { session.i++; next(); return; }
+  // Words whose meaning is unknown (字義未詳) are only asked for their reading
+  if (q.skill === 'meaning' && !D.hasMeaning(t)) q.skill = 'reading';
   current = { q, t, answered: false };
   const reading = q.skill === 'reading';
   $('q-label').textContent = `${q.isNew ? 'New word · ' : ''}${reading ? 'How is this read?' : 'What does it mean?'}`;
   const prompt = $('q-prompt');
-  prompt.replaceChildren(...termNodes(t.term));
+  prompt.replaceChildren(...termNodes(t));
+  $('q-hint').textContent = reading && t.hint ? `${t.hint}文字` : '';
   prompt.setAttribute('aria-label', t.term);
   prompt.dataset.len = String(Math.min(8, [...t.term.replace(/[︀-️\u{E0100}-\u{E01EF}]/gu, '')].length));
   prompt.classList.add('is-loading');
@@ -441,11 +449,7 @@ function typedInput(t) {
     current.typed = val;
     settle(ok ? 'good' : 'again');
   });
-  const field = h('div', { class: 'nd-field' },
-    t.pre ? h('span', { class: 'nd-affix nd-pop', lang: 'ja' }, t.pre) : null,
-    input,
-    t.suf ? h('span', { class: 'nd-affix nd-pop', lang: 'ja' }, t.suf) : null);
-  form.append(field, h('button', { class: 'btn btn-primary', type: 'submit' }, 'Check'));
+  form.append(input, h('button', { class: 'btn btn-primary', type: 'submit' }, 'Check'));
   const giveUp = h('button', {
     class: 'btn-link nd-giveup', type: 'button',
     onclick: () => {
@@ -456,7 +460,6 @@ function typedInput(t) {
     },
   }, 'Don\'t know');
   $('q-body').append(form, giveUp);
-  if (t.pre || t.suf) $('q-body').append(h('p', { class: 'kj-opt-note nd-affix-note' }, 'Type the part in the box.'));
   setTimeout(() => input.focus(), 30);
 }
 
@@ -467,7 +470,7 @@ function meaningChoices(t) {
   const seen = new Set([t.meaning]);
   for (let tries = 0; others.length < 3 && tries < 60; tries++) {
     const o = pool[Math.floor(Math.random() * pool.length)];
-    if (!seen.has(o.meaning)) { seen.add(o.meaning); others.push(o.meaning); }
+    if (D.hasMeaning(o) && !seen.has(o.meaning)) { seen.add(o.meaning); others.push(o.meaning); }
   }
   const opts = shuffle([t.meaning, ...others]);
   const list = h('div', { class: 'kj-choices nd-choices' });
@@ -599,6 +602,7 @@ function showAfter(t, result, extra) {
     h('p', { class: 'nd-answer-reading', lang: 'ja' }, D.readingsText(t)),
     h('p', { class: 'nd-answer-meaning', lang: 'ja' }, t.meaning),
     t.note ? h('p', { class: 'nd-answer-note', lang: 'ja' }, t.note) : null,
+    t.tags.length ? h('p', { class: 'kj-tags nd-tags' }, t.tags.map((g) => h('span', { class: 'kj-tag', lang: 'ja' }, g))) : null,
     t.vars.length ? h('p', { class: 'nd-answer-vars' }, 'Also written ', h('span', { class: 'nd-pop', lang: 'ja' }, t.vars.slice(0, 6).join('、'))) : null));
   if (result === 'again' && current.typed && current.q.skill === 'reading') {
     after.append(h('p', { class: 'nd-override' }, 'You typed', h('span', { lang: 'ja', class: 'nd-typed-was' }, current.typed), '·',
@@ -764,6 +768,7 @@ function openDetail(id) {
   $('detail-body').replaceChildren(...[
     h('p', { class: 'eyebrow' }, t.of ? `別表記 · ${t.of.replace('_', ' #')}` : `${D.levelName(t.level)} · ${t.id.replace('_', ' #')}`),
     h('p', { class: 'nd-detail-term nd-pop', id: 'detail-term', lang: 'ja' }, t.term),
+    t.tags.length || t.hint ? h('p', { class: 'kj-tags' }, [t.hint ? `${t.hint}文字指定` : null, ...t.tags].filter(Boolean).map((g) => h('span', { class: 'kj-tag', lang: 'ja' }, g))) : null,
     h('p', { class: 'nd-answer-reading', lang: 'ja' }, D.readingsText(t)),
     h('p', { class: 'nd-answer-meaning', lang: 'ja' }, t.meaning),
     t.note ? h('p', { class: 'nd-answer-note', lang: 'ja' }, t.note) : null,
