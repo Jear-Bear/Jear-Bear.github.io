@@ -10,105 +10,100 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,30..100;1,9..144,300..700,30..100&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="../styles/base.css">
-  <link rel="stylesheet" href="../styles/contact.css">
+  <link rel="stylesheet" href="../styles/base.css?v=2">
+  <link rel="stylesheet" href="../styles/contact.css?v=2">
 </head>
 <body data-page="contact">
 
   <!-- Drifting background blob — the page's motion accent -->
-  <svg class="bg-blob" viewBox="0 0 600 600" aria-hidden="true">
-    <defs>
-      <linearGradient id="blobGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="currentColor" stop-opacity="0.18" />
-        <stop offset="100%" stop-color="currentColor" stop-opacity="0.04" />
-      </linearGradient>
-    </defs>
-    <path fill="url(#blobGrad)" d="M 300,80 C 460,80 540,220 540,330 C 540,440 420,540 290,540 C 180,540 60,440 60,310 C 60,180 160,80 300,80 Z" />
-  </svg>
 
-  <nav class="navbar">
-    <a href="../" class="nav-logo">
-      <span class="nav-logo-mark"></span>
-      <span>jared</span>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="masthead">
+    <a href="../" class="mark" aria-label="まだまだJared, home">
+      <span class="mark-ja" lang="ja">まだまだ</span>
+      <span class="mark-en">Jared</span>
     </a>
-    <ul class="nav-links">
-      <li><a href="../about/">About</a></li>
-      <li><a href="../projects/">Projects</a></li>
-      <li><a href="../tools/">Tools</a></li>
-      <li><a href="../blog/">Blog</a></li>
-      <li><a href="../sponsorships/">Sponsorships</a></li>
-      <li><a href="../contact/">Contact</a></li>
-    </ul>
-    <button class="nav-burger" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
-  <ul class="nav-mobile">
-    <li><a href="../about/">About</a></li>
-    <li><a href="../projects/">Projects</a></li>
-    <li><a href="../tools/">Tools</a></li>
-    <li><a href="../blog/">Blog</a></li>
-    <li><a href="../sponsorships/">Sponsorships</a></li>
-    <li><a href="../contact/">Contact</a></li>
-  </ul>
+    <nav class="masthead-nav" aria-label="Site">
+      <ul>
+        <li><a href="../about/">About</a></li>
+        <li><a href="../projects/">Projects</a></li>
+        <li><a href="../tools/">Tools</a></li>
+        <li><a href="../blog/">Blog</a></li>
+        <li><a href="../sponsorships/">Sponsorships</a></li>
+        <li><a href="../contact/">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Menu</button>
+  </header>
 
-  <main>
+  <div class="menu-sheet" id="site-menu" hidden>
+    <div class="menu-sheet-head">
+      <a href="../" class="mark" aria-label="まだまだJared, home">
+        <span class="mark-ja" lang="ja">まだまだ</span>
+        <span class="mark-en">Jared</span>
+      </a>
+      <button class="menu-toggle menu-close" type="button">Close</button>
+    </div>
+    <nav aria-label="Site">
+      <ul>
+        <li><a href="../about/">About <span lang="ja">自己紹介</span></a></li>
+        <li><a href="../projects/">Projects <span lang="ja">制作</span></a></li>
+        <li><a href="../tools/">Tools <span lang="ja">ツール</span></a></li>
+        <li><a href="../blog/">Blog <span lang="ja">ブログ</span></a></li>
+        <li><a href="../sponsorships/">Sponsorships <span lang="ja">スポンサー</span></a></li>
+        <li><a href="../contact/">Contact <span lang="ja">お問い合わせ</span></a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <main id="main">
     <div class="container">
-
-      <header class="page-header">
-        <p class="eyebrow reveal">contact</p>
-        <h1 class="page-title reveal">
-          Let's <em>talk</em>.
-        </h1>
-        <p class="page-intro reveal">
-          Here's how to reach me &mdash; with honest expectations about how fast
-          I'll respond. Pick whatever channel fits.
-        </p>
+      <header class="page-head">
+        <div class="page-head-copy">
+          <h1 class="page-title">Let's <em>talk</em>.</h1>
+          <p class="page-intro">
+            Here's how to reach me &mdash; with honest expectations about how fast
+            I'll respond. Pick whatever channel fits.
+          </p>
+        </div>
+        <p class="page-v"><span class="page-v-ja" lang="ja">お問い合わせ</span><span class="page-v-en">Contact</span></p>
       </header>
 
-      <!-- Contact channels list -->
-      <section class="channels-section">
-        <div class="channels-grid">
-
-          <a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener" class="channel-card reveal">
-            <div class="channel-head">
-              <h3>Discord</h3>
-              <span class="channel-speed fast">fastest</span>
-            </div>
+      <!-- 一 Channels: a ruled table of where to reach me -->
+      <section class="sec channels-section" aria-labelledby="channels-title">
+        <p class="sec-mark"><span class="sec-num" lang="ja">一</span><span class="sec-label">Channels / <span lang="ja"><ruby>連絡先<rt>れんらくさき</rt></ruby></span></span></p>
+        <h2 id="channels-title" class="visually-hidden">Channels</h2>
+        <ul class="channels">
+          <li class="channel">
+            <h3 class="channel-name">Discord</h3>
+            <p class="channel-speed"><span class="channel-speed-tag">fastest</span> Usually within a day</p>
             <p class="channel-desc">Best for hako questions, collab ideas, or just hanging out. Active community.</p>
-            <p class="channel-meta">Usually within a day</p>
-            <span class="channel-cta">Join the server <span class="arrow">→</span></span>
-          </a>
-
-          <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener" class="channel-card reveal">
-            <div class="channel-head">
-              <h3>YouTube</h3>
-              <span class="channel-speed medium">slow</span>
-            </div>
+            <a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener" class="text-link">Join the server <span class="arrow" aria-hidden="true">→</span></a>
+          </li>
+          <li class="channel">
+            <h3 class="channel-name">YouTube</h3>
+            <p class="channel-speed"><span class="channel-speed-tag">slow</span> A few days to a week</p>
             <p class="channel-desc">Drop a comment on a video. I read them all, eventually.</p>
-            <p class="channel-meta">A few days to a week</p>
-            <span class="channel-cta">@jareddesu <span class="arrow">→</span></span>
-          </a>
-
-          <a href="mailto:jared@jareddesu.com" class="channel-card reveal">
-            <div class="channel-head">
-              <h3>Email</h3>
-              <span class="channel-speed medium">batch</span>
-            </div>
+            <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener" class="text-link">@jareddesu <span class="arrow" aria-hidden="true">→</span></a>
+          </li>
+          <li class="channel">
+            <h3 class="channel-name">Email</h3>
+            <p class="channel-speed"><span class="channel-speed-tag">batch</span> Checked in batches, expect 48 hours</p>
             <p class="channel-desc">For business inquiries, longer messages, anything formal.</p>
-            <p class="channel-meta">Checked in batches, expect 48 hours</p>
-            <span class="channel-cta">jared@jareddesu.com <span class="arrow">→</span></span>
-          </a>
-
-        </div>
+            <a href="mailto:jared@jareddesu.com" class="text-link">jared@jareddesu.com <span class="arrow" aria-hidden="true">→</span></a>
+          </li>
+        </ul>
       </section>
 
-      <!-- What I can / can't help with -->
-      <section class="expectations-section">
+      <!-- 二 What I can / can't help with -->
+      <section class="sec expectations-section" aria-labelledby="topics-title">
+        <p class="sec-mark"><span class="sec-num" lang="ja">二</span><span class="sec-label">Topics / <span lang="ja"><ruby>話題<rt>わだい</rt></ruby></span></span></p>
+        <h2 id="topics-title" class="visually-hidden">Topics</h2>
         <div class="expectations-grid">
-          <div class="expectations-card good reveal">
+          <div class="expectations good">
             <h3>Happy to chat about</h3>
             <ul>
               <li>Japanese learning, immersion, AJATT-related questions</li>
@@ -118,7 +113,7 @@
               <li>Side project nerding</li>
             </ul>
           </div>
-          <div class="expectations-card not reveal">
+          <div class="expectations not">
             <h3>Sorry, can't help with</h3>
             <ul>
               <li>1-on-1 tutoring requests (not taking students)</li>
@@ -130,17 +125,15 @@
         </div>
       </section>
 
-      <!-- Catch-all form -->
-      <section class="form-section">
-        <div class="section-label">
-          <span class="section-label-text">Or send a note</span>
-        </div>
-        <h2 class="section-title reveal">For everything else.</h2>
-        <p class="form-intro reveal">
+      <!-- 三 Catch-all form -->
+      <section class="sec form-section" aria-labelledby="form-title">
+        <p class="sec-mark"><span class="sec-num" lang="ja">三</span><span class="sec-label">Or send a note / <span lang="ja">メッセージ</span></span></p>
+        <span class="sec-kanji" aria-hidden="true" lang="ja">筆</span>
+        <h2 id="form-title" class="sec-title">For everything else.</h2>
+        <p class="lede form-intro">
           If none of the channels above fit, drop a message here. Same response time as email.
         </p>
-
-        <form class="contact-form reveal" id="contact-form" data-web3forms>
+        <form class="contact-form" id="contact-form" data-web3forms>
           <!-- Honeypot — hidden from humans, bots fill it -->
           <input type="text" name="website" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true" />
 
@@ -155,7 +148,7 @@
             </label>
           </div>
 
-          <label>
+          <label class="message-field">
             <span class="form-label">Message</span>
             <textarea name="message" rows="5" required placeholder="What's on your mind?"></textarea>
           </label>
@@ -168,47 +161,37 @@
           </div>
         </form>
       </section>
-
     </div>
   </main>
 
-  <footer class="site-footer">
-    <div class="footer-grid">
-      <div class="footer-left">
-        <a href="../" class="nav-logo">
-          <span class="nav-logo-mark"></span>
-          <span>jared</span>
-        </a>
-        <p>Made with care.</p>
-      </div>
-      <div class="footer-cols">
-        <div class="footer-col">
-          <p class="footer-heading">Site</p>
-          <a href="../about/">About</a>
-          <a href="../projects/">Projects</a>
-          <a href="../tools/">Tools</a>
-          <a href="../blog/">Blog</a>
-          <a href="../sponsorships/">Sponsorships</a>
-        </div>
-        <div class="footer-col">
-          <p class="footer-heading">Find me</p>
-          <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a>
-          <a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a>
-          <a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a>
-        </div>
-        <div class="footer-col">
-          <p class="footer-heading">Other</p>
-          <a href="../contact/">Contact</a>
-          <a href="#">RSS</a>
-        </div>
-      </div>
-    </div>
-    <div class="footer-baseline">
-      © 2026 Jared P. · Built with love
+  <footer class="colophon">
+    <nav class="colophon-links" aria-label="Footer">
+      <ul>
+        <li><a href="../about/">About</a></li>
+        <li><a href="../projects/">Projects</a></li>
+        <li><a href="../tools/">Tools</a></li>
+        <li><a href="../blog/">Blog</a></li>
+        <li><a href="../sponsorships/">Sponsorships</a></li>
+        <li><a href="../contact/">Contact</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a></li>
+        <li><a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a></li>
+        <li><a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a></li>
+        <li><a href="#">RSS</a></li>
+      </ul>
+    </nav>
+    <div class="colophon-box">
+      <p class="colophon-title" lang="ja">奥付</p>
+      <dl>
+        <div><dt>Site / <span lang="ja">サイト</span></dt><dd>jareddesu.com</dd></div>
+        <div><dt>Author / <span lang="ja">著者</span></dt><dd>Jared P. (<span lang="ja">まだまだ</span>Jared)</dd></div>
+        <div><dt>Published / <span lang="ja">発行</span></dt><dd>© 2026</dd></div>
+      </dl>
     </div>
   </footer>
 
-  <script src="../scripts/site.js"></script>
+  <script src="../scripts/site.js?v=2"></script>
   <script src="../scripts/contact.js"></script>
 </body>
 </html>

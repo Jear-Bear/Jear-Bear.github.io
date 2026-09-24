@@ -12,7 +12,7 @@
 /* ---------------------------------------------------------------- level progress */
 .nd-levels { display: flex; flex-direction: column; gap: 16px; max-width: 720px; }
 .nd-level-head { display: flex; justify-content: space-between; align-items: baseline; gap: 6px 16px; flex-wrap: wrap; margin-bottom: 6px; }
-.nd-level-name { font-family: 'Fraunces', serif; font-size: 1.15rem; color: var(--ink); }
+.nd-level-name { font-family: var(--font-mincho); font-size: 1.15rem; color: var(--ink); }
 .nd-level-nums { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .nd-level-bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: var(--surface); border: 1px solid var(--border); }
 .nd-level-bar > span { min-width: 0; flex-basis: 0; }

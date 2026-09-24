@@ -11,58 +11,74 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,30..100;1,9..144,300..700,30..100&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="../../styles/base.css">
+  <link rel="stylesheet" href="../../styles/base.css?v=2">
   <link rel="stylesheet" href="../../data/nandoku/fonts/fonts.css?v=3">
   <link rel="stylesheet" href="../../styles/kanji.css?v=4">
   <link rel="stylesheet" href="../../styles/nandoku.css?v=3">
 </head>
 <body data-page="nandoku">
 
-  <nav class="navbar">
-    <a href="../../" class="nav-logo">
-      <span class="nav-logo-mark"></span>
-      <span>jared</span>
-    </a>
-    <ul class="nav-links">
-      <li><a href="../../about/">About</a></li>
-      <li><a href="../../projects/">Projects</a></li>
-      <li><a href="../../tools/">Tools</a></li>
-      <li><a href="../../blog/">Blog</a></li>
-      <li><a href="../../sponsorships/">Sponsorships</a></li>
-      <li><a href="../../contact/">Contact</a></li>
-    </ul>
-    <button class="nav-burger" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
-  <ul class="nav-mobile">
-    <li><a href="../../about/">About</a></li>
-    <li><a href="../../projects/">Projects</a></li>
-    <li><a href="../../tools/">Tools</a></li>
-    <li><a href="../../blog/">Blog</a></li>
-    <li><a href="../../sponsorships/">Sponsorships</a></li>
-    <li><a href="../../contact/">Contact</a></li>
-  </ul>
+  <a class="skip-link" href="#main">Skip to content</a>
 
-  <main>
+  <header class="masthead">
+    <a href="../../" class="mark" aria-label="まだまだJared, home">
+      <span class="mark-ja" lang="ja">まだまだ</span>
+      <span class="mark-en">Jared</span>
+    </a>
+    <nav class="masthead-nav" aria-label="Site">
+      <ul>
+        <li><a href="../../about/">About</a></li>
+        <li><a href="../../projects/">Projects</a></li>
+        <li><a href="../../tools/">Tools</a></li>
+        <li><a href="../../blog/">Blog</a></li>
+        <li><a href="../../sponsorships/">Sponsorships</a></li>
+        <li><a href="../../contact/">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Menu</button>
+  </header>
+
+  <div class="menu-sheet" id="site-menu" hidden>
+    <div class="menu-sheet-head">
+      <a href="../../" class="mark" aria-label="まだまだJared, home">
+        <span class="mark-ja" lang="ja">まだまだ</span>
+        <span class="mark-en">Jared</span>
+      </a>
+      <button class="menu-toggle menu-close" type="button">Close</button>
+    </div>
+    <nav aria-label="Site">
+      <ul>
+        <li><a href="../../about/">About <span lang="ja">自己紹介</span></a></li>
+        <li><a href="../../projects/">Projects <span lang="ja">制作</span></a></li>
+        <li><a href="../../tools/">Tools <span lang="ja">ツール</span></a></li>
+        <li><a href="../../blog/">Blog <span lang="ja">ブログ</span></a></li>
+        <li><a href="../../sponsorships/">Sponsorships <span lang="ja">スポンサー</span></a></li>
+        <li><a href="../../contact/">Contact <span lang="ja">お問い合わせ</span></a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <main id="main">
     <div class="container kj nd">
 
       <!-- ===================== DASHBOARD ===================== -->
       <section id="view-dashboard">
-        <header class="page-header">
-          <p class="eyebrow reveal">tools</p>
-          <h1 class="page-title reveal">Nandoku <em>Trainer</em>.</h1>
-          <p class="page-intro reveal">
+        <header class="page-head">
+          <div class="page-head-copy">
+          <h1 class="page-title">Nandoku <em>Trainer</em>.</h1>
+          <p class="page-intro">
             The rare-kanji words from <span lang="ja">漢字でGO!</span>
             Type how each one is read, pick what it means, or go for a high score.
             Words you miss come back until they stick.
           </p>
+          </div>
+          <p class="page-v"><span class="page-v-ja" lang="ja">難読</span><span class="page-v-en">Nandoku</span></p>
         </header>
 
-        <div class="kj-continue reveal" id="continue-card">
+        <div class="kj-continue" id="continue-card">
           <div>
             <p class="kj-continue-line" id="continue-line">Loading words…</p>
             <p class="kj-continue-sub" id="continue-sub"></p>
@@ -75,19 +91,19 @@
         </div>
 
         <!-- Levels -->
-        <section class="kj-section">
-          <div class="section-label"><span class="section-label-text">What to study</span></div>
-          <h2 class="section-title reveal">Choose your levels.</h2>
-          <p class="kj-help reveal">Pick one or more. Level 5 is where the game gets hard, 7 is the deep end and 8 is the ghost characters. 別表記 drills other ways the words can be written; こころのリテラシー is a casual-mode set.</p>
+        <section class="sec kj-section">
+          <p class="sec-mark"><span class="sec-num" lang="ja">一</span><span class="sec-label">What to study / <span lang="ja"><ruby>範囲<rt>はんい</rt></ruby></span></span></p>
+          <h2 class="sec-title">Choose your levels.</h2>
+          <p class="kj-help">Pick one or more. Level 5 is where the game gets hard, 7 is the deep end and 8 is the ghost characters. 別表記 drills other ways the words can be written; こころのリテラシー is a casual-mode set.</p>
           <div class="kj-chips" id="level-picker"></div>
           <p class="kj-set-note" id="level-note"></p>
           <p class="kj-selection" id="selection-summary" aria-live="polite"></p>
         </section>
 
         <!-- How to practice -->
-        <section class="kj-section">
-          <div class="section-label"><span class="section-label-text">How to practice</span></div>
-          <h2 class="section-title reveal">Your practice style.</h2>
+        <section class="sec kj-section">
+          <p class="sec-mark"><span class="sec-num" lang="ja">二</span><span class="sec-label">How to practice / <span lang="ja"><ruby>練習方法<rt>れんしゅうほうほう</rt></ruby></span></span></p>
+          <h2 class="sec-title">Your practice style.</h2>
           <div class="kj-options">
             <div class="kj-opt">
               <p class="kj-opt-label" id="lbl-q">Review questions</p>
@@ -122,9 +138,9 @@
         </section>
 
         <!-- Progress -->
-        <section class="kj-section">
-          <div class="section-label"><span class="section-label-text">Progress</span></div>
-          <h2 class="section-title reveal">Level by level.</h2>
+        <section class="sec kj-section">
+          <p class="sec-mark"><span class="sec-num" lang="ja">三</span><span class="sec-label">Progress / <span lang="ja"><ruby>進捗<rt>しんちょく</rt></ruby></span></span></p>
+          <h2 class="sec-title">Level by level.</h2>
           <p class="kj-legend" aria-hidden="true">
             <span class="kj-cell-demo m1"></span> learning
             <span class="kj-cell-demo m2"></span> familiar
@@ -134,21 +150,21 @@
           <div id="level-progress" class="nd-levels"></div>
         </section>
 
-        <section class="kj-section">
-          <div class="section-label"><span class="section-label-text">Trouble spots</span></div>
-          <h2 class="section-title reveal">What you miss most.</h2>
+        <section class="sec kj-section">
+          <p class="sec-mark"><span class="sec-num" lang="ja">四</span><span class="sec-label">Trouble spots / <span lang="ja"><ruby>苦手<rt>にがて</rt></ruby></span></span></p>
+          <h2 class="sec-title">What you miss most.</h2>
           <div id="trouble"></div>
         </section>
 
-        <section class="kj-section">
-          <div class="section-label"><span class="section-label-text">Stats</span></div>
-          <h2 class="section-title reveal">The numbers.</h2>
+        <section class="sec kj-section">
+          <p class="sec-mark"><span class="sec-num" lang="ja">五</span><span class="sec-label">Stats / <span lang="ja"><ruby>記録<rt>きろく</rt></ruby></span></span></p>
+          <h2 class="sec-title">The numbers.</h2>
           <div class="kj-stats" id="stats"></div>
         </section>
 
-        <section class="kj-section" id="data">
-          <div class="section-label"><span class="section-label-text">Data</span></div>
-          <h2 class="section-title reveal">Your progress, yours.</h2>
+        <section class="sec kj-section" id="data">
+          <p class="sec-mark"><span class="sec-num" lang="ja">六</span><span class="sec-label">Data / <span lang="ja">データ</span></span></p>
+          <h2 class="sec-title">Your progress, yours.</h2>
           <div class="kj-data">
             <div class="kj-data-actions">
               <button class="btn-link" id="btn-export">Export progress</button>
@@ -224,43 +240,34 @@
 
   <div class="kj-toasts" id="toasts" aria-live="polite"></div>
 
-  <footer class="site-footer">
-    <div class="footer-grid">
-      <div class="footer-left">
-        <a href="../../" class="nav-logo">
-          <span class="nav-logo-mark"></span>
-          <span>jared</span>
-        </a>
-        <p>Made with care.</p>
-      </div>
-      <div class="footer-cols">
-        <div class="footer-col">
-          <p class="footer-heading">Site</p>
-          <a href="../../about/">About</a>
-          <a href="../../projects/">Projects</a>
-          <a href="../../tools/">Tools</a>
-          <a href="../../blog/">Blog</a>
-          <a href="../../sponsorships/">Sponsorships</a>
-        </div>
-        <div class="footer-col">
-          <p class="footer-heading">Find me</p>
-          <a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a>
-          <a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a>
-          <a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a>
-        </div>
-        <div class="footer-col">
-          <p class="footer-heading">Other</p>
-          <a href="../../contact/">Contact</a>
-          <a href="#">RSS</a>
-        </div>
-      </div>
-    </div>
-    <div class="footer-baseline">
-      © 2026 Jared P. · Built with love
+  <footer class="colophon">
+    <nav class="colophon-links" aria-label="Footer">
+      <ul>
+        <li><a href="../../about/">About</a></li>
+        <li><a href="../../projects/">Projects</a></li>
+        <li><a href="../../tools/">Tools</a></li>
+        <li><a href="../../blog/">Blog</a></li>
+        <li><a href="../../sponsorships/">Sponsorships</a></li>
+        <li><a href="../../contact/">Contact</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a></li>
+        <li><a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a></li>
+        <li><a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a></li>
+        <li><a href="#">RSS</a></li>
+      </ul>
+    </nav>
+    <div class="colophon-box">
+      <p class="colophon-title" lang="ja">奥付</p>
+      <dl>
+        <div><dt>Site / <span lang="ja">サイト</span></dt><dd>jareddesu.com</dd></div>
+        <div><dt>Author / <span lang="ja">著者</span></dt><dd>Jared P. (<span lang="ja">まだまだ</span>Jared)</dd></div>
+        <div><dt>Published / <span lang="ja">発行</span></dt><dd>© 2026</dd></div>
+      </dl>
     </div>
   </footer>
 
-  <script src="../../scripts/site.js"></script>
+  <script src="../../scripts/site.js?v=2"></script>
   <script type="module" src="../../scripts/nandoku/app.js?v=5"></script>
 </body>
 </html>

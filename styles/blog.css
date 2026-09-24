@@ -1,341 +1,103 @@
-/* Blog page — hanada indigo */
-:root { --page-color: #3b5b9c; --page-color-soft: rgba(59, 91, 156, 0.10); }
+/* Blog — 縹色 hanada, indigo (5.8:1 on the paper) */
+:root { --page-color: #3b5b9c; }
 
-/* --- Post list (the new layout) -------------------------------------- */
+/* --- The post list, set like a table of contents (目次) ------------------ */
 .post-list {
-  display: flex;
-  flex-direction: column;
+  border-top: 2px solid var(--page-color);
+  max-width: 64rem;
+  margin-left: clamp(0px, 9vw, 150px);
 }
 
 .post-item {
   display: grid;
-  grid-template-columns: clamp(96px, 11vw, 128px) 120px 1fr auto;
+  grid-template-columns: 7.5rem 6.2rem minmax(0, 1fr) auto;
+  grid-template-areas: "thumb meta content time";
+  gap: clamp(16px, 2.6vw, 36px);
   align-items: start;
-  gap: clamp(20px, 4vw, 48px);
-  padding: 32px 0;
-  border-bottom: 1px solid var(--border);
+  padding: 22px 0;
+  border-bottom: 1px solid var(--rule);
   cursor: pointer;
-
-  /* Bounce-in motion for this page's tiles */
-  opacity: 0;
-  transform: translateY(40px) scale(0.96);
-  transition: opacity 0.6s ease,
-              transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1),
-              padding 0.3s ease,
-              background 0.3s ease;
 }
+.post-item.no-thumb { grid-template-columns: 6.2rem minmax(0, 1fr) auto; grid-template-areas: "meta content time"; }
+.post-item:hover .post-title, .post-item:focus-visible .post-title { color: var(--page-color); }
 
-/* If a post has no image.png, drop the thumbnail column cleanly */
-.post-item.no-thumb {
-  grid-template-columns: 120px 1fr auto;
-}
+.post-thumb { grid-area: thumb; aspect-ratio: 4 / 3; overflow: hidden; background: var(--paper-deep); }
+.post-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-.post-item.visible {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
+.post-meta { grid-area: meta; display: flex; flex-direction: column; gap: 2px; padding-top: 3px; }
+.post-date { font-family: var(--font-mincho); font-size: 14px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.post-category-tag { font-size: 12px; font-weight: 500; letter-spacing: 0.02em; }   /* colour set per category by blog.js */
 
-.post-item:hover {
-  padding-left: 16px;
-  padding-right: 16px;
-  background: var(--page-color-soft);
-  border-radius: 12px;
-  border-bottom-color: transparent;
-}
+.post-content { grid-area: content; display: flex; flex-direction: column; gap: 4px; }
+.post-title { font-size: 1.2rem; line-height: 1.5; }
+.post-desc { font-size: 14px; line-height: 1.9; max-width: var(--measure); }
+.post-time { grid-area: time; font-size: 12px; color: var(--muted); white-space: nowrap; padding-top: 5px; }
 
-.post-item:hover + .post-item {
-  border-top: 1px solid transparent;
-}
+.post-loading { padding: 22px 0; font-size: 13px; color: var(--muted); }
 
-/* --- Card thumbnail --------------------------------------------------- */
-.post-thumb {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--page-color-soft);
-}
-
-.post-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.45s cubic-bezier(0.34, 1.1, 0.64, 1);
-}
-
-.post-item:hover .post-thumb img {
-  transform: scale(1.06);
-}
-
-.post-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-top: 4px;
-}
-
-.post-date {
-  font-family: 'Inter', monospace;
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.post-category-tag {
-  display: inline-block;
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-weight: 500;
-  width: fit-content;
-}
-
-/* Category colors (preserved from existing system) */
-.post-category-tag.tech     { background: #ebb2b2; color: #631d20; }
-.post-category-tag.language { background: #b2d4eb; color: #2e4b8f; }
-.post-category-tag.food     { background: #d7b2eb; color: #722e8f; }
-.post-category-tag.travel   { background: #b2ebc1; color: #25631d; }
-.post-category-tag.default  { background: #cccccc; color: #333333; }
-
-.post-content { display: flex; flex-direction: column; gap: 8px; }
-
-.post-title {
-  font-size: clamp(1.3rem, 2.2vw, 1.65rem);
-  font-family: 'Fraunces', serif;
-  font-variation-settings: 'opsz' 72;
-  color: var(--ink);
-  line-height: 1.25;
-  font-weight: 500;
-  margin: 0;
-  transition: color 0.2s ease;
-}
-
-.post-item:hover .post-title { color: var(--page-color); }
-
-.post-desc {
-  color: var(--muted);
-  font-size: 15px;
-  line-height: 1.6;
-  margin: 0;
-  max-width: 60ch;
-}
-
-.post-time {
-  font-size: 12px;
-  color: var(--faint);
-  white-space: nowrap;
-  padding-top: 6px;
-}
-
-.post-loading {
-  padding: 60px 0;
-  text-align: center;
-  color: var(--faint);
-  font-size: 14px;
-}
-
-/* --- Modal ------------------------------------------------------------ */
+/* --- Reading a post: a sheet of paper over the page ----------------------- */
 .post-modal {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  display: flex;
-  align-items: center;
+  display: none;
   justify-content: center;
-  padding: 20px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
+  padding: 0 16px;
 }
-
-.post-modal.open {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.post-modal-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(26, 24, 21, 0.55);
-  backdrop-filter: blur(4px);
-}
+.post-modal.open { display: flex; }
+.post-modal-backdrop { position: absolute; inset: 0; background: color-mix(in srgb, var(--ink) 45%, transparent); }
 
 .post-modal-content {
   position: relative;
-  background: var(--surface);
-  border-radius: 24px;
-  max-width: 760px;
+  background: var(--paper);
   width: 100%;
-  max-height: 88vh;
+  max-width: 44rem;
+  height: 100%;
   overflow-y: auto;
-  padding: clamp(28px, 5vw, 56px);
-  box-shadow: var(--shadow-lg);
-  transform: scale(0.95) translateY(10px);
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  padding: clamp(48px, 8vh, 88px) clamp(24px, 6vw, 72px) 96px;
+  border-left: 1px solid var(--rule);
+  border-right: 1px solid var(--rule);
 }
 
-.post-modal.open .post-modal-content {
-  transform: scale(1) translateY(0);
-}
-
-/* --- Modal banner image ----------------------------------------------- */
-.post-modal-image {
-  display: block;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  border-radius: 16px;
-  margin-bottom: 28px;
-}
+.post-modal-image { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; margin-bottom: 32px; }
 
 .post-modal-close {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px solid var(--border);
-  background: var(--surface);
+  top: 18px;
+  right: 20px;
+  font: 500 13px var(--font-gothic);
   color: var(--ink);
-  font-size: 22px;
-  line-height: 1;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--ink);
+  padding: 2px 0;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  /* Sits above the banner image, so give it a touch of lift */
-  box-shadow: 0 1px 6px rgba(26, 24, 21, 0.18);
-  z-index: 2;
+  font-size: 0;                 /* hide the × glyph; show a word instead */
 }
+.post-modal-close::before { content: "Close"; font-size: 13px; }
 
-.post-modal-close:hover {
-  background: var(--page-color);
-  color: var(--bg);
-  border-color: var(--page-color);
-  transform: rotate(90deg);
-}
+.post-modal-header { border-bottom: 1px solid var(--ink); padding-bottom: 20px; margin-bottom: 32px; }
+.post-modal-meta { display: flex; gap: 16px; align-items: baseline; margin-bottom: 10px; }
+.post-modal-category { font-size: 12px; font-weight: 500; }
+.post-modal-date { font-family: var(--font-mincho); font-size: 14px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.post-modal-title { font-size: clamp(1.6rem, 3vw, 2.2rem); line-height: 1.45; }
 
-.post-modal-header {
-  margin-bottom: 24px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--border);
-}
+.post-modal-body { font-size: 15px; line-height: 2; color: var(--ink); }
+.post-modal-body h1, .post-modal-body h2, .post-modal-body h3 { margin: 36px 0 12px; line-height: 1.5; }
+.post-modal-body p { margin-bottom: 1.2em; color: var(--ink); }
+.post-modal-body ul, .post-modal-body ol { margin: 0 0 1.2em 1.4em; }
+.post-modal-body code { font-size: 0.92em; background: var(--paper-deep); padding: 1px 5px; }
+.post-modal-body pre { background: var(--paper-deep); padding: 16px 18px; overflow-x: auto; margin-bottom: 1.2em; border-left: 2px solid var(--page-color); }
+.post-modal-body pre code { background: none; padding: 0; }
+.post-modal-body a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--rule-strong); text-underline-offset: 0.3em; }
+.post-modal-body a:hover { color: var(--page-color); text-decoration-color: currentColor; }
+.post-modal-body img { max-width: 100%; margin: 20px 0; }
+.post-modal-body blockquote { border-left: 1px solid var(--ink); padding-left: 18px; color: var(--ink-soft); margin-bottom: 1.2em; }
 
-.post-modal-meta {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 12px;
-}
-
-.post-modal-category {
-  display: inline-block;
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-weight: 500;
-}
-
-.post-modal-date {
-  font-family: 'Inter', monospace;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.post-modal-title {
-  font-size: clamp(1.5rem, 3vw, 2.2rem);
-  font-family: 'Fraunces', serif;
-  color: var(--ink);
-  line-height: 1.15;
-  font-weight: 500;
-}
-
-.post-modal-body {
-  font-size: 16px;
-  line-height: 1.75;
-  color: var(--ink-soft);
-}
-
-.post-modal-body h1, .post-modal-body h2, .post-modal-body h3 {
-  color: var(--ink);
-  margin-top: 28px;
-  margin-bottom: 12px;
-}
-
-.post-modal-body p { margin-bottom: 16px; }
-
-.post-modal-body code {
-  background: var(--bg-deep);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.92em;
-}
-
-.post-modal-body pre {
-  background: var(--bg-deep);
-  padding: 16px;
-  border-radius: 12px;
-  overflow-x: auto;
-  margin: 16px 0;
-}
-
-.post-modal-body pre code {
-  background: transparent;
-  padding: 0;
-}
-
-.post-modal-body a {
-  color: var(--page-color);
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.2s ease;
-}
-
-.post-modal-body a:hover { border-bottom-color: var(--page-color); }
-
-.post-modal-body img {
-  max-width: 100%;
-  border-radius: 12px;
-  margin: 16px 0;
-}
-
-/* --- Responsive ------------------------------------------------------- */
-@media (max-width: 720px) {
-  .post-item,
-  .post-item.no-thumb {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    padding: 24px 0;
-  }
-
-  .post-item:hover {
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-
-  /* Image leads the stacked card on mobile, as a wide banner */
-  .post-thumb {
-    order: -1;
-    aspect-ratio: 16 / 9;
-  }
-
-  .post-meta {
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .post-time { padding-top: 0; }
-
-  .post-modal-image {
-    aspect-ratio: 16 / 9;
-    margin-bottom: 20px;
-  }
+@media (max-width: 899px) {
+  .post-list { margin-left: 0; }
+  .post-item { grid-template-columns: 5.5rem minmax(0, 1fr); grid-template-areas: "thumb content" "meta content" "time content"; gap: 4px 16px; }
+  .post-item.no-thumb { grid-template-columns: minmax(0, 1fr); grid-template-areas: "meta" "content" "time"; }
+  .post-meta { flex-direction: column; }
+  .post-modal { padding: 0; }
 }
