@@ -5,18 +5,18 @@
 import { h, fmtDate, fmtDateTime, fmtMoney } from './dom.js';
 import { request } from './api.js';
 import { store, reload, companyName, deal, dealTitle } from './store.js';
-import { STAGES } from './schema.js';
+import { STAGES, SOURCES } from './schema.js';
 import { button, busy, toast, toastError } from './ui.js';
 import { openCalItem } from './cal-panel.js';
 
 const KIND_LABEL = {
   stage_change: 'Stage change', amounts: 'Amounts', dates: 'Dates', next_action: 'Next action',
-  new_contact: 'New contact', add_domain: 'Add email domain', new_company_deal: 'New company + inbound deal',
+  new_contact: 'New contact', add_domain: 'Add email domain', new_deal: 'New deal', new_company_deal: 'New company + inbound deal',
 };
 const LOW_RISK = ['next_action', 'new_contact', 'add_domain'];
 const FIELD_LABEL = {
   stage: 'Stage', quoted: 'Quoted ($)', final: 'Final ($)', pitched_on: 'Pitched on', replied_on: 'Replied on', publish_date: 'Publish date',
-  next_action: 'Next action', next_action_date: 'Next action date', name: 'Name', email: 'Email', role: 'Role', domain: 'Domain',
+  next_action: 'Next action', next_action_date: 'Next action date', source: 'Source', package: 'Package', slot_note: 'Slot', notes: 'Notes', name: 'Name', email: 'Email', role: 'Role', domain: 'Domain',
 };
 const MONEY = ['quoted', 'final'];
 const DATES = ['pitched_on', 'replied_on', 'publish_date', 'next_action_date'];
@@ -40,6 +40,8 @@ function safeGmail(url) {
 
 function input(name, value) {
   if (name === 'stage') return h('select', { name }, STAGES.map((s) => h('option', { value: s, selected: s === value }, s)));
+  if (name === 'source') return h('select', { name }, SOURCES.map((s) => h('option', { value: s, selected: s === value }, s)));
+  if (name === 'notes') return h('textarea', { name, rows: 2 }, value || '');
   const type = DATES.includes(name) ? 'date' : name === 'email' ? 'email' : 'text';
   return h('input', { name, type, value: value ?? '', inputmode: MONEY.includes(name) ? 'decimal' : null, autocapitalize: ['email', 'domain'].includes(name) ? 'off' : null });
 }
