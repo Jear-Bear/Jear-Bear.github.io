@@ -178,7 +178,7 @@ export function createServer(env) {
   tool('get_sync_state', 'The Gmail sync cursor (where the last run stopped), the tracked email domains, and what is already waiting for review (to avoid duplicates).', {}, READ, async () => {
     const [cur, s, pending] = await Promise.all([
       getCursor(db), loadState(db),
-      db.prepare("SELECT kind, deal_id, company_id, json_extract(evidence, '$.message_id') AS message_id FROM proposals WHERE status = 'pending'").all(),
+      db.prepare("SELECT kind, deal_id, company_id, json_extract(proposed, '$.company.name') AS new_company, json_extract(evidence, '$.message_id') AS message_id FROM proposals WHERE status = 'pending'").all(),
     ]);
     return {
       cursor: cur.cursor, cursor_updated_at: cur.updated_at, today: todayIn(s.settings.tz),
