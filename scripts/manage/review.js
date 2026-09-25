@@ -6,12 +6,13 @@ import { h, fmtDate, fmtDateTime, fmtMoney } from './dom.js';
 import { request } from './api.js';
 import { store, reload, companyName, deal, dealTitle } from './store.js';
 import { STAGES, SOURCES } from './schema.js';
+import { INCOME_SOURCES_ENTERED, INCOME_LABELS } from './insights.js';
 import { button, busy, toast, toastError } from './ui.js';
 import { openCalItem } from './cal-panel.js';
 
 const KIND_LABEL = {
   stage_change: 'Stage change', amounts: 'Amounts', dates: 'Dates', next_action: 'Next action',
-  new_contact: 'New contact', add_domain: 'Add email domain', new_deal: 'New deal', new_company_deal: 'New company + inbound deal', payment: 'Payment received',
+  new_contact: 'New contact', add_domain: 'Add email domain', new_deal: 'New deal', new_company_deal: 'New company + inbound deal', payment: 'Payment received', income: 'Creator income',
 };
 const LOW_RISK = ['next_action', 'new_contact', 'add_domain'];
 const FIELD_LABEL = {
@@ -48,7 +49,7 @@ function input(name, value) {
 }
 
 function currentValue(p, name) {
-  const d = p.kind !== 'payment' && p.deal_id && deal(p.deal_id);
+  const d = !['payment', 'income'].includes(p.kind) && p.deal_id && deal(p.deal_id);
   if (!d || !(name in d)) return null;
   const v = d[name];
   return v == null ? '—' : MONEY.includes(name) ? fmtMoney(v) : DATES.includes(name) ? fmtDate(v, { year: true }) : String(v);
@@ -56,6 +57,27 @@ function currentValue(p, name) {
 
 // Editable fields for a proposal; returns { el, values() }
 function editor(p) {
+  if (p.kind === 'income') {
+    const v = p.proposed;
+    const f = {
+      month: h('input', { type: 'month', value: v.month || '' }),
+      source: h('select', {}, INCOME_SOURCES_ENTERED.map((x) => h('option', { value: x, selected: x === v.source }, INCOME_LABELS[x]))),
+      amount: h('input', { value: v.amount ?? '', inputmode: 'decimal' }),
+      program: h('input', { value: v.program || '', placeholder: 'e.g. Migaku' }),
+      notes: h('input', { value: v.notes || '' }),
+    };
+    const row = (label, el) => h('label', { class: 'crm-field' }, label, el);
+    const d = p.deal_id && deal(p.deal_id);
+    return {
+      el: h('div', {},
+        h('div', { class: 'crm-form-grid' }, row('Month', f.month), row('Source', f.source), row('Amount ($)', f.amount), row('Program', f.program), row('Notes', f.notes)),
+        h('p', { class: 'crm-field-hint' }, `Added to that month’s ${INCOME_LABELS[v.source] || 'income'} total.${d ? ` Replaces the deal “${dealTitle(d)}”, which is archived when you pass this.` : ''}`)),
+      values: () => ({
+        month: f.month.value, source: f.source.value, amount: Number(f.amount.value.replace(/[$,\s]/g, '')),
+        program: f.program.value.trim() || null, notes: f.notes.value.trim() || null,
+      }),
+    };
+  }
   if (p.kind === 'new_company_deal') {
     const c = p.proposed.company || {};
     const ct = p.proposed.contact || {};
