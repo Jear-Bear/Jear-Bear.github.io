@@ -283,11 +283,12 @@ export function openVideo(v) {
   }
   editor({
     type: 'videos', record: v, preset: { sponsor_status: 'open', format: 'guide' },
-    sections: [{ fields: ['title', 'publish_date', 'format', 'sponsor_status', 'youtube_id', 'notes'] }],
+    sections: [{ fields: ['title', 'publish_date', 'format', 'sponsor_status', 'youtube_id', 'view_estimate', 'notes'] }],
     options: {
       sponsor_status: { labels: VIDEO_STATUS_LABELS },
       format: { labels: { guide: 'Guide', milestone: 'Milestone update', story: 'Story', other: 'Other' } },
       youtube_id: { hint: 'The part after watch?v= (optional).' },
+      view_estimate: { hint: 'Views you expect in the first 30 days. Sponsored videos that beat it count toward a rate raise.' },
     },
     title: v ? v.title : 'New video', subtitle: v && v.publish_date ? fmtDate(v.publish_date, { year: true }) : null,
     before, reopen: (saved) => openVideo(video(saved.id)),

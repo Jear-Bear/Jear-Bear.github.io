@@ -26,10 +26,11 @@ You need to do this once. It takes about 20 minutes.
 | 〃 | `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID |
 | 〃 | `SPONSOR_MANAGEMENT_PASSWORD` | The CRM password (the source of truth; the Action copies it to the Worker) |
 | 〃 | `CRM_SESSION_KEY` | Signs login sessions |
+| 〃 | `CRM_INGEST_KEY` (optional) | Lets the stats Action send daily history (see Insights) |
 
 Later phases add more (listed in their sections): a KV namespace for the
-Claude connector's OAuth tokens (Phase 3), `CRM_INGEST_KEY` for the daily
-stats history, and the existing `YT_API_KEY` copied to the Worker (Phase 4).
+Claude connector's OAuth tokens (Phase 3), the existing `YT_API_KEY` copied to
+the Worker, and `CRM_INGEST_KEY` for the daily stats history (Insights).
 
 ## 1. Create the Cloudflare account and subdomain
 
@@ -133,6 +134,43 @@ copies it to the Worker). Tap **Refresh from YouTube** to update the list and
 view counts. Drag an upload onto a planned video, or use **Assign…** to link it
 to a video or a sponsor deal. Linking to a deal with no video yet reuses a
 planned video published within three days of the upload, or creates one.
+
+## Insights (rate check, milestones, go full-time)
+
+The **Insights** tab and the top of the **Dashboard** compute everything in
+code (`scripts/manage/insights.js`, shared with Claude's connector):
+
+- **This week** (dashboard): the week's calendar tasks as a checklist, a ring
+  for pitches against the weekly target, the streak of 5-pitch weeks, and
+  milestone stamps.
+- **Monday insight** (dashboard): Claude's weekly note, with earlier ones kept.
+- **Rate check**: the plan's three raise rules. For "three sponsored videos
+  beat their estimate", set a **30-day view estimate** on each video (Videos →
+  open a video) and link its YouTube upload. The Worker records each upload's
+  views once it's 30 days old.
+- **Channel milestones**: subscriber and monthly-view projections, with the
+  method shown.
+- **Go full-time**: enter **Your numbers** (take-home pay, expenses, savings,
+  tax set-aside, health insurance) and each month's AdSense, affiliates,
+  memberships and other income. Paid deals come from Payments. These numbers
+  are stored only in D1, never in the repo, the public stats file or logs.
+  The plan's scenarios come from the plan file (Settings → Plan).
+
+### Daily history from the stats Action (optional, recommended)
+
+A daily cron on the Worker (13:40 UTC) refreshes the uploads and reads daily
+views and the subscriber count from the public `stats.public.json`. For
+subscriber gains and losses by day (a better subscriber projection), the
+**Sponsor stats** Action sends its private analytics straight to the Worker:
+
+1. Make a key: `openssl rand -base64 48`.
+2. Add it as a GitHub secret named `CRM_INGEST_KEY`.
+3. Run **Actions → Sponsor CRM deploy** (copies the key to the Worker), then
+   **Actions → Sponsor stats → Run workflow**.
+
+The history is written only to the runner's temporary folder, sent over
+HTTPS with the key, and never printed or committed. Without the key the step
+is skipped. To stop it, delete the secret.
 
 ## Changing the password
 

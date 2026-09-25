@@ -8,6 +8,7 @@ import { store, reload, live, companyName, deal, dealTitle, dash, dealFlags, vid
 import { openDeal, openCompany, openVideo, openPayment, openPackage } from './panels.js';
 import { button, busy, toast } from './ui.js';
 import { uploadsPanel, dropTarget, linkToVideo, uploadById } from './uploads.js';
+import { insightData, mondayInsight, weeklyQuest } from './insights-view.js';
 
 // --- Shared bits -------------------------------------------------------------------------
 function viewHead(title, ja, actions = []) {
@@ -134,9 +135,16 @@ export function dashboardView(root) {
         h('ul', { class: 'crm-checks' }, d.conflicts.map((c) => h('li', { class: c.severity === 'conflict' ? 'is-bad' : 'is-warn' }, c.message)))));
     }
 
+    // Claude's Monday insight and the week's quest (need the insights data)
+    const top = h('div', { class: 'crm-dash-top' });
+    insightData()
+      .then((data) => top.replaceChildren(...[mondayInsight(data), weeklyQuest(data)].filter(Boolean)))
+      .catch(() => top.replaceChildren(weeklyQuest(null)));
+
     root.replaceChildren(
       viewHead('Dashboard', '概況'),
       h('p', { class: 'crm-week' }, `Week of ${fmtDate(d.week.start)} – ${fmtDate(d.week.end)}`),
+      top,
       h('div', { class: 'crm-tiles' },
         tile('Pitches this week', `${d.pitchesThisWeek} / ${d.weeklyPitchTarget}`, { tone: d.pitchesThisWeek >= d.weeklyPitchTarget ? 'good' : null, sub: meter(d.pitchesThisWeek, d.weeklyPitchTarget) }),
         tile('Follow-ups due', d.followUpsDue.length, { tone: d.followUpsDue.length ? 'due' : null, onClick: () => { location.hash = '#/pipeline?filter=attention'; } }),

@@ -4,7 +4,7 @@
 
 import { validate, isUuid, isIsoDate } from '../../../scripts/manage/schema.js';
 import { occurrence } from '../../../scripts/manage/calendar.js';
-import { HttpError, createStmts, snapshotLookup } from './data.js';
+import { HttpError, createStmts, snapshotLookup, getSetting, validScenarios } from './data.js';
 
 const nowIso = () => new Date().toISOString();
 const BOOLS = ['all_day', 'counts_hours', 'hidden'];
@@ -254,6 +254,16 @@ export async function importPlan(db, body) {
       itemKeys.add(k);
       stmts.push(insert(db, 'cal_items', await itemRow(db, rest, { source: 'plan', planKey: k, id: isUuid(id) ? id : null, lookup })));
       counts.items += 1;
+    });
+  }
+  // The plan's income scenarios, for the full-time tracker (only if none are saved yet)
+  if (Array.isArray(body.scenarios) && body.scenarios.length) {
+    await attempt('Scenarios', async () => {
+      const clean = validScenarios(body.scenarios);
+      if ((await getSetting(db, 'scenarios', [])).length) { counts.skipped += 1; return; }
+      stmts.push(db.prepare("INSERT INTO settings (key, value, updated_at) VALUES ('scenarios', ?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at")
+        .bind(JSON.stringify(clean), new Date().toISOString()));
+      counts.scenarios = clean.length;
     });
   }
   if (errors.length) throw new HttpError(400, 'Nothing was imported: fix these first', errors);

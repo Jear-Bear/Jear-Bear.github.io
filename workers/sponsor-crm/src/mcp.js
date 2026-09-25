@@ -8,6 +8,8 @@ import { z } from 'zod';
 import { loadState, settingsFor } from './data.js';
 import { loadCalendar, createItem } from './calendar.js';
 import { listUploads } from './youtube.js';
+import { loadInsights } from './stats.js';
+import { allInsights } from '../../../scripts/manage/insights.js';
 import {
   logEmail, createProposal, suggestVideoIdea, saveInsight, getCursor, setCursor, PROPOSAL_KINDS,
 } from './claude.js';
@@ -96,6 +98,27 @@ export function createServer(env) {
       const d = deals.get(p.deal_id);
       return { id: p.id, deal_id: p.deal_id, company: d ? names.get(d.company_id) : null, deal_stage: d ? d.stage : null, amount: p.amount, invoiced_on: p.invoiced_on, paid_on: p.paid_on, method: p.method, fees: p.fees, net: p.net };
     });
+  });
+
+  tool('get_insights', 'Computed Phase 4 numbers: the 5-pitch-week streak, milestone stamps, the three rate-raise rules (with evidence and whether each triggered), subscriber and monthly-view milestone projections (with the method), and full-time tracker progress (monthly creator income vs the target, trailing 6-month average, months at target, projected crossing). Use these numbers as given; don’t recompute.', {}, READ, async () => {
+    const [s, data] = await Promise.all([loadState(db), loadInsights(db)]);
+    const today = todayIn(s.settings.tz);
+    const x = allInsights(s, data, today);
+    const ft = x.fullTime;
+    return {
+      today, streak: x.streak,
+      stamps: x.stamps.map((st) => ({ label: st.label, earned: st.month || st.on || null })),
+      rate_rules: x.rateRules.map((r) => ({ rule: r.label, triggered: r.triggered, snoozed: Boolean(r.snoozed), progress: r.progress, evidence: r.evidence, raise_pct: Math.round(r.raise * 100) })),
+      milestones: x.milestones,
+      full_time: {
+        target_per_month: ft.target, trailing_6_month_average: ft.trailing, months_at_target: ft.atTarget, goal_months: ft.goalMonths,
+        projection: ft.projection, savings_months_of_expenses: ft.savings ? ft.savings.months : null,
+        checks: ft.checks.map((c) => ({ check: c.label, done: c.done })),
+        last_months: ft.months.slice(-6).map((m) => ({ month: m.month, total: m.total, deals: m.deals, partial: m.partial })),
+        scenarios: ft.scenarios.map((sc) => ({ name: sc.name, reaches_target: sc.reachesTarget, last_point: sc.points[sc.points.length - 1] })),
+      },
+      past_weekly_insights: data.insights.filter((i) => i.kind === 'weekly').slice(0, 4).map((i) => ({ week_of: i.week_of, text: i.text })),
+    };
   });
 
   tool('get_rate_card', 'Sponsorship packages with standard prices and private floors.', {}, READ, async () => {

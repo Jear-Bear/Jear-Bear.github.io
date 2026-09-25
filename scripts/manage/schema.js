@@ -113,6 +113,7 @@ export const ENTITIES = {
       format: oneOf('Format', VIDEO_FORMATS),
       sponsor_status: oneOf('Sponsor status', VIDEO_STATUSES),
       youtube_id: text('YouTube ID', 20, { pattern: /^[A-Za-z0-9_-]{6,20}$/ }),
+      view_estimate: { type: 'int', label: '30-day view estimate', min: 0, max: 100000000 },
       notes: long('Notes', 2000),
     },
   },
