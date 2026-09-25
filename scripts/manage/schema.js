@@ -92,6 +92,7 @@ export const ENTITIES = {
       draft_due: date('Draft due'),
       exclusivity_until: date('Exclusivity ends'),
       usage_until: date('Usage rights end'),
+      pitch_style: text('Pitch style', 40),
       lost_reason: text('Lost reason', 300),
       notes: long('Notes'),
     },

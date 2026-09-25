@@ -103,7 +103,8 @@ function editor(p) {
       values: () => {
         const nn = (v) => (v && v.trim() ? v.trim() : null);
         const money = (v) => (nn(v) ? Number(v.replace(/[$,\s]/g, '')) : null);
-        const out = { company: { name: f.name.value.trim(), domains: f.domains.value.split(/[\s,;]+/).filter(Boolean) }, deal: { source: f.source.value, stage: f.stage.value } };
+        const keep = Object.fromEntries(['fit', 'contact_method', 'form_url', 'notes'].filter((k) => c[k] != null).map((k) => [k, c[k]]));
+        const out = { company: { ...keep, name: f.name.value.trim(), domains: f.domains.value.split(/[\s,;]+/).filter(Boolean) }, deal: { source: f.source.value, stage: f.stage.value } };
         if (money(f.quoted.value) != null) out.deal.quoted = money(f.quoted.value);
         if (money(f.paid_amount.value) != null) out.deal.paid_amount = money(f.paid_amount.value);
         if (nn(f.paid_on.value)) out.deal.paid_on = nn(f.paid_on.value);

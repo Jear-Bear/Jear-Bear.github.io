@@ -14,6 +14,7 @@ import { addDays, weekStart } from './rules.js';
 import { expand, ruleItems } from './calendar.js';
 import { ring, incomeChart, trendChart, goalBar } from './charts.js';
 import { linkRow } from './growth.js';
+import { pitchPerformance } from './pitching.js';
 import { openLink } from './panels.js';
 import { fetchRange } from './cal-view.js';
 import { applyChange, onCalendarChange, openCalItem, openRuleItem } from './cal-panel.js';
@@ -287,6 +288,27 @@ function fullTimeSection(ft, finance, onSaved) {
   ];
 }
 
+// --- Insights tab: pitch performance ------------------------------------------------------------
+let perfBy = 'pitch_style';
+function pitchSection() {
+  const wrap = h('div');
+  const draw = () => {
+    const rows = pitchPerformance(store.state, { by: perfBy });
+    const pct = (x) => (x == null ? '—' : `${Math.round(x * 100)}%`);
+    wrap.replaceChildren(rows.length ? h('div', { class: 'crm-table-wrap' }, h('table', { class: 'crm-table is-compact' },
+      h('thead', {}, h('tr', {}, ['', 'Pitched', 'Replied', 'Reply rate', 'Won', 'Win rate', 'Won $'].map((x) => h('th', { scope: 'col' }, x)))),
+      h('tbody', {}, rows.map((r) => h('tr', {},
+        h('th', { scope: 'row' }, r.key), h('td', { class: 'crm-num' }, r.pitched), h('td', { class: 'crm-num' }, r.replied),
+        h('td', { class: 'crm-num' }, pct(r.replyRate)), h('td', { class: 'crm-num' }, r.won), h('td', { class: 'crm-num' }, pct(r.winRate)),
+        h('td', { class: 'crm-num' }, fmtMoney(r.revenue))))))) : h('p', { class: 'crm-muted' }, 'No pitches recorded yet. Use Write pitch on a deal and mark it pitched.'),
+    rows.some((r) => r.pitched < 10) ? h('p', { class: 'crm-method' }, 'Rows with fewer than 10 pitches are too small to judge yet.') : null);
+  };
+  draw();
+  const by = h('select', { class: 'crm-filter', 'aria-label': 'Group by', onchange: (e) => { perfBy = e.target.value; draw(); } },
+    [['pitch_style', 'By pitch template'], ['category', 'By category'], ['source', 'By source'], ['month', 'By month']].map(([v, l]) => h('option', { value: v, selected: v === perfBy }, l)));
+  return section('Pitch performance', h('div', { class: 'crm-row-actions' }, by), wrap);
+}
+
 // --- The Insights tab ---------------------------------------------------------------------------
 export function insightsView(root) {
   let data = null;
@@ -298,6 +320,7 @@ export function insightsView(root) {
       h('div', { class: 'crm-view-head' }, h('h1', { class: 'crm-view-title' }, 'Insights', h('span', { class: 'crm-view-ja', lang: 'ja' }, '見通し'))),
       section('Rate check', h('p', { class: 'crm-note is-muted' }, 'The plan’s three rules for raising rates. When one triggers, accept the suggested rates into the rate card or dismiss it for 30 days.'),
         h('div', { class: 'crm-cards' }, x.rateRules.map((r) => rateCard(r, (changed) => refresh(changed))))),
+      pitchSection(),
       section('Channel milestones', ...milestoneCards(x.milestones, data, () => refresh())),
       section('Tracked links',
         h('p', { class: 'crm-note is-muted' }, 'Short links for video descriptions (jareddesu.com/go/…). Only click counts are kept. Add one from a deal.'),

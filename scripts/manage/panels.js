@@ -10,6 +10,7 @@ import {
 } from './store.js';
 import { openPanel, closePanel, toast, toastError, button, busy } from './ui.js';
 import { openInvoice, printInvoice, linkRow, linksFor, slugify, linkUrl, copyText } from './growth.js';
+import { openPitch, askClaude, draftStatus } from './pitch-view.js';
 
 const API_TYPE = { companies: 'companies', contacts: 'contacts', deals: 'deals', payments: 'payments', videos: 'videos', rate_card: 'rate-card', activities: 'activities', links: 'links' };
 const byName = (a, b) => (a.label || '').localeCompare(b.label || '');
@@ -160,6 +161,17 @@ function dealQuickActions(d) {
     acts.map(([label, changes, msg]) => button(label, () => quick(d, changes, msg), { kind: 'chip' })));
 }
 
+function dealPitch(d) {
+  const back = () => openDeal(deal(d.id));
+  const pitching = ['Researching', 'Pitched', 'Follow-up 1 sent', 'Follow-up 2 sent'].includes(d.stage);
+  if (!pitching) return null;
+  const fu = d.stage !== 'Researching' ? button('Ask Claude for a follow-up', (e) => askClaude(d, 'follow_up', null, e.currentTarget).catch(() => {}), { kind: 'chip' }) : null;
+  return h('div', {},
+    h('div', { class: 'crm-row-actions' }, button(d.stage === 'Researching' ? 'Write pitch…' : 'Pitch again…', () => openPitch(d, { returnTo: back }), { kind: 'chip' }), fu),
+    d.pitch_style ? h('p', { class: 'crm-note is-muted' }, `Pitched with: ${d.pitch_style}`) : null,
+    draftStatus(d));
+}
+
 function dealStatus(d) {
   const lines = [];
   const fu = followUp(d, today());
@@ -216,7 +228,7 @@ export function openDeal(d, { preset } = {}) {
   const sections = [
     { title: 'Deal', fields: ['company_id', 'contact_id', 'stage', 'source', 'package'] },
     { title: 'Slot', fields: ['video_id', 'slot_note', 'publish_date'] },
-    { title: 'Dates', fields: ['pitched_on', 'replied_on'] },
+    { title: 'Dates', fields: ['pitched_on', 'replied_on', 'pitch_style'] },
     { title: 'Money', fields: ['quoted', 'final'] },
     { title: 'Next step', fields: ['next_action', 'next_action_date'], wide: ['next_action'] },
     { title: 'Terms', fields: ['deliverables', 'usage_rights', 'exclusivity'] },
@@ -231,12 +243,13 @@ export function openDeal(d, { preset } = {}) {
     package: { datalist: packageList() },
     stage: { default: 'Researching' },
     slot_note: { hint: 'Free text when the video isn’t in Videos yet.' },
+    pitch_style: { hint: 'Which pitch template you used (set when you mark it pitched from Write pitch).' },
   };
   const ed = editor({
     type: 'deals', record: d, preset: { stage: 'Researching', ...(preset || {}) }, sections, options,
     title: d ? companyName(d.company_id) : 'New deal',
     subtitle: d ? [d.stage, d.package].filter(Boolean).join(' · ') : null,
-    before: d ? [dealQuickActions(d), dealStatus(d)] : null,
+    before: d ? [dealQuickActions(d), dealPitch(d), dealStatus(d)] : null,
     after: d ? [dealPayments(d), dealLinks(d), timeline({ deal_id: d.id })] : null,
     reopen: (saved) => openDeal(deal(saved.id)),
   });
