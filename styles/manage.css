@@ -561,3 +561,5 @@ body.is-dragging-upload .crm-videos-planned .crm-row.is-video:not(.is-head) { ou
 .crm-finance { margin-top: 16px; border-top: 1px solid var(--rule); padding-top: 10px; }
 .crm-finance summary { cursor: pointer; font-weight: 600; font-size: 13px; }
 .crm-check { flex-direction: row !important; align-items: center; gap: 8px; }
+.crm-mini-list li.crm-missing-pay { display: flex; align-items: center; gap: 10px; }
+.crm-missing-pay .crm-row-btn { flex: 1; min-width: 0; }

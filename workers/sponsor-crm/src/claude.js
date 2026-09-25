@@ -59,16 +59,34 @@ function checkPayment(values) {
   return v;
 }
 
+// A deal Claude finds already paid (historical) can carry that payment, so
+// passing the proposal records the money too: paid_amount, paid_on, paid_method
+const PAID_KEYS = ['paid_amount', 'paid_on', 'paid_method'];
+function splitPaid(values) {
+  const rest = { ...(values || {}) };
+  const raw = {};
+  PAID_KEYS.forEach((k) => { if (k in rest) { raw[k] = rest[k] === '' ? null : rest[k]; delete rest[k]; } });
+  if (raw.paid_amount == null && raw.paid_on == null) return { rest, paid: null };
+  const pay = checkPayment({ amount: raw.paid_amount, paid_on: raw.paid_on, ...(raw.paid_method ? { method: raw.paid_method } : {}) });
+  return { rest, paid: { paid_amount: pay.amount, paid_on: pay.paid_on, ...(pay.method ? { paid_method: pay.method } : {}) } };
+}
+async function recordPaid(db, dealId, paid) {
+  if (!paid) return null;
+  const pay = await createRecord(db, 'payments', { deal_id: dealId, amount: paid.paid_amount, paid_on: paid.paid_on, ...(paid.paid_method ? { method: paid.paid_method } : {}) });
+  return pay.id;
+}
+
 function validateNewCompanyDeal(values) {
   const c = values && values.company;
   if (!c || typeof c !== 'object') throw new HttpError(400, 'new_company_deal needs a company');
   const company = checkFields('companies', ['name', 'domains', 'category', 'website', 'notes'], c);
   if (!company.name) throw new HttpError(400, 'The company needs a name');
   const contact = values.contact ? checkFields('contacts', ['name', 'email', 'role'], values.contact) : null;
+  const { rest, paid } = splitPaid(values.deal);
   const deal = checkFields('deals', ['source', 'package', 'stage', 'replied_on', 'quoted', 'next_action', 'next_action_date', 'notes', 'slot_note'], {
-    source: 'Inbound', stage: 'In conversation', ...(values.deal || {}),
+    source: 'Inbound', stage: paid ? 'Paid' : 'In conversation', ...rest,
   });
-  return { company, contact, deal };
+  return { company, contact, deal, paid };
 }
 
 // --- Writes from the connector ---------------------------------------------------------------
@@ -121,12 +139,14 @@ export async function createProposal(db, input) {
   let companyId = isUuid(input.company_id) ? input.company_id : null;
   let proposed;
   if (kind === 'new_company_deal') {
-    proposed = validateNewCompanyDeal(input.values);
+    const v = validateNewCompanyDeal(input.values);
+    proposed = { company: v.company, contact: v.contact, deal: { ...v.deal, ...(v.paid || {}) } };
     dealId = null; companyId = null;
   } else if (kind === 'new_deal') {
     if (!companyId) throw new HttpError(400, 'new_deal needs company_id (for a new brand use new_company_deal)');
     if (!(await db.prepare('SELECT 1 FROM companies WHERE id = ?').bind(companyId).first())) throw new HttpError(400, 'company_id doesn’t exist');
-    proposed = checkFields('deals', NEW_DEAL_FIELDS, { source: 'Inbound', stage: 'In conversation', ...(input.values || {}) });
+    const { rest, paid } = splitPaid(input.values);
+    proposed = { ...checkFields('deals', NEW_DEAL_FIELDS, { source: 'Inbound', stage: paid ? 'Paid' : 'In conversation', ...rest }), ...(paid || {}) };
     dealId = null;
   } else if (kind === 'payment') {
     if (!dealId) throw new HttpError(400, 'payment needs deal_id');
@@ -240,14 +260,17 @@ export async function passProposal(db, id, edited) {
     let contactId = null;
     if (v.contact && (v.contact.name || v.contact.email)) contactId = (await createRecord(db, 'contacts', { ...v.contact, company_id: company.id })).id;
     const deal = await createRecord(db, 'deals', { ...v.deal, company_id: company.id, contact_id: contactId });
-    applied = { company_id: company.id, contact_id: contactId, deal_id: deal.id };
-    summary = `Approved by me: new company ${company.name} and inbound deal (Claude proposal)`;
+    const paymentId = await recordPaid(db, deal.id, v.paid);
+    applied = { company_id: company.id, contact_id: contactId, deal_id: deal.id, payment_id: paymentId };
+    summary = `Approved by me: new company ${company.name} and ${v.deal.source ? v.deal.source.toLowerCase() : 'inbound'} deal${v.paid ? `, paid $${v.paid.paid_amount} on ${v.paid.paid_on}` : ''} (Claude proposal)`;
     await logApproval(db, company.id, deal.id, summary);
   } else if (p.kind === 'new_deal') {
-    const values = checkFields('deals', NEW_DEAL_FIELDS, edited || proposed);
-    const d = await createRecord(db, 'deals', { stage: 'In conversation', ...values, company_id: p.company_id });
-    applied = { deal_id: d.id, ...values };
-    summary = `Approved by me: new ${values.source || ''} deal (Claude proposal)`.replace('  ', ' ');
+    const { rest, paid } = splitPaid(edited || proposed);
+    const values = checkFields('deals', NEW_DEAL_FIELDS, rest);
+    const d = await createRecord(db, 'deals', { stage: paid ? 'Paid' : 'In conversation', ...values, company_id: p.company_id });
+    const paymentId = await recordPaid(db, d.id, paid);
+    applied = { deal_id: d.id, payment_id: paymentId, ...values, ...(paid || {}) };
+    summary = `Approved by me: new ${values.source || ''} deal${paid ? `, paid $${paid.paid_amount} on ${paid.paid_on}` : ''} (Claude proposal)`.replace('  ', ' ');
     await logApproval(db, p.company_id, d.id, summary);
   } else if (p.kind === 'payment') {
     const values = checkPayment(edited || proposed);
