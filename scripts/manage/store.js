@@ -17,8 +17,8 @@ const emit = () => listeners.forEach((fn) => fn(store));
 
 function index(state) {
   const maps = {};
-  for (const key of ['companies', 'contacts', 'deals', 'payments', 'videos', 'rateCard']) {
-    maps[key] = new Map(state[key].map((r) => [r.id, r]));
+  for (const key of ['companies', 'contacts', 'deals', 'payments', 'videos', 'rateCard', 'links']) {
+    maps[key] = new Map((state[key] || []).map((r) => [r.id, r]));
   }
   return maps;
 }
