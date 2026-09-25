@@ -137,7 +137,7 @@ Sponsor desk YouTube revenue. Use the vidIQ and Sponsor desk connectors. Never a
 1. Call get_sync_state. With vidiq_channel_analytics for channel UCSIxTP9PCM2kcTszONRxZ1w, dimensions ["month"], metrics ["estimatedRevenue", "estimatedAdRevenue", "estimatedRedPartnerRevenue"], get last month (first to last day).
 2. File two create_proposal kind "income" for that month (skip a zero amount):
    - source "adsense", program "YouTube ads + Premium", amount = estimatedAdRevenue + estimatedRedPartnerRevenue (rounded to cents).
-   - source "memberships", program "YouTube memberships, Supers and other", amount = estimatedRevenue − estimatedAdRevenue − estimatedRedPartnerRevenue.
+   - source "memberships" (or "other" for a month before channel memberships were on), program "YouTube memberships, Supers and other", amount = estimatedRevenue − estimatedAdRevenue − estimatedRedPartnerRevenue.
    Evidence: subject "YouTube Analytics · <month>", quote with the three numbers, message_id "youtube-analytics:<YYYY-MM>:<source>". Confidence high. Reason: "Estimated earnings from YouTube Analytics (by month earned)."
 Reply in one line with both amounts.
 ```
