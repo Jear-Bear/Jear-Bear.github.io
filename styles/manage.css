@@ -455,3 +455,109 @@ body.is-dragging-upload .crm-videos-planned .crm-row.is-video:not(.is-head) { ou
 .crm-sugg-main .crm-flag { margin-left: 8px; }
 .crm-subhead { font-size: 14px; font-weight: 600; margin: 14px 0 4px; }
 .crm-grant { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; }
+
+/* --- Phase 4: Monday insight, weekly quest, insights ------------------------------ */
+.crm-dash-top { display: grid; gap: 18px; margin-bottom: 22px; }
+@media (min-width: 900px) { .crm-dash-top:has(.crm-insight) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } }
+
+.crm-insight { border-left: 2px solid var(--page-color); padding: 2px 0 2px 14px; }
+.crm-insight-meta { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.crm-insight-text { font-family: var(--font-mincho); font-size: 15px; line-height: 1.75; color: var(--ink); white-space: pre-line; }
+.crm-insight-past { margin-top: 8px; font-size: 13px; }
+.crm-insight-past summary { cursor: pointer; color: var(--ink-soft); }
+.crm-insight-past ul { list-style: none; margin-top: 6px; display: grid; gap: 8px; }
+.crm-insight-past li { color: var(--ink-soft); line-height: 1.6; }
+
+.crm-quest-head { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
+.crm-quest-head > div { flex: 1; min-width: 0; }
+.crm-quest-streak { font-size: 13px; color: var(--ink-soft); }
+.crm-ring { position: relative; flex: none; display: grid; place-items: center; }
+.crm-ring svg { display: block; }
+.crm-ring-track { fill: none; stroke: var(--rule); stroke-width: 4; }
+.crm-ring-fill { fill: none; stroke: var(--page-color); stroke-width: 4; stroke-linecap: butt; transition: stroke-dasharray 0.4s ease; }
+.crm-ring.is-met .crm-ring-fill { stroke: var(--ok); }
+.crm-ring-text { position: absolute; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.crm-ring-text strong { font-family: var(--font-mincho); font-size: 18px; color: var(--ink); font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .crm-ring-fill { transition: none; } }
+
+.crm-quest-list { list-style: none; border-top: 1px solid var(--rule); }
+.crm-quest-list > li { font-size: 13px; padding: 6px 0; }
+.crm-quest-item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; border-bottom: 1px solid var(--rule); }
+.crm-quest-item input { width: 18px; height: 18px; margin: 0; accent-color: var(--page-color); }
+.crm-quest-item .crm-link-btn { text-align: left; color: var(--ink); overflow-wrap: anywhere; }
+.crm-quest-item.is-done .crm-link-btn { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--faint); }
+.crm-quest-item.is-overdue .crm-muted { color: var(--bad); }
+
+.crm-stamps { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.crm-stamp { display: grid; gap: 1px; padding: 5px 9px; border: 1px dashed var(--rule-strong); color: var(--muted); font-size: 11px; line-height: 1.4; min-width: 0; }
+.crm-stamp-label { font-size: 12px; }
+.crm-stamp.is-earned { border: 1px solid var(--page-color); color: var(--page-ink); }
+.crm-stamp.is-earned .crm-stamp-label { font-family: var(--font-mincho); font-weight: 600; }
+.crm-stamp-date { font-variant-numeric: tabular-nums; }
+
+.crm-cards { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; }
+@media (min-width: 900px) { .crm-cards { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); } }
+.crm-card { border: 1px solid var(--rule); background: var(--paper-light); padding: 12px 14px; min-width: 0; }
+.crm-card.is-active { border-color: var(--ok); grid-column: 1 / -1; }
+.crm-rate-rows { border-top: 1px solid var(--rule); margin: 6px 0 10px; }
+.crm-rate-row { display: grid; grid-template-columns: minmax(0, 1fr) 96px 96px; gap: 6px 10px; align-items: end; padding: 7px 0; border-bottom: 1px solid var(--rule); font-size: 13px; }
+@media (max-width: 520px) { .crm-rate-row { grid-template-columns: 1fr 1fr; } .crm-rate-pkg { grid-column: 1 / -1; } }
+.crm-rate-pkg { display: flex; gap: 8px; align-items: baseline; }
+.crm-rate-pkg input { accent-color: var(--page-color); }
+.crm-rate-new { display: grid; gap: 2px; font-size: 11px; color: var(--muted); }
+.crm-rate-new input { width: 100%; font: inherit; font-size: 13px; padding: 4px 6px; border: 1px solid var(--rule-strong); background: var(--paper); color: var(--ink); font-variant-numeric: tabular-nums; }
+.crm-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+.crm-card-head h3 { font-size: 14px; font-weight: 600; line-height: 1.4; }
+.crm-card p { font-size: 13px; margin-bottom: 6px; }
+.crm-flag.is-ok { color: var(--ok); }
+.crm-big { font-family: var(--font-mincho); font-size: 1.4rem; font-weight: 600; }
+.crm-evidence { list-style: none; font-size: 12px; color: var(--ink-soft); margin: 4px 0 8px; display: grid; gap: 3px; }
+.crm-evidence li { padding-left: 10px; border-left: 1px solid var(--rule-strong); overflow-wrap: anywhere; }
+.crm-milestones { list-style: none; display: grid; gap: 2px; margin: 8px 0; }
+.crm-milestones li { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; padding: 4px 0; border-bottom: 1px solid var(--rule); font-variant-numeric: tabular-nums; }
+.crm-method { font-size: 11px; color: var(--muted); line-height: 1.55; }
+.crm-projection { font-size: 13px; margin: 8px 0 14px; }
+.crm-subhead { font-size: 13px; font-weight: 600; margin: 18px 0 6px; }
+.crm-tiles.is-3 { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 600px) { .crm-tiles.is-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* Charts (same look as the public sponsor charts) */
+.crm-chart { margin: 6px 0 4px; }
+.crm-chart-frame { width: 100%; min-height: 220px; }
+.crm-chart-frame.is-small { min-height: 120px; margin: 4px 0; }
+.chart-svg { display: block; max-width: 100%; overflow: visible; }
+.chart-gridline { stroke: var(--rule); stroke-width: 1; }
+.chart-axis { font-family: var(--font-gothic); font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+.chart-line { fill: none; stroke: var(--page-color); stroke-width: 1.5; stroke-linejoin: round; }
+.crm-line-fit { stroke: var(--ink); stroke-width: 1; stroke-dasharray: 4 3; }
+.crm-bar.src-deals, .crm-swatch.src-deals { fill: var(--page-color); background: var(--page-color); }
+.crm-bar.src-adsense, .crm-swatch.src-adsense { fill: #4b453d; background: #4b453d; }
+.crm-bar.src-affiliates, .crm-swatch.src-affiliates { fill: #b07a2a; background: #b07a2a; }
+.crm-bar.src-memberships, .crm-swatch.src-memberships { fill: #5b7f55; background: #5b7f55; }
+.crm-bar.src-other, .crm-swatch.src-other { fill: #b8ac97; background: #b8ac97; }
+.crm-bar.is-partial { fill-opacity: 0.45; }
+.crm-line-target { stroke: var(--ink); stroke-width: 1; stroke-dasharray: 6 4; }
+.crm-target-label { fill: var(--ink-soft); }
+.crm-line-trailing { fill: none; stroke: var(--ink); stroke-width: 1.75; }
+.crm-line-scenario { fill: none; stroke-width: 1.25; stroke-dasharray: 2 3; stroke: var(--muted); }
+.crm-line-scenario.sc-1 { stroke: var(--page-color); }
+.crm-line-scenario.sc-2 { stroke: var(--ok); }
+.crm-legend { list-style: none; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--ink-soft); margin-top: 6px; }
+.crm-legend li { display: flex; align-items: center; gap: 6px; }
+.crm-swatch { display: inline-block; width: 10px; height: 10px; }
+.crm-swatch.is-line-target, .crm-swatch.is-line-trailing, .crm-swatch.is-line-scenario { height: 0; width: 16px; background: none; border-top: 1.5px solid var(--ink); }
+.crm-swatch.is-line-target { border-top-style: dashed; }
+.crm-swatch.is-line-scenario { border-top: 1.5px dotted var(--muted); }
+.crm-swatch.is-line-scenario.sc-1 { border-top-color: var(--page-color); }
+.crm-swatch.is-line-scenario.sc-2 { border-top-color: var(--ok); }
+
+.crm-goal { position: relative; height: 10px; background: var(--paper-deep); border: 1px solid var(--rule); margin: 6px 0 18px; }
+.crm-goal-fill { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--page-color); }
+.crm-goal-mark { position: absolute; top: -4px; bottom: -4px; width: 1px; background: var(--ink); }
+
+.crm-income input { width: 100%; min-width: 64px; font: inherit; font-size: 13px; padding: 4px 6px; border: 1px solid var(--rule); background: var(--paper-light); text-align: right; font-variant-numeric: tabular-nums; }
+.crm-income input:focus { border-color: var(--ink); outline: none; }
+.crm-income td.is-good { color: var(--ok); font-weight: 600; }
+.crm-finance { margin-top: 16px; border-top: 1px solid var(--rule); padding-top: 10px; }
+.crm-finance summary { cursor: pointer; font-weight: 600; font-size: 13px; }
+.crm-check { flex-direction: row !important; align-items: center; gap: 8px; }

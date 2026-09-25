@@ -20,11 +20,18 @@
 //   POST /api/plan                  import the private plan file
 //   GET  /api/uploads               the channel's uploads (cached)
 //   POST /api/uploads/refresh       refetch them from the YouTube Data API
+//   GET  /api/insights              channel history, income, finance, insights (Phase 4)
+//   POST /api/stats/refresh         read the public stats file into the history
+//   PUT  /api/income                { month, source, amount } (amount null clears it)
+//   POST /api/rate-rules/:id/accept|dismiss   accept writes the new rates
+//   POST /api/ingest/stats          from the stats Action (Bearer CRM_INGEST_KEY)
+//
+// A daily cron refreshes the uploads (capturing 30-day views) and the history.
 //
 // Every route but /api/login and /api/health needs a Bearer session token.
 
 import {
-  configured, passwordMatches, issueToken, verifyToken, lockState, recordFailure, recordSuccess,
+  configured, passwordMatches, ingestKeyMatches, issueToken, verifyToken, lockState, recordFailure, recordSuccess,
 } from './auth.js';
 import {
   HttpError, loadState, listActivities, createRecord, updateRecord, setArchived, putSetting,
@@ -41,6 +48,7 @@ import { createMcpHandler } from 'agents/mcp/server';
 import { createServer } from './mcp.js';
 import { handleAuthorize, redirectAllowed } from './authorize.js';
 import { listReview, passProposal, dismissProposal, decideIdea } from './claude.js';
+import { ingestStats, pullPublicStats, loadInsights, putIncome, decideRateRule } from './stats.js';
 
 const TYPES = {
   companies: 'companies', contacts: 'contacts', deals: 'deals', payments: 'payments',
@@ -116,6 +124,11 @@ async function route(request, env, url) {
   if (m === 'GET' && a === 'health') return { ok: true, configured: configured(env) };
   if (!configured(env)) throw new HttpError(503, 'The CRM isn’t configured yet (missing secrets)');
   if (m === 'POST' && a === 'login' && !b) return login(request, env);
+  if (m === 'POST' && a === 'ingest' && b === 'stats' && !c) {
+    const auth = request.headers.get('Authorization') || '';
+    if (!(await ingestKeyMatches(env, auth.startsWith('Bearer ') ? auth.slice(7) : ''))) throw new HttpError(401, 'Bad ingest key');
+    return ingestStats(env.DB, await readJson(request));
+  }
 
   await requireSession(request, env);
   const db = env.DB;
@@ -143,6 +156,13 @@ async function route(request, env, url) {
   if (a === 'plan' && !b && m === 'POST') return importPlan(db, await readJson(request));
   if (a === 'uploads' && !b && m === 'GET') return listUploads(db);
   if (a === 'uploads' && b === 'refresh' && !c && m === 'POST') return refreshUploads(env, db);
+  if (a === 'insights' && !b && m === 'GET') return loadInsights(db);
+  if (a === 'stats' && b === 'refresh' && !c && m === 'POST') return pullPublicStats(db);
+  if (a === 'income' && !b && m === 'PUT') return putIncome(db, await readJson(request));
+  if (a === 'rate-rules' && b && (c === 'accept' || c === 'dismiss') && !d && m === 'POST') {
+    const settings = await settingsFor(db);
+    return decideRateRule(db, b, c === 'accept', await readJson(request), todayIn(settings.tz));
+  }
   if (a === 'cal-items') {
     if (m === 'POST' && !b) return createItem(db, await readJson(request));
     if (m === 'PATCH' && b && !c) return updateItem(db, b, await readJson(request));
@@ -277,10 +297,24 @@ function oauthProvider(env, origin) {
   return provider;
 }
 
+// Daily: refresh the uploads (keeps each video's views at 30 days) and the
+// channel history from the public stats file. Each step is independent.
+async function daily(env) {
+  if (!configured(env)) return;
+  const steps = [['public stats', () => pullPublicStats(env.DB)]];
+  if (env.YT_API_KEY) steps.push(['uploads', () => refreshUploads(env, env.DB)]);
+  for (const [name, run] of steps) {
+    try { await run(); } catch (err) { console.error(`Daily ${name} failed:`, err && err.message); }
+  }
+}
+
 export default {
   fetch(request, env, ctx) {
     // Without the OAuth store (e.g. before KV is set up) serve the app alone
     if (!env.OAUTH_KV) return app.fetch(request, env, ctx);
     return oauthProvider(env, new URL(request.url).origin).fetch(request, env, ctx);
+  },
+  scheduled(event, env, ctx) {
+    ctx.waitUntil(daily(env));
   },
 };

@@ -27,3 +27,7 @@ enabled = false
 [[kv_namespaces]]
 binding = "OAUTH_KV"
 id = "00000000000000000000000000000000"   # replaced at deploy time
+
+# Daily at 13:40 UTC (after the stats Action): refresh uploads and channel history
+[triggers]
+crons = ["40 13 * * *"]

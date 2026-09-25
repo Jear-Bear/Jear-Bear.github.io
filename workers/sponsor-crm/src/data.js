@@ -63,7 +63,46 @@ function validJobHours(j) {
   }
   return { days: [...new Set(j.days)].sort(), start: j.start, end: j.end };
 }
-const SETTING_VALIDATORS = { targets: validTargets, categories: validCategories, capacity: validCapacity, jobHours: validJobHours };
+// Private numbers for the full-time tracker (dollars a month, except savings)
+function validFinance(f) {
+  if (!f || typeof f !== 'object') throw new HttpError(400, 'Finance must be an object');
+  const money = (k) => {
+    const v = f[k];
+    if (v == null || v === '') return null;
+    const n = Number(v);
+    if (!Number.isFinite(n) || n < 0 || n > 1e8) throw new HttpError(400, `${k} must be a dollar amount`);
+    return Math.round(n * 100) / 100;
+  };
+  const tax = f.taxPct == null || f.taxPct === '' ? 28 : Number(f.taxPct);
+  if (!Number.isFinite(tax) || tax < 0 || tax > 60) throw new HttpError(400, 'Tax set-aside must be 0–60%');
+  return {
+    takeHome: money('takeHome'), expenses: money('expenses'), savings: money('savings'), taxPct: tax,
+    healthMonthly: money('healthMonthly'), healthPriced: f.healthPriced === true,
+    healthNote: f.healthNote == null ? null : String(f.healthNote).trim().slice(0, 200) || null,
+  };
+}
+// The plan's scenarios: named monthly totals, drawn against actual income
+function validScenarios(list) {
+  if (!Array.isArray(list) || list.length > 5) throw new HttpError(400, 'Scenarios must be a list of up to 5');
+  return list.map((sc) => {
+    const name = sc && typeof sc.name === 'string' ? sc.name.trim().slice(0, 40) : '';
+    const points = Array.isArray(sc && sc.points) ? sc.points : [];
+    if (!name || !points.length || points.length > 36) throw new HttpError(400, 'Each scenario needs a name and 1–36 monthly points');
+    const clean = points.map((p) => {
+      if (!p || !/^\d{4}-\d{2}$/.test(p.month) || typeof p.total !== 'number' || !Number.isFinite(p.total) || p.total < 0 || p.total > 1e7) {
+        throw new HttpError(400, 'Scenario points need a month (YYYY-MM) and a total');
+      }
+      return { month: p.month, total: Math.round(p.total) };
+    }).sort((a, b) => a.month.localeCompare(b.month));
+    const note = sc.note == null ? null : String(sc.note).trim().slice(0, 200) || null;
+    return { name, points: clean, note };
+  });
+}
+export { validScenarios };
+const SETTING_VALIDATORS = {
+  targets: validTargets, categories: validCategories, capacity: validCapacity, jobHours: validJobHours,
+  finance: validFinance, scenarios: validScenarios,
+};
 
 export async function putSetting(db, key, value) {
   const check = SETTING_VALIDATORS[key];
@@ -330,11 +369,17 @@ export async function importAll(db, body) {
 // --- Export -------------------------------------------------------------------------
 export async function exportAll(db) {
   const state = await loadState(db);
-  const [acts, series, items] = await db.batch([
+  const [acts, series, items, income, finance] = await db.batch([
     db.prepare('SELECT * FROM activities ORDER BY occurred_at'),
     db.prepare('SELECT * FROM cal_series ORDER BY dtstart'),
     db.prepare('SELECT * FROM cal_items ORDER BY start'),
+    db.prepare('SELECT month, source, amount, notes FROM income ORDER BY month, source'),
+    db.prepare("SELECT key, value FROM settings WHERE key IN ('finance', 'scenarios', 'rateRules')"),
   ]);
   delete state.activitySummary;
-  return { exportedAt: nowIso(), ...state, activities: acts.results.map(fromRow), calendarSeries: series.results, calendarItems: items.results };
+  const extra = Object.fromEntries(finance.results.map((r) => { try { return [r.key, JSON.parse(r.value)]; } catch { return [r.key, null]; } }));
+  return {
+    exportedAt: nowIso(), ...state, activities: acts.results.map(fromRow), calendarSeries: series.results, calendarItems: items.results,
+    income: income.results, finance: extra.finance || null, scenarios: extra.scenarios || [], rateRules: extra.rateRules || {},
+  };
 }
