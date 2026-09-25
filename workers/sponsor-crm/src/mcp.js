@@ -88,6 +88,16 @@ export function createServer(env) {
     };
   });
 
+  tool('list_payments', 'Recorded payments per deal (invoiced and paid dates, amounts, fees), to match incoming payment emails and avoid duplicates.', {}, READ, async () => {
+    const s = await loadState(db);
+    const deals = new Map(s.deals.map((d) => [d.id, d]));
+    const names = new Map(s.companies.map((c) => [c.id, c.name]));
+    return live(s.payments).map((p) => {
+      const d = deals.get(p.deal_id);
+      return { id: p.id, deal_id: p.deal_id, company: d ? names.get(d.company_id) : null, deal_stage: d ? d.stage : null, amount: p.amount, invoiced_on: p.invoiced_on, paid_on: p.paid_on, method: p.method, fees: p.fees, net: p.net };
+    });
+  });
+
   tool('get_rate_card', 'Sponsorship packages with standard prices and private floors.', {}, READ, async () => {
     const s = await loadState(db);
     return live(s.rateCard).map((r) => ({ package: r.package, standard: r.standard, floor: r.floor, included: r.included }));
@@ -113,7 +123,7 @@ export function createServer(env) {
     company_id: uuid.optional(), deal_id: uuid.optional(), note: z.string().max(1000).optional(),
   }, WRITE, (a) => logEmail(db, a));
 
-  tool('create_proposal', `Propose a change for Jared to review (nothing changes until he passes it). kind: ${PROPOSAL_KINDS.join(', ')}. values by kind: stage_change {stage}; amounts {quoted?, final?}; dates {pitched_on?, replied_on?, publish_date?}; next_action {next_action, next_action_date?}; new_contact {name?, email?, role?} with company_id; add_domain {domain} with company_id (when a tracked company emails from an untracked domain); new_deal {source?, stage?, package?, slot_note?, pitched_on?, replied_on?, quoted?, next_action?, next_action_date?, notes?} with company_id (a tracked company that has no deal yet); new_company_deal {company:{name, domains[], category?, website?}, contact?:{name, email, role}, deal:{package?, replied_on?, notes?}}. Always include evidence (email date, subject, a quote under 300 characters), a one-line reason and a confidence.`, {
+  tool('create_proposal', `Propose a change for Jared to review (nothing changes until he passes it). kind: ${PROPOSAL_KINDS.join(', ')}. values by kind: stage_change {stage}; amounts {quoted?, final?}; dates {pitched_on?, replied_on?, publish_date?}; next_action {next_action, next_action_date?}; new_contact {name?, email?, role?} with company_id; add_domain {domain} with company_id (when a tracked company emails from an untracked domain); new_deal {source?, stage?, package?, slot_note?, pitched_on?, replied_on?, quoted?, next_action?, next_action_date?, notes?} with company_id (a tracked company that has no deal yet); new_company_deal {company:{name, domains[], category?, website?}, contact?:{name, email, role}, deal:{package?, replied_on?, notes?}}; payment {amount, paid_on, method?, fees?, net?, invoiced_on?, notes?} with deal_id (money received for a deal; amount is the gross the sponsor paid, in USD). Always include evidence (email date, subject, a quote under 300 characters), a one-line reason and a confidence.`, {
     kind: z.enum(PROPOSAL_KINDS), deal_id: uuid.optional(), company_id: uuid.optional(),
     values: z.record(z.string(), z.any()),
     evidence: z.object({ email_date: z.string().max(40).optional(), subject: z.string().max(300).optional(), quote: z.string().max(300).optional(), gmail_link: z.string().max(500).optional(), message_id: z.string().max(200).optional() }),
