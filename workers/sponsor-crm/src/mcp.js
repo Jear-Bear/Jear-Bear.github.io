@@ -98,7 +98,7 @@ export function createServer(env) {
     const names = new Map(s.companies.map((c) => [c.id, c.name]));
     return live(s.payments).map((p) => {
       const d = deals.get(p.deal_id);
-      return { id: p.id, deal_id: p.deal_id, company: d ? names.get(d.company_id) : null, deal_stage: d ? d.stage : null, amount: p.amount, invoiced_on: p.invoiced_on, paid_on: p.paid_on, method: p.method, fees: p.fees, net: p.net };
+      return { id: p.id, deal_id: p.deal_id, company: d ? names.get(d.company_id) : null, deal_stage: d ? d.stage : null, amount: p.amount, invoice_no: p.invoice_no || null, invoiced_on: p.invoiced_on, paid_on: p.paid_on, method: p.method, fees: p.fees, net: p.net };
     });
   });
 
