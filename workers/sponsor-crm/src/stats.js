@@ -94,6 +94,12 @@ export async function pullPublicStats(db) {
   };
   const prev = await getSetting(db, 'channel', null);
   const stmts = dailyStmts(db, rows);
+  // Audience share for pitches (public numbers)
+  const share = m.englishSpeakingShare && typeof m.englishSpeakingShare.value === 'number' ? m.englishSpeakingShare.value : null;
+  if (share != null) {
+    stmts.push(db.prepare("INSERT INTO settings (key, value, updated_at) VALUES ('audience', ?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at")
+      .bind(JSON.stringify({ englishShare: share, asOf: snap.asOf }), nowIso()));
+  }
   if (snap.subscribers != null && isIsoDate(snap.asOf) && newer(prev, snap)) stmts.push(snapshotStmt(db, snap));
   else if (prev && snap.gained28 != null && prev.gained28 == null) stmts.push(snapshotStmt(db, { ...prev, gained28: snap.gained28 }));
   await db.batch(stmts);
@@ -107,7 +113,7 @@ export async function loadInsights(db) {
     db.prepare('SELECT youtube_id, title, published_at, views, views_30d, views_30d_on FROM uploads ORDER BY published_at DESC LIMIT 200'),
     db.prepare('SELECT * FROM income ORDER BY month, source'),
     db.prepare('SELECT id, kind, week_of, text, created_at FROM insights ORDER BY created_at DESC LIMIT 26'),
-    db.prepare("SELECT key, value FROM settings WHERE key IN ('channel', 'finance', 'scenarios', 'rateRules')"),
+    db.prepare("SELECT key, value FROM settings WHERE key IN ('channel', 'finance', 'scenarios', 'rateRules', 'audience')"),
   ]);
   const get = (k, fallback) => {
     const r = settings.results.find((x) => x.key === k);
@@ -122,6 +128,7 @@ export async function loadInsights(db) {
     finance: get('finance', null),
     scenarios: get('scenarios', []),
     rateRules: get('rateRules', {}),
+    audience: get('audience', null),
   };
 }
 
