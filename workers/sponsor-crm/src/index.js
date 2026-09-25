@@ -28,6 +28,8 @@
 //   POST /api/invoices              number an invoice and record it as a payment
 //   GET  /go/:slug                  tracked sponsor link: redirect + count (public)
 //   GET|POST /api/drafts, POST /api/drafts/:id/cancel   ask Claude to draft an email
+//   GET  /public/availability       open sponsor slots by month (public, counts only)
+//   POST /public/inquiry            the sponsor-page form → Review (public, rate-limited)
 //
 // A daily cron refreshes the uploads (capturing 30-day views) and the history.
 //
@@ -54,6 +56,7 @@ import { listReview, passProposal, dismissProposal, decideIdea } from './claude.
 import { ingestStats, pullPublicStats, loadInsights, putIncome, decideRateRule } from './stats.js';
 import { handleGo, createInvoice } from './growth.js';
 import { listDrafts, requestDraft, closeDraft } from './drafts.js';
+import { availability, inquiry } from './public.js';
 
 const TYPES = {
   companies: 'companies', contacts: 'contacts', deals: 'deals', payments: 'payments',
@@ -259,6 +262,21 @@ const app = {
     }
     // Browsers from other sites get nothing back
     if (request.headers.get('Origin') && !origin) return json({ error: 'Origin not allowed' }, 403);
+
+    // Public endpoints for the sponsor page (no sign-in)
+    if (url.pathname === '/public/availability' && request.method === 'GET') {
+      if (!configured(env)) return json({ error: 'Not configured' }, 503, origin);
+      return json(await availability(env.DB, 'America/Chicago'), 200, origin, { 'Cache-Control': 'public, max-age=900' });
+    }
+    if (url.pathname === '/public/inquiry' && request.method === 'POST') {
+      if (!origin) return json({ error: 'Origin not allowed' }, 403);
+      if (!configured(env)) return json({ error: 'Not configured' }, 503, origin);
+      try { return json(await inquiry(request, env), 200, origin); } catch (err) {
+        if (err instanceof HttpError) return json({ error: err.message }, err.status, origin);
+        console.error('Inquiry failed', err && err.message);
+        return json({ error: 'Something went wrong' }, 500, origin);
+      }
+    }
 
     try {
       return json(await route(request, env, url), 200, origin);

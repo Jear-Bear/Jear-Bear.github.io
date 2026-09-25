@@ -189,6 +189,22 @@ is skipped. To stop it, delete the secret.
   parameters pass through. Clicks show on the deal, in Insights, and in the
   30-day recap. Archiving a link stops it redirecting.
 
+## Pitching, recaps and the public sponsor page
+
+- **Write pitch…** on a Researching or pitched deal fills a template (edit
+  them in **Settings → Pitch templates**) with live numbers. **Open in
+  Gmail** starts a draft for you to send; **Mark as pitched** records the
+  template for **Insights → Pitch performance**. **Ask Claude to draft it**
+  queues a personalized Gmail draft for Claude's next morning run.
+- **Write 30-day recap…** on a Delivered or Paid deal fills in views at 30
+  days (vs the estimate), clicks on its tracked link and a renewal offer.
+- **Settings → Avoid list** is what Claude skips when prospecting.
+- The public sponsor page shows **sponsor slots by month** from the Worker's
+  `/public/availability` (counts only: no brands, titles or prices), and its
+  inquiry form also files the inquiry in **Review** through `/public/inquiry`
+  (rate-limited per hashed IP and per day; the form still emails you through
+  Web3Forms). If the Worker is down, the page and form work as before.
+
 ## Changing the password
 
 Update the `SPONSOR_MANAGEMENT_PASSWORD` GitHub secret, then run **Sponsor CRM

@@ -10,7 +10,7 @@ import {
 } from './store.js';
 import { openPanel, closePanel, toast, toastError, button, busy } from './ui.js';
 import { openInvoice, printInvoice, linkRow, linksFor, slugify, linkUrl, copyText } from './growth.js';
-import { openPitch, askClaude, draftStatus } from './pitch-view.js';
+import { openPitch, openRecap, askClaude, draftStatus } from './pitch-view.js';
 
 const API_TYPE = { companies: 'companies', contacts: 'contacts', deals: 'deals', payments: 'payments', videos: 'videos', rate_card: 'rate-card', activities: 'activities', links: 'links' };
 const byName = (a, b) => (a.label || '').localeCompare(b.label || '');
@@ -164,6 +164,9 @@ function dealQuickActions(d) {
 function dealPitch(d) {
   const back = () => openDeal(deal(d.id));
   const pitching = ['Researching', 'Pitched', 'Follow-up 1 sent', 'Follow-up 2 sent'].includes(d.stage);
+  if (['Delivered', 'Paid'].includes(d.stage)) {
+    return h('div', {}, h('div', { class: 'crm-row-actions' }, button('Write 30-day recap…', () => openRecap(d, { returnTo: back }), { kind: 'chip' })), draftStatus(d));
+  }
   if (!pitching) return null;
   const fu = d.stage !== 'Researching' ? button('Ask Claude for a follow-up', (e) => askClaude(d, 'follow_up', null, e.currentTarget).catch(() => {}), { kind: 'chip' }) : null;
   return h('div', {},
