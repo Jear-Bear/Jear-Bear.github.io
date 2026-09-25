@@ -153,6 +153,16 @@ export function ruleItems(state, from, to, today) {
       }
     }
   }
+  // Contract dates: script and draft deadlines while the deal is live, and
+  // when exclusivity and usage rights end
+  for (const d of deals.filter((x) => !['Lost', 'No reply'].includes(x.stage))) {
+    const working = ['Negotiating', 'Won'].includes(d.stage);
+    if (working && d.script_due) add({ id: `rule:script:${d.id}`, type: 'deliverable', start: d.script_due < today ? today : d.script_due, deal_id: d.id, company_id: d.company_id, title: `Script due · ${name(d.company_id)}`, rule: 'script', overdue: d.script_due < today, notes: `Due ${d.script_due}.` });
+    if (working && d.draft_due) add({ id: `rule:draft:${d.id}`, type: 'deliverable', start: d.draft_due < today ? today : d.draft_due, deal_id: d.id, company_id: d.company_id, title: `Draft due · ${name(d.company_id)}`, rule: 'draft', overdue: d.draft_due < today, notes: `Due ${d.draft_due}.` });
+    if (d.exclusivity_until) add({ id: `rule:excl:${d.id}`, start: d.exclusivity_until, deal_id: d.id, company_id: d.company_id, title: `Exclusivity ends · ${name(d.company_id)}`, rule: 'exclusivity', notes: 'After today you can pitch their competitors.' });
+    if (d.usage_until) add({ id: `rule:usage:${d.id}`, start: d.usage_until, deal_id: d.id, company_id: d.company_id, title: `Usage rights end · ${name(d.company_id)}`, rule: 'usage', notes: 'Their right to use your footage ends. Offer a paid extension if they still use it.' });
+  }
+
   const paid = new Set();
   for (const p of state.payments.filter((x) => !x.archived)) {
     if (p.invoiced_on || p.paid_on) paid.add(p.deal_id);

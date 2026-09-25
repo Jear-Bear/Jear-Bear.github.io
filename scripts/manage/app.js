@@ -171,6 +171,21 @@ function settingsView(root) {
       await reload();
       toast('Saved', { kind: 'ok', ms: 2500 });
     });
+    const inv = s.settings.invoicing || {};
+    const invF = {
+      name: h('input', { value: inv.name || '', placeholder: 'Your name or business name' }),
+      email: h('input', { type: 'email', value: inv.email || '' }),
+      address: h('textarea', { rows: 2 }, inv.address || ''),
+      payment: h('textarea', { rows: 3, placeholder: 'e.g. PayPal: you@example.com, or bank details' }, inv.payment || ''),
+      termsDays: h('input', { type: 'number', min: 0, max: 120, value: inv.termsDays ?? 30 }),
+      prefix: h('input', { value: inv.prefix || 'INV-', maxlength: 10 }),
+      startAt: h('input', { type: 'number', min: 1, value: inv.startAt ?? 1 }),
+    };
+    const saveInv = button('Save', async () => {
+      await busy(saveInv, () => api.setting('invoicing', Object.fromEntries(Object.entries(invF).map(([k, el]) => [k, ['termsDays', 'startAt'].includes(k) ? Number(el.value) : el.value]))));
+      await reload();
+      toast('Saved', { kind: 'ok', ms: 2500 });
+    });
     const mcpUrl = h('input', { type: 'text', readonly: true, value: `${API_BASE}/mcp`, 'aria-label': 'Connector URL' });
     const copyBtn = button('Copy', async () => { try { await navigator.clipboard.writeText(mcpUrl.value); toast('Copied', { kind: 'ok', ms: 1500 }); } catch { mcpUrl.select(); } }, { kind: 'chip' });
     const grantsEl = h('ul', { class: 'crm-mini-list' }, h('li', { class: 'crm-note is-muted' }, 'Loading…'));
@@ -207,6 +222,14 @@ function settingsView(root) {
           h('label', { class: 'crm-field' }, 'Job starts', jobStart), h('label', { class: 'crm-field' }, 'Job ends', jobEnd)),
         h('div', { class: 'crm-chip-row' }, jobDays),
         h('div', { class: 'crm-row-actions' }, saveHours)),
+      h('section', { class: 'crm-section' }, h('h2', { class: 'crm-section-title' }, 'Invoices'),
+        h('p', { class: 'crm-note is-muted' }, 'Printed on every invoice. Private: stored only in the CRM database.'),
+        h('div', { class: 'crm-form-grid' },
+          h('label', { class: 'crm-field' }, 'Name', invF.name), h('label', { class: 'crm-field' }, 'Email', invF.email),
+          h('label', { class: 'crm-field is-wide' }, 'Address', invF.address), h('label', { class: 'crm-field is-wide' }, 'How to pay you', invF.payment),
+          h('label', { class: 'crm-field' }, 'Payment terms (days)', invF.termsDays), h('label', { class: 'crm-field' }, 'Number prefix', invF.prefix),
+          h('label', { class: 'crm-field' }, 'First number', invF.startAt)),
+        h('div', { class: 'crm-row-actions' }, saveInv)),
       h('section', { class: 'crm-section' }, h('h2', { class: 'crm-section-title' }, 'Export'),
         h('p', { class: 'crm-note' }, 'Everything, including archived records and the activity timeline.'),
         h('div', { class: 'crm-chip-row' }, exportBtns),

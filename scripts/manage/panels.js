@@ -9,8 +9,9 @@ import {
   store, reload, live, company, companyName, deal, dealTitle, video, today, followUp, priceCheck, videoStatus, dash,
 } from './store.js';
 import { openPanel, closePanel, toast, toastError, button, busy } from './ui.js';
+import { openInvoice, printInvoice, linkRow, linksFor, slugify, linkUrl, copyText } from './growth.js';
 
-const API_TYPE = { companies: 'companies', contacts: 'contacts', deals: 'deals', payments: 'payments', videos: 'videos', rate_card: 'rate-card', activities: 'activities' };
+const API_TYPE = { companies: 'companies', contacts: 'contacts', deals: 'deals', payments: 'payments', videos: 'videos', rate_card: 'rate-card', activities: 'activities', links: 'links' };
 const byName = (a, b) => (a.label || '').localeCompare(b.label || '');
 
 const companyChoices = () => live(store.state.companies).map((c) => ({ value: c.id, label: c.name })).sort(byName);
@@ -178,7 +179,37 @@ function dealPayments(d) {
       h('button', { type: 'button', class: 'crm-row-btn', onclick: () => openPayment(p, { returnTo: () => openDeal(deal(d.id)) }) },
         h('span', {}, fmtMoney(p.amount, { cents: true })),
         h('span', { class: 'crm-muted' }, p.paid_on ? `Paid ${fmtDate(p.paid_on)}` : p.invoiced_on ? `Invoiced ${fmtDate(p.invoiced_on)}, unpaid` : 'Not invoiced'))))) : null,
-    button('Add payment', () => openPayment(null, { preset: { deal_id: d.id, amount: d.final ?? d.quoted }, returnTo: () => openDeal(deal(d.id)) })));
+    h('div', { class: 'crm-row-actions' },
+      button('Add payment', () => openPayment(null, { preset: { deal_id: d.id, amount: d.final ?? d.quoted }, returnTo: () => openDeal(deal(d.id)) })),
+      ['Negotiating', 'Won', 'Delivered'].includes(d.stage) ? button('Create invoice', () => openInvoice(d, { returnTo: () => openDeal(deal(d.id)) })) : null));
+}
+
+function dealLinks(d) {
+  const back = () => openDeal(deal(d.id));
+  const links = linksFor({ dealId: d.id });
+  const co = store.byId.companies.get(d.company_id) || {};
+  return h('section', { class: 'crm-section' },
+    h('h3', { class: 'crm-section-title' }, 'Tracked links'),
+    links.length ? h('ul', { class: 'crm-mini-list' }, links.map((l) => linkRow(l, { onOpen: (x) => openLink(x, { returnTo: back }) }))) : h('p', { class: 'crm-note is-muted' }, 'A short link for the video description counts clicks for the recap and your next rate.'),
+    button('New tracked link', () => openLink(null, { preset: { deal_id: d.id, company_id: d.company_id, slug: slugify(co.name), target: co.website || '' }, returnTo: back })));
+}
+
+// --- Tracked link -------------------------------------------------------------------------
+export function openLink(l, { preset, returnTo } = {}) {
+  const before = l ? h('div', { class: 'crm-row-actions' },
+    h('code', { class: 'crm-code' }, linkUrl(l.slug)),
+    button('Copy', () => copyText(linkUrl(l.slug), 'Link copied'), { kind: 'chip' })) : null;
+  editor({
+    type: 'links', record: l, preset, sections: [{ fields: ['slug', 'target', 'deal_id', 'company_id', 'notes'] }],
+    options: {
+      slug: { hint: 'Lowercase letters, numbers and dashes. The link is jareddesu.com/go/<short name>. Changing it breaks links already published.' },
+      target: { hint: 'The sponsor’s landing page, with their tracking code if they gave you one.' },
+      deal_id: { choices: dealChoices(), blankLabel: 'No deal' },
+      company_id: { choices: companyChoices(), blankLabel: 'No company' },
+    },
+    title: l ? `/go/${l.slug}` : 'New tracked link', subtitle: l && l.company_id ? companyName(l.company_id) : null,
+    before, reopen: returnTo ? () => returnTo() : null,
+  });
 }
 
 export function openDeal(d, { preset } = {}) {
@@ -189,6 +220,7 @@ export function openDeal(d, { preset } = {}) {
     { title: 'Money', fields: ['quoted', 'final'] },
     { title: 'Next step', fields: ['next_action', 'next_action_date'], wide: ['next_action'] },
     { title: 'Terms', fields: ['deliverables', 'usage_rights', 'exclusivity'] },
+    { title: 'Contract dates', fields: ['script_due', 'draft_due', 'exclusivity_until', 'usage_until'] },
     { title: 'Notes', fields: ['lost_reason', 'notes'] },
   ];
   const companyId = d ? d.company_id : preset && preset.company_id;
@@ -205,7 +237,7 @@ export function openDeal(d, { preset } = {}) {
     title: d ? companyName(d.company_id) : 'New deal',
     subtitle: d ? [d.stage, d.package].filter(Boolean).join(' · ') : null,
     before: d ? [dealQuickActions(d), dealStatus(d)] : null,
-    after: d ? [dealPayments(d), timeline({ deal_id: d.id })] : null,
+    after: d ? [dealPayments(d), dealLinks(d), timeline({ deal_id: d.id })] : null,
     reopen: (saved) => openDeal(deal(saved.id)),
   });
   ed.onChange((name) => {
@@ -299,7 +331,8 @@ export function openVideo(v) {
 export function openPayment(p, { preset, returnTo } = {}) {
   editor({
     type: 'payments', record: p, preset,
-    sections: [{ fields: ['deal_id', 'amount', 'invoiced_on', 'paid_on', 'method', 'fees', 'net', 'notes'] }],
+    before: p && p.invoice ? h('div', { class: 'crm-row-actions' }, h('span', { class: 'crm-muted' }, `Invoice ${p.invoice_no}`), button('Print invoice', () => printInvoice(p), { kind: 'chip' })) : null,
+    sections: [{ fields: ['deal_id', 'amount', 'invoiced_on', 'paid_on', 'method', 'fees', 'net', 'invoice_no', 'notes'] }],
     options: { deal_id: { choices: dealChoices() }, net: { hint: 'Left blank, net = amount − fees.' }, method: { datalist: ['PayPal', 'Bank transfer', 'Wise', 'Stripe', 'Check'] } },
     title: p ? fmtMoney(p.amount, { cents: true }) : 'New payment', subtitle: p ? dealTitle(deal(p.deal_id) || {}) : null,
     reopen: returnTo ? () => returnTo() : null,

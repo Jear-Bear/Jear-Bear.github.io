@@ -13,6 +13,8 @@ import {
 import { addDays, weekStart } from './rules.js';
 import { expand, ruleItems } from './calendar.js';
 import { ring, incomeChart, trendChart, goalBar } from './charts.js';
+import { linkRow } from './growth.js';
+import { openLink } from './panels.js';
 import { fetchRange } from './cal-view.js';
 import { applyChange, onCalendarChange, openCalItem, openRuleItem } from './cal-panel.js';
 
@@ -297,6 +299,12 @@ export function insightsView(root) {
       section('Rate check', h('p', { class: 'crm-note is-muted' }, 'The plan’s three rules for raising rates. When one triggers, accept the suggested rates into the rate card or dismiss it for 30 days.'),
         h('div', { class: 'crm-cards' }, x.rateRules.map((r) => rateCard(r, (changed) => refresh(changed))))),
       section('Channel milestones', ...milestoneCards(x.milestones, data, () => refresh())),
+      section('Tracked links',
+        h('p', { class: 'crm-note is-muted' }, 'Short links for video descriptions (jareddesu.com/go/…). Only click counts are kept. Add one from a deal.'),
+        (store.state.links || []).filter((l) => !l.archived).length
+          ? h('ul', { class: 'crm-mini-list' }, store.state.links.filter((l) => !l.archived).map((l) => linkRow(l, { onOpen: (x) => openLink(x) })))
+          : h('p', { class: 'crm-muted' }, 'No tracked links yet.'),
+        button('New tracked link', () => openLink(null), { kind: 'chip' })),
       section('Go full-time', ...fullTimeSection(x.fullTime, data.finance, () => refresh())),
     );
   };
