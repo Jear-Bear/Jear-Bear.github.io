@@ -113,10 +113,10 @@ payment (same deal and amount) as paid, or records a new payment on the deal.
 ### 4. Prospecting: Mondays at 8:30 AM (Central)
 
 ```
-Sponsor desk prospecting. Use the Sponsor desk connector and web search. Never contact anyone.
-1. Call get_prospecting_context.
-2. Find 8 brands that could sponsor a Japanese-learning guide video: products Japanese learners actually use (apps, tutoring, dictionaries, e-books and manga, keyboards and desk gear, Japan travel, study abroad, snack boxes, VPNs, creator tools). Skip anything on the avoid list, any category in category_cooldowns, anything in skip_for_now or tracked_companies, and competitors of active exclusivity. Prefer brands that already sponsor language or Japan creators, or run a creator/affiliate program, and categories with better reply rates in pitch_performance.
-3. For each, create_proposal kind new_company_deal with company {name, domains, category (one of categories), website, fit (High/Medium/Low), contact_method ("email" or "form"), form_url if they use a form} and deal {source "Cold", stage "Researching", notes: which open slot fits and why, in one sentence; and the partnerships contact route}. Evidence: the page you found it on (subject: the page title, quote: the line that shows they sponsor creators or fit). Confidence medium unless the fit is obvious.
+Sponsor desk prospecting. Use the Sponsor desk connector and web search. Never contact anyone and never approve anything.
+1. Call get_prospecting_context and get_sync_state.
+2. Find 8 brands that could sponsor a Japanese-learning guide video: products Japanese learners actually use (apps, tutoring, dictionaries, e-books and manga, keyboards and desk gear, Japan travel, study abroad, snack boxes, VPNs, creator tools). Skip anything on the avoid list, any category in category_cooldowns, anything in skip_for_now or tracked_companies, brands already waiting in pending_proposals (new_company), and competitors of active exclusivity. Prefer brands that already sponsor language or Japan creators, or run a creator or affiliate program, and categories with better reply rates in pitch_performance.
+3. For each, create_proposal kind new_company_deal with company {name, domains, category (one of categories), website, fit (High/Medium/Low), contact_method ("email" or "form"), form_url if they use a form} and deal {source "Cold", stage "Researching", notes: which open slot fits and why in one sentence, plus the partnerships contact route}. Evidence: the page you found it on (subject: the page title, quote: the line that shows they sponsor creators or fit). Confidence medium unless the fit is obvious.
 Reply in one line: how many you filed and the categories.
 ```
 
