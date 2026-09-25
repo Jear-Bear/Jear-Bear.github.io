@@ -10,12 +10,13 @@ const clip = (v, n) => (v == null ? null : String(v).replace(/\u0000/g, '').trim
 const json = (v) => JSON.stringify(v);
 const parse = (v, fallback = null) => { try { return v ? JSON.parse(v) : fallback; } catch { return fallback; } };
 
-export const PROPOSAL_KINDS = ['stage_change', 'amounts', 'dates', 'next_action', 'new_contact', 'add_domain', 'new_deal', 'new_company_deal'];
+export const PROPOSAL_KINDS = ['stage_change', 'amounts', 'dates', 'next_action', 'new_contact', 'add_domain', 'new_deal', 'new_company_deal', 'payment'];
 export const LOW_RISK_KINDS = ['next_action', 'new_contact', 'add_domain'];
 const CONFIDENCE = ['low', 'medium', 'high'];
 
 // Fields each proposal kind may set, and on which record
 const NEW_DEAL_FIELDS = ['source', 'stage', 'package', 'slot_note', 'pitched_on', 'replied_on', 'quoted', 'next_action', 'next_action_date', 'notes'];
+const PAYMENT_FIELDS = ['amount', 'paid_on', 'invoiced_on', 'method', 'fees', 'net', 'notes'];
 const KIND_FIELDS = {
   stage_change: { entity: 'deals', fields: ['stage'] },
   amounts: { entity: 'deals', fields: ['quoted', 'final'] },
@@ -49,6 +50,13 @@ function checkFields(entity, allowed, values) {
   const v = validate(entity, values, { partial: true });
   if (!v.ok) throw new HttpError(400, 'Invalid values', v.errors);
   return v.values;
+}
+
+function checkPayment(values) {
+  const v = checkFields('payments', PAYMENT_FIELDS, values);
+  if (!(v.amount > 0)) throw new HttpError(400, 'A payment needs an amount above 0');
+  if (!v.paid_on) throw new HttpError(400, 'A payment needs paid_on (the date it arrived)');
+  return v;
 }
 
 function validateNewCompanyDeal(values) {
@@ -120,6 +128,14 @@ export async function createProposal(db, input) {
     if (!(await db.prepare('SELECT 1 FROM companies WHERE id = ?').bind(companyId).first())) throw new HttpError(400, 'company_id doesn’t exist');
     proposed = checkFields('deals', NEW_DEAL_FIELDS, { source: 'Inbound', stage: 'In conversation', ...(input.values || {}) });
     dealId = null;
+  } else if (kind === 'payment') {
+    if (!dealId) throw new HttpError(400, 'payment needs deal_id');
+    const d = await db.prepare('SELECT company_id FROM deals WHERE id = ?').bind(dealId).first();
+    if (!d) throw new HttpError(400, 'deal_id doesn’t exist');
+    companyId = d.company_id;
+    proposed = checkPayment(input.values);
+    const paid = await db.prepare('SELECT id FROM payments WHERE deal_id = ? AND archived = 0 AND paid_on = ? AND abs(amount - ?) < 0.005').bind(dealId, proposed.paid_on, proposed.amount).first();
+    if (paid) return { created: false, duplicate: true, message: 'That payment is already recorded' };
   } else if (kind === 'add_domain') {
     if (!companyId) throw new HttpError(400, 'add_domain needs company_id');
     if (!(await db.prepare('SELECT 1 FROM companies WHERE id = ?').bind(companyId).first())) throw new HttpError(400, 'company_id doesn’t exist');
@@ -233,6 +249,17 @@ export async function passProposal(db, id, edited) {
     applied = { deal_id: d.id, ...values };
     summary = `Approved by me: new ${values.source || ''} deal (Claude proposal)`.replace('  ', ' ');
     await logApproval(db, p.company_id, d.id, summary);
+  } else if (p.kind === 'payment') {
+    const values = checkPayment(edited || proposed);
+    await getRecord(db, 'deals', p.deal_id);
+    // Mark a matching invoiced-but-unpaid payment as paid, else record a new one
+    const open = await db.prepare('SELECT id FROM payments WHERE deal_id = ? AND archived = 0 AND paid_on IS NULL AND abs(amount - ?) < 0.005 ORDER BY invoiced_on LIMIT 1')
+      .bind(p.deal_id, values.amount).first();
+    const filled = Object.fromEntries(Object.entries(values).filter(([, v]) => v != null)); // keep the invoice's own details
+    const pay = open ? await updateRecord(db, 'payments', open.id, filled) : await createRecord(db, 'payments', { ...values, deal_id: p.deal_id });
+    applied = { payment_id: pay.id, matched_invoice: Boolean(open), ...values };
+    summary = `Approved by me: payment received $${values.amount} on ${values.paid_on}${open ? ' (invoice marked paid)' : ''} (Claude proposal)`;
+    await logApproval(db, p.company_id, p.deal_id, summary);
   } else if (p.kind === 'add_domain') {
     const domain = normalizeDomain((edited || proposed).domain);
     if (!domain) throw new HttpError(400, 'Not a valid domain');
