@@ -6,6 +6,7 @@
 // of 50 uploads, the same number of video-detail calls, and one D1 batch.
 
 import { HttpError } from './data.js';
+import { snapshot30Stmt } from './stats.js';
 
 const MAX_PAGES = 4;                 // 200 most recent uploads
 
@@ -68,6 +69,6 @@ export async function refreshUploads(env, db) {
       ));
     }
   }
-  if (stmts.length) await db.batch(stmts);
+  if (stmts.length) await db.batch([...stmts, snapshot30Stmt(db)]);
   return { ...(await listUploads(db)), refreshed: stmts.length, fetchedAt: now };
 }

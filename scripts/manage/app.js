@@ -10,6 +10,7 @@ import { openDeal, openCompany } from './panels.js';
 import { openImport, exportAs, CSV_TABLES } from './io.js';
 import { calendarView } from './cal-view.js';
 import { reviewView, refreshReviewCount, whenReviewCountChanges } from './review.js';
+import { insightsView } from './insights-view.js';
 import { closePanel, panelOpen, panelDirty, toast, button, busy } from './ui.js';
 
 // Refuse to run inside a frame (GitHub Pages can't send frame-ancestors)
@@ -22,6 +23,7 @@ const VIEWS = [
   { id: 'dashboard', label: 'Dashboard', render: dashboardView },
   { id: 'review', label: 'Review', render: reviewView },
   { id: 'calendar', label: 'Calendar', render: calendarView },
+  { id: 'insights', label: 'Insights', render: insightsView },
   { id: 'pipeline', label: 'Pipeline', render: pipelineView },
   { id: 'companies', label: 'Companies', render: companiesView },
   { id: 'videos', label: 'Videos', render: videosView },

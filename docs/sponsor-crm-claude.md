@@ -11,7 +11,8 @@ subscription and Cloudflare's free plan.
 ## What Claude can and can't do
 
 **Read:** tracked companies (with email domains and contacts), deals,
-payments, the dashboard numbers, calendar items for a date range, video slots and uploads
+payments, the dashboard numbers, the Insights numbers (streak, rate-raise
+rules, milestone projections, full-time progress, computed in code), calendar items for a date range, video slots and uploads
 with views, the rate card, and the email sync state.
 
 **Write, and only into the review queue:**
@@ -24,7 +25,8 @@ with views, the rate card, and the email sync state.
   email evidence, a one-line reason and a confidence.
 - `suggest_calendar_item`: a task or event shown as **Claude (suggested)**.
 - `suggest_video_idea`: an idea from what's performing and what sponsors ask for.
-- `save_insight`: the Monday commentary for the dashboard.
+- `save_insight`: the Monday commentary, shown at the top of the dashboard
+  (earlier ones stay under "Earlier insights").
 - `update_sync_cursor`: where the email sync stopped.
 
 There is **no tool that deletes anything** or directly changes a stage, an
@@ -76,8 +78,8 @@ Sponsor desk email sync. Use the Sponsor desk and Gmail connectors. Never send e
 
 ```
 Sponsor desk weekly insight. Use only the Sponsor desk connector.
-1. Call get_dashboard, get_calendar for this Monday through Sunday, and list_videos.
-2. save_insight with kind "weekly" and week_of this Monday: 3 to 5 sentences on what moved last week, what's at risk, and the one thing to do this week. Use only numbers from get_dashboard.
+1. Call get_dashboard, get_insights, get_calendar for this Monday through Sunday, and list_videos.
+2. save_insight with kind "weekly" and week_of this Monday: 3 to 5 sentences on what moved last week, what's at risk, and the one thing to do this week. Use only numbers from get_dashboard and get_insights, and mention a rate-raise rule only if it triggered.
 3. Suggest up to 3 tasks this week with suggest_calendar_item that close the biggest gaps (pitch target, follow-ups due, overdue actions, invoices). Don't duplicate what's already on the calendar.
 4. If an upload clearly outperforms its peers, one suggest_video_idea with source performance.
 Reply in one line.

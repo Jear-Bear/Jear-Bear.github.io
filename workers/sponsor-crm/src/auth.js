@@ -65,6 +65,17 @@ export async function passwordMatches(env, input) {
   return timingSafeEqual(a, b);
 }
 
+// The stats Action's key for /api/ingest/stats (a separate secret)
+export async function ingestKeyMatches(env, input) {
+  if (!env.CRM_INGEST_KEY || env.CRM_INGEST_KEY.length < 32 || typeof input !== 'string' || input.length > 1024) return false;
+  const key = await hmacKey(env.CRM_SESSION_KEY);
+  const [a, b] = await Promise.all([
+    crypto.subtle.sign('HMAC', key, enc.encode(`ingest:${input}`)),
+    crypto.subtle.sign('HMAC', key, enc.encode(`ingest:${env.CRM_INGEST_KEY}`)),
+  ]);
+  return timingSafeEqual(a, b);
+}
+
 // --- Tokens ------------------------------------------------------------------------
 export async function issueToken(env, epoch, now = Date.now()) {
   const iat = Math.floor(now / 1000);

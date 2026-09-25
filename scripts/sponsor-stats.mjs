@@ -11,6 +11,9 @@
 //   YT_OAUTH_REFRESH_TOKEN  from scripts/get-refresh-token.mjs
 //   DASHBOARD_PASSWORD      optional; when set, also writes the encrypted
 //                           sponsor-dashboard file stats.private.enc.json
+//   CRM_INGEST_FILE         optional; a path outside the repo (the runner's
+//                           temp dir) for the sponsor CRM's daily history,
+//                           which the workflow then sends to the Worker
 //
 //   node scripts/sponsor-stats.mjs            write the file if data changed
 //   node scripts/sponsor-stats.mjs --dry-run  print the result, write nothing
@@ -323,7 +326,7 @@ async function build({ includePrivate }) {
   // Daily views for the trend charts: the channel, and each featured video
   // (from its publish date if that's inside the 90-day window)
   const dailyParams = { startDate: A_START_90, endDate: A_END, metrics: 'views', dimensions: 'day', sort: 'day' };
-  const channelDaily = await report('daily views', token, dailyParams);
+  const channelDaily = await report('daily views', token, { ...dailyParams, metrics: 'views,subscribersGained,subscribersLost' });
   metrics.dailyViews = metric(dailySeries(channelDaily, A_START_90, A_END), 'daily-series', 'Daily views', last90, ANALYTICS_API);
 
   for (const id of featured) {
@@ -356,8 +359,17 @@ async function build({ includePrivate }) {
     videos,
   };
 
-  if (!includePrivate) return { pub, priv: null };
-  return { pub, priv: await buildPrivate(token, featured, video90, generatedAt) };
+  // Private daily history for the sponsor CRM (never written to the repo)
+  const ingest = {
+    asOf: A_END,
+    subscribers: subscribers.value,
+    subscribersExact: subscribers.exact === true,
+    totalViews: int(s.viewCount),
+    days: channelDaily.map((r) => ({ day: r.day, views: r.views, subsGained: r.subscribersGained, subsLost: r.subscribersLost })),
+  };
+
+  if (!includePrivate) return { pub, priv: null, ingest };
+  return { pub, priv: await buildPrivate(token, featured, video90, generatedAt), ingest };
 }
 
 // --- Private (encrypted) dashboard data -------------------------------------
@@ -478,11 +490,20 @@ async function main() {
   if (!password) console.warn('DASHBOARD_PASSWORD not set; skipping the sponsor dashboard file.');
 
   // Everything is fetched before anything is written
-  const { pub, priv } = await build({ includePrivate: Boolean(password) });
+  const { pub, priv, ingest } = await build({ includePrivate: Boolean(password) });
 
   if (DRY_RUN) {
-    process.stdout.write(`${JSON.stringify({ public: pub, private: priv }, null, 2)}\n`);
+    process.stdout.write(`${JSON.stringify({ public: pub, private: priv, ingest }, null, 2)}\n`);
     return;
+  }
+
+  // Only to a path outside the repo; the workflow sends it and it's gone with the runner
+  const ingestFile = process.env.CRM_INGEST_FILE;
+  if (ingestFile) {
+    const inRepo = new URL(`file://${ingestFile}`).href.startsWith(ROOT.href);
+    if (inRepo) throw new Error('CRM_INGEST_FILE must be outside the repository');
+    await writeFile(ingestFile, JSON.stringify(ingest), { mode: 0o600 });
+    console.log(`Prepared ${ingest.days.length} days of history for the sponsor CRM.`);
   }
 
   const prev = await readFile(OUT_FILE, 'utf8').then(JSON.parse).catch(() => null);
