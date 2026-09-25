@@ -11,15 +11,16 @@ import { openCalItem } from './cal-panel.js';
 
 const KIND_LABEL = {
   stage_change: 'Stage change', amounts: 'Amounts', dates: 'Dates', next_action: 'Next action',
-  new_contact: 'New contact', add_domain: 'Add email domain', new_deal: 'New deal', new_company_deal: 'New company + inbound deal',
+  new_contact: 'New contact', add_domain: 'Add email domain', new_deal: 'New deal', new_company_deal: 'New company + inbound deal', payment: 'Payment received',
 };
 const LOW_RISK = ['next_action', 'new_contact', 'add_domain'];
 const FIELD_LABEL = {
   stage: 'Stage', quoted: 'Quoted ($)', final: 'Final ($)', pitched_on: 'Pitched on', replied_on: 'Replied on', publish_date: 'Publish date',
   next_action: 'Next action', next_action_date: 'Next action date', source: 'Source', package: 'Package', slot_note: 'Slot', notes: 'Notes', name: 'Name', email: 'Email', role: 'Role', domain: 'Domain',
+  amount: 'Amount ($)', paid_on: 'Paid on', invoiced_on: 'Invoiced on', method: 'Method', fees: 'Fees ($)', net: 'Net ($)',
 };
-const MONEY = ['quoted', 'final'];
-const DATES = ['pitched_on', 'replied_on', 'publish_date', 'next_action_date'];
+const MONEY = ['quoted', 'final', 'amount', 'fees', 'net'];
+const DATES = ['pitched_on', 'replied_on', 'publish_date', 'next_action_date', 'paid_on', 'invoiced_on'];
 
 export let reviewCount = 0;
 let onCount = () => {};
@@ -47,7 +48,7 @@ function input(name, value) {
 }
 
 function currentValue(p, name) {
-  const d = p.deal_id && deal(p.deal_id);
+  const d = p.kind !== 'payment' && p.deal_id && deal(p.deal_id);
   if (!d || !(name in d)) return null;
   const v = d[name];
   return v == null ? '—' : MONEY.includes(name) ? fmtMoney(v) : DATES.includes(name) ? fmtDate(v, { year: true }) : String(v);
