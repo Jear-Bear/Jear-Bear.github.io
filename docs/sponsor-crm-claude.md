@@ -82,11 +82,11 @@ Reply in two lines: what you logged and filed, and which drafts you saved.
 ### 2. Weekly insight: Mondays at 8:00 AM (Central)
 
 ```
-Sponsor desk weekly insight. Use only the Sponsor desk connector.
-1. Call get_dashboard, get_insights, get_calendar for this Monday through Sunday, and list_videos.
-2. save_insight with kind "weekly" and week_of this Monday: 3 to 5 sentences on what moved last week, what's at risk, and the one thing to do this week. Use only numbers from get_dashboard and get_insights, and mention a rate-raise rule only if it triggered.
-3. Suggest up to 3 tasks this week with suggest_calendar_item that close the biggest gaps (pitch target, follow-ups due, overdue actions, invoices). Don't duplicate what's already on the calendar.
-4. If an upload clearly outperforms its peers, one suggest_video_idea with source performance.
+Sponsor desk weekly insight. Use only the Sponsor desk connector. Never approve anything.
+1. Call get_dashboard, get_insights, get_calendar for this Monday through Sunday, list_videos and get_prospecting_context.
+2. save_insight with kind "weekly" and week_of this Monday: 3 to 5 sentences, plain and specific. Cover what moved last week (pitches vs the weekly target, replies, deals won, money collected), what's at risk (follow-ups due, overdue actions, unpaid invoices, a slot in the next 6 weeks with no sponsor, a broken pitch streak), and the one thing to do this week. Mention a rate-raise rule only if it triggered, and the full-time tracker only if something changed (a new month at target, the projection moved). Use only numbers from get_dashboard and get_insights; don't recompute or estimate.
+3. Suggest up to 3 tasks this week with suggest_calendar_item that close the biggest gaps: pitches short of target (put a pitch block in the Wednesday sales block), follow-ups due, overdue next actions, invoices to send or chase, recaps due. Don't duplicate anything already on the calendar.
+4. If an upload clearly outperforms its peers in list_videos, one suggest_video_idea with source performance. If a category has a much better reply rate in pitch_performance, say so in the insight.
 Reply in one line.
 ```
 
