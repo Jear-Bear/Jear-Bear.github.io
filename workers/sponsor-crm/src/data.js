@@ -11,7 +11,7 @@ export class HttpError extends Error {
 }
 
 const nowIso = () => new Date().toISOString();
-const TABLES = ['companies', 'contacts', 'deals', 'payments', 'videos', 'rate_card'];
+const TABLES = ['companies', 'contacts', 'deals', 'payments', 'videos', 'rate_card', 'links'];
 const STATE_KEY = { rate_card: 'rateCard' };
 
 function fromRow(r) {
@@ -81,6 +81,18 @@ function validFinance(f) {
     healthNote: f.healthNote == null ? null : String(f.healthNote).trim().slice(0, 200) || null,
   };
 }
+// Your details for invoices (private: only in D1)
+function validInvoicing(v) {
+  if (!v || typeof v !== 'object') throw new HttpError(400, 'Invoicing must be an object');
+  const t = (x, n) => (x == null ? null : String(x).replace(/\u0000/g, '').trim().slice(0, n) || null);
+  const prefix = t(v.prefix, 10) || 'INV-';
+  if (!/^[A-Za-z0-9-]{1,10}$/.test(prefix)) throw new HttpError(400, 'The prefix can use letters, numbers and dashes');
+  const terms = v.termsDays == null || v.termsDays === '' ? 30 : Number(v.termsDays);
+  if (!Number.isInteger(terms) || terms < 0 || terms > 120) throw new HttpError(400, 'Payment terms must be 0–120 days');
+  const startAt = v.startAt == null || v.startAt === '' ? 1 : Number(v.startAt);
+  if (!Number.isInteger(startAt) || startAt < 1 || startAt > 99999) throw new HttpError(400, 'The first number must be 1–99999');
+  return { name: t(v.name, 120), email: t(v.email, 254), address: t(v.address, 400), payment: t(v.payment, 600), termsDays: terms, prefix, startAt };
+}
 // The plan's scenarios: named monthly totals, drawn against actual income
 function validScenarios(list) {
   if (!Array.isArray(list) || list.length > 5) throw new HttpError(400, 'Scenarios must be a list of up to 5');
@@ -101,7 +113,7 @@ function validScenarios(list) {
 export { validScenarios };
 const SETTING_VALIDATORS = {
   targets: validTargets, categories: validCategories, capacity: validCapacity, jobHours: validJobHours,
-  finance: validFinance, scenarios: validScenarios,
+  finance: validFinance, scenarios: validScenarios, invoicing: validInvoicing,
 };
 
 export async function putSetting(db, key, value) {
@@ -126,6 +138,7 @@ export async function settingsFor(db) {
     categories: get('categories', DEFAULT_CATEGORIES),
     capacity: get('capacity', DEFAULT_CAPACITY),
     jobHours: get('jobHours', DEFAULT_JOB_HOURS),
+    invoicing: get('invoicing', null),
   };
 }
 
@@ -135,6 +148,7 @@ export async function loadState(db) {
     ...TABLES.map((t) => db.prepare(`SELECT * FROM ${t}`)),
     db.prepare('SELECT domain, company_id FROM company_domains'),
     db.prepare('SELECT company_id, deal_id, COUNT(*) AS n, MAX(occurred_at) AS last FROM activities WHERE archived = 0 GROUP BY company_id, deal_id'),
+    db.prepare("SELECT slug, day, clicks FROM link_clicks WHERE day >= date('now', '-400 days') ORDER BY day"),
   ]);
   const state = {};
   TABLES.forEach((t, i) => { state[STATE_KEY[t] || t] = results[i].results.map(fromRow); });
@@ -142,6 +156,7 @@ export async function loadState(db) {
   results[TABLES.length].results.forEach((r) => domains.set(r.company_id, [...(domains.get(r.company_id) || []), r.domain]));
   state.companies.forEach((c) => { c.domains = (domains.get(c.id) || []).sort(); });
   state.activitySummary = results[TABLES.length + 1].results;
+  state.linkClicks = results[TABLES.length + 2].results;
   state.settings = await settingsFor(db);
   return state;
 }
@@ -241,6 +256,16 @@ function derive(entityName, values, before = {}) {
   return values;
 }
 
+// Short names for tracked links and invoice numbers must be unique
+async function checkUnique(db, entityName, values, id) {
+  const checks = { links: ['slug'], payments: ['invoice_no'] }[entityName] || [];
+  for (const col of checks) {
+    if (values[col] == null) continue;
+    const r = await db.prepare(`SELECT id FROM ${ENTITIES[entityName].table} WHERE ${col} = ? AND id != ?`).bind(values[col], id || '').first();
+    if (r) throw new HttpError(409, `${ENTITIES[entityName].fields[col].label} “${values[col]}” is already used`);
+  }
+}
+
 export async function createStmts(db, entityName, input, lookup = liveLookup(db)) {
   const v = validate(entityName, input);
   if (!v.ok) throw new HttpError(400, 'Some fields need fixing', v.errors);
@@ -248,6 +273,7 @@ export async function createStmts(db, entityName, input, lookup = liveLookup(db)
   const table = ENTITIES[entityName].table;
   if (input.id && (await lookup.has(table, id))) throw new HttpError(409, 'That ID is already used');
   await checkRefs(entityName, v.values, lookup);
+  await checkUnique(db, entityName, v.values, null);
   const values = derive(entityName, v.values);
   const stmts = [insertStmt(db, entityName, id, values)];
   lookup.add(table, id);
@@ -283,6 +309,7 @@ export async function updateRecord(db, entityName, id, input) {
   const v = validate(entityName, input, { partial: true });
   if (!v.ok) throw new HttpError(400, 'Some fields need fixing', v.errors);
   await checkRefs(entityName, v.values, liveLookup(db));
+  await checkUnique(db, entityName, v.values, id);
   const values = derive(entityName, v.values, before);
   const table = ENTITIES[entityName].table;
   const cols = Object.keys(values).filter((k) => !ENTITIES[entityName].fields[k].virtual);

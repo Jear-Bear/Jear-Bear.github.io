@@ -172,6 +172,23 @@ The history is written only to the runner's temporary folder, sent over
 HTTPS with the key, and never printed or committed. Without the key the step
 is skipped. To stop it, delete the secret.
 
+## Deal dates, invoices and tracked links
+
+- **Contract dates**: a deal's script due, draft due, exclusivity end and
+  usage-rights end show on the calendar. The exclusivity end is when you can
+  pitch that brand's competitors.
+- **Invoices**: fill in **Settings → Invoices** once (your name, email,
+  address, how to pay you, terms, number prefix). On a Negotiating, Won or
+  Delivered deal, **Create invoice** numbers it, records it under Payments as
+  invoiced, and opens the print dialog; choose "Save as PDF". Reprint from the
+  payment. The 30-day chase reminder uses the invoice date.
+- **Tracked links**: on a deal, **New tracked link** makes
+  `https://www.jareddesu.com/go/<name>` for the video description. The site's
+  404 page forwards `/go/…` to the Worker, which counts the click (a number
+  per day; no IPs or cookies) and redirects to the sponsor. `utm_*`
+  parameters pass through. Clicks show on the deal, in Insights, and in the
+  30-day recap. Archiving a link stops it redirecting.
+
 ## Changing the password
 
 Update the `SPONSOR_MANAGEMENT_PASSWORD` GitHub secret, then run **Sponsor CRM
