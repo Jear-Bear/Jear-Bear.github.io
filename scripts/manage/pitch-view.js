@@ -7,7 +7,7 @@ import { request } from './api.js';
 import { store, reload, companyName, dealTitle, today } from './store.js';
 import { openPanel, closePanel, toast, toastError, button, busy } from './ui.js';
 import { addDays } from './rules.js';
-import { pitchValues, renderTemplate, templatesFrom, gmailComposeUrl } from './pitching.js';
+import { pitchValues, renderTemplate, templatesFrom, gmailComposeUrl, RECAP_TEMPLATE, recapValues } from './pitching.js';
 import { insightData } from './insights-view.js';
 import { copyText } from './growth.js';
 
@@ -82,5 +82,41 @@ export async function openPitch(d, { returnTo } = {}) {
       notes, h('div', { class: 'crm-row-actions' }, claudeBtn),
       draftStatus(d)),
     footer: h('div', { class: 'crm-row-actions' }, markPitched, button('Close', () => (returnTo ? returnTo() : closePanel()))),
+  });
+}
+
+// 30-day results recap with a renewal offer
+export async function openRecap(d, { returnTo } = {}) {
+  let data = null;
+  try { data = await insightData(); } catch { /* placeholders */ }
+  const vals = recapValues(store.state, d, {
+    uploads: data ? data.uploads : [], linkClicks: store.state.linkClicks || [], channel: data && data.channel,
+    daily: data ? data.daily : [], audience: data && data.audience, today: today(),
+  });
+  const to = h('input', { type: 'email', value: vals.to, placeholder: 'Their email' });
+  const subject = h('input', { value: renderTemplate(RECAP_TEMPLATE.subject, vals) });
+  const body = h('textarea', { rows: 16, class: 'crm-pitch-body' }, renderTemplate(RECAP_TEMPLATE.body, vals));
+  const notes = h('input', { placeholder: 'Anything Claude should mention (optional)' });
+  const claudeBtn = button('Ask Claude to draft it', () => askClaude(d, 'recap', notes.value.trim(), claudeBtn).catch(() => {}));
+  const sent = button('Mark recap sent', async () => {
+    await busy(sent, () => request('POST', 'activities', { deal_id: d.id, company_id: d.company_id, kind: 'note', title: 'Sent the 30-day results recap' }));
+    await reload();
+    toast('Logged on the timeline', { kind: 'ok', ms: 2500 });
+    if (returnTo) returnTo(); else closePanel({ force: true });
+  }, { kind: 'primary' });
+  openPanel({
+    label: 'Results recap', title: `Recap for ${companyName(d.company_id)}`, subtitle: dealTitle(d),
+    body: h('div', { class: 'crm-pitch' },
+      vals.published ? h('p', { class: 'crm-note is-muted' }, `Published ${vals.published}. ${vals.views30 == null ? 'Link the YouTube upload to the video to fill in views.' : ''}${vals.clicks == null ? ' Add a tracked link next time to report clicks.' : ''}`) : h('p', { class: 'crm-note is-error' }, 'Link this deal to its video (and the video to its upload) to fill in the numbers.'),
+      h('label', { class: 'crm-field' }, 'To', to),
+      h('label', { class: 'crm-field' }, 'Subject', subject),
+      h('label', { class: 'crm-field' }, 'Message', body),
+      h('div', { class: 'crm-row-actions' },
+        button('Open in Gmail', () => window.open(gmailComposeUrl({ to: to.value, subject: subject.value, body: body.value }), '_blank', 'noopener'), { kind: 'chip' }),
+        button('Copy', () => copyText(`Subject: ${subject.value}\n\n${body.value}`, 'Recap copied'), { kind: 'chip' })),
+      h('h3', { class: 'crm-subhead' }, 'Or let Claude write it'),
+      notes, h('div', { class: 'crm-row-actions' }, claudeBtn),
+      draftStatus(d)),
+    footer: h('div', { class: 'crm-row-actions' }, sent, button('Close', () => (returnTo ? returnTo() : closePanel()))),
   });
 }
