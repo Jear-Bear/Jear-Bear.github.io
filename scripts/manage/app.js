@@ -11,6 +11,7 @@ import { openImport, exportAs, CSV_TABLES } from './io.js';
 import { calendarView } from './cal-view.js';
 import { reviewView, refreshReviewCount, whenReviewCountChanges } from './review.js';
 import { insightsView } from './insights-view.js';
+import { DEFAULT_AVOID, DEFAULT_TEMPLATES, templatesFrom, avoidFrom } from './pitching.js';
 import { closePanel, panelOpen, panelDirty, toast, button, busy } from './ui.js';
 
 // Refuse to run inside a frame (GitHub Pages can't send frame-ancestors)
@@ -186,6 +187,26 @@ function settingsView(root) {
       await reload();
       toast('Saved', { kind: 'ok', ms: 2500 });
     });
+    const avoidEl = h('textarea', { rows: 6, 'aria-label': 'Avoid list, one per line' }, avoidFrom(s.settings).join('\n'));
+    const saveAvoid = button('Save avoid list', async () => {
+      await busy(saveAvoid, () => api.setting('avoid', avoidEl.value.split('\n').map((x) => x.trim()).filter(Boolean)));
+      await reload();
+      toast('Saved', { kind: 'ok', ms: 2500 });
+    });
+    const tpls = templatesFrom(s.settings).map((t) => ({ ...t }));
+    const tplBox = h('div', { class: 'crm-templates' });
+    const drawTpls = () => tplBox.replaceChildren(...tpls.map((t, i) => h('fieldset', { class: 'crm-template' },
+      h('legend', {}, t.name || `Template ${i + 1}`),
+      h('label', { class: 'crm-field' }, 'Name', h('input', { value: t.name, maxlength: 40, oninput: (e) => { t.name = e.target.value; } })),
+      h('label', { class: 'crm-field' }, 'Subject', h('input', { value: t.subject, maxlength: 200, oninput: (e) => { t.subject = e.target.value; } })),
+      h('label', { class: 'crm-field' }, 'Message', h('textarea', { rows: 8, oninput: (e) => { t.body = e.target.value; } }, t.body)),
+      tpls.length > 1 ? button('Remove template', () => { tpls.splice(i, 1); drawTpls(); }, { kind: 'chip' }) : null)));
+    drawTpls();
+    const saveTpls = button('Save templates', async () => {
+      await busy(saveTpls, () => api.setting('pitchTemplates', tpls));
+      await reload();
+      toast('Templates saved', { kind: 'ok', ms: 2500 });
+    }, { kind: 'primary' });
     const mcpUrl = h('input', { type: 'text', readonly: true, value: `${API_BASE}/mcp`, 'aria-label': 'Connector URL' });
     const copyBtn = button('Copy', async () => { try { await navigator.clipboard.writeText(mcpUrl.value); toast('Copied', { kind: 'ok', ms: 1500 }); } catch { mcpUrl.select(); } }, { kind: 'chip' });
     const grantsEl = h('ul', { class: 'crm-mini-list' }, h('li', { class: 'crm-note is-muted' }, 'Loading…'));
@@ -222,6 +243,16 @@ function settingsView(root) {
           h('label', { class: 'crm-field' }, 'Job starts', jobStart), h('label', { class: 'crm-field' }, 'Job ends', jobEnd)),
         h('div', { class: 'crm-chip-row' }, jobDays),
         h('div', { class: 'crm-row-actions' }, saveHours)),
+      h('section', { class: 'crm-section' }, h('h2', { class: 'crm-section-title' }, 'Pitch templates'),
+        h('p', { class: 'crm-note is-muted' }, 'Used by Write pitch on a deal, and by Claude when you ask it to draft one. Placeholders: {{first_name}} {{company}} {{video}} {{month}} {{subscribers}} {{monthly_views}} {{english_share}} {{package}} {{price}} {{kit}}. Text in [square brackets] is flagged until you replace it.'),
+        tplBox,
+        h('div', { class: 'crm-row-actions' }, saveTpls,
+          button('Add template', () => { tpls.push({ name: 'New template', subject: '', body: '' }); drawTpls(); }, { kind: 'chip' }),
+          button('Reset to defaults', () => { tpls.splice(0, tpls.length, ...DEFAULT_TEMPLATES.map((t) => ({ ...t }))); drawTpls(); }, { kind: 'chip' }))),
+      h('section', { class: 'crm-section' }, h('h2', { class: 'crm-section-title' }, 'Avoid list'),
+        h('p', { class: 'crm-note is-muted' }, `Brands and offers Claude skips when prospecting, and flags when they pitch you. One per line.${s.settings.avoid ? '' : ' (Showing the plan’s defaults.)'}`),
+        avoidEl, h('div', { class: 'crm-row-actions' }, saveAvoid,
+          button('Reset to defaults', () => { avoidEl.value = DEFAULT_AVOID.join('\n'); }, { kind: 'chip' }))),
       h('section', { class: 'crm-section' }, h('h2', { class: 'crm-section-title' }, 'Invoices'),
         h('p', { class: 'crm-note is-muted' }, 'Printed on every invoice. Private: stored only in the CRM database.'),
         h('div', { class: 'crm-form-grid' },

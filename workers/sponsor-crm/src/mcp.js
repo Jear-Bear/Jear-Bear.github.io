@@ -10,6 +10,8 @@ import { loadCalendar, createItem } from './calendar.js';
 import { listUploads } from './youtube.js';
 import { loadInsights } from './stats.js';
 import { allInsights } from '../../../scripts/manage/insights.js';
+import { listDrafts, closeDraft } from './drafts.js';
+import { pitchValues, renderTemplate, templatesFrom, avoidFrom, prospectingRules, pitchPerformance, MEDIA_KIT_URL } from '../../../scripts/manage/pitching.js';
 import {
   logEmail, createProposal, suggestVideoIdea, saveInsight, getCursor, setCursor, PROPOSAL_KINDS,
 } from './claude.js';
@@ -120,6 +122,53 @@ export function createServer(env) {
       past_weekly_insights: data.insights.filter((i) => i.kind === 'weekly').slice(0, 4).map((i) => ({ week_of: i.week_of, text: i.text })),
     };
   });
+
+  tool('get_prospecting_context', 'What to know before researching new sponsors: the avoid list, categories in cooldown (one sponsor per category every 60 days) with the date they reopen, brands to skip for now (pitched recently without a reply, or already in an open deal), active exclusivity, tracked companies, open video slots in the next 90 days, the rate card and pitch performance so far.', {}, READ, async () => {
+    const s = await loadState(db);
+    const today = todayIn(s.settings.tz);
+    const rules = prospectingRules(s, today);
+    const horizon = new Date(Date.UTC(+today.slice(0, 4), +today.slice(5, 7) - 1, +today.slice(8, 10) + 90)).toISOString().slice(0, 10);
+    const slots = live(s.videos).filter((v) => v.publish_date && v.publish_date >= today && v.publish_date <= horizon)
+      .map((v) => ({ title: v.title, publish_date: v.publish_date, format: v.format, sponsor_status: v.sponsor_status, taken: live(s.deals).some((d) => d.video_id === v.id && ['Negotiating', 'Won', 'Delivered', 'Paid'].includes(d.stage)) }))
+      .filter((v) => !v.taken && v.sponsor_status !== 'sponsor_free' && (v.format || 'guide') === 'guide');
+    return {
+      today, avoid: avoidFrom(s.settings), categories: s.settings.categories, category_cooldowns: rules.cooldowns,
+      skip_for_now: { pitched_without_reply: rules.recentNoReply, in_open_deals: rules.active }, exclusivity: rules.exclusivity,
+      tracked_companies: live(s.companies).map((c) => ({ name: c.name, category: c.category, domains: c.domains })),
+      open_slots: slots, rate_card: live(s.rateCard).map((r) => ({ package: r.package, standard: r.standard })),
+      pitch_performance: { by_category: pitchPerformance(s, { by: 'category' }), by_style: pitchPerformance(s, { by: 'pitch_style' }) },
+      media_kit: MEDIA_KIT_URL,
+    };
+  });
+
+  tool('get_draft_requests', 'Emails Jared asked you to draft (pitch, follow_up or recap), with everything needed: the deal, company, contact, video slot, price, current channel numbers, clicks on the tracked link, and his template for pitches. Draft each in Gmail with create_draft (never send), then call complete_draft_request.', {}, READ, async () => {
+    const [s, open, data] = await Promise.all([loadState(db), listDrafts(db, { status: 'open' }), loadInsights(db)]);
+    const today = todayIn(s.settings.tz);
+    const templates = templatesFrom(s.settings);
+    return open.map((r) => {
+      const d = s.deals.find((x) => x.id === r.deal_id);
+      if (!d) return { id: r.id, kind: r.kind, error: 'Deal not found' };
+      const vals = pitchValues(s, d, { channel: data.channel, daily: data.daily, audience: data.audience, today });
+      const tpl = templates.find((t) => t.id === d.pitch_style || t.name === d.pitch_style) || templates[0];
+      const links = live(s.links || []).filter((l) => l.deal_id === d.id).map((l) => ({
+        url: `https://www.jareddesu.com/go/${l.slug}`, clicks: (s.linkClicks || []).filter((c) => c.slug === l.slug).reduce((n, c) => n + c.clicks, 0),
+      }));
+      const v = d.video_id ? s.videos.find((x) => x.id === d.video_id) : null;
+      const up = v && v.youtube_id ? data.uploads.find((u) => u.youtube_id === v.youtube_id) : null;
+      return {
+        id: r.id, kind: r.kind, requested: r.created_at, jared_notes: r.notes,
+        deal: { id: d.id, stage: d.stage, package: d.package, quoted: d.quoted, final: d.final, pitched_on: d.pitched_on, next_action: d.next_action },
+        to: vals.to || null, values: vals,
+        template: r.kind === 'pitch' ? { name: tpl.name, subject: renderTemplate(tpl.subject, vals), body: renderTemplate(tpl.body, vals) } : null,
+        video: v ? { title: v.title, publish_date: v.publish_date, view_estimate_30d: v.view_estimate, views_at_30_days: up ? up.views_30d : null, views_now: up ? up.views : null, url: v.youtube_id ? `https://youtu.be/${v.youtube_id}` : null } : null,
+        tracked_links: links,
+      };
+    });
+  });
+
+  tool('complete_draft_request', 'Mark a draft request done after saving the Gmail draft (or cancelled if it can’t be drafted), with a one-line note such as the draft\'s subject.', {
+    id: uuid, status: z.enum(['done', 'cancelled']), note: z.string().max(500),
+  }, WRITE, ({ id, status, note }) => closeDraft(db, id, { status, result: note }));
 
   tool('get_rate_card', 'Sponsorship packages with standard prices and private floors.', {}, READ, async () => {
     const s = await loadState(db);

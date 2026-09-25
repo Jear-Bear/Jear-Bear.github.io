@@ -95,7 +95,7 @@ function checkIncome(values) {
 function validateNewCompanyDeal(values) {
   const c = values && values.company;
   if (!c || typeof c !== 'object') throw new HttpError(400, 'new_company_deal needs a company');
-  const company = checkFields('companies', ['name', 'domains', 'category', 'website', 'notes'], c);
+  const company = checkFields('companies', ['name', 'domains', 'category', 'website', 'notes', 'fit', 'contact_method', 'form_url'], c);
   if (!company.name) throw new HttpError(400, 'The company needs a name');
   const contact = values.contact ? checkFields('contacts', ['name', 'email', 'role'], values.contact) : null;
   const { rest, paid } = splitPaid(values.deal);
