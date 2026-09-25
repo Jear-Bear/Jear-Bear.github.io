@@ -34,6 +34,9 @@ jobs:
           YT_OAUTH_CLIENT_SECRET: ${{ secrets.YT_OAUTH_CLIENT_SECRET }}
           YT_OAUTH_REFRESH_TOKEN: ${{ secrets.YT_OAUTH_REFRESH_TOKEN }}
           DASHBOARD_PASSWORD: ${{ secrets.DASHBOARD_PASSWORD }}
+          # Private daily history for the sponsor CRM: written to the runner's
+          # temp dir (never the repo) only when the ingest key is set
+          CRM_INGEST_FILE: ${{ secrets.CRM_INGEST_KEY != '' && format('{0}/crm-ingest.json', runner.temp) || '' }}
 
       - name: Commit if changed
         run: |
@@ -48,3 +51,25 @@ jobs:
           git commit -m "Update sponsor stats"
           git pull --rebase origin "${GITHUB_REF_NAME}"
           git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      # Sends the daily views and subscriber changes to the sponsor CRM Worker
+      # (docs/sponsor-crm-setup.md). Skipped until CRM_INGEST_KEY is set.
+      # The data is never printed or committed.
+      - name: Send history to the sponsor CRM
+        env:
+          CRM_INGEST_KEY: ${{ secrets.CRM_INGEST_KEY }}
+          CRM_INGEST_URL: https://sponsor-crm.jared-65b.workers.dev/api/ingest/stats
+        run: |
+          FILE="${RUNNER_TEMP}/crm-ingest.json"
+          if [ -z "$CRM_INGEST_KEY" ] || [ ! -f "$FILE" ]; then
+            echo "CRM_INGEST_KEY not set; skipping."
+            exit 0
+          fi
+          status=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 -X POST "$CRM_INGEST_URL" \
+            -H "Authorization: Bearer ${CRM_INGEST_KEY}" -H 'Content-Type: application/json' --data-binary "@${FILE}")
+          rm -f "$FILE"
+          if [ "$status" != "200" ]; then
+            echo "::warning::The sponsor CRM didn't accept the history (HTTP $status)."
+            exit 1
+          fi
+          echo "Sent the history to the sponsor CRM."
