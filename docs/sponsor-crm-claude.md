@@ -10,7 +10,8 @@ subscription and Cloudflare's free plan.
 
 ## What Claude can and can't do
 
-**Read:** tracked companies (with email domains and contacts), deals,
+**Read:** prospecting context (avoid list, category cooldowns, brands to
+skip, open slots), drafts you asked for, tracked companies (with email domains and contacts), deals,
 payments, the dashboard numbers, the Insights numbers (streak, rate-raise
 rules, milestone projections, full-time progress, computed in code), calendar items for a date range, video slots and uploads
 with views, the rate card, and the email sync state.
@@ -28,6 +29,8 @@ with views, the rate card, and the email sync state.
 - `save_insight`: the Monday commentary, shown at the top of the dashboard
   (earlier ones stay under "Earlier insights").
 - `update_sync_cursor`: where the email sync stopped.
+- `complete_draft_request`: marks a draft you asked for as done, after Claude
+  saves it in Gmail with the Gmail connector (drafts only, never sent).
 
 There is **no tool that deletes anything** or directly changes a stage, an
 amount or a date. Every proposal waits in **Review** until you **Pass** it (you
@@ -71,7 +74,9 @@ Sponsor desk email sync. Use the Sponsor desk and Gmail connectors. Never send e
 3. File a create_proposal only when an email clearly supports it (evidence quote, one-line reason, confidence): stage_change, amounts, dates, next_action, new_contact, add_domain (a tracked company writing from an untracked domain), new_deal (a tracked company with no deal yet), or new_company_deal (a new brand asking to sponsor). Skip anything already in pending_proposals. If a pitch is from a brand the plan avoids (AI tutors or chatbots, crypto or NFTs, gambling, "fluent in X days" apps, commission-only offers, direct Migaku competitors), still file it, but with confidence low and a reason starting "Avoid (per plan):".
 4. If an email needs a reply or action, suggest_calendar_item: a task due within 2 working days.
 5. If sponsors ask for topics or formats, suggest_video_idea with source sponsor_conversations.
-6. update_sync_cursor to "after:YYYY/MM/DD" for the newest message processed. Reply in two lines: what you logged and filed.
+6. update_sync_cursor to "after:YYYY/MM/DD" for the newest message processed.
+7. Call get_draft_requests. For each: write the email in Gmail with create_draft to the given address (never send). Pitch: start from the template text, replace every [bracketed] part with one specific, true line about the brand (check their site), keep the numbers as given, keep it under 150 words. Follow-up: a short, friendly nudge on the original thread's subject. Recap: the numbers given (views at 30 days vs estimate, clicks), one line on what worked, and a renewal offer at the given price. Then complete_draft_request with the draft's subject, or cancelled with the reason.
+Reply in two lines: what you logged and filed, and which drafts you saved.
 ```
 
 ### 2. Weekly insight: Mondays at 8:00 AM (Central)
@@ -104,6 +109,22 @@ without a payment are listed at the top of **Payments** with a one-click
 
 Passing a **Payment received** proposal marks a matching invoiced-but-unpaid
 payment (same deal and amount) as paid, or records a new payment on the deal.
+
+### 4. Prospecting: Mondays at 8:30 AM (Central)
+
+```
+Sponsor desk prospecting. Use the Sponsor desk connector and web search. Never contact anyone.
+1. Call get_prospecting_context.
+2. Find 8 brands that could sponsor a Japanese-learning guide video: products Japanese learners actually use (apps, tutoring, dictionaries, e-books and manga, keyboards and desk gear, Japan travel, study abroad, snack boxes, VPNs, creator tools). Skip anything on the avoid list, any category in category_cooldowns, anything in skip_for_now or tracked_companies, and competitors of active exclusivity. Prefer brands that already sponsor language or Japan creators, or run a creator/affiliate program, and categories with better reply rates in pitch_performance.
+3. For each, create_proposal kind new_company_deal with company {name, domains, category (one of categories), website, fit (High/Medium/Low), contact_method ("email" or "form"), form_url if they use a form} and deal {source "Cold", stage "Researching", notes: which open slot fits and why, in one sentence; and the partnerships contact route}. Evidence: the page you found it on (subject: the page title, quote: the line that shows they sponsor creators or fit). Confidence medium unless the fit is obvious.
+Reply in one line: how many you filed and the categories.
+```
+
+Pass the ones you like in **Review**; they land in the Pipeline at
+Researching. On a deal, **Write pitch…** fills your template with live
+numbers: open it as a Gmail draft, or **Ask Claude to draft it** and the
+morning run saves a personalized draft. **Mark as pitched** records which
+template you used for **Insights → Pitch performance**.
 
 ## Security notes
 

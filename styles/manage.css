@@ -591,3 +591,12 @@ body.is-dragging-upload .crm-videos-planned .crm-row.is-video:not(.is-head) { ou
   .crm-print-pay, .crm-print-notes { margin-top: 12px; }
   @page { margin: 18mm; }
 }
+
+/* --- Pitching --------------------------------------------------------------------- */
+.crm-pitch { display: grid; gap: 10px; }
+.crm-pitch input, .crm-pitch select, .crm-pitch textarea, .crm-templates input, .crm-templates textarea { font: inherit; padding: 7px 9px; border: 1px solid var(--rule-strong); background: var(--paper-light); color: var(--ink); width: 100%; }
+.crm-pitch-body { font-size: 13px; line-height: 1.6; }
+.crm-templates { display: grid; gap: 12px; }
+.crm-template { border: 1px solid var(--rule); padding: 10px 12px; display: grid; gap: 8px; }
+.crm-template legend { font-weight: 600; font-size: 13px; padding: 0 4px; }
+.crm-drafts .crm-note { margin: 4px 0; }

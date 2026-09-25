@@ -93,6 +93,28 @@ function validInvoicing(v) {
   if (!Number.isInteger(startAt) || startAt < 1 || startAt > 99999) throw new HttpError(400, 'The first number must be 1–99999');
   return { name: t(v.name, 120), email: t(v.email, 254), address: t(v.address, 400), payment: t(v.payment, 600), termsDays: terms, prefix, startAt };
 }
+// Brands and kinds of offers to skip (one short line each)
+function validAvoid(list) {
+  if (!Array.isArray(list) || list.length > 40 || !list.every((x) => typeof x === 'string' && x.trim() && x.length <= 120)) {
+    throw new HttpError(400, 'The avoid list is up to 40 short lines');
+  }
+  return list.map((x) => x.trim());
+}
+// Your pitch templates ({{placeholders}} are filled per deal)
+function validTemplates(list) {
+  if (!Array.isArray(list) || !list.length || list.length > 12) throw new HttpError(400, 'Keep 1–12 templates');
+  const ids = new Set();
+  return list.map((t, i) => {
+    const name = t && typeof t.name === 'string' ? t.name.trim().slice(0, 40) : '';
+    const subject = t && typeof t.subject === 'string' ? t.subject.trim().slice(0, 200) : '';
+    const body = t && typeof t.body === 'string' ? t.body.replace(/\u0000/g, '').slice(0, 5000) : '';
+    if (!name || !body.trim()) throw new HttpError(400, `Template ${i + 1} needs a name and a body`);
+    let id = t.id && /^[a-z0-9-]{1,40}$/.test(t.id) ? t.id : name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || `t${i + 1}`;
+    while (ids.has(id)) id = `${id}-${i + 1}`.slice(0, 40);
+    ids.add(id);
+    return { id, name, subject, body };
+  });
+}
 // The plan's scenarios: named monthly totals, drawn against actual income
 function validScenarios(list) {
   if (!Array.isArray(list) || list.length > 5) throw new HttpError(400, 'Scenarios must be a list of up to 5');
@@ -114,6 +136,7 @@ export { validScenarios };
 const SETTING_VALIDATORS = {
   targets: validTargets, categories: validCategories, capacity: validCapacity, jobHours: validJobHours,
   finance: validFinance, scenarios: validScenarios, invoicing: validInvoicing,
+  avoid: validAvoid, pitchTemplates: validTemplates,
 };
 
 export async function putSetting(db, key, value) {
@@ -139,6 +162,8 @@ export async function settingsFor(db) {
     capacity: get('capacity', DEFAULT_CAPACITY),
     jobHours: get('jobHours', DEFAULT_JOB_HOURS),
     invoicing: get('invoicing', null),
+    avoid: get('avoid', null),
+    pitchTemplates: get('pitchTemplates', null),
   };
 }
 
