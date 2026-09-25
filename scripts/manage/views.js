@@ -296,12 +296,23 @@ export function paymentsView(root) {
     const paid = pays.filter((p) => p.paid_on);
     const year = new Date().getFullYear();
     const ytd = paid.filter((p) => p.paid_on.startsWith(String(year)));
+    // Deals marked Paid with no payment recorded don't count as income until one is added
+    const withPayment = new Set(paid.map((p) => p.deal_id));
+    const missing = live(store.state.deals).filter((d) => d.stage === 'Paid' && !withPayment.has(d.id));
+    const missingList = missing.length ? h('section', { class: 'crm-section' },
+      h('h2', { class: 'crm-section-title' }, `Paid deals with no payment recorded (${missing.length})`),
+      h('p', { class: 'crm-note is-muted' }, 'These don’t count toward income until the payment is recorded.'),
+      h('ul', { class: 'crm-mini-list' }, missing.map((d) => h('li', { class: 'crm-missing-pay' },
+        h('button', { type: 'button', class: 'crm-row-btn', onclick: () => openDeal(d) },
+          h('span', {}, dealTitle(d)), h('span', { class: 'crm-muted' }, [d.package, (d.final ?? d.quoted) != null ? fmtMoney(d.final ?? d.quoted, { cents: true }) : null].filter(Boolean).join(' · '))),
+        button('Record payment', () => openPayment(null, { preset: { deal_id: d.id, amount: d.final ?? d.quoted ?? null } }), { kind: 'chip' }))))) : null;
     root.replaceChildren(
       viewHead('Payments', '入金', [button('New payment', () => openPayment(null), { kind: 'primary' })]),
       h('div', { class: 'crm-tiles is-small' },
         tile(`Collected ${year}`, fmtMoney(ytd.reduce((t, p) => t + p.amount, 0))),
         tile(`Net ${year}`, fmtMoney(ytd.reduce((t, p) => t + (p.net ?? p.amount), 0))),
         tile('Invoiced, unpaid', fmtMoney(pays.filter((p) => p.invoiced_on && !p.paid_on).reduce((t, p) => t + p.amount, 0)))),
+      missingList,
       pays.length ? h('div', { class: 'crm-rows' },
         h('div', { class: 'crm-row is-head is-payment', 'aria-hidden': 'true' }, ['Deal', 'Amount', 'Invoiced', 'Paid', 'Net'].map((t) => h('span', {}, t))),
         pays.map((p) => h('button', { type: 'button', class: ['crm-row', 'is-payment', p.invoiced_on && !p.paid_on && 'has-flags'], onclick: () => openPayment(p) },
