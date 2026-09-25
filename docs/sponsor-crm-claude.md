@@ -94,10 +94,10 @@ Reply in one line.
 
 ```
 Sponsor desk payment check. Use the Sponsor desk and Gmail connectors. Never send email, never reply, and never approve anything.
-1. Call list_deals, list_payments and get_sync_state. In Gmail, search the last 3 days for money received: PayPal, Stripe, Wise, Payoneer, Venmo, Zelle, bank deposit or ACH notices, Google AdSense and YouTube payments, affiliate payouts (Migaku, Amazon Associates, others), "payment received", "you've received", "remittance", "invoice paid", "payout", "transfer". Skip receipts for things I bought, refunds, payouts I sent, personal transfers, and anything already in pending_proposals (match by message ID).
+1. Call list_deals, list_payments and get_sync_state. In Gmail, search the last 3 days for money received: PayPal, Stripe, Wise, Payoneer, Venmo, Zelle, bank deposit or ACH notices, affiliate payouts (Migaku, Amazon Associates, others), "payment received", "you've received", "remittance", "invoice paid", "payout", "transfer". Skip receipts for things I bought, refunds, payouts I sent, personal transfers, Google AdSense and YouTube payment emails (YouTube revenue comes from the monthly YouTube revenue task), and anything already in pending_proposals (match by message ID).
 2. Sponsor payments: match to a deal by company name, sender, or invoice number (list_payments shows invoice numbers like INV-0001 and unpaid invoices). If list_payments already shows it paid (same deal, amount and date), skip it. Otherwise create_proposal kind "payment" with the deal_id and values {amount (the gross the sponsor paid, in USD; use a USD figure only if the email states one), paid_on (YYYY-MM-DD it arrived), method, fees and net only if shown}. If the payment covers everything owed on a deal at Won or Delivered, also file stage_change to "Paid".
 3. A sponsor that paid but has no deal: file new_deal (tracked company, with company_id) or new_company_deal, with stage "Paid", quoted, and paid_amount, paid_on and paid_method, so passing it records the payment.
-4. Other creator income (AdSense, YouTube memberships, affiliate payouts, anything else): create_proposal kind "income" with values {month (YYYY-MM the money arrived), source ("adsense", "memberships", "affiliates" or "other"), amount (USD), program (e.g. "Migaku", "Amazon")}. Never file affiliate payouts as deals.
+4. Other creator income that isn't from YouTube (affiliate payouts, anything else): create_proposal kind "income" with values {month (YYYY-MM the money arrived), source ("affiliates" or "other"), amount (USD), program (e.g. "Migaku", "Amazon")}. Never file affiliate payouts as deals.
 5. Every proposal: evidence with the email date, subject, a quote under 300 characters showing the amount, and the Gmail message ID. Confidence high only when the payer and amount are both clear.
 Reply in one line: sponsor payments, other income, and anything you couldn't match.
 ```
@@ -126,6 +126,25 @@ Researching. On a deal, **Write pitch…** fills your template with live
 numbers: open it as a Gmail draft, or **Ask Claude to draft it** and the
 morning run saves a personalized draft. **Mark as pitched** records which
 template you used for **Insights → Pitch performance**.
+
+### 5. YouTube revenue: monthly, on the 5th at 8:00 AM (Central)
+
+Uses the **vidIQ** connector (connected to your channel), which can read
+YouTube Analytics revenue. The CRM's own YouTube connection can't, by design.
+
+```
+Sponsor desk YouTube revenue. Use the vidIQ and Sponsor desk connectors. Never approve anything.
+1. Call get_sync_state. With vidiq_channel_analytics for channel UCSIxTP9PCM2kcTszONRxZ1w, dimensions ["month"], metrics ["estimatedRevenue", "estimatedAdRevenue", "estimatedRedPartnerRevenue"], get last month (first to last day).
+2. File two create_proposal kind "income" for that month (skip a zero amount):
+   - source "adsense", program "YouTube ads + Premium", amount = estimatedAdRevenue + estimatedRedPartnerRevenue (rounded to cents).
+   - source "memberships", program "YouTube memberships, Supers and other", amount = estimatedRevenue − estimatedAdRevenue − estimatedRedPartnerRevenue.
+   Evidence: subject "YouTube Analytics · <month>", quote with the three numbers, message_id "youtube-analytics:<YYYY-MM>:<source>". Confidence high. Reason: "Estimated earnings from YouTube Analytics (by month earned)."
+Reply in one line with both amounts.
+```
+
+The numbers are YouTube's estimated earnings by the month they were earned
+(what Studio shows), not the AdSense payout date. Pass them with
+**Review → Select all income → Pass selected**.
 
 ## Security notes
 
