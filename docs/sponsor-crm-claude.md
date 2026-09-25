@@ -94,11 +94,12 @@ Reply in one line.
 
 ```
 Sponsor desk payment check. Use the Sponsor desk and Gmail connectors. Never send email, never reply, and never approve anything.
-1. Call list_deals and list_payments. In Gmail, search the last 3 days for money received: PayPal, Stripe, Wise, Payoneer, Venmo, Zelle, bank deposit or ACH notices, "payment received", "you've received", "remittance", "invoice paid", "transfer". Skip receipts for things I bought, refunds, payouts I sent, and anything that isn't a sponsor paying me.
-2. For each payment from a sponsor: match it to a deal by company name, sender or invoice number. If list_payments already shows it paid (same deal, amount and date), skip it. Otherwise create_proposal with kind "payment", the deal_id, and values {amount (the gross the sponsor paid, in USD; convert only if the email states the USD amount), paid_on (YYYY-MM-DD it arrived), method (PayPal, Wise, bank…), fees and net only if the email shows them}. Evidence: the email date, subject, a quote under 300 characters with the amount, and the message ID. Confidence high only when the sponsor and amount are both clear.
-3. If the payment covers everything owed on a deal at Won or Delivered, also create_proposal stage_change to "Paid".
-4. If a sponsor paid but has no deal: file new_deal (tracked company, with company_id) or new_company_deal, with stage "Paid", quoted, and paid_amount, paid_on and paid_method, so passing it records the payment. Anything else you can't match, don't guess: mention it in your reply.
-Reply in one line: payments found, proposals filed, anything unmatched.
+1. Call list_deals, list_payments and get_sync_state. In Gmail, search the last 3 days for money received: PayPal, Stripe, Wise, Payoneer, Venmo, Zelle, bank deposit or ACH notices, Google AdSense and YouTube payments, affiliate payouts (Migaku, Amazon Associates, others), "payment received", "you've received", "remittance", "invoice paid", "payout", "transfer". Skip receipts for things I bought, refunds, payouts I sent, personal transfers, and anything already in pending_proposals (match by message ID).
+2. Sponsor payments: match to a deal by company name, sender, or invoice number (list_payments shows invoice numbers like INV-0001 and unpaid invoices). If list_payments already shows it paid (same deal, amount and date), skip it. Otherwise create_proposal kind "payment" with the deal_id and values {amount (the gross the sponsor paid, in USD; use a USD figure only if the email states one), paid_on (YYYY-MM-DD it arrived), method, fees and net only if shown}. If the payment covers everything owed on a deal at Won or Delivered, also file stage_change to "Paid".
+3. A sponsor that paid but has no deal: file new_deal (tracked company, with company_id) or new_company_deal, with stage "Paid", quoted, and paid_amount, paid_on and paid_method, so passing it records the payment.
+4. Other creator income (AdSense, YouTube memberships, affiliate payouts, anything else): create_proposal kind "income" with values {month (YYYY-MM the money arrived), source ("adsense", "memberships", "affiliates" or "other"), amount (USD), program (e.g. "Migaku", "Amazon")}. Never file affiliate payouts as deals.
+5. Every proposal: evidence with the email date, subject, a quote under 300 characters showing the amount, and the Gmail message ID. Confidence high only when the payer and amount are both clear.
+Reply in one line: sponsor payments, other income, and anything you couldn't match.
 ```
 
 For a sponsor that paid but has no deal in the CRM yet, Claude files a new
