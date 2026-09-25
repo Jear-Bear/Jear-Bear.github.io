@@ -17,9 +17,9 @@ const LOW_RISK = ['next_action', 'new_contact', 'add_domain'];
 const FIELD_LABEL = {
   stage: 'Stage', quoted: 'Quoted ($)', final: 'Final ($)', pitched_on: 'Pitched on', replied_on: 'Replied on', publish_date: 'Publish date',
   next_action: 'Next action', next_action_date: 'Next action date', source: 'Source', package: 'Package', slot_note: 'Slot', notes: 'Notes', name: 'Name', email: 'Email', role: 'Role', domain: 'Domain',
-  amount: 'Amount ($)', paid_on: 'Paid on', invoiced_on: 'Invoiced on', method: 'Method', fees: 'Fees ($)', net: 'Net ($)',
+  amount: 'Amount ($)', paid_on: 'Paid on', paid_amount: 'Amount paid ($)', paid_method: 'Paid via', invoiced_on: 'Invoiced on', method: 'Method', fees: 'Fees ($)', net: 'Net ($)',
 };
-const MONEY = ['quoted', 'final', 'amount', 'fees', 'net'];
+const MONEY = ['quoted', 'final', 'amount', 'fees', 'net', 'paid_amount'];
 const DATES = ['pitched_on', 'replied_on', 'publish_date', 'next_action_date', 'paid_on', 'invoiced_on'];
 
 export let reviewCount = 0;
@@ -65,16 +65,27 @@ function editor(p) {
       category: h('input', { value: c.category || '', list: 'crm-cats' }), website: h('input', { value: c.website || '', autocapitalize: 'off' }),
       cname: h('input', { value: ct.name || '' }), cemail: h('input', { value: ct.email || '', type: 'email', autocapitalize: 'off' }), crole: h('input', { value: ct.role || '' }),
       package: h('input', { value: dl.package || '' }), replied_on: h('input', { type: 'date', value: dl.replied_on || '' }), notes: h('textarea', { rows: 2 }, dl.notes || ''),
+      stage: input('stage', dl.stage || 'In conversation'), source: input('source', dl.source || 'Inbound'),
+      quoted: h('input', { value: dl.quoted ?? '', inputmode: 'decimal' }),
+      paid_amount: h('input', { value: dl.paid_amount ?? '', inputmode: 'decimal' }), paid_on: h('input', { type: 'date', value: dl.paid_on || '' }),
+      paid_method: h('input', { value: dl.paid_method || '' }),
     };
     const row = (label, el) => h('label', { class: 'crm-field' }, label, el);
     return {
       el: h('div', { class: 'crm-form-grid' },
         row('Company', f.name), row('Email domains', f.domains), row('Category', f.category), row('Website', f.website),
         row('Contact name', f.cname), row('Contact email', f.cemail), row('Contact role', f.crole),
-        row('Package', f.package), row('Replied on', f.replied_on), h('label', { class: 'crm-field is-wide' }, 'Deal notes', f.notes)),
+        row('Source', f.source), row('Stage', f.stage), row('Package', f.package), row('Replied on', f.replied_on), row('Quoted ($)', f.quoted),
+        row('Amount paid ($)', f.paid_amount), row('Paid on', f.paid_on), row('Paid via', f.paid_method),
+        h('label', { class: 'crm-field is-wide' }, 'Deal notes', f.notes)),
       values: () => {
         const nn = (v) => (v && v.trim() ? v.trim() : null);
-        const out = { company: { name: f.name.value.trim(), domains: f.domains.value.split(/[\s,;]+/).filter(Boolean) }, deal: { source: 'Inbound', stage: 'In conversation' } };
+        const money = (v) => (nn(v) ? Number(v.replace(/[$,\s]/g, '')) : null);
+        const out = { company: { name: f.name.value.trim(), domains: f.domains.value.split(/[\s,;]+/).filter(Boolean) }, deal: { source: f.source.value, stage: f.stage.value } };
+        if (money(f.quoted.value) != null) out.deal.quoted = money(f.quoted.value);
+        if (money(f.paid_amount.value) != null) out.deal.paid_amount = money(f.paid_amount.value);
+        if (nn(f.paid_on.value)) out.deal.paid_on = nn(f.paid_on.value);
+        if (nn(f.paid_method.value)) out.deal.paid_method = nn(f.paid_method.value);
         if (nn(f.category.value)) out.company.category = nn(f.category.value);
         if (nn(f.website.value)) out.company.website = nn(f.website.value);
         if (nn(f.cname.value) || nn(f.cemail.value)) out.contact = { name: nn(f.cname.value), email: nn(f.cemail.value), role: nn(f.crole.value) };
