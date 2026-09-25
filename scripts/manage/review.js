@@ -15,6 +15,7 @@ const KIND_LABEL = {
   new_contact: 'New contact', add_domain: 'Add email domain', new_deal: 'New deal', new_company_deal: 'New company + inbound deal', payment: 'Payment received', income: 'Creator income',
 };
 const LOW_RISK = ['next_action', 'new_contact', 'add_domain'];
+const BATCHABLE = [...LOW_RISK, 'income'];   // can be ticked and passed together
 const FIELD_LABEL = {
   stage: 'Stage', quoted: 'Quoted ($)', final: 'Final ($)', pitched_on: 'Pitched on', replied_on: 'Replied on', publish_date: 'Publish date',
   next_action: 'Next action', next_action_date: 'Next action date', source: 'Source', package: 'Package', slot_note: 'Slot', notes: 'Notes', name: 'Name', email: 'Email', role: 'Role', domain: 'Domain',
@@ -158,7 +159,7 @@ function proposalCard(p, { onDone, selected }) {
     } catch { /* toast shown */ }
   });
   const low = LOW_RISK.includes(p.kind);
-  const pick = low ? h('label', { class: 'crm-check crm-batch-pick' }, h('input', { type: 'checkbox', checked: selected.has(p.id), onchange: (e) => { if (e.target.checked) selected.add(p.id); else selected.delete(p.id); onDone({ selectionOnly: true }); } }), ' Select') : null;
+  const pick = BATCHABLE.includes(p.kind) ? h('label', { class: 'crm-check crm-batch-pick' }, h('input', { type: 'checkbox', checked: selected.has(p.id), onchange: (e) => { if (e.target.checked) selected.add(p.id); else selected.delete(p.id); onDone({ selectionOnly: true }); } }), ' Select') : null;
   return h('article', { class: ['crm-review-card', `is-${p.confidence}`] },
     h('header', { class: 'crm-review-head' },
       h('div', {}, h('p', { class: 'crm-review-kind' }, KIND_LABEL[p.kind] || p.kind, low ? h('span', { class: 'crm-flag is-ok' }, 'Low risk') : null),
@@ -180,7 +181,8 @@ export function reviewView(root) {
     if (!data) { root.replaceChildren(h('p', { class: 'crm-note is-muted' }, 'Loading…')); return; }
     const reload2 = async (opts = {}) => { if (opts.selectionOnly) { draw(); return; } await load(); await reload(); };
     const lowIds = data.proposals.filter((p) => LOW_RISK.includes(p.kind)).map((p) => p.id);
-    [...selected].forEach((id) => { if (!lowIds.includes(id)) selected.delete(id); });
+    const incomeIds = data.proposals.filter((p) => p.kind === 'income').map((p) => p.id);
+    [...selected].forEach((id) => { if (!lowIds.includes(id) && !incomeIds.includes(id)) selected.delete(id); });
     const batch = button(`Pass selected (${selected.size})`, async () => {
       const ids = [...selected];
       try {
@@ -197,6 +199,7 @@ export function reviewView(root) {
       } catch { /* toast shown */ }
     }, { kind: 'primary', disabled: !selected.size });
     const selectAll = button('Select all low-risk', () => { lowIds.forEach((id) => selected.add(id)); draw(); }, { kind: 'chip' });
+    const selectIncome = incomeIds.length ? button(`Select all income (${incomeIds.length})`, () => { incomeIds.forEach((id) => selected.add(id)); draw(); }, { kind: 'chip' }) : null;
 
     const suggestions = data.suggestions.map((it) => h('li', {},
       h('div', { class: 'crm-sugg-main' }, h('strong', {}, it.title), h('span', { class: 'crm-muted' }, ` · ${fmtDate(it.start.slice(0, 10), { year: true })}${it.start.length > 10 ? ` ${it.start.slice(11)}` : ''}`),
@@ -223,7 +226,7 @@ export function reviewView(root) {
       empty ? h('div', { class: 'crm-empty' }, h('p', {}, 'Nothing to review. Claude files proposals here when your scheduled tasks run.')) : null,
       data.proposals.length ? h('section', { class: 'crm-section' },
         h('div', { class: 'crm-section-head' }, h('h2', { class: 'crm-section-title' }, `Proposals (${data.proposals.length})`),
-          lowIds.length ? h('div', { class: 'crm-row-actions' }, selectAll, batch) : null),
+          lowIds.length || incomeIds.length ? h('div', { class: 'crm-row-actions' }, lowIds.length ? selectAll : null, selectIncome, batch) : null),
         h('div', { class: 'crm-review-list' }, data.proposals.map((p) => proposalCard(p, { onDone: reload2, selected })))) : null,
       data.suggestions.length ? h('section', { class: 'crm-section' }, h('h2', { class: 'crm-section-title' }, `Suggested tasks and events (${data.suggestions.length})`), h('ul', { class: 'crm-sugg-list' }, suggestions)) : null,
       data.ideas.length ? h('section', { class: 'crm-section' }, h('h2', { class: 'crm-section-title' }, `Video ideas (${data.ideas.length})`), h('ul', { class: 'crm-sugg-list' }, ideas)) : null,
