@@ -158,3 +158,45 @@ export function pitchPerformance(state, { by = 'pitch_style', since = null } = {
     .map((g) => ({ ...g, replyRate: g.pitched ? g.replied / g.pitched : null, winRate: g.pitched ? g.won / g.pitched : null }))
     .sort((a, b) => b.pitched - a.pitched);
 }
+
+// --- 30-day results recap -------------------------------------------------------------------------
+export const RECAP_TEMPLATE = {
+  subject: 'Results: {{company}} in "{{video}}"',
+  body: `Hi {{first_name}},
+
+Here's how "{{video}}" did in its first 30 days:
+
+- {{views_line}}
+- {{clicks_line}}
+- {{extra_line}}
+
+Thanks again for sponsoring it. My next guide, "{{next_video}}", goes out in {{next_month}}. Want me to hold that slot for {{company}}? An integration is {{price}}, and I can bundle a Short.
+
+Jared`,
+};
+
+export function recapValues(state, d, { uploads = [], linkClicks = [], channel, daily, audience, today } = {}) {
+  const base = pitchValues(state, d, { channel, daily, audience, today });
+  const v = d.video_id ? state.videos.find((x) => x.id === d.video_id) : null;
+  const up = v && v.youtube_id ? uploads.find((u) => u.youtube_id === v.youtube_id) : null;
+  const published = (up && up.published_at ? up.published_at.slice(0, 10) : null) || (v && v.publish_date) || d.publish_date;
+  const views30 = up ? (up.views_30d ?? up.views) : null;
+  const basis = up && up.views_30d != null ? 'in 30 days' : 'so far';
+  const slugs = (state.links || []).filter((l) => !l.archived && l.deal_id === d.id).map((l) => l.slug);
+  const end = published ? addDays(published, 30) : null;
+  const clicks = slugs.length && published ? linkClicks.filter((c) => slugs.includes(c.slug) && c.day >= published && c.day <= end).reduce((n, c) => n + c.clicks, 0) : null;
+  const next = state.videos.filter((x) => !x.archived && x.publish_date && x.publish_date > (today || '') && x.sponsor_status !== 'sponsor_free' && (x.format || 'guide') === 'guide')
+    .sort((a, b) => a.publish_date.localeCompare(b.publish_date))[0];
+  const pkg = d.package ? state.rateCard.find((r) => !r.archived && r.package.toLowerCase() === d.package.toLowerCase()) : null;
+  return {
+    ...base,
+    video: v ? v.title : (d.slot_note || 'the video'),
+    price: pkg && pkg.standard != null ? `$${nf.format(pkg.standard)}` : base.price,
+    views_line: views30 != null ? `${nf.format(views30)} views ${basis}${v && v.view_estimate ? ` (estimate: ${nf.format(v.view_estimate)})` : ''}` : '[views in the first 30 days]',
+    clicks_line: clicks != null ? `${nf.format(clicks)} clicks on your tracked link` : '[clicks or sign-ups, if they shared them]',
+    extra_line: '[one thing viewers said about it in the comments]',
+    next_video: next ? next.title : 'my next guide',
+    next_month: next ? MONTHS[+next.publish_date.slice(5, 7) - 1] : 'the coming weeks',
+    published, views30, clicks,
+  };
+}

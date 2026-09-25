@@ -426,3 +426,14 @@
   .case-fields div { grid-template-columns: 1fr; gap: 0; }
   .menu-name, .menu-price { font-size: 1.02rem; }
 }
+
+/* Live sponsor-slot availability (from the sponsor CRM; counts only) */
+.availability { margin-top: 28px; border-top: 1px solid var(--rule); padding-top: 14px; max-width: 40rem; }
+.avail-title { font-family: var(--font-mincho); font-weight: 600; font-size: 1.05rem; margin-bottom: 8px; }
+.avail-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.avail-item { display: grid; gap: 2px; padding: 10px 12px; border: 1px solid var(--rule); }
+.avail-item.is-open { border-color: var(--page-color); }
+.avail-month { font-size: 13px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.avail-state { font-size: 12px; color: var(--muted); }
+.avail-item.is-open .avail-state { color: var(--page-ink); font-weight: 500; }
+.avail-note { font-size: 12px; color: var(--muted); margin-top: 8px; }
