@@ -563,3 +563,31 @@ body.is-dragging-upload .crm-videos-planned .crm-row.is-video:not(.is-head) { ou
 .crm-check { flex-direction: row !important; align-items: center; gap: 8px; }
 .crm-mini-list li.crm-missing-pay { display: flex; align-items: center; gap: 10px; }
 .crm-missing-pay .crm-row-btn { flex: 1; min-width: 0; }
+
+/* --- Tracked links and invoices ---------------------------------------------------- */
+.crm-link-row { display: flex; align-items: center; gap: 10px; }
+.crm-link-row .crm-row-btn { flex: 1; min-width: 0; }
+.crm-link-row .crm-row-btn > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crm-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; background: var(--paper-deep); padding: 3px 6px; overflow-wrap: anywhere; }
+.crm-inv-lines { display: grid; gap: 6px; margin-bottom: 10px; }
+.crm-inv-line { display: grid; grid-template-columns: minmax(0, 1fr) 96px auto; gap: 6px; align-items: center; }
+.crm-inv-line input { font: inherit; padding: 6px 8px; border: 1px solid var(--rule-strong); background: var(--paper-light); min-width: 0; }
+.crm-print { display: none; }
+@media print {
+  html, body { background: #fff !important; }
+  body::before, body::after { display: none !important; }
+  body > *:not(.crm-print) { display: none !important; }
+  .crm-print { display: block; color: #000; background: #fff; font-family: var(--font-gothic); font-size: 11pt; padding: 0; }
+  .crm-print-head { display: flex; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
+  .crm-print-from { font-family: var(--font-mincho); font-size: 16pt; font-weight: 600; }
+  .crm-print-meta { text-align: right; }
+  .crm-print-meta h1 { font-family: var(--font-mincho); font-size: 22pt; margin-bottom: 4px; }
+  .crm-print-label { font-size: 9pt; text-transform: uppercase; letter-spacing: 0.08em; color: #555; margin-bottom: 2px; }
+  .crm-print-to { margin-bottom: 20px; }
+  .crm-print table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+  .crm-print th, .crm-print td { text-align: left; padding: 8px 0; border-bottom: 1px solid #bbb; }
+  .crm-print .crm-num { text-align: right; }
+  .crm-print tfoot th { border-bottom: 0; border-top: 2px solid #000; font-size: 12pt; }
+  .crm-print-pay, .crm-print-notes { margin-top: 12px; }
+  @page { margin: 18mm; }
+}

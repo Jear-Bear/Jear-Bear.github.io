@@ -25,6 +25,8 @@
 //   PUT  /api/income                { month, source, amount } (amount null clears it)
 //   POST /api/rate-rules/:id/accept|dismiss   accept writes the new rates
 //   POST /api/ingest/stats          from the stats Action (Bearer CRM_INGEST_KEY)
+//   POST /api/invoices              number an invoice and record it as a payment
+//   GET  /go/:slug                  tracked sponsor link: redirect + count (public)
 //
 // A daily cron refreshes the uploads (capturing 30-day views) and the history.
 //
@@ -49,10 +51,11 @@ import { createServer } from './mcp.js';
 import { handleAuthorize, redirectAllowed } from './authorize.js';
 import { listReview, passProposal, dismissProposal, decideIdea } from './claude.js';
 import { ingestStats, pullPublicStats, loadInsights, putIncome, decideRateRule } from './stats.js';
+import { handleGo, createInvoice } from './growth.js';
 
 const TYPES = {
   companies: 'companies', contacts: 'contacts', deals: 'deals', payments: 'payments',
-  videos: 'videos', 'rate-card': 'rate_card', activities: 'activities',
+  videos: 'videos', 'rate-card': 'rate_card', activities: 'activities', links: 'links',
 };
 const MAX_BODY = 1024 * 1024;
 const LOCAL_ORIGIN = /^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/;
@@ -156,6 +159,7 @@ async function route(request, env, url) {
   if (a === 'plan' && !b && m === 'POST') return importPlan(db, await readJson(request));
   if (a === 'uploads' && !b && m === 'GET') return listUploads(db);
   if (a === 'uploads' && b === 'refresh' && !c && m === 'POST') return refreshUploads(env, db);
+  if (a === 'invoices' && !b && m === 'POST') return createInvoice(db, await readJson(request));
   if (a === 'insights' && !b && m === 'GET') return loadInsights(db);
   if (a === 'stats' && b === 'refresh' && !c && m === 'POST') return pullPublicStats(db);
   if (a === 'income' && !b && m === 'PUT') return putIncome(db, await readJson(request));
@@ -221,8 +225,14 @@ async function route(request, env, url) {
 }
 
 const app = {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    const go = url.pathname.match(/^\/go\/([^/]+)\/?$/);
+    if (go && (request.method === 'GET' || request.method === 'HEAD')) {
+      let slug = go[1];
+      try { slug = decodeURIComponent(slug); } catch { /* keep raw */ }
+      return handleGo(request, env, ctx, slug);
+    }
     if (url.pathname === '/authorize') {
       if (!configured(env)) return new Response('Not configured', { status: 503 });
       return handleAuthorize(request, env);
