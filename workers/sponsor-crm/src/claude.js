@@ -3,14 +3,15 @@
 // validated and whitelisted here, and proposals change nothing until passed.
 
 import { validate, isUuid, isIsoDate, normalizeDomain, STAGES, SOURCES } from '../../../scripts/manage/schema.js';
-import { HttpError, createRecord, updateRecord, getRecord } from './data.js';
+import { HttpError, createRecord, updateRecord, getRecord, setArchived } from './data.js';
+import { INCOME_SOURCES_ENTERED, INCOME_LABELS } from '../../../scripts/manage/insights.js';
 
 const nowIso = () => new Date().toISOString();
 const clip = (v, n) => (v == null ? null : String(v).replace(/\u0000/g, '').trim().slice(0, n) || null);
 const json = (v) => JSON.stringify(v);
 const parse = (v, fallback = null) => { try { return v ? JSON.parse(v) : fallback; } catch { return fallback; } };
 
-export const PROPOSAL_KINDS = ['stage_change', 'amounts', 'dates', 'next_action', 'new_contact', 'add_domain', 'new_deal', 'new_company_deal', 'payment'];
+export const PROPOSAL_KINDS = ['stage_change', 'amounts', 'dates', 'next_action', 'new_contact', 'add_domain', 'new_deal', 'new_company_deal', 'payment', 'income'];
 export const LOW_RISK_KINDS = ['next_action', 'new_contact', 'add_domain'];
 const CONFIDENCE = ['low', 'medium', 'high'];
 
@@ -74,6 +75,21 @@ async function recordPaid(db, dealId, paid) {
   if (!paid) return null;
   const pay = await createRecord(db, 'payments', { deal_id: dealId, amount: paid.paid_amount, paid_on: paid.paid_on, ...(paid.paid_method ? { method: paid.paid_method } : {}) });
   return pay.id;
+}
+
+// Monthly creator income that isn't a sponsor deal (AdSense, affiliates,
+// memberships, other). Passing adds it to that month's entry for the source.
+function checkIncome(values) {
+  const v = values && typeof values === 'object' ? values : {};
+  const month = typeof v.month === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(v.month) ? v.month : null;
+  if (!month) throw new HttpError(400, 'income needs month (YYYY-MM)');
+  if (!INCOME_SOURCES_ENTERED.includes(v.source)) throw new HttpError(400, `income source must be one of ${INCOME_SOURCES_ENTERED.join(', ')}`);
+  const amount = typeof v.amount === 'number' ? v.amount : Number(String(v.amount ?? '').replace(/[$,\s]/g, ''));
+  if (!Number.isFinite(amount) || amount <= 0 || amount > 1e7) throw new HttpError(400, 'income needs an amount above 0');
+  return {
+    month, source: v.source, amount: Math.round(amount * 100) / 100,
+    program: clip(v.program, 60), notes: clip(v.notes, 200),
+  };
 }
 
 function validateNewCompanyDeal(values) {
@@ -148,6 +164,14 @@ export async function createProposal(db, input) {
     const { rest, paid } = splitPaid(input.values);
     proposed = { ...checkFields('deals', NEW_DEAL_FIELDS, { source: 'Inbound', stage: paid ? 'Paid' : 'In conversation', ...rest }), ...(paid || {}) };
     dealId = null;
+  } else if (kind === 'income') {
+    proposed = checkIncome(input.values);
+    // Optionally replaces a deal that was really this income (archived on pass)
+    if (dealId) {
+      const d = await db.prepare('SELECT company_id FROM deals WHERE id = ?').bind(dealId).first();
+      if (!d) throw new HttpError(400, 'deal_id doesn’t exist');
+      companyId = d.company_id;
+    }
   } else if (kind === 'payment') {
     if (!dealId) throw new HttpError(400, 'payment needs deal_id');
     const d = await db.prepare('SELECT company_id FROM deals WHERE id = ?').bind(dealId).first();
@@ -272,6 +296,20 @@ export async function passProposal(db, id, edited) {
     applied = { deal_id: d.id, payment_id: paymentId, ...values, ...(paid || {}) };
     summary = `Approved by me: new ${values.source || ''} deal${paid ? `, paid $${paid.paid_amount} on ${paid.paid_on}` : ''} (Claude proposal)`.replace('  ', ' ');
     await logApproval(db, p.company_id, d.id, summary);
+  } else if (p.kind === 'income') {
+    const v = checkIncome(edited || proposed);
+    const label = v.program ? `${v.program} $${v.amount}` : `$${v.amount}`;
+    const prev = await db.prepare('SELECT amount, notes FROM income WHERE month = ? AND source = ?').bind(v.month, v.source).first();
+    const amount = Math.round(((prev ? prev.amount : 0) + v.amount) * 100) / 100;
+    const notes = [prev && prev.notes, [label, v.notes].filter(Boolean).join(' · ')].filter(Boolean).join('; ').slice(0, 300);
+    const now = nowIso();
+    await db.prepare('INSERT INTO income (id, month, source, amount, notes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?) '
+      + 'ON CONFLICT (month, source) DO UPDATE SET amount = excluded.amount, notes = excluded.notes, updated_at = excluded.updated_at')
+      .bind(crypto.randomUUID(), v.month, v.source, amount, notes, now, now).run();
+    if (p.deal_id) await setArchived(db, 'deals', p.deal_id, true);
+    applied = { ...v, month_total: amount, archived_deal: p.deal_id || null };
+    summary = `Approved by me: ${INCOME_LABELS[v.source]} income ${label} for ${v.month}${p.deal_id ? ' (moved from a deal, now archived)' : ''} (Claude proposal)`;
+    if (p.company_id) await logApproval(db, p.company_id, p.deal_id, summary);
   } else if (p.kind === 'payment') {
     const values = checkPayment(edited || proposed);
     await getRecord(db, 'deals', p.deal_id);
