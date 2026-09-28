@@ -311,8 +311,14 @@ export async function createStmts(db, entityName, input, lookup = liveLookup(db)
   return { id, stmts };
 }
 
+// A deal that reaches a pitched stage without a pitch date gets today's, so
+// it counts toward the weekly pitch target and its follow-ups
+const PITCHED_STAGES = ['Pitched', 'Follow-up 1 sent', 'Follow-up 2 sent'];
+const withPitchDate = (input, before = {}) => (input && PITCHED_STAGES.includes(input.stage) && !input.pitched_on && !before.pitched_on
+  ? { ...input, pitched_on: todayIn(DEFAULT_TZ) } : input);
+
 export async function createRecord(db, entityName, input) {
-  const { id, stmts } = await createStmts(db, entityName, input);
+  const { id, stmts } = await createStmts(db, entityName, entityName === 'deals' ? withPitchDate(input) : input);
   await db.batch(stmts);
   return getRecord(db, entityName, id);
 }
@@ -328,9 +334,10 @@ export async function getRecord(db, entityName, id) {
   return r;
 }
 
-export async function updateRecord(db, entityName, id, input) {
+export async function updateRecord(db, entityName, id, inputRaw) {
   if (!isUuid(id)) throw new HttpError(400, 'Bad ID');
   const before = await getRecord(db, entityName, id);
+  const input = entityName === 'deals' && inputRaw && 'stage' in inputRaw && !('pitched_on' in inputRaw) ? withPitchDate(inputRaw, before) : inputRaw;
   const v = validate(entityName, input, { partial: true });
   if (!v.ok) throw new HttpError(400, 'Some fields need fixing', v.errors);
   await checkRefs(entityName, v.values, liveLookup(db));
