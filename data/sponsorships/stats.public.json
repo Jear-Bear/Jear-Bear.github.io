@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-28T17:43:52.492Z",
+  "generatedAt": "2026-09-29T15:59:55.568Z",
   "generatedBy": "sponsor-stats-action",
   "channel": {
     "id": "UCSIxTP9PCM2kcTszONRxZ1w",
@@ -11,39 +11,39 @@
   "analyticsWindow": {
     "lagDays": 3,
     "last28": {
-      "start": "2026-08-29",
-      "end": "2026-09-25"
+      "start": "2026-08-30",
+      "end": "2026-09-26"
     },
     "last90": {
-      "start": "2026-06-28",
-      "end": "2026-09-25"
+      "start": "2026-06-29",
+      "end": "2026-09-26"
     }
   },
   "metrics": {
     "subscribers": {
-      "value": 13601,
+      "value": 13611,
       "unit": "count",
       "label": "Subscribers",
       "period": {
         "start": null,
-        "end": "2026-09-25",
-        "display": "As of Sep 25, 2026"
+        "end": "2026-09-26",
+        "display": "As of Sep 26, 2026"
       },
       "source": "youtube-analytics-api",
-      "asOf": "2026-09-28",
+      "asOf": "2026-09-29",
       "exact": true
     },
     "totalViews": {
-      "value": 1690307,
+      "value": 1692681,
       "unit": "count",
       "label": "Total channel views",
       "period": {
         "start": null,
-        "end": "2026-09-28",
-        "display": "All time · as of Sep 28, 2026"
+        "end": "2026-09-29",
+        "display": "All time · as of Sep 29, 2026"
       },
       "source": "youtube-data-api",
-      "asOf": "2026-09-28"
+      "asOf": "2026-09-29"
     },
     "videoCount": {
       "value": 384,
@@ -51,53 +51,53 @@
       "label": "Public videos",
       "period": {
         "start": null,
-        "end": "2026-09-28",
-        "display": "As of Sep 28, 2026"
+        "end": "2026-09-29",
+        "display": "As of Sep 29, 2026"
       },
       "source": "youtube-data-api",
-      "asOf": "2026-09-28"
+      "asOf": "2026-09-29"
     },
     "viewsAllFormats": {
-      "value": 87152,
+      "value": 84458,
       "unit": "count",
       "label": "Views, all formats",
       "period": {
-        "start": "2026-08-29",
-        "end": "2026-09-25",
-        "display": "Aug 29–Sep 25, 2026"
+        "start": "2026-08-30",
+        "end": "2026-09-26",
+        "display": "Aug 30–Sep 26, 2026"
       },
       "source": "youtube-analytics-api",
-      "asOf": "2026-09-28"
+      "asOf": "2026-09-29"
     },
     "watchTimeHours": {
-      "value": 1636,
+      "value": 1575,
       "unit": "hours",
       "label": "Watch time",
       "period": {
-        "start": "2026-08-29",
-        "end": "2026-09-25",
-        "display": "Aug 29–Sep 25, 2026"
+        "start": "2026-08-30",
+        "end": "2026-09-26",
+        "display": "Aug 30–Sep 26, 2026"
       },
       "source": "youtube-analytics-api",
-      "asOf": "2026-09-28"
+      "asOf": "2026-09-29"
     },
     "subscribersGained": {
-      "value": 432,
+      "value": 429,
       "unit": "count",
       "label": "Subscribers gained",
       "period": {
-        "start": "2026-08-29",
-        "end": "2026-09-25",
-        "display": "Aug 29–Sep 25, 2026"
+        "start": "2026-08-30",
+        "end": "2026-09-26",
+        "display": "Aug 30–Sep 26, 2026"
       },
       "source": "youtube-analytics-api",
-      "asOf": "2026-09-28"
+      "asOf": "2026-09-29"
     },
     "topCountries": {
       "value": [
         {
           "code": "US",
-          "share": 0.418
+          "share": 0.42
         },
         {
           "code": "JP",
@@ -113,7 +113,7 @@
         },
         {
           "code": "CA",
-          "share": 0.045
+          "share": 0.046
         },
         {
           "code": "DE",
@@ -121,15 +121,15 @@
         },
         {
           "code": "BR",
-          "share": 0.04
+          "share": 0.039
+        },
+        {
+          "code": "ID",
+          "share": 0.033
         },
         {
           "code": "AU",
           "share": 0.033
-        },
-        {
-          "code": "ID",
-          "share": 0.032
         },
         {
           "code": "PH",
@@ -139,64 +139,63 @@
       "unit": "share-list",
       "label": "Views by country",
       "period": {
-        "start": "2026-08-29",
-        "end": "2026-09-25",
-        "display": "Aug 29–Sep 25, 2026"
+        "start": "2026-08-30",
+        "end": "2026-09-26",
+        "display": "Aug 30–Sep 26, 2026"
       },
       "source": "youtube-analytics-api",
-      "asOf": "2026-09-28"
+      "asOf": "2026-09-29"
     },
     "englishSpeakingShare": {
-      "value": 0.548,
+      "value": 0.55,
       "unit": "percent",
       "label": "Views from the US, UK, Canada & Australia",
       "period": {
-        "start": "2026-08-29",
-        "end": "2026-09-25",
-        "display": "Aug 29–Sep 25, 2026"
+        "start": "2026-08-30",
+        "end": "2026-09-26",
+        "display": "Aug 30–Sep 26, 2026"
       },
       "source": "youtube-analytics-api",
-      "asOf": "2026-09-28"
+      "asOf": "2026-09-29"
     },
     "longFormViews": {
-      "value": 60510,
+      "value": 58325,
       "unit": "count",
       "label": "Long-form views",
       "period": {
-        "start": "2026-08-29",
-        "end": "2026-09-25",
-        "display": "Aug 29–Sep 25, 2026"
+        "start": "2026-08-30",
+        "end": "2026-09-26",
+        "display": "Aug 30–Sep 26, 2026"
       },
       "source": "youtube-analytics-api",
-      "asOf": "2026-09-28"
+      "asOf": "2026-09-29"
     },
     "shortsViews": {
-      "value": 24837,
+      "value": 25360,
       "unit": "count",
       "label": "Shorts views",
       "period": {
-        "start": "2026-08-29",
-        "end": "2026-09-25",
-        "display": "Aug 29–Sep 25, 2026"
+        "start": "2026-08-30",
+        "end": "2026-09-26",
+        "display": "Aug 30–Sep 26, 2026"
       },
       "source": "youtube-analytics-api",
-      "asOf": "2026-09-28"
+      "asOf": "2026-09-29"
     },
     "liveViews": {
-      "value": 1805,
+      "value": 919,
       "unit": "count",
       "label": "Live views",
       "period": {
-        "start": "2026-08-29",
-        "end": "2026-09-25",
-        "display": "Aug 29–Sep 25, 2026"
+        "start": "2026-08-30",
+        "end": "2026-09-26",
+        "display": "Aug 30–Sep 26, 2026"
       },
       "source": "youtube-analytics-api",
-      "asOf": "2026-09-28"
+      "asOf": "2026-09-29"
     },
     "dailyViews": {
       "value": [
-        1049,
         984,
         1711,
         2221,
@@ -284,18 +283,19 @@
         1850,
         2407,
         2374,
-        3335,
-        2982
+        3189,
+        2982,
+        2110
       ],
       "unit": "daily-series",
       "label": "Daily views",
       "period": {
-        "start": "2026-06-28",
-        "end": "2026-09-25",
-        "display": "Jun 28–Sep 25, 2026"
+        "start": "2026-06-29",
+        "end": "2026-09-26",
+        "display": "Jun 29–Sep 26, 2026"
       },
       "source": "youtube-analytics-api",
-      "asOf": "2026-09-28"
+      "asOf": "2026-09-29"
     }
   },
   "recentUploads": [
@@ -313,16 +313,16 @@
       "publishedAt": "2026-08-28T12:30:05Z",
       "metrics": {
         "views": {
-          "value": 21697,
+          "value": 21712,
           "unit": "count",
           "label": "Views",
           "period": {
             "start": "2026-08-28",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "likes": {
           "value": 416,
@@ -330,11 +330,11 @@
           "label": "Likes",
           "period": {
             "start": "2026-08-28",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "comments": {
           "value": 92,
@@ -342,23 +342,23 @@
           "label": "Comments",
           "period": {
             "start": "2026-08-28",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "recentViews": {
-          "value": 21651,
+          "value": 21669,
           "unit": "count",
           "label": "Views in the last 90 days",
           "period": {
-            "start": "2026-06-28",
-            "end": "2026-09-25",
-            "display": "Jun 28–Sep 25, 2026"
+            "start": "2026-06-29",
+            "end": "2026-09-26",
+            "display": "Jun 29–Sep 26, 2026"
           },
           "source": "youtube-analytics-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "dailyViews": {
           "value": [
@@ -389,18 +389,19 @@
             49,
             46,
             37,
-            39,
-            20
+            38,
+            20,
+            19
           ],
           "unit": "daily-series",
           "label": "Daily views",
           "period": {
             "start": "2026-08-28",
-            "end": "2026-09-25",
-            "display": "Aug 28–Sep 25, 2026"
+            "end": "2026-09-26",
+            "display": "Aug 28–Sep 26, 2026"
           },
           "source": "youtube-analytics-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         }
       }
     },
@@ -410,28 +411,28 @@
       "publishedAt": "2025-04-18T14:01:10Z",
       "metrics": {
         "views": {
-          "value": 64091,
+          "value": 64361,
           "unit": "count",
           "label": "Views",
           "period": {
             "start": "2025-04-18",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "likes": {
-          "value": 2599,
+          "value": 2603,
           "unit": "count",
           "label": "Likes",
           "period": {
             "start": "2025-04-18",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "comments": {
           "value": 274,
@@ -439,27 +440,26 @@
           "label": "Comments",
           "period": {
             "start": "2025-04-18",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "recentViews": {
-          "value": 14862,
+          "value": 15020,
           "unit": "count",
           "label": "Views in the last 90 days",
           "period": {
-            "start": "2026-06-28",
-            "end": "2026-09-25",
-            "display": "Jun 28–Sep 25, 2026"
+            "start": "2026-06-29",
+            "end": "2026-09-26",
+            "display": "Jun 29–Sep 26, 2026"
           },
           "source": "youtube-analytics-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "dailyViews": {
           "value": [
-            103,
             124,
             110,
             113,
@@ -547,18 +547,19 @@
             222,
             256,
             214,
-            235,
-            205
+            234,
+            205,
+            262
           ],
           "unit": "daily-series",
           "label": "Daily views",
           "period": {
-            "start": "2026-06-28",
-            "end": "2026-09-25",
-            "display": "Jun 28–Sep 25, 2026"
+            "start": "2026-06-29",
+            "end": "2026-09-26",
+            "display": "Jun 29–Sep 26, 2026"
           },
           "source": "youtube-analytics-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         }
       }
     },
@@ -568,16 +569,16 @@
       "publishedAt": "2025-08-29T14:00:29Z",
       "metrics": {
         "views": {
-          "value": 20266,
+          "value": 20312,
           "unit": "count",
           "label": "Views",
           "period": {
             "start": "2025-08-29",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "likes": {
           "value": 767,
@@ -585,11 +586,11 @@
           "label": "Likes",
           "period": {
             "start": "2025-08-29",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "comments": {
           "value": 86,
@@ -597,27 +598,26 @@
           "label": "Comments",
           "period": {
             "start": "2025-08-29",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "recentViews": {
-          "value": 6030,
+          "value": 6069,
           "unit": "count",
           "label": "Views in the last 90 days",
           "period": {
-            "start": "2026-06-28",
-            "end": "2026-09-25",
-            "display": "Jun 28–Sep 25, 2026"
+            "start": "2026-06-29",
+            "end": "2026-09-26",
+            "display": "Jun 29–Sep 26, 2026"
           },
           "source": "youtube-analytics-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "dailyViews": {
           "value": [
-            33,
             40,
             40,
             44,
@@ -706,17 +706,18 @@
             65,
             59,
             77,
+            72,
             72
           ],
           "unit": "daily-series",
           "label": "Daily views",
           "period": {
-            "start": "2026-06-28",
-            "end": "2026-09-25",
-            "display": "Jun 28–Sep 25, 2026"
+            "start": "2026-06-29",
+            "end": "2026-09-26",
+            "display": "Jun 29–Sep 26, 2026"
           },
           "source": "youtube-analytics-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         }
       }
     },
@@ -726,28 +727,28 @@
       "publishedAt": "2025-10-17T13:30:41Z",
       "metrics": {
         "views": {
-          "value": 58248,
+          "value": 58420,
           "unit": "count",
           "label": "Views",
           "period": {
             "start": "2025-10-17",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "likes": {
-          "value": 3638,
+          "value": 3640,
           "unit": "count",
           "label": "Likes",
           "period": {
             "start": "2025-10-17",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "comments": {
           "value": 300,
@@ -755,27 +756,26 @@
           "label": "Comments",
           "period": {
             "start": "2025-10-17",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "recentViews": {
-          "value": 9122,
+          "value": 9160,
           "unit": "count",
           "label": "Views in the last 90 days",
           "period": {
-            "start": "2026-06-28",
-            "end": "2026-09-25",
-            "display": "Jun 28–Sep 25, 2026"
+            "start": "2026-06-29",
+            "end": "2026-09-26",
+            "display": "Jun 29–Sep 26, 2026"
           },
           "source": "youtube-analytics-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "dailyViews": {
           "value": [
-            67,
             89,
             73,
             89,
@@ -864,17 +864,18 @@
             87,
             76,
             103,
-            79
+            79,
+            105
           ],
           "unit": "daily-series",
           "label": "Daily views",
           "period": {
-            "start": "2026-06-28",
-            "end": "2026-09-25",
-            "display": "Jun 28–Sep 25, 2026"
+            "start": "2026-06-29",
+            "end": "2026-09-26",
+            "display": "Jun 29–Sep 26, 2026"
           },
           "source": "youtube-analytics-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         }
       }
     },
@@ -884,28 +885,28 @@
       "publishedAt": "2025-03-30T14:00:30Z",
       "metrics": {
         "views": {
-          "value": 46366,
+          "value": 46505,
           "unit": "count",
           "label": "Views",
           "period": {
             "start": "2025-03-30",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "likes": {
-          "value": 2423,
+          "value": 2426,
           "unit": "count",
           "label": "Likes",
           "period": {
             "start": "2025-03-30",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "comments": {
           "value": 208,
@@ -913,27 +914,26 @@
           "label": "Comments",
           "period": {
             "start": "2025-03-30",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "recentViews": {
-          "value": 8097,
+          "value": 8172,
           "unit": "count",
           "label": "Views in the last 90 days",
           "period": {
-            "start": "2026-06-28",
-            "end": "2026-09-25",
-            "display": "Jun 28–Sep 25, 2026"
+            "start": "2026-06-29",
+            "end": "2026-09-26",
+            "display": "Jun 29–Sep 26, 2026"
           },
           "source": "youtube-analytics-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "dailyViews": {
           "value": [
-            43,
             28,
             54,
             51,
@@ -1021,18 +1021,19 @@
             145,
             131,
             146,
-            140,
-            104
+            139,
+            104,
+            119
           ],
           "unit": "daily-series",
           "label": "Daily views",
           "period": {
-            "start": "2026-06-28",
-            "end": "2026-09-25",
-            "display": "Jun 28–Sep 25, 2026"
+            "start": "2026-06-29",
+            "end": "2026-09-26",
+            "display": "Jun 29–Sep 26, 2026"
           },
           "source": "youtube-analytics-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         }
       }
     },
@@ -1042,28 +1043,28 @@
       "publishedAt": "2026-01-31T14:00:48Z",
       "metrics": {
         "views": {
-          "value": 16866,
+          "value": 16947,
           "unit": "count",
           "label": "Views",
           "period": {
             "start": "2026-01-31",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "likes": {
-          "value": 894,
+          "value": 897,
           "unit": "count",
           "label": "Likes",
           "period": {
             "start": "2026-01-31",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "comments": {
           "value": 126,
@@ -1071,27 +1072,26 @@
           "label": "Comments",
           "period": {
             "start": "2026-01-31",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "recentViews": {
-          "value": 5140,
+          "value": 5186,
           "unit": "count",
           "label": "Views in the last 90 days",
           "period": {
-            "start": "2026-06-28",
-            "end": "2026-09-25",
-            "display": "Jun 28–Sep 25, 2026"
+            "start": "2026-06-29",
+            "end": "2026-09-26",
+            "display": "Jun 29–Sep 26, 2026"
           },
           "source": "youtube-analytics-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "dailyViews": {
           "value": [
-            32,
             51,
             49,
             53,
@@ -1179,18 +1179,19 @@
             111,
             80,
             59,
-            110,
-            83
+            109,
+            83,
+            79
           ],
           "unit": "daily-series",
           "label": "Daily views",
           "period": {
-            "start": "2026-06-28",
-            "end": "2026-09-25",
-            "display": "Jun 28–Sep 25, 2026"
+            "start": "2026-06-29",
+            "end": "2026-09-26",
+            "display": "Jun 29–Sep 26, 2026"
           },
           "source": "youtube-analytics-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         }
       }
     },
@@ -1200,16 +1201,16 @@
       "publishedAt": "2025-09-19T14:01:21Z",
       "metrics": {
         "views": {
-          "value": 32493,
+          "value": 32498,
           "unit": "count",
           "label": "Views",
           "period": {
             "start": "2025-09-19",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "likes": {
           "value": 2081,
@@ -1217,11 +1218,11 @@
           "label": "Likes",
           "period": {
             "start": "2025-09-19",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "comments": {
           "value": 235,
@@ -1229,27 +1230,26 @@
           "label": "Comments",
           "period": {
             "start": "2025-09-19",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "recentViews": {
-          "value": 796,
+          "value": 789,
           "unit": "count",
           "label": "Views in the last 90 days",
           "period": {
-            "start": "2026-06-28",
-            "end": "2026-09-25",
-            "display": "Jun 28–Sep 25, 2026"
+            "start": "2026-06-29",
+            "end": "2026-09-26",
+            "display": "Jun 29–Sep 26, 2026"
           },
           "source": "youtube-analytics-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "dailyViews": {
           "value": [
-            11,
             6,
             6,
             8,
@@ -1338,17 +1338,18 @@
             6,
             5,
             16,
-            8
+            8,
+            4
           ],
           "unit": "daily-series",
           "label": "Daily views",
           "period": {
-            "start": "2026-06-28",
-            "end": "2026-09-25",
-            "display": "Jun 28–Sep 25, 2026"
+            "start": "2026-06-29",
+            "end": "2026-09-26",
+            "display": "Jun 29–Sep 26, 2026"
           },
           "source": "youtube-analytics-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         }
       }
     },
@@ -1358,28 +1359,28 @@
       "publishedAt": "2026-09-18T13:30:36Z",
       "metrics": {
         "views": {
-          "value": 12721,
+          "value": 12840,
           "unit": "count",
           "label": "Views",
           "period": {
             "start": "2026-09-18",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "likes": {
-          "value": 217,
+          "value": 218,
           "unit": "count",
           "label": "Likes",
           "period": {
             "start": "2026-09-18",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "comments": {
           "value": 42,
@@ -1387,23 +1388,23 @@
           "label": "Comments",
           "period": {
             "start": "2026-09-18",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "recentViews": {
-          "value": 12133,
+          "value": 12514,
           "unit": "count",
           "label": "Views in the last 90 days",
           "period": {
-            "start": "2026-06-28",
-            "end": "2026-09-25",
-            "display": "Jun 28–Sep 25, 2026"
+            "start": "2026-06-29",
+            "end": "2026-09-26",
+            "display": "Jun 29–Sep 26, 2026"
           },
           "source": "youtube-analytics-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "dailyViews": {
           "value": [
@@ -1413,18 +1414,19 @@
             530,
             1186,
             1274,
-            578,
-            805
+            573,
+            805,
+            386
           ],
           "unit": "daily-series",
           "label": "Daily views",
           "period": {
             "start": "2026-09-18",
-            "end": "2026-09-25",
-            "display": "Sep 18–25, 2026"
+            "end": "2026-09-26",
+            "display": "Sep 18–26, 2026"
           },
           "source": "youtube-analytics-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         }
       }
     },
@@ -1434,16 +1436,16 @@
       "publishedAt": "2025-11-21T13:30:20Z",
       "metrics": {
         "views": {
-          "value": 59048,
+          "value": 59097,
           "unit": "count",
           "label": "Views",
           "period": {
             "start": "2025-11-21",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "likes": {
           "value": 2612,
@@ -1451,11 +1453,11 @@
           "label": "Likes",
           "period": {
             "start": "2025-11-21",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "comments": {
           "value": 357,
@@ -1463,27 +1465,26 @@
           "label": "Comments",
           "period": {
             "start": "2025-11-21",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "recentViews": {
-          "value": 4572,
+          "value": 4598,
           "unit": "count",
           "label": "Views in the last 90 days",
           "period": {
-            "start": "2026-06-28",
-            "end": "2026-09-25",
-            "display": "Jun 28–Sep 25, 2026"
+            "start": "2026-06-29",
+            "end": "2026-09-26",
+            "display": "Jun 29–Sep 26, 2026"
           },
           "source": "youtube-analytics-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "dailyViews": {
           "value": [
-            28,
             15,
             20,
             32,
@@ -1572,17 +1573,18 @@
             36,
             54,
             47,
-            55
+            55,
+            54
           ],
           "unit": "daily-series",
           "label": "Daily views",
           "period": {
-            "start": "2026-06-28",
-            "end": "2026-09-25",
-            "display": "Jun 28–Sep 25, 2026"
+            "start": "2026-06-29",
+            "end": "2026-09-26",
+            "display": "Jun 29–Sep 26, 2026"
           },
           "source": "youtube-analytics-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         }
       }
     },
@@ -1592,16 +1594,16 @@
       "publishedAt": "2026-07-10T13:00:30Z",
       "metrics": {
         "views": {
-          "value": 1352,
+          "value": 1359,
           "unit": "count",
           "label": "Views",
           "period": {
             "start": "2026-07-10",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "likes": {
           "value": 56,
@@ -1609,11 +1611,11 @@
           "label": "Likes",
           "period": {
             "start": "2026-07-10",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "comments": {
           "value": 35,
@@ -1621,23 +1623,23 @@
           "label": "Comments",
           "period": {
             "start": "2026-07-10",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "recentViews": {
-          "value": 1323,
+          "value": 1337,
           "unit": "count",
           "label": "Views in the last 90 days",
           "period": {
-            "start": "2026-06-28",
-            "end": "2026-09-25",
-            "display": "Jun 28–Sep 25, 2026"
+            "start": "2026-06-29",
+            "end": "2026-09-26",
+            "display": "Jun 29–Sep 26, 2026"
           },
           "source": "youtube-analytics-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "dailyViews": {
           "value": [
@@ -1718,17 +1720,18 @@
             8,
             3,
             8,
-            9
+            9,
+            14
           ],
           "unit": "daily-series",
           "label": "Daily views",
           "period": {
             "start": "2026-07-10",
-            "end": "2026-09-25",
-            "display": "Jul 10–Sep 25, 2026"
+            "end": "2026-09-26",
+            "display": "Jul 10–Sep 26, 2026"
           },
           "source": "youtube-analytics-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         }
       }
     },
@@ -1738,16 +1741,16 @@
       "publishedAt": "2026-09-24T14:43:12Z",
       "metrics": {
         "views": {
-          "value": 2929,
+          "value": 2831,
           "unit": "count",
           "label": "Views",
           "period": {
             "start": "2026-09-24",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "likes": {
           "value": 49,
@@ -1755,11 +1758,11 @@
           "label": "Likes",
           "period": {
             "start": "2026-09-24",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "comments": {
           "value": 6,
@@ -1767,11 +1770,11 @@
           "label": "Comments",
           "period": {
             "start": "2026-09-24",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         }
       }
     },
@@ -1781,16 +1784,16 @@
       "publishedAt": "2026-09-15T16:26:34Z",
       "metrics": {
         "views": {
-          "value": 2083,
+          "value": 2089,
           "unit": "count",
           "label": "Views",
           "period": {
             "start": "2026-09-15",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "likes": {
           "value": 63,
@@ -1798,11 +1801,11 @@
           "label": "Likes",
           "period": {
             "start": "2026-09-15",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "comments": {
           "value": 20,
@@ -1810,11 +1813,11 @@
           "label": "Comments",
           "period": {
             "start": "2026-09-15",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         }
       }
     },
@@ -1824,16 +1827,16 @@
       "publishedAt": "2026-09-14T16:30:33Z",
       "metrics": {
         "views": {
-          "value": 2492,
+          "value": 2494,
           "unit": "count",
           "label": "Views",
           "period": {
             "start": "2026-09-14",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "likes": {
           "value": 98,
@@ -1841,11 +1844,11 @@
           "label": "Likes",
           "period": {
             "start": "2026-09-14",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "comments": {
           "value": 10,
@@ -1853,11 +1856,11 @@
           "label": "Comments",
           "period": {
             "start": "2026-09-14",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         }
       }
     },
@@ -1872,11 +1875,11 @@
           "label": "Views",
           "period": {
             "start": "2026-09-13",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "likes": {
           "value": 40,
@@ -1884,11 +1887,11 @@
           "label": "Likes",
           "period": {
             "start": "2026-09-13",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "comments": {
           "value": 3,
@@ -1896,11 +1899,11 @@
           "label": "Comments",
           "period": {
             "start": "2026-09-13",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         }
       }
     },
@@ -1910,16 +1913,16 @@
       "publishedAt": "2026-09-12T13:00:27Z",
       "metrics": {
         "views": {
-          "value": 1956,
+          "value": 1963,
           "unit": "count",
           "label": "Views",
           "period": {
             "start": "2026-09-12",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "likes": {
           "value": 75,
@@ -1927,11 +1930,11 @@
           "label": "Likes",
           "period": {
             "start": "2026-09-12",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         },
         "comments": {
           "value": 1,
@@ -1939,11 +1942,11 @@
           "label": "Comments",
           "period": {
             "start": "2026-09-12",
-            "end": "2026-09-28",
-            "display": "All time · as of Sep 28, 2026"
+            "end": "2026-09-29",
+            "display": "All time · as of Sep 29, 2026"
           },
           "source": "youtube-data-api",
-          "asOf": "2026-09-28"
+          "asOf": "2026-09-29"
         }
       }
     }
