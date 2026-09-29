@@ -12,7 +12,8 @@ import * as S from './storage.js?v=1';
 import * as R from '../kanji/srs.js?v=1';
 import { toHiragana, finalize } from '../kanji/romaji.js?v=1';
 import { requestPersistence, backupStatus, describeBackup, storageWorks, readFileText } from '../study-backup.js';
-import * as P from '../study-progress.js?v=1';
+import * as P from '../study-progress.js?v=2';
+import * as L from '../study-placement.js?v=1';
 
 const $ = (id) => document.getElementById(id);
 const store = S.load();
@@ -197,6 +198,45 @@ function renderContinue() {
   $('btn-challenge').firstChild.textContent = best ? `Challenge run (best ${best.score}) ` : 'Challenge run ';
 }
 
+// ---------------------------------------------------------------- find my level
+const PLACED_SKILLS = ['reading', 'meaning'];
+
+function openPlacement() {
+  const readingOf = (id) => { const t = D.get(id); return t && t.readings[0] ? t.readings[0] : ''; };
+  L.runPlacement({
+    title: 'Find your Nandoku level.', noun: 'words',
+    levels: D.levelList().filter((lv) => /^\d+$/.test(lv)).map((lv) => ({ id: lv, name: D.levelName(lv), keys: D.inLevel(lv).map((t) => t.id) })),
+    ask: (id, pool) => {
+      const answer = readingOf(id);
+      const options = answer && L.options(answer, pool, readingOf);
+      return options ? { prompt: D.get(id).term, promptClass: 'nd-pop', label: 'How is this read?', answer, options, optionsClass: 'is-reading', optionsLang: 'ja' } : null;
+    },
+    nextLabel: (lv) => `Add ${lv.name} to what I'm studying`,
+    save: ({ passed, stoppedAt, next }) => {
+      const isNew = (id) => R.isNew(store, id);
+      let n = 0;
+      passed.forEach((r) => { n += L.credit(store, { right: r.right, known: r.known, skills: PLACED_SKILLS, isNew }); });
+      if (stoppedAt) n += L.credit(store, { right: stoppedAt.right, skills: PLACED_SKILLS, isNew });
+      if (next && !settings.levels.includes(next.id)) settings.levels = [...settings.levels, next.id].sort();
+      afterCredit(n);
+    },
+  });
+}
+
+function markKnown(lv) {
+  const ids = D.inLevel(lv).map((t) => t.id).filter((id) => R.isNew(store, id));
+  if (!ids.length || !confirm(`Mark the ${ids.length} new words in ${D.levelName(lv)} as known?\n\nThey count as familiar (not mastered) and come back for quick checks, about 25 a day, so anything you've forgotten gets caught.`)) return;
+  afterCredit(L.credit(store, { known: ids, skills: PLACED_SKILLS, isNew: (id) => R.isNew(store, id) }));
+}
+
+function afterCredit(n) {
+  S.save(store, { now: true });
+  refreshSelection();
+  renderLevels();
+  renderDashboard();
+  if (n) toast(`${fmt.format(n)} words marked as familiar.`);
+}
+
 function renderProgress() {
   const sk = skills();
   const p = P.pace(store.global);
@@ -222,7 +262,8 @@ function renderProgress() {
     });
     const est = P.srsEstimate({ boxes, unstarted, queued: unqueued ? null : queued, pace: p, newCap: settings.newPerDay, noun: 'words' });
     const best = store.best[lv];
-    return P.levelRow({ name: D.levelName(lv), t, eta: P.etaText(est), extra: best ? `best run ${best.score}` : '' });
+    const action = unstarted ? h('button', { class: 'btn-link', onclick: () => markKnown(lv) }, 'Mark as known') : null;
+    return P.levelRow({ name: D.levelName(lv), t, eta: P.etaText(est), extra: best ? `best run ${best.score}` : '', action });
   }));
   const all = Object.keys(store.cards).filter((id) => D.get(id)).map((id) => R.mastery(store, id, sk));
   const xp = P.tally(all).xp;
@@ -716,6 +757,7 @@ $('summary-again').addEventListener('click', () => {
 $('btn-start').addEventListener('click', () => startSession('smart'));
 $('btn-practice').addEventListener('click', () => startSession('practice'));
 $('btn-challenge').addEventListener('click', () => startSession('challenge'));
+$('btn-place').addEventListener('click', () => openPlacement());
 
 // ---------------------------------------------------------------- views + viewport
 const COMPACT_BELOW = 560;

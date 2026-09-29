@@ -13,7 +13,8 @@ import { toHiragana, finalize } from './romaji.js?v=1';
 import { WritingPad, strokeAnimation, gradeWriting } from './writing.js?v=2';
 import { parseFile, parseText } from './importer.js?v=1';
 import { requestPersistence, backupStatus, describeBackup, storageWorks, readFileText } from '../study-backup.js';
-import * as P from '../study-progress.js?v=1';
+import * as P from '../study-progress.js?v=2';
+import * as L from '../study-placement.js?v=1';
 
 const $ = (id) => document.getElementById(id);
 const store = S.load();
@@ -240,7 +241,8 @@ function renderLevels() {
     });
     let est = P.srsEstimate({ boxes, unstarted, queued: unqueued ? null : queued, pace: p, newCap: settings.newPerDay, noun: 'kanji' });
     if (p && unqueued && queued && est.note != null) est = { note: 'Some of its kanji aren\'t in your selection. Select it to get an estimate.' };
-    return { id, el: P.levelRow({ name, sub, t, eta: P.etaText(est), lang: 'ja' }), started: t.total - t.counts[0] };
+    const action = unstarted ? h('button', { class: 'btn-link', onclick: () => markKnown(id, name) }, 'Mark as known') : null;
+    return { id, el: P.levelRow({ name, sub, t, eta: P.etaText(est), lang: 'ja', action }), started: t.total - t.counts[0] };
   };
   const rows = [];
   for (const g of D.builtinGroups()) {
@@ -264,6 +266,49 @@ function renderLevels() {
   $('rank-card').replaceChildren(P.rankCard({ xp, today, title: 'Kanji rank' }));
   if (levelUp) toast(`Level up! Kanji rank ${levelUp}.`);
   $('pace-note').textContent = `${P.paceText(p, 'kanji')} Mastered means every question type you study is 60+ days out.`;
+}
+
+// ---------------------------------------------------------------- find my level
+const PLACED_SKILLS = ['meaning', 'reading'];
+
+async function openPlacement() {
+  const levels = [5, 4, 3, 2, 1].map((n) => ({ id: `jlpt:${n}`, name: `N${n}`, chars: [...D.setChars(`jlpt:${n}`)] }));
+  try { await D.ensureChars(levels.flatMap((l) => l.chars)); } catch { toast('Couldn\'t load the kanji data. Try again.', 'error'); return; }
+  const meaningOf = (key) => { const inf = D.info(key.slice(2)); return inf ? shortMeaning(inf.meaning) : ''; };
+  L.runPlacement({
+    title: 'Find your kanji level.', noun: 'kanji',
+    levels: levels.map((l) => ({ id: l.id, name: `JLPT ${l.name}`, keys: l.chars.filter(D.known).map(kKey) })),
+    ask: (key, pool) => {
+      const answer = meaningOf(key);
+      const options = answer && L.options(answer, pool, meaningOf);
+      return options ? { prompt: key.slice(2), label: 'What does this kanji mean?', answer, options } : null;
+    },
+    nextLabel: (lv) => `Add ${lv.name} to what I'm studying`,
+    save: ({ passed, stoppedAt, next }) => {
+      const isNew = (k) => R.isNew(store, k);
+      let n = 0;
+      passed.forEach((r) => { n += L.credit(store, { right: r.right, known: r.known, skills: PLACED_SKILLS, isNew }); });
+      if (stoppedAt) n += L.credit(store, { right: stoppedAt.right, skills: PLACED_SKILLS, isNew });
+      if (next && !settings.selection.includes(next.id)) settings.selection.push(next.id);
+      afterCredit(n);
+    },
+  });
+}
+
+async function markKnown(id, name) {
+  const chars = [...D.setChars(id, store.custom)];
+  await D.ensureChars(chars).catch(() => {});
+  const keys = chars.filter(D.known).map(kKey).filter((k) => R.isNew(store, k));
+  if (!keys.length || !confirm(`Mark the ${keys.length} new kanji in ${name} as known?\n\nThey count as familiar (not mastered) and come back for quick checks, about 25 a day, so anything you've forgotten gets caught.`)) return;
+  afterCredit(L.credit(store, { known: keys, skills: PLACED_SKILLS, isNew: (k) => R.isNew(store, k) }));
+}
+
+async function afterCredit(n) {
+  S.save(store, { now: true });
+  await refreshSelection();
+  renderSets();
+  renderDashboard();
+  if (n) toast(`${fmt.format(n)} kanji marked as familiar.`);
 }
 
 function renderGrid() {
@@ -371,6 +416,7 @@ $('opt-size').addEventListener('change', (e) => { settings.sessionSize = parseIn
 $('opt-auto').addEventListener('change', (e) => { settings.autoAdvance = e.target.checked; S.save(store); });
 $('btn-grid-more').addEventListener('click', () => { gridExpanded = !gridExpanded; renderGrid(); });
 $('btn-levels-more').addEventListener('click', () => { levelsExpanded = !levelsExpanded; renderLevels(); });
+$('btn-place').addEventListener('click', () => openPlacement());
 
 // ---------------------------------------------------------------- word pool
 // Data for a word key: [word, reading, meaning]
