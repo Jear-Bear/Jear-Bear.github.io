@@ -205,6 +205,33 @@ is skipped. To stop it, delete the secret.
   (rate-limited per hashed IP and per day; the form still emails you through
   Web3Forms). If the Worker is down, the page and form work as before.
 
+## Website traffic
+
+Every public page loads Cloudflare Web Analytics' cookieless beacon (no
+cookies, no banner, no individual visitors; the private `/sponsorships/manage/`
+app is not tracked). The **Traffic** tab shows views, visits, top pages, site
+sections, referrers, countries, devices and trends vs the previous period,
+and Claude's weekly traffic report (`get_site_traffic`, task 6 in
+[sponsor-crm-claude.md](sponsor-crm-claude.md)).
+
+To connect it (once):
+
+1. Cloudflare → **My Profile → API Tokens → Create Token → Create Custom
+   Token**. Name it "Sponsor desk analytics". Permission: **Account →
+   Account Analytics → Read**, and nothing else. Account resources: your
+   account. Create it and copy the token.
+2. GitHub → this repo → **Settings → Secrets and variables → Actions → New
+   repository secret**: `CF_ANALYTICS_TOKEN` = the token.
+3. **Actions → Deploy sponsor CRM → Run workflow.** The deploy pushes the
+   token and your account ID (from `CLOUDFLARE_ACCOUNT_ID`) to the Worker.
+4. In the app, **Traffic → Refresh**. After that the Worker pulls the last 7
+   days every morning with the other daily jobs.
+
+Counts are aggregated per UTC day and kept in D1 (`site_traffic`), so the
+history builds up there. Cloudflare samples busy periods, so small numbers
+can be estimates. After adding the tool, reconnect the Sponsor desk
+connector in Claude so it sees `get_site_traffic`.
+
 ## Changing the password
 
 Update the `SPONSOR_MANAGEMENT_PASSWORD` GitHub secret, then run **Sponsor CRM
@@ -255,6 +282,7 @@ to the local Worker automatically. Local data lives in
 | D1 | 5 million rows read and 100,000 written per day, 5 GB | Tiny |
 | Subrequests | 50 per request (each D1 query counts; a batch counts once) | Imports check everything in one batch and write in one batch |
 | GitHub Actions | Free for public repos | A deploy takes about a minute |
+| Cloudflare Web Analytics | Free, unlimited sites and page views | One GraphQL query a day (plus manual refreshes); up to ~1,700 rows written a week |
 
 Calendar libraries (FullCalendar 7 standard, MIT, and `temporal-polyfill`,
 MIT) are vendored in `vendor/fullcalendar/` and load only when you open the
