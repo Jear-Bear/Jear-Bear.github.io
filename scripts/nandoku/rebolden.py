@@ -15,8 +15,12 @@ ap = argparse.ArgumentParser()
 ap.add_argument('--ipamj', required=True)
 ap.add_argument('--jigmo', required=True, help='folder with Jigmo.ttf, Jigmo2.ttf, Jigmo3.ttf')
 ap.add_argument('--fonts', default=os.path.join(os.path.dirname(__file__), '../../data/nandoku/fonts'))
+ap.add_argument('--keep', type=float, help='override embolden.KEEP_SPACE (for comparing)')
 ap.add_argument('--only', help='comma-separated chunk names to rebuild, e.g. b00,b05')
 args = ap.parse_args()
+if args.keep is not None:
+    import embolden as _e
+    _e.KEEP_SPACE = args.keep
 
 FAMILY = 'Nandoku Pop'
 css = open(os.path.join(args.fonts, 'fonts.css'), encoding='utf-8').read()

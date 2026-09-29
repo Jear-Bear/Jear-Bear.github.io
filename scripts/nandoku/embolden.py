@@ -85,6 +85,7 @@ def target_ink(perimeter):
 # each side), so dense kanji keep readable gaps. Measured as the mean width of
 # the background inside the glyph's box: 2 × (box − ink) ÷ perimeter.
 MAX_GAP_SHARE = 0.26
+KEEP_SPACE = 0.8     # share of the glyph's empty space that must stay empty
 ROUND_TIPS = 0.018   # em: radius used to round off sharp tips
 CLOSE_WEDGES = 0.005 # em: radius used to round the tips of narrow gaps
 
@@ -98,11 +99,17 @@ def embolden(glyphset, name, upm, center, scale=0.92, max_amount=0.075, gap_shar
         return TTGlyphPen(None).glyph()
     want = target_ink(base.length / upm) * upm * upm / (scale * scale)
     x0, y0, x1, y1 = base.bounds
-    gap = 2 * ((x1 - x0) * (y1 - y0) - base.area) / base.length if base.length else upm
+    box = (x1 - x0) * (y1 - y0)
+    gap = 2 * (box - base.area) / base.length if base.length else upm
+    # never fill more than (1 − KEEP_SPACE) of the empty space inside the
+    # glyph's box, so small repeated parts (車 in 轟) keep their gaps
+    min_space = KEEP_SPACE * (box - base.area)
     lo, hi = 0.0, min(max_amount * upm, gap_share * gap)
     for _ in range(9):
         mid = (lo + hi) / 2
-        if base.buffer(mid, join_style=1, quad_segs=4).area < want:
+        grown = base.buffer(mid, join_style=1, quad_segs=4)
+        space = box - grown.intersection(base.envelope).area
+        if grown.area < want and space > min_space:
             lo = mid
         else:
             hi = mid
