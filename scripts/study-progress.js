@@ -162,7 +162,7 @@ export function rankCard({ xp, today = 0, title }) {
 }
 
 // One level: name, segmented bar (mastered → learning), XP, time left
-export function levelRow({ name, sub, t, eta, extra, lang }) {
+export function levelRow({ name, sub, t, eta, extra, lang, action }) {
   const bar = el('div', 'sp-bar');
   [4, 3, 2, 1].forEach((m) => {
     if (!t.counts[m]) return;
@@ -183,5 +183,5 @@ export function levelRow({ name, sub, t, eta, extra, lang }) {
     bar,
     el('p', 'sp-level-meta',
       `${nf.format(t.counts[4])} / ${nf.format(t.total)} mastered · ${nf.format(t.xp)} / ${nf.format(t.max)} XP${extra ? ` · ${extra}` : ''}`),
-    eta ? el('p', 'sp-level-eta', eta) : null);
+    eta || action ? el('p', 'sp-level-eta', eta, action ? el('span', 'sp-level-action', action) : null) : null);
 }

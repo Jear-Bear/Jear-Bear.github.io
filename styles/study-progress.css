@@ -43,3 +43,23 @@
   .sp-rank-badge { width: 54px; height: 54px; }
   .sp-rank-n { font-size: 1.35rem; }
 }
+
+/* Find my level / mark as known */
+.sp-place-cta { margin: -8px 0 22px; max-width: 720px; font-size: 14px; color: var(--ink-soft); }
+.sp-place-cta .btn-link { margin-left: 4px; }
+.sp-level-action { margin-left: 10px; }
+.sp-level-action .btn-link { font-size: 13px; }
+.sp-place { max-width: 600px; align-items: stretch; }
+.sp-place-hud { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; padding-right: 40px; }
+.sp-place-bar { height: 4px; background: var(--page-color-soft); }
+.sp-place-bar > span { display: block; height: 100%; background: var(--page-color); transition: width .3s ease; }
+.sp-place .kj-qlabel { text-align: center; margin-top: 8px; }
+.sp-place-prompt { text-align: center; font: 400 clamp(64px, 16vw, 110px)/1.15 'Noto Sans JP', sans-serif; color: var(--ink); margin: 4px 0 8px; overflow-wrap: anywhere; }
+.sp-place-prompt.nd-pop { font-size: clamp(48px, 13vw, 88px); }
+.sp-place .kj-choices { max-width: none; }
+.sp-place-skip { align-self: center; }
+.sp-place .kj-feedback { text-align: center; }
+.sp-place-results { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.sp-place-results li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px; border: 1px solid var(--border); font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+.sp-place-results li.is-pass { border-color: var(--page-color); color: var(--ink); }
+.sp-place-results li.is-pass span:last-child { color: var(--page-ink); font-weight: 500; }
