@@ -13,6 +13,7 @@ import { toHiragana, finalize } from './romaji.js?v=1';
 import { WritingPad, strokeAnimation, gradeWriting } from './writing.js?v=2';
 import { parseFile, parseText } from './importer.js?v=1';
 import { requestPersistence, backupStatus, describeBackup, storageWorks, readFileText } from '../study-backup.js';
+import * as P from '../study-progress.js?v=1';
 
 const $ = (id) => document.getElementById(id);
 const store = S.load();
@@ -23,6 +24,7 @@ let selChars = [];          // kanji in the current selection that we have data 
 let selSet = new Set();
 let persisted = false;
 let gridExpanded = false;
+let levelsExpanded = false;
 
 // ---------------------------------------------------------------- DOM helper
 function h(tag, attrs, ...children) {
@@ -168,6 +170,7 @@ function renderOptions() {
 function renderDashboard() {
   renderContinue();
   renderSummary();
+  renderLevels();
   renderGrid();
   renderTrouble();
   renderStats();
@@ -207,6 +210,60 @@ function renderContinue() {
   const fresh = Math.min(allowance, keys.filter((k) => R.isNew(store, k)).length);
   line.textContent = due ? `${due} review${due === 1 ? '' : 's'} due.` : (fresh ? 'Ready for new kanji.' : 'All caught up.');
   sub.textContent = `${fresh} new kanji ready today · ${fmt.format(selChars.length)} in your selection.`;
+}
+
+// Per-list XP bars and time left. JLPT, Jōyō and Jinmeiyō always show;
+// Kanken levels when selected; Jinmeiyō and your own lists once selected or started.
+function renderLevels() {
+  const sk = skills();
+  const p = P.pace(store.global);
+  // New kanji arrive in selection order: position in that queue decides when a list's last one starts
+  const queue = new Map();
+  selChars.filter((c) => R.isNew(store, kKey(c))).forEach((c, i) => queue.set(c, i + 1));
+  const avgBox = (key) => {
+    const c = store.cards[key] || {};
+    return sk.reduce((t, s) => t + (c[s] ? c[s].box : 0), 0) / sk.length;
+  };
+  const row = (id, name, sub) => {
+    const chars = [...D.setChars(id, store.custom)];
+    const lv = chars.map((c) => R.mastery(store, kKey(c), sk));
+    const t = P.tally(lv);
+    const boxes = [];
+    let unstarted = 0, queued = 0, unqueued = false;
+    chars.forEach((c, i) => {
+      if (lv[i] === 4) return;
+      const key = kKey(c);
+      if (R.isNew(store, key)) {
+        unstarted++;
+        if (queue.has(c)) queued = Math.max(queued, queue.get(c)); else unqueued = true;
+      } else boxes.push(avgBox(key));
+    });
+    let est = P.srsEstimate({ boxes, unstarted, queued: unqueued ? null : queued, pace: p, newCap: settings.newPerDay, noun: 'kanji' });
+    if (p && unqueued && queued && est.note != null) est = { note: 'Some of its kanji aren\'t in your selection. Select it to get an estimate.' };
+    return { id, el: P.levelRow({ name, sub, t, eta: P.etaText(est), lang: 'ja' }), started: t.total - t.counts[0] };
+  };
+  const rows = [];
+  for (const g of D.builtinGroups()) {
+    for (const s of g.sets) {
+      const always = g.title === 'JLPT' || s.id === 'joyo';
+      const kanken = g.title === 'Kanken 漢検';   // overlaps JLPT, so only when selected
+      rows.push({ ...row(s.id, g.title === 'JLPT' ? `JLPT ${s.label}` : kanken ? `Kanken ${s.label}` : s.label, g.title === 'Official lists' ? s.sub : null), always, kanken });
+    }
+  }
+  store.custom.forEach((l) => rows.push({ ...row(`custom:${l.id}`, l.name), always: false }));
+  const shown = rows.filter((r) => r.always || (r.started && !r.kanken) || settings.selection.includes(r.id));
+  const list = levelsExpanded ? rows : shown;
+  $('level-progress').replaceChildren(...list.map((r) => r.el));
+  const more = $('btn-levels-more');
+  more.hidden = shown.length === rows.length;
+  more.textContent = levelsExpanded ? 'Show fewer lists' : `Show all ${rows.length} lists`;
+
+  const all = Object.keys(store.cards).filter((k) => k.startsWith('k:')).map((k) => R.mastery(store, k, sk));
+  const xp = P.tally(all).xp;
+  const { today, levelUp } = P.trackXp('kanji', xp);
+  $('rank-card').replaceChildren(P.rankCard({ xp, today, title: 'Kanji rank' }));
+  if (levelUp) toast(`Level up! Kanji rank ${levelUp}.`);
+  $('pace-note').textContent = `${P.paceText(p, 'kanji')} Mastered means every question type you study is 60+ days out.`;
 }
 
 function renderGrid() {
@@ -313,6 +370,7 @@ $('opt-new').addEventListener('change', (e) => {
 $('opt-size').addEventListener('change', (e) => { settings.sessionSize = parseInt(e.target.value, 10) || 20; S.save(store); });
 $('opt-auto').addEventListener('change', (e) => { settings.autoAdvance = e.target.checked; S.save(store); });
 $('btn-grid-more').addEventListener('click', () => { gridExpanded = !gridExpanded; renderGrid(); });
+$('btn-levels-more').addEventListener('click', () => { levelsExpanded = !levelsExpanded; renderLevels(); });
 
 // ---------------------------------------------------------------- word pool
 // Data for a word key: [word, reading, meaning]

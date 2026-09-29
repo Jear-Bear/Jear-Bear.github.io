@@ -12,6 +12,7 @@ import * as S from './storage.js?v=1';
 import * as R from '../kanji/srs.js?v=1';
 import { toHiragana, finalize } from '../kanji/romaji.js?v=1';
 import { requestPersistence, backupStatus, describeBackup, storageWorks, readFileText } from '../study-backup.js';
+import * as P from '../study-progress.js?v=1';
 
 const $ = (id) => document.getElementById(id);
 const store = S.load();
@@ -198,21 +199,37 @@ function renderContinue() {
 
 function renderProgress() {
   const sk = skills();
+  const p = P.pace(store.global);
+  // New words arrive in the order of your selected levels
+  const queue = new Map();
+  selIds.filter((id) => R.isNew(store, id)).forEach((id, i) => queue.set(id, i + 1));
+  const avgBox = (id) => {
+    const c = store.cards[id] || {};
+    return sk.reduce((t, s) => t + (c[s] ? c[s].box : 0), 0) / sk.length;
+  };
   $('level-progress').replaceChildren(...D.levelList().map((lv) => {
     const ids = D.inLevel(lv).map((t) => t.id);
-    const counts = [0, 0, 0, 0, 0];
-    ids.forEach((id) => counts[R.mastery(store, id, sk)]++);
-    const total = ids.length;
-    const begun = total - counts[0];
+    const levels = ids.map((id) => R.mastery(store, id, sk));
+    const t = P.tally(levels);
+    const boxes = [];
+    let unstarted = 0, queued = 0, unqueued = false;
+    ids.forEach((id, i) => {
+      if (levels[i] === 4) return;
+      if (R.isNew(store, id)) {
+        unstarted++;
+        if (queue.has(id)) queued = Math.max(queued, queue.get(id)); else unqueued = true;
+      } else boxes.push(avgBox(id));
+    });
+    const est = P.srsEstimate({ boxes, unstarted, queued: unqueued ? null : queued, pace: p, newCap: settings.newPerDay, noun: 'words' });
     const best = store.best[lv];
-    return h('div', { class: 'nd-level' },
-      h('div', { class: 'nd-level-head' },
-        h('span', { class: 'nd-level-name' }, D.levelName(lv)),
-        h('span', { class: 'nd-level-nums' }, `${fmt.format(begun)} / ${fmt.format(total)} started · ${fmt.format(counts[4])} mastered${best ? ` · best run ${best.score}` : ''}`)),
-      h('div', { class: 'nd-level-bar', role: 'img', 'aria-label': `${D.levelName(lv)}: ${counts[1]} learning, ${counts[2]} familiar, ${counts[3]} strong, ${counts[4]} mastered of ${total}` },
-        [4, 3, 2, 1].map((m) => (counts[m] ? h('span', { class: `m${m}`, style: `flex-grow:${counts[m]}` }) : null)),
-        h('span', { class: 'nd-rest', style: `flex-grow:${counts[0]}` })));
+    return P.levelRow({ name: D.levelName(lv), t, eta: P.etaText(est), extra: best ? `best run ${best.score}` : '' });
   }));
+  const all = Object.keys(store.cards).filter((id) => D.get(id)).map((id) => R.mastery(store, id, sk));
+  const xp = P.tally(all).xp;
+  const { today, levelUp } = P.trackXp('nandoku', xp);
+  $('rank-card').replaceChildren(P.rankCard({ xp, today, title: 'Nandoku rank' }));
+  if (levelUp) toast(`Level up! Nandoku rank ${levelUp}.`);
+  $('pace-note').textContent = `${P.paceText(p, 'words')} Mastered means every question type you study is 60+ days out.`;
 }
 
 function renderTrouble() {

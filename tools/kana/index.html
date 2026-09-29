@@ -15,7 +15,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=M+PLUS+Rounded+1c:wght@400&family=Shippori+Mincho:wght@500&family=Klee+One:wght@600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="../../styles/base.css?v=3">
-  <link rel="stylesheet" href="../../styles/kana.css?v=15">
+  <link rel="stylesheet" href="../../styles/kana.css?v=16">
+  <link rel="stylesheet" href="../../styles/study-progress.css?v=1">
 </head>
 <body data-page="kana">
 
@@ -136,7 +137,9 @@
         <section class="sec kt-section">
           <p class="sec-mark"><span class="sec-num" lang="ja">一</span><span class="sec-label">Progression / <span lang="ja"><ruby>段階<rt>だんかい</rt></ruby></span></span></p>
           <h2 class="sec-title">Your path through the kana.</h2>
+          <div id="rank-card" class="kt-rank"></div>
           <ol class="kt-stages" id="stage-track"></ol>
+          <p class="sp-pace kt-pace" id="pace-note"></p>
         </section>
 
         <!-- Mastery grid -->
@@ -289,6 +292,6 @@
   </footer>
 
   <script src="../../scripts/site.js?v=2"></script>
-  <script type="module" src="../../scripts/kana/app.js?v=14"></script>
+  <script type="module" src="../../scripts/kana/app.js?v=15"></script>
 </body>
 </html>
