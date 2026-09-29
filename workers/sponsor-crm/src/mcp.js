@@ -9,6 +9,8 @@ import { loadState, settingsFor } from './data.js';
 import { loadCalendar, createItem } from './calendar.js';
 import { listUploads } from './youtube.js';
 import { loadInsights } from './stats.js';
+import { loadTraffic } from './traffic.js';
+import { summarize } from '../../../scripts/manage/traffic.js';
 import { allInsights } from '../../../scripts/manage/insights.js';
 import { listDrafts, closeDraft } from './drafts.js';
 import { pitchValues, renderTemplate, templatesFrom, avoidFrom, prospectingRules, pitchPerformance, MEDIA_KIT_URL } from '../../../scripts/manage/pitching.js';
@@ -100,6 +102,34 @@ export function createServer(env) {
       const d = deals.get(p.deal_id);
       return { id: p.id, deal_id: p.deal_id, company: d ? names.get(d.company_id) : null, deal_stage: d ? d.stage : null, amount: p.amount, invoice_no: p.invoice_no || null, invoiced_on: p.invoiced_on, paid_on: p.paid_on, method: p.method, fees: p.fees, net: p.net };
     });
+  });
+
+  tool('get_site_traffic', 'Website traffic for jareddesu.com from Cloudflare Web Analytics (cookieless; aggregated page views and visits, UTC days). Returns the chosen period and the same-length period before it: totals and % change, daily views, the trend (views/day change per week), busiest weekday, top pages (with section and change), site sections, referrers in plain words (YouTube, Google, Reddit…), rising pages, new referrers, countries, devices, browsers and OS, plus your past traffic reports. A null change means there was no data in the earlier period. Use these numbers as given.', {
+    days: z.number().int().min(7).max(180).optional(),
+  }, READ, async ({ days = 7 }) => {
+    const [data, extra] = await Promise.all([loadTraffic(env, db, { days }), loadInsights(db)]);
+    const x = summarize(data);
+    const top = (list, n = 10) => list.slice(0, n).map((r) => ({ name: r.name || r.key, path: r.name ? r.key : undefined, section: r.section, views: r.views, visits: r.visits, share: Math.round(r.share * 1000) / 10, change_pct: r.change == null ? null : Math.round(r.change * 100), is_new: r.isNew }));
+    return {
+      configured: data.configured, sync: data.status, data_since: data.since,
+      period: { from: x.from, to: x.to, days: x.days }, previous_period: { from: x.prevFrom, to: x.prevTo },
+      totals: {
+        views: x.totals.views, visits: x.totals.visits, prev_views: x.totals.prevViews, prev_visits: x.totals.prevVisits,
+        views_change_pct: x.totals.viewsChange == null ? null : Math.round(x.totals.viewsChange * 100),
+        visits_change_pct: x.totals.visitsChange == null ? null : Math.round(x.totals.visitsChange * 100),
+        views_per_visit: x.totals.viewsPerVisit && Math.round(x.totals.viewsPerVisit * 100) / 100,
+        views_per_day: Math.round(x.totals.perDay * 10) / 10,
+        external_referral_share_pct: x.totals.externalShare == null ? null : Math.round(x.totals.externalShare * 100),
+      },
+      trend_views_per_day_change_per_week: x.trendPerWeek == null ? null : Math.round(x.trendPerWeek * 10) / 10,
+      peak_day: x.peak, best_weekday: x.bestWeekday, avg_views_by_weekday: x.avgByWeekday,
+      daily: x.daily,
+      sections: top(x.sections), pages: top(x.pages, 20), referrers: top(x.referers, 15),
+      pages_growing_faster_than_site: top(x.rising, 5), new_referrers: top(x.newReferrers, 8),
+      countries: top(x.country), devices: top(x.device, 5), browsers: top(x.browser, 6), os: top(x.os, 6),
+      site_pages: ['/', '/about/', '/blog/', '/contact/', '/projects/', '/sponsorships/', '/tools/', '/tools/kana/', '/tools/kanji/', '/tools/nandoku/', '/tools/pitch/', '/tools/jis/'],
+      past_traffic_reports: extra.insights.filter((i) => i.kind === 'traffic').slice(0, 3).map((i) => ({ week_of: i.week_of, text: i.text })),
+    };
   });
 
   tool('get_insights', 'Computed Phase 4 numbers: the 5-pitch-week streak, milestone stamps, the three rate-raise rules (with evidence and whether each triggered), subscriber and monthly-view milestone projections (with the method), and full-time tracker progress (monthly creator income vs the target, trailing 6-month average, months at target, projected crossing). Use these numbers as given; don’t recompute.', {}, READ, async () => {
@@ -218,8 +248,8 @@ export function createServer(env) {
     evidence: z.array(z.string().max(200)).max(5).optional(),
   }, WRITE, (a) => suggestVideoIdea(db, a));
 
-  tool('save_insight', 'Save commentary for the dashboard. kind "weekly" is the Monday insight (3–5 sentences: what moved, what is at risk, the one thing to do this week). Numbers must come from get_dashboard.', {
-    kind: z.enum(['weekly', 'note']), text: z.string().min(1).max(1500), week_of: date.optional(),
+  tool('save_insight', 'Save commentary for the app. kind "weekly" is the Monday insight on the dashboard (3–5 sentences: what moved, what is at risk, the one thing to do this week; numbers from get_dashboard; max 1500 characters). kind "traffic" is the weekly website-traffic report shown on the Traffic tab (numbers from get_site_traffic; plain text, short paragraphs or "- " bullets, max 4000 characters).', {
+    kind: z.enum(['weekly', 'traffic', 'note']), text: z.string().min(1).max(4000), week_of: date.optional(),
   }, WRITE, (a) => saveInsight(db, a));
 
   tool('update_sync_cursor', 'Move the Gmail sync cursor after a run (an ISO date-time or a Gmail query like "after:2026/10/07").', {

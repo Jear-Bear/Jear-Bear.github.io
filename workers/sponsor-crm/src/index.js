@@ -28,6 +28,8 @@
 //   POST /api/invoices              number an invoice and record it as a payment
 //   GET  /go/:slug                  tracked sponsor link: redirect + count (public)
 //   GET|POST /api/drafts, POST /api/drafts/:id/cancel   ask Claude to draft an email
+//   GET  /api/traffic?days=28       website traffic (Cloudflare Web Analytics, stored in D1)
+//   POST /api/traffic/refresh       pull the last 7 days from Cloudflare now
 //   GET  /public/availability       open sponsor slots by month (public, counts only)
 //   POST /public/inquiry            the sponsor-page form → Review (public, rate-limited)
 //
@@ -57,6 +59,7 @@ import { ingestStats, pullPublicStats, loadInsights, putIncome, decideRateRule }
 import { handleGo, createInvoice } from './growth.js';
 import { listDrafts, requestDraft, closeDraft } from './drafts.js';
 import { availability, inquiry } from './public.js';
+import { pullTraffic, loadTraffic, trafficConfigured } from './traffic.js';
 
 const TYPES = {
   companies: 'companies', contacts: 'contacts', deals: 'deals', payments: 'payments',
@@ -171,6 +174,8 @@ async function route(request, env, url) {
   if (a === 'insights' && !b && m === 'GET') return loadInsights(db);
   if (a === 'stats' && b === 'refresh' && !c && m === 'POST') return pullPublicStats(db);
   if (a === 'income' && !b && m === 'PUT') return putIncome(db, await readJson(request));
+  if (a === 'traffic' && !b && m === 'GET') return loadTraffic(env, db, { days: url.searchParams.get('days'), to: url.searchParams.get('to') });
+  if (a === 'traffic' && b === 'refresh' && !c && m === 'POST') return pullTraffic(env, db);
   if (a === 'rate-rules' && b && (c === 'accept' || c === 'dismiss') && !d && m === 'POST') {
     const settings = await settingsFor(db);
     return decideRateRule(db, b, c === 'accept', await readJson(request), todayIn(settings.tz));
@@ -330,12 +335,14 @@ function oauthProvider(env, origin) {
   return provider;
 }
 
-// Daily: refresh the uploads (keeps each video's views at 30 days) and the
-// channel history from the public stats file. Each step is independent.
+// Daily: refresh the uploads (keeps each video's views at 30 days), the
+// channel history from the public stats file and the website traffic. Each
+// step is independent.
 async function daily(env) {
   if (!configured(env)) return;
   const steps = [['public stats', () => pullPublicStats(env.DB)]];
   if (env.YT_API_KEY) steps.push(['uploads', () => refreshUploads(env, env.DB)]);
+  if (trafficConfigured(env)) steps.push(['traffic', () => pullTraffic(env, env.DB)]);
   for (const [name, run] of steps) {
     try { await run(); } catch (err) { console.error(`Daily ${name} failed:`, err && err.message); }
   }
