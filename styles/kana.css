@@ -145,6 +145,11 @@
   display: flex; justify-content: space-between; align-items: center;
   margin-top: 12px; font-size: 0.82rem; color: var(--muted);
 }
+.kt-stage-eta { margin: 6px 0 0; font-size: 0.82rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.kt-stage.done .kt-stage-eta { color: var(--page-ink); font-weight: 500; }
+.kt-rank { margin-top: 28px; }
+.kt-rank .sp-rank { margin-bottom: 0; }
+.kt-pace { margin-top: 16px; }
 .kt-stage-go {
   background: none; border: none; cursor: pointer;
   font: 500 0.82rem var(--font-gothic); color: var(--page-color);

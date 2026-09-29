@@ -3,6 +3,7 @@ import { KANA, BY_CHAR, STAGES, stageItems } from './data.js?v=12';
 import * as E from './engine.js?v=12';
 import * as S from './storage.js?v=13';
 import { requestPersistence, backupStatus, describeBackup, storageWorks } from '../study-backup.js';
+import * as P from '../study-progress.js?v=1';
 
 const KT_VERSION = 12;
 console.info(`[Kana Trainer] v${KT_VERSION}`);
@@ -204,15 +205,55 @@ function nextStepHint() {
   return '';
 }
 
+// Time left per stage. Kana are mastered by answer count (about 12, with a
+// 6-in-a-row streak), and stages are learned in order, so a stage is done
+// once the answers still needed for it and every stage before it are in.
+function stageEstimates() {
+  const p = P.pace(store.global);
+  const out = {};
+  if (!p) { STAGES.forEach((s) => { out[s.id] = { note: 'Study for a few days to see an estimate.' }; }); return { out, p }; }
+  const perDay = p.answersPerDay * 0.85;           // some answers go to kana you've already mastered
+  const newRate = p.newPerDay || (store.settings.newPerDay * p.active) / p.span;
+  let answers = 0, fresh = 0, last = 0;
+  for (const s of STAGES.filter((x) => x.id < 8)) {
+    let left = 0, unstarted = 0;
+    stageItems(s.id).forEach((k) => {
+      const rec = store.kana[k.char];
+      if (rec && E.masteryLevel(rec) === 4) return;
+      left += P.kanaAnswersLeft(rec, p.accuracy);
+      if (!rec || !rec.reviews) unstarted++;
+    });
+    answers += left; fresh += unstarted;
+    if (!left) { out[s.id] = { days: 0 }; continue; }
+    if (perDay <= 0) { out[s.id] = { note: `No answers in the last ${p.span} days, so no estimate yet.` }; continue; }
+    let days = answers / perDay;
+    if (fresh) days = newRate > 0 ? Math.max(days, fresh / newRate + 3) : Infinity;
+    out[s.id] = { days };
+    last = Math.max(last, days);
+  }
+  out[8] = answers ? (perDay > 0 ? { days: last } : { note: `No answers in the last ${p.span} days, so no estimate yet.` }) : { days: 0 };
+  return { out, p };
+}
+
+function renderRank(p) {
+  const xp = P.tally(KANA.map((k) => (store.kana[k.char] ? E.masteryLevel(store.kana[k.char]) : 0))).xp;
+  const { today, levelUp } = P.trackXp('kana', xp);
+  $('rank-card').replaceChildren(P.rankCard({ xp, today, title: 'Kana rank' }));
+  if (levelUp) toast(`Level up! Kana rank ${levelUp}.`);
+  $('pace-note').textContent = `${P.paceText(p, 'kana')} Each kana is worth 100 XP once mastered.`;
+}
+
 function renderStages() {
   const unlocked = E.unlockedStageIds(store);
   const frontier = Math.max(...unlocked);
+  const { out: eta, p: pace } = stageEstimates();
+  renderRank(pace);
   $('stage-track').innerHTML = STAGES.map((s) => {
     const p = E.stageProgress(store, s.id);
     const isOpen = unlocked.has(s.id);
     const isFrontier = s.id === frontier;
     return `
-      <li class="kt-stage ${isOpen ? 'open' : 'locked'} ${isFrontier ? 'frontier' : ''}" data-stage="${s.id}">
+      <li class="kt-stage ${isOpen ? 'open' : 'locked'} ${isFrontier ? 'frontier' : ''} ${p.total && p.mastered === p.total ? 'done' : ''}" data-stage="${s.id}">
         <div class="kt-stage-head">
           <span class="kt-stage-num">${s.id}</span>
           <span class="kt-stage-name">${s.name}</span>
@@ -224,6 +265,7 @@ function renderStages() {
             ? `<span>${p.pct}% · ${p.mastered}/${p.total} mastered</span><button class="kt-stage-go" data-go="${s.id}">Review →</button>`
             : `<span>Locked</span><button class="kt-stage-go" data-unlock="${s.id}">Unlock early</button>`}
         </div>
+        <p class="kt-stage-eta">${escapeHTML(P.etaText(eta[s.id]))}</p>
       </li>`;
   }).join('');
 

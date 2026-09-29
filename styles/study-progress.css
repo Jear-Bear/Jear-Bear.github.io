@@ -1,0 +1,45 @@
+/* study-progress.css — trainer rank card and per-level XP bars
+   (Kanji, Kana and Nandoku trainers; built by scripts/study-progress.js) */
+
+.sp-rank {
+  display: flex; align-items: center; gap: 16px; max-width: 720px;
+  padding: 14px 16px; margin: 0 0 22px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+}
+.sp-rank-badge {
+  flex: none; width: 64px; height: 64px; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: var(--page-color); color: #fff; line-height: 1;
+}
+.sp-rank-lv { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; opacity: .85; }
+.sp-rank-n { font-family: var(--font-mincho); font-size: 1.6rem; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.sp-rank-body { flex: 1; min-width: 0; }
+.sp-rank-title { margin: 0 0 8px; font-family: var(--font-mincho); font-size: 1.1rem; color: var(--ink); }
+.sp-xpbar { height: 10px; border-radius: 999px; overflow: hidden; background: var(--bg-deep); }
+.sp-xpbar > span { display: block; height: 100%; background: var(--page-color); border-radius: inherit; transition: width .6s ease; }
+.sp-rank-meta { margin: 6px 0 0; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sp-rank-today { color: var(--page-ink); font-weight: 500; }
+
+.sp-levels { display: flex; flex-direction: column; gap: 18px; max-width: 720px; margin-bottom: 8px; }
+.sp-level-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 6px; }
+.sp-level-name { font-family: var(--font-mincho); font-size: 1.15rem; color: var(--ink); }
+.sp-level-sub { margin-left: 8px; font-size: .85rem; color: var(--muted); }
+.sp-level-pct { font-size: 15px; font-weight: 500; color: var(--page-ink); font-variant-numeric: tabular-nums; }
+.sp-bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: var(--surface); border: 1px solid var(--border); }
+.sp-bar > span { min-width: 0; flex-basis: 0; }
+.sp-bar > .m1 { background: color-mix(in srgb, var(--page-color) 12%, var(--surface)); }
+.sp-bar > .m2 { background: color-mix(in srgb, var(--page-color) 30%, var(--surface)); }
+.sp-bar > .m3 { background: color-mix(in srgb, var(--page-color) 58%, var(--surface)); }
+.sp-bar > .m4 { background: var(--page-color); min-width: 3px; }
+.sp-bar > .sp-rest { background: transparent; }
+.sp-level-meta, .sp-level-eta { margin: 6px 0 0; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sp-level-eta { margin-top: 2px; color: var(--ink-soft); }
+.sp-level.is-done .sp-level-eta { color: var(--page-ink); font-weight: 500; }
+.sp-pace { margin: 4px 0 18px; max-width: 720px; font-size: 13px; color: var(--muted); }
+.sp-more { margin-top: 4px; }
+
+@media (max-width: 480px) {
+  .sp-rank { gap: 12px; padding: 12px; }
+  .sp-rank-badge { width: 54px; height: 54px; }
+  .sp-rank-n { font-size: 1.35rem; }
+}
