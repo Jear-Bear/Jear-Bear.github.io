@@ -11,6 +11,7 @@ import { openImport, exportAs, CSV_TABLES } from './io.js';
 import { calendarView } from './cal-view.js';
 import { reviewView, refreshReviewCount, whenReviewCountChanges } from './review.js';
 import { insightsView } from './insights-view.js';
+import { trafficView } from './traffic-view.js';
 import { DEFAULT_AVOID, DEFAULT_TEMPLATES, templatesFrom, avoidFrom } from './pitching.js';
 import { closePanel, panelOpen, panelDirty, toast, button, busy } from './ui.js';
 
@@ -25,6 +26,7 @@ const VIEWS = [
   { id: 'review', label: 'Review', render: reviewView },
   { id: 'calendar', label: 'Calendar', render: calendarView },
   { id: 'insights', label: 'Insights', render: insightsView },
+  { id: 'traffic', label: 'Traffic', render: trafficView },
   { id: 'pipeline', label: 'Pipeline', render: pipelineView },
   { id: 'companies', label: 'Companies', render: companiesView },
   { id: 'videos', label: 'Videos', render: videosView },

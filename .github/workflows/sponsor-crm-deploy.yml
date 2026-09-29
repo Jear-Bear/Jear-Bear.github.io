@@ -13,6 +13,8 @@ on:
       - 'scripts/manage/rules.js'
       - 'scripts/manage/calendar.js'
       - 'scripts/manage/insights.js'
+      - 'scripts/manage/traffic.js'
+      - 'scripts/manage/pitching.js'
       - '.github/workflows/sponsor-crm-deploy.yml'
   workflow_dispatch:
 
@@ -38,6 +40,7 @@ jobs:
       CRM_SESSION_KEY: ${{ secrets.CRM_SESSION_KEY }}
       YT_API_KEY: ${{ secrets.YT_API_KEY }}      # optional: the Uploads list
       CRM_INGEST_KEY: ${{ secrets.CRM_INGEST_KEY }}  # optional: daily history from the stats Action
+      CF_ANALYTICS_TOKEN: ${{ secrets.CF_ANALYTICS_TOKEN }}  # optional: website traffic (Account Analytics: Read only)
     steps:
       - name: Check out
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -90,3 +93,7 @@ jobs:
           printf '%s' "$CRM_SESSION_KEY" | npx wrangler secret put CRM_SESSION_KEY
           if [ -n "$YT_API_KEY" ]; then printf '%s' "$YT_API_KEY" | npx wrangler secret put YT_API_KEY; fi
           if [ -n "$CRM_INGEST_KEY" ]; then printf '%s' "$CRM_INGEST_KEY" | npx wrangler secret put CRM_INGEST_KEY; fi
+          if [ -n "$CF_ANALYTICS_TOKEN" ]; then
+            printf '%s' "$CF_ANALYTICS_TOKEN" | npx wrangler secret put CF_ANALYTICS_TOKEN
+            printf '%s' "$CLOUDFLARE_ACCOUNT_ID" | npx wrangler secret put CF_ACCOUNT_ID
+          fi
