@@ -81,21 +81,43 @@ def target_ink(perimeter):
     return pts[-1][1]
 
 
-def embolden(glyphset, name, upm, center, scale=0.92, max_amount=0.075):
+# Growth never closes more than this share of the space between strokes (on
+# each side), so dense kanji keep readable gaps. Measured as the mean width of
+# the background inside the glyph's box: 2 × (box − ink) ÷ perimeter.
+MAX_GAP_SHARE = 0.26
+ROUND_TIPS = 0.018   # em: radius used to round off sharp tips
+CLOSE_WEDGES = 0.005 # em: radius used to round the tips of narrow gaps
+
+
+def embolden(glyphset, name, upm, center, scale=0.92, max_amount=0.075, gap_share=MAX_GAP_SHARE):
     """Returns a TrueType glyph: the outline grown until its ink matches
-    Mochiy Pop One's for a glyph this complex, then scaled about `center`."""
+    Mochiy Pop One's for a glyph this complex (but by no more than
+    `gap_share` of its mean stroke gap), then scaled about `center`."""
     base = shape(glyphset, name)
     if base.is_empty:
         return TTGlyphPen(None).glyph()
     want = target_ink(base.length / upm) * upm * upm / (scale * scale)
-    lo, hi = 0.0, max_amount * upm
+    x0, y0, x1, y1 = base.bounds
+    gap = 2 * ((x1 - x0) * (y1 - y0) - base.area) / base.length if base.length else upm
+    lo, hi = 0.0, min(max_amount * upm, gap_share * gap)
     for _ in range(9):
         mid = (lo + hi) / 2
         if base.buffer(mid, join_style=1, quad_segs=4).area < want:
             lo = mid
         else:
             hi = mid
-    geom = base.buffer(lo, join_style=1, quad_segs=4).simplify(upm / 700)
+    geom = base.buffer(lo, join_style=1, quad_segs=4)
+    # Round off sharp serif tips (they poke through the page's outline stroke)
+    # unless that would erase thin strokes
+    r = ROUND_TIPS * upm
+    opened = geom.buffer(-r, join_style=1, quad_segs=4).buffer(r, join_style=1, quad_segs=4)
+    if not opened.is_empty and opened.area > geom.area * 0.94:
+        geom = opened
+    # ...and round the inner corners of narrow wedge-shaped gaps, whose tips
+    # otherwise turn into miter spikes on the outline
+    rc = CLOSE_WEDGES * upm
+    geom = geom.buffer(rc, join_style=1, quad_segs=4).buffer(-rc, join_style=1, quad_segs=4)
+    geom = geom.simplify(upm / 700)
     cx, cy = center
     tt = TTGlyphPen(None)
     def ring(coords, ccw):
