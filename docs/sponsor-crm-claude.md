@@ -146,6 +146,25 @@ The numbers are YouTube's estimated earnings by the month they were earned
 (what Studio shows), not the AdSense payout date. Pass them with
 **Review → Select all income → Pass selected**.
 
+### 6. Website traffic: Mondays at 8:15 AM (Central)
+
+Needs the Traffic tab connected (see the setup doc, "Website traffic").
+
+```
+Sponsor desk weekly traffic report for jareddesu.com. Use only the Sponsor desk connector. Never approve anything.
+1. Call get_site_traffic with days 7, then with days 28. If configured is false or there are no views, save nothing and reply "Traffic isn't connected yet."
+2. Call list_videos and get_calendar for last Monday through next Sunday, so you can tie traffic to videos (a jump 0–3 days after an upload usually comes from its description or pinned comment).
+3. save_insight with kind "traffic" and week_of this Monday, plain text, under 250 words:
+   - A first paragraph of 2–3 sentences: views and visits for the last 7 days vs the week before, and the 28-day trend.
+   - "What drove it:" then 2–4 lines starting "- ": top pages and sections, where visitors came from, pages growing faster than the site, new referrers. Tie jumps to specific videos when the dates line up. Say so when numbers are too small to judge (under about 50 views a week).
+   - "Do this week:" then 2–3 lines starting "- ": small, concrete actions the data points to, such as linking a growing page in the next video's description or pinned comment, improving the title and description of a page search already finds, adding a link from the most-visited page to one that deserves more visits, sharing a trainer where a new referrer came from, or checking mobile if most visits are on phones. Check past_traffic_reports: say whether last week's suggestion seems to have worked, and don't repeat advice the data no longer supports.
+   Use only numbers from get_site_traffic; don't recompute or estimate.
+4. If one action needs time set aside, one suggest_calendar_item task this week (skip it if something similar is already on the calendar).
+Reply in one line with this week's views vs last week's.
+```
+
+The report shows at the top of **Traffic** in the app.
+
 ## Security notes
 
 - The connector's sign-in page only approves apps that return to claude.ai or

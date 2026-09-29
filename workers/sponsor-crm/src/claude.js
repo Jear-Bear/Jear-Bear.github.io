@@ -223,9 +223,9 @@ export async function suggestVideoIdea(db, input) {
 }
 
 export async function saveInsight(db, input) {
-  const text = clip(input.text, 1500);
+  const kind = ['weekly', 'traffic'].includes(input.kind) ? input.kind : 'note';
+  const text = clip(input.text, kind === 'traffic' ? 4000 : 1500);
   if (!text) throw new HttpError(400, 'text is required');
-  const kind = input.kind === 'weekly' ? 'weekly' : 'note';
   const weekOf = isIsoDate(input.week_of) ? input.week_of : null;
   const id = crypto.randomUUID();
   await db.prepare('INSERT INTO insights (id, kind, week_of, text, created_at) VALUES (?, ?, ?, ?, ?)').bind(id, kind, weekOf, text, nowIso()).run();
