@@ -36,7 +36,7 @@
 .wd-board {
   --len: 4;
   /* Tiles shrink so all 8 rows and the keyboard fit on a phone screen */
-  --tile: min(64px, calc((100vw - 40px) / var(--len)), calc((100svh - 400px) / 8));
+  --tile: min(64px, calc((100vw - 40px) / var(--len)), calc((100svh - 470px) / 8));
   --tile-safe: max(34px, var(--tile));
   display: grid; gap: 5px; width: calc(var(--len) * var(--tile-safe) + (var(--len) - 1) * 5px);
 }
@@ -128,3 +128,12 @@
 .wd-toast { position: fixed; left: 50%; top: 96px; transform: translateX(-50%); z-index: 300; max-width: min(420px, calc(100vw - 32px)); padding: 10px 16px; background: var(--ink); color: var(--paper); font-size: 14px; white-space: pre-line; text-align: center; }
 @media (max-width: 560px) { .wd-bar-end { margin-left: 0; } }
 .wd-daku { font-size: 0.72em; letter-spacing: -0.04em; }
+
+/* ---------------------------------------------------------------- theme + hints */
+.wd-hints { display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 24px; text-align: center; max-width: 100%; }
+.wd-theme, .wd-hint { margin: 0; font-size: 15px; color: var(--ink); }
+.wd-theme-label { display: inline-block; font: 600 10.5px var(--font-gothic); letter-spacing: 0.08em; text-transform: uppercase; color: var(--page-ink); background: var(--page-color-soft); padding: 2px 7px; margin-right: 4px; vertical-align: 2px; }
+.wd-hint { font-size: 14px; color: var(--ink-soft); }
+.wd-hint-btn { font: 500 13px var(--font-gothic); color: var(--ink-soft); background: none; border: 1px dashed var(--border-strong); padding: 5px 12px; cursor: pointer; margin-top: 2px; }
+.wd-hint-btn:hover { border-color: var(--page-color); color: var(--ink); }
+@media (max-width: 560px) { .wd-theme { font-size: 14px; } .wd-hint { font-size: 13px; } .wd-game { gap: 10px; } }
