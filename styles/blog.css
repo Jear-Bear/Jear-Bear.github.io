@@ -45,7 +45,7 @@
   padding: 0 16px;
 }
 .post-modal.open { display: flex; }
-.post-modal-backdrop { position: absolute; inset: 0; background: color-mix(in srgb, var(--ink) 45%, transparent); }
+.post-modal-backdrop { position: absolute; inset: 0; background: var(--scrim, color-mix(in srgb, #1f1c18 45%, transparent)); }
 
 .post-modal-content {
   position: relative;

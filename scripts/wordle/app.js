@@ -8,6 +8,8 @@ import { toHiragana } from '../kanji/romaji.js?v=1';
 import { gridKana, cycleDakuten, romaji } from '../crossword/kana.js?v=1';
 
 const $ = (id) => document.getElementById(id);
+// replaceChildren() would print null/false as text
+const fill = (el, ...kids) => el.replaceChildren(...kids.filter((k) => k != null && k !== false));
 const KEY = 'jareddesu.wordle.v1';
 const START = '2026-10-02';             // daily #1
 const TRIES = 8;
@@ -396,12 +398,12 @@ function showResult({ statsOnly = false } = {}) {
   if (statsOnly || !game.done) {
     $('result-eyebrow').textContent = 'statistics';
     $('result-title').textContent = 'Your daily record';
-    $('result-body').replaceChildren(statsBlock());
+    fill($('result-body'), statsBlock());
   } else {
     const used = game.usedHints ?? game.hints ?? 0;
     $('result-eyebrow').textContent = (game.won ? `solved in ${game.guesses.length}/${TRIES}` : 'out of guesses') + (used ? ` · ${used} hint${used === 1 ? '' : 's'}` : ' · no hints');
     $('result-title').textContent = game.won ? ['天才！', '見事！', 'すごい！', 'いいね！', 'よし！', 'ナイス！', 'ふう…', 'セーフ！'][game.guesses.length - 1] : 'ざんねん…';
-    $('result-body').replaceChildren(
+    fill($('result-body'), 
       h('div', { class: 'wd-answer' },
         h('p', { class: 'wd-answer-word', lang: 'ja' }, info.w),
         h('p', { class: 'wd-answer-reading', lang: 'ja' }, info.r, h('span', { class: 'wd-muted' }, ` · ${romaji(info.r)}`)),

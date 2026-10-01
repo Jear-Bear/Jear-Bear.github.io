@@ -42,6 +42,45 @@
   --shadow-lg: none;
 }
 
+/* --- Dark theme: 墨 sumi paper, washi-coloured ink ----------------------
+   data-theme is set on <html> before the page draws (auto follows the
+   system setting). Each page keeps its --page-color; text uses a lighter
+   --page-ink so it stays readable on the dark paper. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper:        #171512;
+  --paper-deep:   #0f0e0c;
+  --paper-light:  #211e1a;
+  --ink:          #ece5d8;   /* 14.7:1 on paper */
+  --ink-soft:     #c8bfb0;   /* 10:1 */
+  --muted:        #9a9184;   /* 5.9:1 */
+  --faint:        #5b544a;
+  --rule:         #37322b;
+  --rule-strong:  #51493e;
+  --page-ink: color-mix(in srgb, var(--page-color) 58%, #f4efe4);
+  --page-color-soft: color-mix(in srgb, var(--page-color) 20%, transparent);
+}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { --scrim: rgba(0, 0, 0, 0.62); }   /* overlay backdrops: dim, never lighten */
+
+/* --- Theme toggle (added by site.js) ------------------------------------ */
+.theme-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; margin: -4px 0 0; padding: 0;
+  border: 1px solid transparent; border-radius: 50%; background: none;
+  color: var(--ink-soft); cursor: pointer;
+}
+.theme-toggle:hover { color: var(--ink); border-color: var(--rule); }
+.theme-toggle svg { width: 17px; height: 17px; }
+.masthead-nav li.theme-li { display: flex; align-items: center; }
+.masthead > .theme-toggle { display: none; margin-left: auto; }
+.theme-seg { display: flex; gap: 0; margin-top: 28px; border: 1px solid var(--rule-strong); align-self: flex-start; }
+.theme-seg button { font: 500 14px var(--font-gothic); padding: 10px 16px; border: 0; border-left: 1px solid var(--rule-strong); background: none; color: var(--ink-soft); cursor: pointer; }
+.theme-seg button:first-child { border-left: 0; }
+.theme-seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.theme-seg-label { margin-top: 32px; font-size: 12px; letter-spacing: 0.06em; color: var(--muted); }
+.theme-seg-label + .theme-seg { margin-top: 8px; }
+
 /* --- Reset ------------------------------------------------------------ */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 ::selection { background: var(--page-color); color: var(--paper); }
@@ -704,6 +743,7 @@ section + section { margin-top: clamp(72px, 12vh, 160px); }
   .masthead { padding-top: 20px; align-items: flex-start; }
   .masthead-nav { display: none; }
   .menu-toggle { display: inline-block; }
+  .masthead > .theme-toggle { display: inline-flex; }
   .nav-links { display: none; }
   .nav-burger { display: flex; }
 

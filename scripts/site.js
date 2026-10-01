@@ -57,3 +57,68 @@ window.observeReveal = function () {};
     }
   });
 })();
+
+// --- Theme toggle: Auto (system) → Light → Dark ---------------------------
+(function initTheme() {
+  const api = window.jdTheme;
+  if (!api) return;                                   // pages without the theme script stay light
+  const ICONS = {
+    auto: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg>',
+    light: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6"/><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g></svg>',
+    dark: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.6A8 8 0 0 1 9.4 4.5a8 8 0 1 0 10.1 10.1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  };
+  const NAMES = { auto: 'Auto (follows your device)', light: 'Light', dark: 'Dark' };
+  const NEXT = { auto: 'light', light: 'dark', dark: 'auto' };
+  const buttons = [];
+  const segs = [];
+
+  function make() {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'theme-toggle';
+    b.addEventListener('click', () => { api.set(NEXT[api.get()]); paint(); });
+    buttons.push(b);
+    return b;
+  }
+  function paint() {
+    const pref = api.get();
+    buttons.forEach((b) => {
+      b.innerHTML = ICONS[pref] || ICONS.auto;
+      b.setAttribute('aria-label', `Theme: ${NAMES[pref]}. Switch to ${NAMES[NEXT[pref]]}.`);
+      b.title = `Theme: ${NAMES[pref]}`;
+    });
+    segs.forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.pref === pref)));
+  }
+
+  // Desktop: the last item in the nav. Phones: beside the Menu button, and in the menu sheet.
+  const navList = document.querySelector('.masthead-nav ul');
+  if (navList) {
+    const li = document.createElement('li');
+    li.className = 'theme-li';
+    li.append(make());
+    navList.append(li);
+  }
+  const menuBtn = document.querySelector('.masthead > .menu-toggle');
+  if (menuBtn) menuBtn.before(make());
+  const sheetNav = document.querySelector('.menu-sheet nav');
+  if (sheetNav) {
+    const label = document.createElement('p');
+    label.className = 'theme-seg-label';
+    label.textContent = 'Theme / テーマ';
+    const seg = document.createElement('div');
+    seg.className = 'theme-seg';
+    seg.setAttribute('role', 'group');
+    seg.setAttribute('aria-label', 'Theme');
+    ['auto', 'light', 'dark'].forEach((pref) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.dataset.pref = pref;
+      b.textContent = pref === 'auto' ? 'Auto' : pref === 'light' ? 'Light' : 'Dark';
+      b.addEventListener('click', () => { api.set(pref); paint(); });
+      segs.push(b);
+      seg.append(b);
+    });
+    sheetNav.after(label, seg);
+  }
+  paint();
+})();
