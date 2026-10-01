@@ -42,7 +42,7 @@ function h(tag, attrs, ...kids) {
 const lists = {};
 async function words(len) {
   if (lists[len]) return lists[len];
-  const res = await fetch(`../../data/wordle/words-${len}.json?v=1`);
+  const res = await fetch(`../../data/wordle/words-${len}.json?v=2`);
   if (!res.ok) throw new Error(`words-${len}.json: ${res.status}`);
   const d = await res.json();
   const bin = atob(d.answers.split('').reverse().join(''));
@@ -118,9 +118,11 @@ async function start({ fresh = false } = {}) {
   game.level = settings.level;
   game.len = settings.len;
   game.info = pool.find((w) => w.a === game.answer) || { a: game.answer, w: game.answer, r: game.answer, m: '' };
+  game.hints = game.hints || 0;
   typed = ''; tail = '';
   save();
   renderTitle();
+  renderHints();
   renderBoard();
   renderKeys();
   if (game.done) setTimeout(() => showResult(), 300);
@@ -143,6 +145,34 @@ function renderTitle() {
   $('title').textContent = game.mode === 'daily'
     ? `Daily #${game.day} · ${LEVEL_NAMES[game.level]} · ${game.len} kana`
     : `Practice · ${LEVEL_NAMES[game.level]} · ${game.len} kana`;
+}
+
+// Theme, then up to two hints on request: the English meaning, then one kana
+const POS_LABEL = { verb: 'verb', adjective: 'い-adjective', 'na-adjective': 'な-adjective', adverb: 'adverb', expression: 'expression', counter: 'counter', noun: 'noun' };
+function hintKana() {
+  const solved = new Set();
+  game.guesses.forEach((g) => score(g, game.answer).forEach((m, i) => { if (m === 'correct') solved.add(i); }));
+  const i = [...game.answer].findIndex((_, k) => !solved.has(k));
+  return i < 0 ? null : { i, ch: [...game.answer][i] };
+}
+function renderHints() {
+  const box = $('hints');
+  const info = game.info;
+  const showTheme = !settings.notheme || game.done;
+  const parts = [];
+  if (showTheme && info.t) {
+    parts.push(h('p', { class: 'wd-theme' }, h('span', { class: 'wd-theme-label' }, 'Theme'), ` ${info.t}`, info.p && !/^(Something you do|A describing word|How, when or how much|Something people say|A thing or an idea)$/.test(info.t) ? h('span', { class: 'wd-muted' }, ` · ${POS_LABEL[info.p] || info.p}`) : null));
+  }
+  if (game.hints >= 1 && info.m) parts.push(h('p', { class: 'wd-hint' }, h('span', { class: 'wd-theme-label' }, 'Meaning'), ` ${info.m}`));
+  if (game.hints >= 2) {
+    const k = game.hintKana || hintKana();
+    if (k) { game.hintKana = k; parts.push(h('p', { class: 'wd-hint' }, h('span', { class: 'wd-theme-label' }, 'Kana'), ' Square ', String(k.i + 1), ' is ', h('strong', { lang: 'ja' }, k.ch))); }
+  }
+  if (!game.done && game.hints < 2) {
+    const label = game.hints === 0 ? 'Hint: show the meaning' : 'Hint: show one kana';
+    parts.push(h('button', { type: 'button', class: 'wd-hint-btn', onclick: () => { game.hints++; save(); renderHints(); } }, '💡 ', label));
+  }
+  box.replaceChildren(...parts);
 }
 
 function renderBoard() {
@@ -242,6 +272,7 @@ function submit() {
   renderBoard();
   flipLast();
   renderKeys();
+  renderHints();
   if (game.done) setTimeout(showResult, 1500);
 }
 
@@ -373,7 +404,8 @@ function tickCountdown() {
 function share() {
   const head = game.mode === 'daily' ? `Kana Wordle #${game.day} ${LEVEL_NAMES[game.level]} ${game.len}` : `Kana Wordle practice ${LEVEL_NAMES[game.level]} ${game.len}`;
   const grid = game.guesses.map((g) => score(g, game.answer).map((m) => EMOJI[m]).join('')).join('\n');
-  const text = `${head} ${game.won ? game.guesses.length : 'X'}/${TRIES}${settings.hard ? '*' : ''}\n${grid}\nhttps://www.jareddesu.com/tools/wordle/`;
+  const hints = game.hints ? ` ${'💡'.repeat(game.hints)}` : '';
+  const text = `${head} ${game.won ? game.guesses.length : 'X'}/${TRIES}${settings.hard ? '*' : ''}${hints}\n${grid}\nhttps://www.jareddesu.com/tools/wordle/`;
   (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => toast('Copied. Paste it anywhere.'), () => toast(text));
 }
 
@@ -397,11 +429,11 @@ $('btn-settings').addEventListener('click', () => { $('settings').hidden = false
   $(id).addEventListener('click', (e) => { if (e.target === e.currentTarget) closeOverlays(); });
   $(`${id}-close`).addEventListener('click', closeOverlays);
 });
-[['opt-hard', 'hard'], ['opt-any', 'any'], ['opt-romaji', 'romaji']].forEach(([id, k]) => {
+[['opt-hard', 'hard'], ['opt-any', 'any'], ['opt-romaji', 'romaji'], ['opt-notheme', 'notheme']].forEach(([id, k]) => {
   $(id).checked = Boolean(settings[k]);
   $(id).addEventListener('change', (e) => {
     if (k === 'hard' && game && game.guesses.length && !game.done) { e.target.checked = Boolean(settings.hard); toast('Change hard mode before your first guess.'); return; }
-    settings[k] = e.target.checked; save(); if (k === 'romaji') renderKeys();
+    settings[k] = e.target.checked; save(); if (k === 'romaji') renderKeys(); if (k === 'notheme' && game) renderHints();
   });
 });
 const ime = $('ime');

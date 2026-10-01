@@ -15,7 +15,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Klee+One:wght@600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="../../styles/base.css?v=3">
-  <link rel="stylesheet" href="../../styles/wordle.css?v=1">
+  <link rel="stylesheet" href="../../styles/wordle.css?v=2">
   <!-- Cloudflare Web Analytics (cookieless) -->
   <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
 </head>
@@ -100,6 +100,7 @@
 
       <div class="wd-game">
         <p class="wd-title" id="title"></p>
+        <div class="wd-hints" id="hints" aria-live="polite"></div>
         <div class="wd-board" id="board" role="grid" aria-label="Guesses"></div>
         <div class="wd-keys" id="keys" aria-label="Kana keyboard"></div>
         <input class="wd-ime" id="ime" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Type your guess (romaji or kana)">
@@ -110,6 +111,7 @@
         <ul class="wd-howto">
           <li><strong>Guess the word</strong> in 8 tries. Each guess must be a real word (any level counts).</li>
           <li><span class="wd-chip is-correct" lang="ja">か</span> right kana, right spot. <span class="wd-chip is-present" lang="ja">か</span> in the word, wrong spot. <span class="wd-chip is-close" lang="ja">か</span> right spot, but the answer has が (or ぱ, ば…). <span class="wd-chip is-absent" lang="ja">か</span> not in the word.</li>
+          <li><strong>Stuck?</strong> The theme hints at the word's topic or type. Open up to two hints: the English meaning, then one kana. Hints show as 💡 in your shared result.</li>
           <li><strong>Small kana are full size</strong> (きゃ → きや) and ー counts as a kana.</li>
           <li><strong>Type romaji</strong> (ka, kya, nn) or use the kana keys; <span lang="ja">゛゜</span> adds a dakuten to the last kana.</li>
           <li>Beginner answers are JLPT N5–N4 words, intermediate N3–N2, advanced N1 plus slang and pop culture. The daily word is the same for everyone.</li>
@@ -134,6 +136,7 @@
       <h2 class="wd-sheet-title" id="settings-title">Settings</h2>
       <label class="wd-toggle"><input type="checkbox" id="opt-hard"> <span><strong>Hard mode</strong>: green and yellow kana must be used in later guesses.</span></label>
       <label class="wd-toggle"><input type="checkbox" id="opt-any"> <span><strong>Accept any kana</strong>: guesses don't have to be dictionary words.</span></label>
+      <label class="wd-toggle"><input type="checkbox" id="opt-notheme"> <span><strong>Hide the theme</strong> for a harder game.</span></label>
       <label class="wd-toggle"><input type="checkbox" id="opt-romaji"> <span><strong>Show romaji</strong> under the kana keys.</span></label>
     </div>
   </div>
@@ -167,6 +170,6 @@
   </footer>
 
   <script src="../../scripts/site.js?v=2"></script>
-  <script type="module" src="../../scripts/wordle/app.js?v=1"></script>
+  <script type="module" src="../../scripts/wordle/app.js?v=2"></script>
 </body>
 </html>
