@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+  <title>Kana Crossword · Jared P.</title>
+  <meta name="description" content="A daily Japanese crossword: English clues, hiragana answers. A 5×5 mini and a 9×9 daily, at beginner (N5–N4), intermediate (N3–N2) or advanced (N1+) level." />
+  <link rel="canonical" href="https://www.jareddesu.com/tools/crossword/" />
+
+  <link rel="icon" href="../../images/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Klee+One:wght@600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../../styles/base.css?v=3">
+  <link rel="stylesheet" href="../../styles/crossword.css?v=1">
+  <!-- Cloudflare Web Analytics (cookieless) -->
+  <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
+</head>
+<body data-page="crossword">
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="masthead">
+    <a href="../../" class="mark" aria-label="まだまだJared, home">
+      <span class="mark-ja" lang="ja">まだまだ</span>
+      <span class="mark-en">Jared</span>
+    </a>
+    <nav class="masthead-nav" aria-label="Site">
+      <ul>
+        <li><a href="../../about/">About</a></li>
+        <li><a href="../../projects/">Projects</a></li>
+        <li><a href="../../tools/">Tools</a></li>
+        <li><a href="../../blog/">Blog</a></li>
+        <li><a href="../../sponsorships/">Sponsorships</a></li>
+        <li><a href="../../contact/">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Menu</button>
+  </header>
+
+  <div class="menu-sheet" id="site-menu" hidden>
+    <div class="menu-sheet-head">
+      <a href="../../" class="mark" aria-label="まだまだJared, home">
+        <span class="mark-ja" lang="ja">まだまだ</span>
+        <span class="mark-en">Jared</span>
+      </a>
+      <button class="menu-toggle menu-close" type="button">Close</button>
+    </div>
+    <nav aria-label="Site">
+      <ul>
+        <li><a href="../../about/">About <span lang="ja">自己紹介</span></a></li>
+        <li><a href="../../projects/">Projects <span lang="ja">制作</span></a></li>
+        <li><a href="../../tools/">Tools <span lang="ja">ツール</span></a></li>
+        <li><a href="../../blog/">Blog <span lang="ja">ブログ</span></a></li>
+        <li><a href="../../sponsorships/">Sponsorships <span lang="ja">スポンサー</span></a></li>
+        <li><a href="../../contact/">Contact <span lang="ja">お問い合わせ</span></a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <main id="main">
+    <div class="container cw">
+      <header class="page-head">
+        <div class="page-head-copy">
+          <h1 class="page-title">Kana <em>Crossword</em>.</h1>
+          <p class="page-intro">
+            English clues, hiragana answers. A new mini and a new daily puzzle every day,
+            at three levels. Small kana are written full size (ゃ→や, っ→つ) and ー takes a square,
+            like in a Japanese newspaper crossword.
+          </p>
+        </div>
+        <p class="page-v"><span class="page-v-ja" lang="ja">十字</span><span class="page-v-en">Crossword</span></p>
+      </header>
+
+      <div class="cw-bar" role="toolbar" aria-label="Puzzle options">
+        <div class="cw-seg" role="radiogroup" aria-label="Size" id="size-seg">
+          <button type="button" role="radio" data-size="mini">Mini <span class="cw-seg-sub">5×5</span></button>
+          <button type="button" role="radio" data-size="daily">Daily <span class="cw-seg-sub">9×9</span></button>
+        </div>
+        <label class="cw-select-wrap">
+          <span class="cw-label">Level</span>
+          <select id="level" class="cw-select">
+            <option value="beginner">Beginner · N5–N4</option>
+            <option value="intermediate">Intermediate · N3–N2</option>
+            <option value="advanced">Advanced · N1+</option>
+          </select>
+        </label>
+        <div class="cw-date">
+          <button type="button" class="cw-icon" id="date-prev" aria-label="Previous puzzle">‹</button>
+          <button type="button" class="cw-date-btn" id="date-label" aria-haspopup="dialog">Today</button>
+          <button type="button" class="cw-icon" id="date-next" aria-label="Next puzzle">›</button>
+        </div>
+      </div>
+
+      <div class="cw-play" id="play">
+        <div class="cw-board-col">
+          <div class="cw-tools">
+            <button type="button" class="cw-timer" id="timer" aria-label="Pause">0:00</button>
+            <div class="cw-menus">
+              <details class="cw-menu" id="menu-check"><summary>Check</summary>
+                <div class="cw-menu-list"><button type="button" data-check="cell">Square</button><button type="button" data-check="word">Word</button><button type="button" data-check="puzzle">Puzzle</button><label class="cw-auto"><input type="checkbox" id="autocheck"> Autocheck</label></div>
+              </details>
+              <details class="cw-menu" id="menu-reveal"><summary>Reveal</summary>
+                <div class="cw-menu-list"><button type="button" data-reveal="cell">Square</button><button type="button" data-reveal="word">Word</button><button type="button" data-reveal="puzzle">Puzzle</button><button type="button" data-reveal="clear" class="cw-danger">Clear puzzle</button></div>
+              </details>
+            </div>
+          </div>
+          <div class="cw-board-wrap">
+            <div class="cw-grid" id="grid" role="grid" aria-label="Crossword grid"></div>
+            <div class="cw-paused" id="paused" hidden><p>Paused</p><button type="button" class="btn btn-primary" id="resume">Resume</button></div>
+          </div>
+          <div class="cw-clue-bar" id="clue-bar">
+            <button type="button" class="cw-icon" id="clue-prev" aria-label="Previous clue">‹</button>
+            <button type="button" class="cw-clue-text" id="clue-text" aria-live="polite"></button>
+            <button type="button" class="cw-icon" id="clue-next" aria-label="Next clue">›</button>
+          </div>
+          <div class="cw-keys" id="keys" aria-label="Kana keyboard"></div>
+          <div class="cw-keyword" id="keyword"></div>
+          <input class="cw-ime" id="ime" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Type answers (romaji or kana)">
+        </div>
+        <div class="cw-clues" id="clues">
+          <section class="cw-clue-list"><h2>Across <span lang="ja">ヨコのカギ</span></h2><ol id="clues-across"></ol></section>
+          <section class="cw-clue-list"><h2>Down <span lang="ja">タテのカギ</span></h2><ol id="clues-down"></ol></section>
+        </div>
+      </div>
+      <p class="cw-empty" id="empty" hidden></p>
+
+      <section class="sec cw-section" id="words-sec" hidden>
+        <p class="sec-mark"><span class="sec-num" lang="ja">語</span><span class="sec-label">Words in this puzzle / <span lang="ja"><ruby>単語<rt>たんご</rt></ruby></span></span></p>
+        <div id="words"></div>
+      </section>
+
+      <section class="sec cw-section">
+        <p class="sec-mark"><span class="sec-num" lang="ja">遊</span><span class="sec-label">How to play / <span lang="ja"><ruby>遊<rt>あそ</rt></ruby>び<ruby>方<rt>かた</rt></ruby></span></span></p>
+        <ul class="cw-howto">
+          <li><strong>Type romaji</strong> (ka → か, kya → きや) or kana with a Japanese keyboard. On a phone, use the kana keys under the grid; <span lang="ja">゛゜</span> turns か into が, は into ば or ぱ.</li>
+          <li><strong>Small kana are full size.</strong> きゃ is written きや, がっこう is がつこう. The long-vowel mark ー gets its own square.</li>
+          <li><strong>Tap a square twice</strong> (or press space) to switch between across and down. Tab moves to the next clue.</li>
+          <li><strong>Double-boxed squares</strong> (<span lang="ja">二重マス</span>) spell a bonus keyword, read in order A, B, C….</li>
+          <li>Beginner uses JLPT N5–N4 words, intermediate N3–N2, advanced N1 plus slang and idioms. Each puzzle mixes in food, pop culture and other fun words.</li>
+        </ul>
+        <p class="cw-stats" id="stats"></p>
+        <p class="cw-credit">Word lists: JLPT vocabulary from <a href="https://github.com/jamsinclair/open-anki-jlpt-decks" target="_blank" rel="noopener">open-anki-jlpt-decks</a> (MIT), based on Jonathan Waller’s JLPT lists (CC BY). Clues written with Claude.</p>
+      </section>
+    </div>
+  </main>
+
+  <div class="cw-overlay" id="done" hidden>
+    <div class="cw-sheet" role="dialog" aria-modal="true" aria-labelledby="done-title">
+      <p class="eyebrow">solved</p>
+      <h2 class="cw-sheet-title" id="done-title">お見事！</h2>
+      <div id="done-body"></div>
+      <div class="cw-sheet-actions">
+        <button type="button" class="btn btn-primary" id="done-share">Copy result</button>
+        <button type="button" class="btn-link" id="done-close">Keep looking</button>
+      </div>
+    </div>
+  </div>
+  <div class="cw-overlay" id="dates" hidden>
+    <div class="cw-sheet" role="dialog" aria-modal="true" aria-labelledby="dates-title">
+      <h2 class="cw-sheet-title" id="dates-title">Past puzzles</h2>
+      <ol class="cw-date-list" id="date-list"></ol>
+      <div class="cw-sheet-actions"><button type="button" class="btn-link" id="dates-close">Close</button></div>
+    </div>
+  </div>
+  <div class="cw-toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- Kanji detail -->
+  <div class="kj-overlay" id="detail-overlay" hidden>
+    <div class="kj-sheet" role="dialog" aria-modal="true" aria-labelledby="detail-char">
+      <button class="kj-close" id="detail-close" aria-label="Close">×</button>
+      <div id="detail-body"></div>
+    </div>
+  </div>
+
+  <!-- Add a list -->
+  <div class="kj-overlay" id="import-overlay" hidden>
+    <div class="kj-sheet" role="dialog" aria-modal="true" aria-labelledby="import-title">
+      <button class="kj-close" id="import-close" aria-label="Close">×</button>
+      <p class="eyebrow">your list</p>
+      <h2 class="kj-sheet-title" id="import-title">Add your own list.</h2>
+      <label class="kj-field">
+        <span class="kj-opt-label">Name</span>
+        <input type="text" id="list-name" maxlength="40" placeholder="e.g. Chapter 3 vocab">
+      </label>
+      <label class="kj-field">
+        <span class="kj-opt-label">Paste kanji or words</span>
+        <textarea id="list-text" rows="6" lang="ja" placeholder="学 校 先 生&#10;or one word per line:&#10;学校　がっこう　school"></textarea>
+      </label>
+      <div class="kj-file-row">
+        <label class="btn-link kj-file-btn">Upload CSV or Excel <input type="file" id="list-file" accept=".csv,.tsv,.txt,.xlsx,.xlsm,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></label>
+        <span class="kj-help" id="list-file-name"></span>
+      </div>
+      <p class="kj-help">Every kanji found is added. Words (two or more characters) are kept for word practice; add a kana reading and an English meaning in the same row or line if you have them.</p>
+      <p class="kj-preview" id="list-preview" aria-live="polite"></p>
+      <div class="kj-sheet-actions">
+        <button class="btn btn-primary" id="list-save" disabled>Save list</button>
+        <button class="btn-link" id="list-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Session summary -->
+  <div class="kj-overlay" id="summary-overlay" hidden>
+    <div class="kj-sheet kj-summary" role="dialog" aria-modal="true" aria-labelledby="summary-title">
+      <p class="eyebrow">session done</p>
+      <h2 class="kj-sheet-title" id="summary-title">Nice work.</h2>
+      <div id="summary-body"></div>
+      <div class="kj-sheet-actions">
+        <button class="btn btn-primary" id="summary-again">Keep going</button>
+        <button class="btn-link" id="summary-done">Back to dashboard</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="kj-toasts" id="toasts" aria-live="polite"></div>
+
+  <footer class="colophon">
+    <nav class="colophon-links" aria-label="Footer">
+      <ul>
+        <li><a href="../../about/">About</a></li>
+        <li><a href="../../projects/">Projects</a></li>
+        <li><a href="../../tools/">Tools</a></li>
+        <li><a href="../../blog/">Blog</a></li>
+        <li><a href="../../sponsorships/">Sponsorships</a></li>
+        <li><a href="../../contact/">Contact</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a></li>
+        <li><a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a></li>
+        <li><a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a></li>
+        <li><a href="#">RSS</a></li>
+      </ul>
+    </nav>
+    <div class="colophon-box">
+      <p class="colophon-title" lang="ja">奥付</p>
+      <dl>
+        <div><dt>Site / <span lang="ja">サイト</span></dt><dd>jareddesu.com</dd></div>
+        <div><dt>Author / <span lang="ja">著者</span></dt><dd>Jared P. (<span lang="ja">まだまだ</span>Jared)</dd></div>
+        <div><dt>Published / <span lang="ja">発行</span></dt><dd>© 2026</dd></div>
+      </dl>
+    </div>
+  </footer>
+
+  <script src="../../scripts/site.js?v=2"></script>
+  <script type="module" src="../../scripts/crossword/app.js?v=1"></script>
+</body>
+</html>
