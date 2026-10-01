@@ -327,37 +327,66 @@ function onKey(e) {
 // ---------------------------------------------------------------- stats + result
 function statsKey() { return `${game.level}:${game.len}`; }
 function recordStats() {
+  const hinted = (game.hints || 0) > 0;
+  game.usedHints = game.hints || 0;
   if (game.mode !== 'daily') {
     store.recent = [...(store.recent || []), game.answer].slice(-50);
     const p = store.practice = store.practice || {};
-    const s = p[statsKey()] = p[statsKey()] || { played: 0, won: 0 };
-    s.played++; if (game.won) s.won++;
+    const s = p[statsKey()] = p[statsKey()] || { played: 0, won: 0, hinted: 0 };
+    s.played++;
+    if (game.won) { s.won++; if (hinted) s.hinted = (s.hinted || 0) + 1; }
     return;
   }
-  const s = store.stats[statsKey()] = store.stats[statsKey()] || { played: 0, won: 0, streak: 0, max: 0, dist: Array(TRIES).fill(0), lastDay: 0 };
+  const s = dailyStats();
   s.played++;
   if (game.won) {
     s.won++;
     s.streak = s.lastDay === game.day - 1 ? s.streak + 1 : 1;
     s.max = Math.max(s.max, s.streak);
-    s.dist[game.guesses.length - 1]++;
-  } else s.streak = 0;
+    if (hinted) {
+      s.hinted++;
+      s.distHint[game.guesses.length - 1]++;
+      s.cleanStreak = 0;
+    } else {
+      s.dist[game.guesses.length - 1]++;
+      s.cleanStreak = s.lastCleanDay === game.day - 1 ? s.cleanStreak + 1 : 1;
+      s.cleanMax = Math.max(s.cleanMax, s.cleanStreak);
+      s.lastCleanDay = game.day;
+    }
+  } else { s.streak = 0; s.cleanStreak = 0; }
   s.lastDay = game.day;
 }
 
+// Daily stats for this level and length. Wins from before hints were tracked count as hint-free.
+function dailyStats() {
+  const s = store.stats[statsKey()] = store.stats[statsKey()] || { played: 0, won: 0, streak: 0, max: 0, dist: Array(TRIES).fill(0), lastDay: 0 };
+  if (s.hinted == null) Object.assign(s, { hinted: 0, distHint: Array(TRIES).fill(0), cleanStreak: s.streak, cleanMax: s.max, lastCleanDay: s.lastDay });
+  return s;
+}
+
 function statsBlock() {
-  const s = store.stats[statsKey()] || { played: 0, won: 0, streak: 0, max: 0, dist: Array(TRIES).fill(0) };
-  const max = Math.max(1, ...s.dist);
+  const s = dailyStats();
+  const clean = s.won - s.hinted;
+  const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+  const max = Math.max(1, ...s.dist.map((n, i) => n + s.distHint[i]));
+  const now = game.mode === 'daily' && game.won ? game.guesses.length - 1 : -1;
+  const tile = (v, l) => h('div', { class: 'wd-stat' }, h('span', { class: 'wd-stat-v' }, v), h('span', { class: 'wd-stat-l' }, l));
   return h('div', { class: 'wd-stats' },
-    h('div', { class: 'wd-stat-row' },
-      [[s.played, 'Played'], [s.played ? Math.round((s.won / s.played) * 100) : 0, 'Win %'], [s.streak, 'Streak'], [s.max, 'Best streak']]
-        .map(([v, l]) => h('div', { class: 'wd-stat' }, h('span', { class: 'wd-stat-v' }, v), h('span', { class: 'wd-stat-l' }, l)))),
+    h('div', { class: 'wd-stat-row' }, tile(s.played, 'Played'), tile(pct(s.won, s.played), 'Win %'), tile(pct(clean, s.played), 'No-hint win %'), tile(s.streak, 'Streak')),
+    h('p', { class: 'wd-stat-line' },
+      `${clean} of ${s.won} win${s.won === 1 ? '' : 's'} without hints · hint-free streak ${s.cleanStreak} (best ${s.cleanMax}) · best streak ${s.max}`),
     h('p', { class: 'wd-dist-title' }, `Guess distribution · daily ${LEVEL_NAMES[game.level]}, ${game.len} kana`),
     h('ol', { class: 'wd-dist' }, s.dist.map((n, i) => {
-      const bar = h('span', { class: `wd-dist-bar${game.mode === 'daily' && game.won && game.guesses.length === i + 1 ? ' is-now' : ''}` }, n);
-      bar.style.width = `${Math.max(8, (n / max) * 100)}%`;
+      const k = s.distHint[i];
+      const bar = h('span', { class: `wd-dist-bar${i === now ? ' is-now' : ''}` },
+        n || !k ? h('span', { class: 'wd-dist-clean' }, n) : null,
+        k ? h('span', { class: 'wd-dist-hint', title: `${k} with hints` }, `💡${k}`) : null);
+      bar.style.width = `${Math.max(8, ((n + k) / max) * 100)}%`;
+      if (n && k) bar.querySelector('.wd-dist-clean').style.flexGrow = n;
+      if (k) bar.querySelector('.wd-dist-hint').style.flexGrow = k;
       return h('li', {}, h('span', { class: 'wd-dist-n' }, i + 1), bar);
-    })));
+    })),
+    s.hinted ? h('p', { class: 'wd-dist-key' }, h('span', { class: 'wd-key-swatch' }), ' without hints   ', h('span', { class: 'wd-key-swatch is-hint' }), ' 💡 with hints') : null);
 }
 
 function showResult({ statsOnly = false } = {}) {
@@ -369,7 +398,8 @@ function showResult({ statsOnly = false } = {}) {
     $('result-title').textContent = 'Your daily record';
     $('result-body').replaceChildren(statsBlock());
   } else {
-    $('result-eyebrow').textContent = game.won ? `solved in ${game.guesses.length}/${TRIES}` : 'out of guesses';
+    const used = game.usedHints ?? game.hints ?? 0;
+    $('result-eyebrow').textContent = (game.won ? `solved in ${game.guesses.length}/${TRIES}` : 'out of guesses') + (used ? ` · ${used} hint${used === 1 ? '' : 's'}` : ' · no hints');
     $('result-title').textContent = game.won ? ['天才！', '見事！', 'すごい！', 'いいね！', 'よし！', 'ナイス！', 'ふう…', 'セーフ！'][game.guesses.length - 1] : 'ざんねん…';
     $('result-body').replaceChildren(
       h('div', { class: 'wd-answer' },
