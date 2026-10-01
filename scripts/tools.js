@@ -55,6 +55,18 @@ const TOOLS = [
     thumb: 'thumb.svg',
   },
   {
+    slug: 'wordle',
+    title: 'Kana Wordle',
+    description:
+      'Guess the hidden word in hiragana in 8 tries. A new 4- and 5-kana ' +
+      'word every day at three JLPT levels, unlimited practice, and a blue ' +
+      'hint when you\'re one dakuten away.',
+    tags: ['daily', 'game', 'vocabulary'],
+    glyph: '語',
+    accent: '#5d8a3a',
+    thumb: 'thumb.svg',
+  },
+  {
     slug: 'jis',
     title: 'JIS Grind',
     description:

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+  <title>Kana Wordle · Jared P.</title>
+  <meta name="description" content="Guess the hidden Japanese word in hiragana. A new 4-kana and 5-kana word every day at beginner (N5–N4), intermediate (N3–N2) or advanced (N1+) level, plus unlimited practice." />
+  <link rel="canonical" href="https://www.jareddesu.com/tools/wordle/" />
+
+  <link rel="icon" href="../../images/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Klee+One:wght@600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../../styles/base.css?v=3">
+  <link rel="stylesheet" href="../../styles/wordle.css?v=1">
+  <!-- Cloudflare Web Analytics (cookieless) -->
+  <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
+</head>
+<body data-page="wordle">
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="masthead">
+    <a href="../../" class="mark" aria-label="まだまだJared, home">
+      <span class="mark-ja" lang="ja">まだまだ</span>
+      <span class="mark-en">Jared</span>
+    </a>
+    <nav class="masthead-nav" aria-label="Site">
+      <ul>
+        <li><a href="../../about/">About</a></li>
+        <li><a href="../../projects/">Projects</a></li>
+        <li><a href="../../tools/">Tools</a></li>
+        <li><a href="../../blog/">Blog</a></li>
+        <li><a href="../../sponsorships/">Sponsorships</a></li>
+        <li><a href="../../contact/">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Menu</button>
+  </header>
+
+  <div class="menu-sheet" id="site-menu" hidden>
+    <div class="menu-sheet-head">
+      <a href="../../" class="mark" aria-label="まだまだJared, home">
+        <span class="mark-ja" lang="ja">まだまだ</span>
+        <span class="mark-en">Jared</span>
+      </a>
+      <button class="menu-toggle menu-close" type="button">Close</button>
+    </div>
+    <nav aria-label="Site">
+      <ul>
+        <li><a href="../../about/">About <span lang="ja">自己紹介</span></a></li>
+        <li><a href="../../projects/">Projects <span lang="ja">制作</span></a></li>
+        <li><a href="../../tools/">Tools <span lang="ja">ツール</span></a></li>
+        <li><a href="../../blog/">Blog <span lang="ja">ブログ</span></a></li>
+        <li><a href="../../sponsorships/">Sponsorships <span lang="ja">スポンサー</span></a></li>
+        <li><a href="../../contact/">Contact <span lang="ja">お問い合わせ</span></a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <main id="main">
+    <div class="container wd">
+      <header class="page-head">
+        <div class="page-head-copy">
+          <h1 class="page-title">Kana <em>Wordle</em>.</h1>
+          <p class="page-intro">
+            Guess the hidden word in hiragana. Green is the right kana in the right spot, yellow is in the
+            word somewhere else, and blue means you're one dakuten away (か vs が). A new word every day,
+            or practice as much as you like.
+          </p>
+        </div>
+        <p class="page-v"><span class="page-v-ja" lang="ja">言葉</span><span class="page-v-en">Wordle</span></p>
+      </header>
+
+      <div class="wd-bar" role="toolbar" aria-label="Game options">
+        <div class="wd-seg" role="radiogroup" aria-label="Mode" id="mode-seg">
+          <button type="button" role="radio" data-mode="daily">Daily</button>
+          <button type="button" role="radio" data-mode="practice">Practice</button>
+        </div>
+        <div class="wd-seg" role="radiogroup" aria-label="Word length" id="len-seg">
+          <button type="button" role="radio" data-len="4">4 kana</button>
+          <button type="button" role="radio" data-len="5">5 kana</button>
+        </div>
+        <label class="wd-select-wrap">
+          <span class="wd-label">Level</span>
+          <select id="level" class="wd-select">
+            <option value="beginner">Beginner · N5–N4</option>
+            <option value="intermediate">Intermediate · N3–N2</option>
+            <option value="advanced">Advanced · N1+</option>
+          </select>
+        </label>
+        <div class="wd-bar-end">
+          <button type="button" class="wd-icon" id="btn-stats" aria-label="Statistics">統</button>
+          <button type="button" class="wd-icon" id="btn-settings" aria-label="Settings">⚙</button>
+        </div>
+      </div>
+
+      <div class="wd-game">
+        <p class="wd-title" id="title"></p>
+        <div class="wd-board" id="board" role="grid" aria-label="Guesses"></div>
+        <div class="wd-keys" id="keys" aria-label="Kana keyboard"></div>
+        <input class="wd-ime" id="ime" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Type your guess (romaji or kana)">
+      </div>
+
+      <section class="sec wd-section">
+        <p class="sec-mark"><span class="sec-num" lang="ja">遊</span><span class="sec-label">How to play / <span lang="ja"><ruby>遊<rt>あそ</rt></ruby>び<ruby>方<rt>かた</rt></ruby></span></span></p>
+        <ul class="wd-howto">
+          <li><strong>Guess the word</strong> in 8 tries. Each guess must be a real word (any level counts).</li>
+          <li><span class="wd-chip is-correct" lang="ja">か</span> right kana, right spot. <span class="wd-chip is-present" lang="ja">か</span> in the word, wrong spot. <span class="wd-chip is-close" lang="ja">か</span> right spot, but the answer has が (or ぱ, ば…). <span class="wd-chip is-absent" lang="ja">か</span> not in the word.</li>
+          <li><strong>Small kana are full size</strong> (きゃ → きや) and ー counts as a kana.</li>
+          <li><strong>Type romaji</strong> (ka, kya, nn) or use the kana keys; <span lang="ja">゛゜</span> adds a dakuten to the last kana.</li>
+          <li>Beginner answers are JLPT N5–N4 words, intermediate N3–N2, advanced N1 plus slang and pop culture. The daily word is the same for everyone.</li>
+        </ul>
+        <p class="wd-credit">Words: JLPT vocabulary from <a href="https://github.com/jamsinclair/open-anki-jlpt-decks" target="_blank" rel="noopener">open-anki-jlpt-decks</a> (MIT) and common words from <a href="https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project" target="_blank" rel="noopener">JMdict</a> (EDRDG, CC BY-SA 4.0).</p>
+      </section>
+    </div>
+  </main>
+
+  <div class="wd-overlay" id="result" hidden>
+    <div class="wd-sheet" role="dialog" aria-modal="true" aria-labelledby="result-title">
+      <button type="button" class="wd-close" id="result-close" aria-label="Close">×</button>
+      <p class="eyebrow" id="result-eyebrow"></p>
+      <h2 class="wd-sheet-title" id="result-title"></h2>
+      <div id="result-body"></div>
+      <div class="wd-sheet-actions" id="result-actions"></div>
+    </div>
+  </div>
+  <div class="wd-overlay" id="settings" hidden>
+    <div class="wd-sheet" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <button type="button" class="wd-close" id="settings-close" aria-label="Close">×</button>
+      <h2 class="wd-sheet-title" id="settings-title">Settings</h2>
+      <label class="wd-toggle"><input type="checkbox" id="opt-hard"> <span><strong>Hard mode</strong>: green and yellow kana must be used in later guesses.</span></label>
+      <label class="wd-toggle"><input type="checkbox" id="opt-any"> <span><strong>Accept any kana</strong>: guesses don't have to be dictionary words.</span></label>
+      <label class="wd-toggle"><input type="checkbox" id="opt-romaji"> <span><strong>Show romaji</strong> under the kana keys.</span></label>
+    </div>
+  </div>
+  <div class="wd-toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <footer class="colophon">
+    <nav class="colophon-links" aria-label="Footer">
+      <ul>
+        <li><a href="../../about/">About</a></li>
+        <li><a href="../../projects/">Projects</a></li>
+        <li><a href="../../tools/">Tools</a></li>
+        <li><a href="../../blog/">Blog</a></li>
+        <li><a href="../../sponsorships/">Sponsorships</a></li>
+        <li><a href="../../contact/">Contact</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a></li>
+        <li><a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a></li>
+        <li><a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a></li>
+        <li><a href="#">RSS</a></li>
+      </ul>
+    </nav>
+    <div class="colophon-box">
+      <p class="colophon-title" lang="ja">奥付</p>
+      <dl>
+        <div><dt>Site / <span lang="ja">サイト</span></dt><dd>jareddesu.com</dd></div>
+        <div><dt>Author / <span lang="ja">著者</span></dt><dd>Jared P. (<span lang="ja">まだまだ</span>Jared)</dd></div>
+        <div><dt>Published / <span lang="ja">発行</span></dt><dd>© 2026</dd></div>
+      </dl>
+    </div>
+  </footer>
+
+  <script src="../../scripts/site.js?v=2"></script>
+  <script type="module" src="../../scripts/wordle/app.js?v=1"></script>
+</body>
+</html>

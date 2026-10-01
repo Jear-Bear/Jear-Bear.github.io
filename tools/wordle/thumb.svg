@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="Kana Wordle">
+  <rect width="1200" height="675" fill="#1e2619"/>
+  <text x="930" y="600" font-family="Hiragino Mincho ProN, Noto Serif JP, Yu Mincho, serif" font-size="560" fill="#9cc47a" opacity="0.10" text-anchor="middle">語</text>
+  <g font-family="Hiragino Sans, Noto Sans JP, Yu Gothic, sans-serif" font-size="78" font-weight="500" fill="#fff" text-anchor="middle">
+    <g transform="translate(250 150)">
+      <rect width="120" height="120" fill="#857d71"/><text x="60" y="88">か</text>
+      <rect x="132" width="120" height="120" fill="#c9971c"/><text x="192" y="88">ら</text>
+      <rect x="264" width="120" height="120" fill="#857d71"/><text x="324" y="88">て</text>
+      <rect x="396" width="120" height="120" fill="#857d71"/><text x="456" y="88">ふ</text>
+    </g>
+    <g transform="translate(250 282)">
+      <rect width="120" height="120" fill="#c9971c"/><text x="60" y="88">ら</text>
+      <rect x="132" width="120" height="120" fill="#5d8a3a"/><text x="192" y="88">ー</text>
+      <rect x="264" width="120" height="120" fill="#857d71"/><text x="324" y="88">す</text>
+      <rect x="396" width="120" height="120" fill="#857d71"/><text x="456" y="88">と</text>
+    </g>
+    <g transform="translate(250 414)">
+      <rect width="120" height="120" fill="#5d8a3a"/><text x="60" y="88">ら</text>
+      <rect x="132" width="120" height="120" fill="#5d8a3a"/><text x="192" y="88">ー</text>
+      <rect x="264" width="120" height="120" fill="#5d8a3a"/><text x="324" y="88">め</text>
+      <rect x="396" width="120" height="120" fill="#5d8a3a"/><text x="456" y="88">ん</text>
+    </g>
+  </g>
+</svg>
