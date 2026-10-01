@@ -254,7 +254,7 @@ body.kj-focus main, body.kj-focus .container.kj { margin: 0; padding: 0; max-wid
 /* ---------------------------------------------------------------- overlays */
 .kj-overlay {
   position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 16px;
-  background: color-mix(in srgb, var(--ink) 35%, transparent);
+  background: var(--scrim, color-mix(in srgb, #1f1c18 35%, transparent));
 }
 .kj-sheet {
   position: relative; width: 100%; max-width: 620px; max-height: calc(var(--vvh, 100vh) - 32px); overflow-y: auto;

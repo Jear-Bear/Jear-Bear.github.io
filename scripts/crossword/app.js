@@ -9,6 +9,8 @@ import { toHiragana } from '../kanji/romaji.js?v=1';
 import { gridKana, cycleDakuten } from './kana.js?v=1';
 
 const $ = (id) => document.getElementById(id);
+// replaceChildren() would print null/false as text
+const fill = (el, ...kids) => el.replaceChildren(...kids.filter((k) => k != null && k !== false));
 const KEY = 'jareddesu.crossword.v1';
 const DATA = '../../data/crossword';
 const LEVEL_NAMES = { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' };
@@ -293,7 +295,7 @@ function nextEntry(step) {
 // ---------------------------------------------------------------- keyword
 function renderKeyword() {
   const k = pz.keyword;
-  $('keyword').replaceChildren(
+  fill($('keyword'), 
     h('p', { class: 'cw-kw-clue' }, h('strong', {}, 'Keyword '), h('span', { lang: 'ja' }, '（二重マス）'), ' ', k.clue),
     h('div', { class: 'cw-kw-boxes' }, k.cells.map(([r, c], i) => h('span', { class: 'cw-kw-box' }, h('span', { class: 'cw-kw-label' }, LETTERS[i]), h('span', { lang: 'ja' }, val(r, c))))),
     st.done ? h('p', { class: 'cw-kw-answer' }, h('span', { lang: 'ja' }, pz.key.keyword.word), ` (${pz.key.keyword.reading}) · ${pz.key.keyword.meaning}`) : null);
@@ -551,7 +553,7 @@ function renderStats() {
 
 function celebrate(assisted) {
   const kw = pz.key.keyword;
-  $('done-body').replaceChildren(
+  fill($('done-body'), 
     h('p', { class: 'cw-done-time' }, fmtTime(st.time), assisted ? h('span', { class: 'cw-muted' }, ' · with reveals') : null),
     h('p', {}, `${LEVEL_NAMES[pz.level]} ${SIZE_NAMES[pz.size]} · ${fmtDate(date)}`),
     h('p', { class: 'cw-done-kw' }, 'Keyword: ', h('strong', { lang: 'ja' }, kw.word), ` (${kw.reading}) · ${kw.meaning}`),
