@@ -1,0 +1,141 @@
+/* crossword.css — Kana Crossword (tools/crossword/) */
+
+:root {
+  --page-color: #4c6cb3;                      /* 群青 gunjō */
+  --page-ink: #3d5a9a;
+  --page-color-soft: rgba(76, 108, 179, 0.10);
+  --cw-word: #dbe4f5;
+  --cw-cur: #f2d36b;
+  --cw-wrong: #b3261e;
+  --cw-reveal: #4c6cb3;
+}
+
+.cw [hidden], [hidden].cw-overlay, [hidden].cw-toast { display: none !important; }
+
+/* ---------------------------------------------------------------- top bar */
+.cw-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 4px 0 18px; }
+.cw-seg { display: inline-flex; border: 1px solid var(--border-strong); }
+.cw-seg button { font: 500 14px var(--font-gothic); padding: 8px 14px; min-height: 40px; border: 0; border-left: 1px solid var(--border-strong); background: transparent; color: var(--ink-soft); cursor: pointer; }
+.cw-seg button:first-child { border-left: 0; }
+.cw-seg button[aria-checked="true"] { background: var(--ink); color: var(--paper); }
+.cw-seg-sub { font-size: 11px; opacity: 0.7; margin-left: 2px; }
+.cw-select-wrap { display: inline-flex; align-items: center; gap: 8px; }
+.cw-label { font-size: 12px; color: var(--muted); }
+.cw-select { font: 14px var(--font-gothic); padding: 8px 10px; min-height: 40px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink); }
+.cw-date { display: inline-flex; align-items: center; gap: 2px; margin-left: auto; }
+.cw-date-btn { font: 14px var(--font-gothic); padding: 8px 10px; min-height: 40px; border: 0; background: none; color: var(--ink); cursor: pointer; text-decoration: underline; text-decoration-color: var(--rule-strong); text-underline-offset: 4px; }
+.cw-icon { width: 40px; height: 40px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); font-size: 20px; line-height: 1; cursor: pointer; }
+.cw-icon:disabled { opacity: 0.35; cursor: default; }
+@media (max-width: 560px) { .cw-date { margin-left: 0; width: 100%; justify-content: space-between; } }
+
+/* ---------------------------------------------------------------- layout */
+.cw-play { display: grid; gap: 22px 36px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 900px) {
+  .cw-play { grid-template-columns: minmax(0, 560px) minmax(260px, 1fr); }
+  body[data-size="mini"] .cw-play { grid-template-columns: minmax(0, 420px) minmax(260px, 1fr); }
+}
+.cw-board-col { min-width: 0; }
+.cw-tools { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.cw-timer { font: 500 15px var(--font-gothic); font-variant-numeric: tabular-nums; border: 0; background: none; color: var(--ink); padding: 6px 2px; cursor: pointer; min-width: 64px; text-align: left; }
+.cw-timer::before { content: "⏸ "; color: var(--muted); font-size: 12px; }
+.cw-menus { display: flex; gap: 6px; }
+.cw-menu { position: relative; }
+.cw-menu summary { list-style: none; cursor: pointer; font: 13px var(--font-gothic); padding: 7px 12px; border: 1px solid var(--border-strong); background: var(--surface); min-height: 36px; display: flex; align-items: center; }
+.cw-menu summary::-webkit-details-marker { display: none; }
+.cw-menu[open] summary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.cw-menu-list { position: absolute; right: 0; top: calc(100% + 4px); z-index: 20; min-width: 160px; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border-strong); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); }
+.cw-menu-list button, .cw-auto { font: 13.5px var(--font-gothic); text-align: left; padding: 10px 14px; border: 0; border-bottom: 1px solid var(--border); background: none; color: var(--ink); cursor: pointer; display: flex; gap: 8px; align-items: center; }
+.cw-menu-list button:hover { background: var(--page-color-soft); }
+.cw-auto input { accent-color: var(--page-color); }
+.cw-danger { color: var(--cw-wrong) !important; }
+
+/* ---------------------------------------------------------------- grid */
+.cw-board-wrap { position: relative; }
+.cw-grid {
+  --n: 5;
+  display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); grid-template-rows: repeat(var(--n), minmax(0, 1fr));
+  border: 2px solid var(--ink); background: var(--ink); gap: 1px;
+  width: 100%; aspect-ratio: 1; user-select: none; -webkit-user-select: none; touch-action: manipulation;
+}
+.cw-grid.is-hidden { visibility: hidden; }
+.cw-cell { position: relative; background: #fffdf8; display: flex; align-items: center; justify-content: center; cursor: pointer; min-width: 0; container-type: inline-size; }
+.cw-cell.is-black { background: var(--ink); cursor: default; }
+.cw-cell.is-word { background: var(--cw-word); }
+.cw-cell.is-cur { background: var(--cw-cur); }
+.cw-num { position: absolute; top: 2px; left: 3px; font: 500 clamp(8px, 22cqi, 13px)/1 var(--font-gothic); color: var(--ink-soft); }
+.cw-letter { font: 400 clamp(14px, 58cqi, 40px)/1 'Noto Sans JP', sans-serif; color: var(--ink); margin-top: 8%; overflow: hidden; }
+.cw-letter:empty::after { content: attr(data-tail); font: 400 clamp(9px, 30cqi, 16px)/1 var(--font-gothic); color: var(--muted); }
+.cw-cell.is-wrong .cw-letter { color: var(--cw-wrong); }
+.cw-cell.is-wrong::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top right, transparent calc(50% - 1px), var(--cw-wrong) calc(50% - 1px), var(--cw-wrong) calc(50% + 1px), transparent calc(50% + 1px)); opacity: 0.55; pointer-events: none; }
+.cw-cell.is-revealed .cw-letter { color: var(--cw-reveal); }
+.cw-cell.is-revealed::before { content: ""; position: absolute; top: 0; right: 0; border-style: solid; border-width: 0 7px 7px 0; border-color: transparent var(--cw-reveal) transparent transparent; }
+/* 二重マス: an inner frame plus the letter label */
+.cw-cell.is-kw { box-shadow: inset 0 0 0 3px #fffdf8, inset 0 0 0 4px var(--ink); }
+.cw-cell.is-kw.is-word, .cw-cell.is-kw.is-cur { box-shadow: inset 0 0 0 3px currentColor, inset 0 0 0 4px var(--ink); color: transparent; }
+.cw-cell.is-kw.is-word .cw-letter, .cw-cell.is-kw.is-cur .cw-letter { color: var(--ink); }
+.cw-kw { position: absolute; right: 4px; bottom: 2px; font: 600 clamp(8px, 20cqi, 12px)/1 var(--font-gothic); color: var(--page-ink); }
+.cw-cell.is-done { cursor: default; }
+.cw-paused { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: var(--surface); border: 2px solid var(--ink); }
+.cw-paused p { font: 600 1.4rem var(--font-mincho); }
+
+/* ---------------------------------------------------------------- clue bar + keys */
+.cw-clue-bar { display: grid; grid-template-columns: 40px minmax(0, 1fr) 40px; gap: 6px; align-items: stretch; margin-top: 10px; }
+.cw-clue-text { text-align: left; font: 15px/1.45 var(--font-gothic); padding: 8px 12px; background: var(--cw-word); border: 0; color: var(--ink); cursor: pointer; min-height: 56px; }
+.cw-clue-text strong { margin-right: 4px; }
+.cw-len { color: var(--muted); font-size: 0.85em; }
+.cw-keys { display: none; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px; margin-top: 10px; }
+@media (pointer: coarse) { .cw-keys { display: grid; } }
+.cw-key { font: 400 clamp(16px, 4.8vw, 22px)/1 'Noto Sans JP', sans-serif; padding: 0; height: clamp(38px, 10.5vw, 48px); border: 1px solid var(--border); background: var(--surface); color: var(--ink); border-radius: 4px; cursor: pointer; touch-action: manipulation; }
+.cw-key:active { background: var(--cw-word); }
+.cw-key.is-fn { background: var(--paper-deep); font-size: clamp(13px, 3.8vw, 18px); }
+.cw-ime { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+/* ---------------------------------------------------------------- keyword */
+.cw-keyword { margin-top: 16px; padding: 12px 14px; border: 1px solid var(--border); background: var(--surface); }
+.cw-kw-clue { font-size: 14px; margin: 0 0 10px; color: var(--ink-soft); }
+.cw-kw-boxes { display: flex; gap: 6px; flex-wrap: wrap; }
+.cw-kw-box { position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font: 400 22px 'Noto Sans JP', sans-serif; background: #fffdf8; box-shadow: inset 0 0 0 1px var(--ink), inset 0 0 0 3px #fffdf8, inset 0 0 0 4px var(--ink); }
+.cw-kw-label { position: absolute; top: -16px; left: 0; right: 0; text-align: center; font: 600 11px var(--font-gothic); color: var(--page-ink); }
+.cw-kw-boxes { padding-top: 16px; }
+.cw-kw-answer { margin: 10px 0 0; font-size: 14px; color: var(--page-ink); }
+
+/* ---------------------------------------------------------------- clue lists */
+.cw-clues { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 600px) and (max-width: 899px) { .cw-clues { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 900px) { .cw-clues { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; } }
+.cw-clue-list h2 { font: 600 0.95rem var(--font-gothic); padding-bottom: 6px; border-bottom: 1px solid var(--ink); margin-bottom: 4px; }
+.cw-clue-list h2 span { font-weight: 400; color: var(--muted); margin-left: 6px; font-size: 0.85em; }
+.cw-clue-list ol { list-style: none; margin: 0; padding: 0; }
+.cw-clue-list li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 4px; padding: 7px 8px 7px 6px; font-size: 14px; line-height: 1.45; cursor: pointer; border-left: 3px solid transparent; }
+.cw-clue-list li:hover { background: var(--page-color-soft); }
+.cw-clue-list li.is-cur { background: var(--cw-word); border-left-color: var(--page-color); }
+.cw-clue-list li.is-cross { border-left-color: var(--cw-word); }
+.cw-clue-list li.is-filled .cw-clue-body { color: var(--muted); }
+.cw-clue-num { font-weight: 600; text-align: right; padding-right: 4px; }
+@media (pointer: coarse) and (max-width: 899px) { .cw-clues { margin-top: 4px; } }
+
+/* ---------------------------------------------------------------- after solving */
+.cw-section { margin-top: clamp(40px, 7vh, 72px); }
+.cw-words { width: 100%; border-collapse: collapse; font-size: 14px; }
+.cw-words th, .cw-words td { text-align: left; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+.cw-words th { font-size: 12px; font-weight: 500; color: var(--muted); border-bottom-color: var(--ink); }
+.cw-word { font-size: 16px; white-space: nowrap; }
+@media (max-width: 600px) { .cw-words th:last-child, .cw-words td:last-child { display: none; } }
+.cw-muted { color: var(--muted); }
+.cw-howto { max-width: var(--measure); padding-left: 1.1em; display: grid; gap: 8px; color: var(--ink-soft); }
+.cw-stats { margin-top: 18px; font-size: 14px; color: var(--ink-soft); }
+.cw-credit { margin-top: 10px; font-size: 12px; color: var(--muted); max-width: var(--measure); }
+.cw-empty { padding: 48px 0; text-align: center; color: var(--muted); border-top: 1px solid var(--border); }
+
+/* ---------------------------------------------------------------- overlays */
+.cw-overlay { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 16px; background: color-mix(in srgb, var(--ink) 35%, transparent); }
+.cw-sheet { position: relative; width: 100%; max-width: 440px; max-height: calc(100vh - 32px); overflow-y: auto; background: var(--surface); padding: clamp(22px, 4vw, 32px); display: flex; flex-direction: column; gap: 10px; }
+.cw-sheet-title { font: 600 1.7rem var(--font-mincho); margin: 0; }
+.cw-sheet-actions { display: flex; align-items: center; gap: 8px 20px; flex-wrap: wrap; margin-top: 8px; }
+.cw-done-time { font: 600 2.2rem var(--font-mincho); font-variant-numeric: tabular-nums; margin: 0; }
+.cw-done-kw { font-size: 15px; }
+.cw-date-list { list-style: none; margin: 0; padding: 0; max-height: 50vh; overflow-y: auto; }
+.cw-date-list button { width: 100%; display: flex; justify-content: space-between; gap: 10px; padding: 10px 4px; border: 0; border-bottom: 1px solid var(--border); background: none; font: 14px var(--font-gothic); color: var(--ink); cursor: pointer; text-align: left; }
+.cw-date-list button.is-on { font-weight: 600; }
+.cw-date-done { color: var(--page-ink); font-size: 12px; }
+.cw-toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 300; max-width: min(420px, calc(100vw - 32px)); padding: 12px 16px; background: var(--ink); color: var(--paper); font-size: 14px; white-space: pre-line; }
