@@ -12,18 +12,20 @@ hiragana answers. It follows the conventions of Japanese newspaper puzzles
 - **Keyword (二重マス):** double-boxed squares, read in order A, B, C…, spell
   a bonus word with its own clue.
 
-Every day has six puzzles: a **Mini** (5×5) and a **Daily** (9×9) at three
+Every day has eight puzzles: a **Mini** (5×5) and a **Daily** (9×9) at four
 levels.
 
-| Level | Answers from |
-|---|---|
-| Beginner | JLPT N5–N4, plus beginner fun words |
-| Intermediate | JLPT N3–N2, plus intermediate fun words (N5–N4 help the fill) |
-| Advanced | JLPT N1, plus slang, idioms and pop culture (N3–N2 help the fill) |
+| Level | Answers from | Clues |
+|---|---|---|
+| Beginner | JLPT N5–N4, plus beginner fun words | English |
+| Intermediate | JLPT N3–N2, plus intermediate fun words (N5–N4 help the fill) | English |
+| Advanced | JLPT N1, plus slang, idioms and pop culture (N3–N2 help the fill) | English |
+| Mixed (一般) | Every level, like a newspaper crossword | Japanese |
 
 At least 60% of a puzzle's answers come from its own level, and each one
 includes at least one word from `data/crossword/extra-words.json` (food, pop
-culture, slang, folklore).
+culture, slang, folklore). Mixed was added on Oct 2, 2026 and back-filled for
+Oct 1–4.
 
 ## Where the words and clues come from
 
@@ -46,16 +48,20 @@ same date always produces the same grids.
 ```
 node scripts/crossword/cli.mjs words           # rebuild data/crossword/words.json (after editing extra-words.json)
 node scripts/crossword/cli.mjs status 3        # which of the next 3 days (from the earliest time zone) have no puzzles
-node scripts/crossword/cli.mjs draft DATE      # build DATE's 6 puzzles into data/crossword/drafts/DATE.json
+node scripts/crossword/cli.mjs draft DATE      # build DATE's 8 puzzles into data/crossword/drafts/DATE.json
+                                               # (for a day that's already published: only the levels it's missing)
 node scripts/crossword/cli.mjs publish DATE    # check the clues, write data/crossword/puzzles/DATE.json
 node scripts/crossword/cli.mjs check           # re-check every published day
 ```
 
 A daily 9×9 can take a minute or two to build. Drafts have the answers in
 plain text and are git-ignored. Published files keep answers lightly encoded
-so they don't show in view-source. `publish` refuses missing clues, clues
-over 140 characters, any kana or kanji in a clue, and clues that contain the
-answer's romaji.
+so they don't show in view-source. `publish` refuses missing clues and
+clues that give the answer away. English clues: over 140 characters, any
+kana or kanji, or the answer's romaji. Japanese clues (Mixed): over 60
+characters, no Japanese at all, the answer's kana inside a run of kana (for
+two-kana answers, a run that is exactly the answer), or the answer's
+written form (so 以外 can't clue 外).
 
 ## Clue style
 
@@ -98,6 +104,28 @@ Examples:
 | ゆるきやら (ゆるキャラ) | Kumamon, for one |
 | つんどく (積ん読) | Your to-read pile, as a lifestyle |
 
+## Japanese clue style (Mixed)
+
+Write them like a Japanese newspaper crossword (読売・日経のクロスワード):
+
+1. **Japanese only**, natural and short (under about 40 characters, 60 at
+   most). Never the answer's kana or its kanji, even inside another word.
+2. **Fill-in-the-blank with ＿＿** works well: 『猫に＿＿』, 『＿＿は友を呼ぶ』,
+   『交通＿＿』. Proverbs, set phrases and compounds are fair game.
+3. **Opposites and definitions:** 「有利の反対」, 「種から芽が出ること」.
+4. **Match the form:** a verb clue for a verb (「肩を＿＿。気を＿＿」), an
+   adjective clue for an adjective (「おいしくない」).
+5. **Have fun:** anime, games, konbini life, Japanese culture
+   (「メイとサツキが森で出会う、大きなもふもふ」). Keep it kind.
+6. **Katakana words** are clued in Japanese too: 「お昼ごはんのカタカナ語」.
+
+| Answer | Clue |
+|---|---|
+| ぼう (棒) | 犬も歩けば＿＿に当たる |
+| かわら (瓦) | 日本家屋の屋根に並ぶ、焼き物の板 |
+| ねこじた (猫舌) | 熱いものが苦手な口 |
+| ととろ (トトロ) | メイとサツキが森で出会う、大きなもふもふ |
+
 ## Daily routine (Claude Code)
 
 The puzzles are made by a Claude Code routine that runs every morning in
@@ -110,10 +138,11 @@ this repo. Set it up at claude.ai/code → **Routines → New routine**:
 ```
 Daily Kana Crossword for jareddesu.com. Work in the Jear-Bear.github.io repo on main.
 1. Run: node scripts/crossword/cli.mjs status 3. For each date in "missing" (oldest first, at most 2 dates per run), run: node scripts/crossword/cli.mjs draft DATE.
-2. Open data/crossword/drafts/DATE.json. For each of its 6 puzzles, fill in "clue" for every entry and for the keyword. Follow "Clue style" in docs/crossword.md exactly: English only, crossword-style (puns, misdirection, fill-in-the-blanks, pop culture), matched to the answer's part of speech and register, specific enough to tell apart homophones, pitched to the puzzle's level, under 100 characters. Use "word", "reading" and "meaning" to understand each answer; never put the answer's kana, kanji or romaji in a clue. Read your clues back once and sharpen any that are flat or ambiguous.
-3. Run: node scripts/crossword/cli.mjs publish DATE. If it lists problems, fix those clues and publish again. Then run: node scripts/crossword/cli.mjs check.
-4. Optional, at most 5 per run: if a fun, well-known word would make future puzzles better (food, anime, games, memes, folklore, slang), add it to data/crossword/extra-words.json with word, reading (hiragana, ー allowed), meaning, level and tags, then run: node scripts/crossword/cli.mjs words.
-5. Commit only data/crossword/ (never drafts) as Jared Perlmutter <jperlmutter1@gmail.com> with no co-author lines, to a new branch named crossword-DATE, open a pull request titled "Crossword: DATE", and merge it.
+2. Open data/crossword/drafts/DATE.json. First read every answer: if any is crude, sexual, gross, or about death, illness or tragedy, add its kanji form to data/crossword/blocklist.json, delete the draft and draft that date again.
+3. For each of its 8 puzzles, fill in "clue" for every entry and for the keyword. Beginner, intermediate and advanced: follow "Clue style" in docs/crossword.md exactly: English only, crossword-style (puns, misdirection, fill-in-the-blanks, pop culture), matched to the answer's part of speech and register, specific enough to tell apart homophones, pitched to the puzzle's level, under 100 characters. Mixed: follow "Japanese clue style": natural Japanese like a newspaper crossword, under 40 characters, ＿＿ blanks, proverbs, opposites and pop culture welcome. Use "word", "reading" and "meaning" to understand each answer; never put the answer's kana, kanji or romaji in a clue. Read your clues back once and sharpen any that are flat or ambiguous.
+4. Run: node scripts/crossword/cli.mjs publish DATE. If it lists problems, fix those clues and publish again. Then run: node scripts/crossword/cli.mjs check.
+5. Optional, at most 5 per run: if a fun, well-known word would make future puzzles better (food, anime, games, memes, folklore, slang), add it to data/crossword/extra-words.json with word, reading (hiragana, ー allowed), meaning, level and tags, then run: node scripts/crossword/cli.mjs words.
+6. Commit only data/crossword/ (never drafts) as Jared Perlmutter <jperlmutter1@gmail.com> with no co-author lines, to a new branch named crossword-DATE, open a pull request titled "Crossword: DATE", and merge it.
 Reply in one line with the dates published.
 ```
 

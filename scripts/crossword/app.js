@@ -19,8 +19,10 @@ const DATA = '../../data/crossword';
 const t = translator({
   en: {
     'size.mini': 'Mini', 'size.daily': 'Daily',
-    'level.beginner': 'Beginner', 'level.intermediate': 'Intermediate', 'level.advanced': 'Advanced',
-    'opt.beginner': 'Beginner · N5–N4', 'opt.intermediate': 'Intermediate · N3–N2', 'opt.advanced': 'Advanced · N1+',
+    'level.beginner': 'Beginner', 'level.intermediate': 'Intermediate', 'level.advanced': 'Advanced', 'level.mixed': 'Mixed',
+    'opt.beginner': 'Beginner · N5–N4', 'opt.intermediate': 'Intermediate · N3–N2', 'opt.advanced': 'Advanced · N1+', 'opt.mixed': 'Mixed · all levels, Japanese clues',
+    'empty.level': 'There’s no {level} puzzle for this day yet. Try another level or day.',
+    'ime.kanji': 'Only kana fit in the squares. Press Enter instead of converting to kanji.',
     level: 'Level', bar: 'Puzzle options', sizeGroup: 'Size', prev: 'Previous puzzle', next: 'Next puzzle', settings: 'Settings',
     today: 'Today · {date}',
     check: 'Check', reveal: 'Reveal', square: 'Square', word: 'Word', puzzle: 'Puzzle', autocheck: 'Autocheck', clear: 'Clear puzzle',
@@ -53,8 +55,10 @@ const t = translator({
   },
   ja: {
     'size.mini': 'ミニ', 'size.daily': 'デイリー',
-    'level.beginner': '初級', 'level.intermediate': '中級', 'level.advanced': '上級',
-    'opt.beginner': '初級 · N5–N4', 'opt.intermediate': '中級 · N3–N2', 'opt.advanced': '上級 · N1+',
+    'level.beginner': '初級', 'level.intermediate': '中級', 'level.advanced': '上級', 'level.mixed': '一般',
+    'opt.beginner': '初級 · N5–N4', 'opt.intermediate': '中級 · N3–N2', 'opt.advanced': '上級 · N1+', 'opt.mixed': '一般 · 全レベル・日本語のカギ',
+    'empty.level': 'この日の{level}パズルはまだありません。別のレベルか日付を選んでください。',
+    'ime.kanji': 'マスに入るのはかなだけです。漢字に変換せず、そのまま確定してください。',
     level: 'レベル', bar: 'パズルの設定', sizeGroup: 'サイズ', prev: '前のパズル', next: '次のパズル', settings: '設定',
     today: '今日 · {date}',
     check: 'チェック', reveal: '答えを見る', square: 'マス', word: '単語', puzzle: '全体', autocheck: '自動チェック', clear: '最初からやり直す',
@@ -201,7 +205,8 @@ function showEmpty(msg) {
 
 function openPuzzle() {
   stopClock();
-  const p = day.puzzles.find((x) => x.size === settings.size && x.level === settings.level) || day.puzzles[0];
+  const p = day.puzzles.find((x) => x.size === settings.size && x.level === settings.level);
+  if (!p) { renderBar(); showEmpty(t('empty.level', { level: LEVEL_NAME(settings.level) })); return; }
   const key = decodeKey(p.key);
   pz = { ...p, key, cells: [] };
   // Cells: answer letter, number, the entries through it, keyword label
@@ -228,6 +233,7 @@ function openPuzzle() {
   $('play').hidden = false;
   $('empty').hidden = true;
   document.body.dataset.size = p.size;
+  document.body.dataset.level = p.level;
   renderBar();
   renderGrid();
   renderClues();
@@ -241,6 +247,7 @@ function openPuzzle() {
 }
 
 const cell = (r, c) => pz.cells[r * pz.width + c];
+const clueLang = () => (pz.level === 'mixed' ? 'ja' : 'en');
 const val = (r, c) => st.cells[`${r},${c}`] || '';
 
 // ---------------------------------------------------------------- top bar
@@ -278,8 +285,23 @@ function wireControls() {
   // Typing
   const ime = $('ime');
   ime.addEventListener('keydown', onKey);
-  ime.addEventListener('compositionend', (e) => { typeText(e.data || ''); ime.value = ''; });
-  ime.addEventListener('input', (e) => { if (!e.isComposing && ime.value) { typeText(ime.value); ime.value = ''; } });
+  // Japanese IME: show the word being composed in the squares, then fill
+  // them when it's committed (Enter). Kanji can't go in a square.
+  ime.addEventListener('compositionstart', () => { placeIme(); });
+  ime.addEventListener('compositionupdate', (e) => showComposition(e.data || ''));
+  ime.addEventListener('compositionend', (e) => {
+    showComposition('');
+    composedAt = Date.now();
+    const text = e.data || '';
+    if (/[^ぁ-ゖァ-ヺー・\s]/.test(text) && !/^[a-z']+$/i.test(text)) toast(t('ime.kanji'));
+    typeText(text);
+    ime.value = '';
+  });
+  ime.addEventListener('input', (e) => {
+    if (e.isComposing) return;
+    if (Date.now() - composedAt < 80) { ime.value = ''; return; }     // Safari repeats the committed text
+    if (ime.value) { typeText(ime.value); ime.value = ''; }
+  });
   document.addEventListener('keydown', (e) => {
     if (e.target === ime || e.target.closest('input, select, textarea, details, button') || !pz || $('play').hidden) return;
     if (!$('done').hidden || !$('dates').hidden || !$('settings').hidden) return;
@@ -385,8 +407,9 @@ function select(r, c, dir) {
     y.el.classList.toggle('is-word', y[dir] === e);
     y.el.querySelector('.cw-letter').dataset.tail = '';
   });
+  placeIme();
   // Clue bar and list
-  $('clue-text').replaceChildren(h('strong', {}, t('clueId', e)), ' ', h('span', { lang: 'en' }, e.clue), h('span', { class: 'cw-len' }, ` (${e.len})`));
+  $('clue-text').replaceChildren(h('strong', {}, t('clueId', e)), ' ', h('span', { lang: clueLang() }, e.clue), h('span', { class: 'cw-len' }, ` (${e.len})`));
   document.querySelectorAll('.cw-clue-list li').forEach((li) => {
     li.classList.toggle('is-cur', li.dataset.id === e.id);
     li.classList.toggle('is-cross', Boolean(cross) && li.dataset.id === cross.id);
@@ -406,7 +429,7 @@ function renderClues() {
   for (const dir of ['across', 'down']) {
     $(`clues-${dir}`).replaceChildren(...pz.entries.filter((e) => e.dir === dir).map((e) => h('li', {
       'data-id': e.id, onclick: () => { const [r, c] = firstEmpty(e); select(r, c, dir); if (!coarse) $('ime').focus({ preventScroll: true }); },
-    }, h('span', { class: 'cw-clue-num' }, e.num), h('span', { class: 'cw-clue-body', lang: 'en' }, e.clue, h('span', { class: 'cw-len' }, ` (${e.len})`)))));
+    }, h('span', { class: 'cw-clue-num' }, e.num), h('span', { class: 'cw-clue-body', lang: clueLang() }, e.clue, h('span', { class: 'cw-len' }, ` (${e.len})`)))));
   }
   markFilledClues();
 }
@@ -437,14 +460,16 @@ function nextEntry(step) {
 function renderKeyword() {
   const k = pz.keyword;
   fill($('keyword'), 
-    h('p', { class: 'cw-kw-clue' }, h('strong', {}, t('keyword')), h('span', { lang: 'ja' }, '（二重マス）'), ' ', h('span', { lang: 'en' }, k.clue)),
+    h('p', { class: 'cw-kw-clue' }, h('strong', {}, t('keyword')), h('span', { lang: 'ja' }, '（二重マス）'), ' ', h('span', { lang: clueLang() }, k.clue)),
     h('div', { class: 'cw-kw-boxes' }, k.cells.map(([r, c], i) => h('span', { class: 'cw-kw-box' }, h('span', { class: 'cw-kw-label' }, LETTERS[i]), h('span', { lang: 'ja' }, val(r, c))))),
     st.done ? h('p', { class: 'cw-kw-answer' }, h('span', { lang: 'ja' }, pz.key.keyword.word), ` (${pz.key.keyword.reading})`, settings.words ? h('span', { lang: 'en' }, ` · ${pz.key.keyword.meaning}`) : null) : null);
 }
 
 // ---------------------------------------------------------------- typing
 function onKey(e) {
-  if (e.isComposing || e.key === 'Process') return;
+  // keyCode 229: a key the IME is handling (Safari sends the committing Enter this way)
+  if (e.isComposing || e.key === 'Process' || e.keyCode === 229) return;
+  if (e.key === 'Enter' && Date.now() - composedAt < 80) return;
   const k = e.key;
   const move = { ArrowLeft: [0, -1], ArrowRight: [0, 1], ArrowUp: [-1, 0], ArrowDown: [1, 0] }[k];
   if (move) {
@@ -470,6 +495,36 @@ function onKey(e) {
     return;
   }
   if (k.length === 1 && /[ぁ-ゖァ-ヶー]/.test(k)) { e.preventDefault(); typeText(k); }
+}
+
+// The hidden input sits on the current square so the IME's candidate list opens next to it
+function placeIme() {
+  const x = pz && cell(cur.r, cur.c);
+  if (!x || !x.el) return;
+  const r = x.el.getBoundingClientRect();
+  Object.assign($('ime').style, { left: `${r.left}px`, top: `${r.bottom}px` });
+}
+
+let composedAt = 0;
+let previewCells = [];
+function showComposition(text) {
+  previewCells.forEach((x) => { x.el.classList.remove('is-preview'); x.el.querySelector('.cw-letter').dataset.tail = ''; paintCell(x); });
+  previewCells = [];
+  if (!text || !pz || st.done) { showTail(); return; }
+  // Kana so far (each in its own square from the cursor on), then any romaji still being typed
+  const m = text.match(/^([^a-z']*)([a-z']*)$/i) || ['', text, ''];
+  const kana = [...m[1]].map((ch) => (ch === 'ー' ? 'ー' : gridKana(ch))).filter(Boolean);
+  const e = entryAt(cur.r, cur.c, cur.dir);
+  const i = e.cells.findIndex(([r, c]) => r === cur.r && c === cur.c);
+  const cells = e.cells.slice(i).map(([r, c]) => cell(r, c));
+  kana.slice(0, cells.length).forEach((k, j) => {
+    const x = cells[j];
+    x.el.querySelector('.cw-letter').textContent = k;
+    x.el.classList.add('is-preview');
+    previewCells.push(x);
+  });
+  const next = cells[kana.length];
+  if (next && m[2]) { next.el.querySelector('.cw-letter').dataset.tail = m[2]; next.el.classList.add('is-preview'); previewCells.push(next); }
 }
 
 function showTail() {
@@ -725,7 +780,7 @@ function renderWords() {
       h('td', { lang: 'ja', class: 'cw-word' }, e.word),
       h('td', { lang: 'ja' }, e.reading),
       h('td', { lang: 'en' }, e.meaning),
-      h('td', { class: 'cw-muted', lang: 'en' }, e.clue))))));
+      h('td', { class: 'cw-muted', lang: clueLang() }, e.clue))))));
 }
 
 // ---------------------------------------------------------------- toast

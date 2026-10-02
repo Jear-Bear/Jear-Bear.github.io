@@ -10,13 +10,19 @@ export const SIZES = {
   mini: { n: 5, maxRun: 5, blacks: [3, 6], keyword: [3, 4], minEntries: 6, fun: 1 },
   daily: { n: 9, maxRun: 7, blacks: [14, 20], keyword: [4, 6], minEntries: 18, fun: 2 },
 };
-export const LEVELS = ['beginner', 'intermediate', 'advanced'];
-// Word-list levels per puzzle level, best match first (later ones only help the fill)
+export const LEVELS = ['beginner', 'intermediate', 'advanced', 'mixed'];
+// Levels a word in extra-words.json can have (mixed draws on all of them)
+export const WORD_LEVELS = ['beginner', 'intermediate', 'advanced'];
+// Word-list levels per puzzle level, best match first (later ones only help the fill).
+// Mixed is a plain Japanese crossword: every level, with Japanese clues.
 const POOLS = {
   beginner: [['n5', 'n4', 'beginner'], []],
   intermediate: [['n3', 'n2', 'intermediate'], ['n5', 'n4', 'beginner']],
   advanced: [['n1', 'advanced'], ['n3', 'n2', 'intermediate']],
+  mixed: [['n5', 'n4', 'n3', 'n2', 'n1', 'beginner', 'intermediate', 'advanced'], []],
 };
+// Levels whose clues are written in Japanese
+export const JAPANESE_CLUES = new Set(['mixed']);
 
 // Small seeded RNG (mulberry32) so a date always builds the same puzzles
 export function rng(seedText) {

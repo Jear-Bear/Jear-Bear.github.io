@@ -100,7 +100,8 @@
 .cw-key { font: 400 clamp(16px, 4.8vw, 22px)/1 'Noto Sans JP', sans-serif; padding: 0; height: clamp(38px, 10.5vw, 48px); border: 1px solid var(--border); background: var(--surface); color: var(--ink); border-radius: 4px; cursor: pointer; touch-action: manipulation; }
 .cw-key:active { background: var(--cw-word); }
 .cw-key.is-fn { background: var(--paper-deep); font-size: clamp(13px, 3.8vw, 18px); }
-.cw-ime { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+/* Sits on the current square (moved by app.js) so a Japanese IME's candidate list opens beside it */
+.cw-ime { position: fixed; left: -9999px; top: 0; width: 1px; height: 1px; padding: 0; border: 0; opacity: 0; font-size: 16px; caret-color: transparent; pointer-events: none; }
 
 /* ---------------------------------------------------------------- keyword */
 .cw-keyword { margin-top: 16px; padding: 12px 14px; border: 1px solid var(--border); background: var(--surface); }
@@ -165,3 +166,5 @@ html[data-ui="ja"] [data-ui-only="en"], html:not([data-ui="ja"]) [data-ui-only="
 .cw-key-r { display: none; font: 400 9px var(--font-gothic); opacity: 0.7; }
 .cw-keys.show-romaji .cw-key-r { display: block; }
 .cw-play.no-assist .cw-menus { display: none; }
+/* A word being composed with a Japanese IME, before it's committed */
+.cw-cell.is-preview .cw-letter { color: var(--page-ink); text-decoration: underline dotted; text-underline-offset: 0.12em; text-decoration-thickness: 2px; }
