@@ -6,7 +6,7 @@
   <script>/* games: interface language before paint */try{if(localStorage.getItem('jareddesu.games.lang')==='ja'){document.documentElement.dataset.ui='ja';document.documentElement.lang='ja'}}catch(e){}</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
   <title>Kana Crossword · Jared P.</title>
-  <meta name="description" content="A daily Japanese crossword: English clues, hiragana answers. A 5×5 mini and a 9×9 daily, at beginner (N5–N4), intermediate (N3–N2) or advanced (N1+) level." />
+  <meta name="description" content="A daily Japanese crossword: English clues, hiragana answers. A 5×5 mini and a 9×9 daily, at beginner (N5–N4), intermediate (N3–N2) or advanced (N1+) level, plus a mixed-level puzzle with Japanese clues." />
   <link rel="canonical" href="https://www.jareddesu.com/tools/crossword/" />
 
   <link rel="icon" href="../../images/logo.png">
@@ -17,7 +17,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Klee+One:wght@600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="../../styles/base.css?v=4">
-  <link rel="stylesheet" href="../../styles/crossword.css?v=4">
+  <link rel="stylesheet" href="../../styles/crossword.css?v=5">
   <!-- Cloudflare Web Analytics (cookieless) -->
   <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
 </head>
@@ -70,11 +70,12 @@
           <h1 class="page-title"><span data-ui-only="en">Kana <em>Crossword</em>.</span><span data-ui-only="ja" lang="ja">かな<em>クロスワード</em>。</span></h1>
           <p class="page-intro" data-ui-only="en">
             English clues, hiragana answers. A new mini and a new daily puzzle every day,
-            at three levels. Small kana are written full size (ゃ→や, っ→つ) and ー takes a square,
+            at three levels, plus a Mixed puzzle with Japanese clues for the full newspaper experience. Small kana are written full size (ゃ→や, っ→つ) and ー takes a square,
             like in a Japanese newspaper crossword.
           </p>
           <p class="page-intro" data-ui-only="ja" lang="ja">
             英語のカギに、ひらがなで答えるクロスワード。毎日ミニとデイリーが3つのレベルで登場します。
+            日本語のカギで解く「一般」もあります。
             新聞のクロスワードと同じく、小さいかなは大きく書き（ゃ→や、っ→つ）、ーも1マス使います。
           </p>
         </div>
@@ -92,6 +93,7 @@
             <option value="beginner" data-t="opt.beginner">Beginner · N5–N4</option>
             <option value="intermediate" data-t="opt.intermediate">Intermediate · N3–N2</option>
             <option value="advanced" data-t="opt.advanced">Advanced · N1+</option>
+            <option value="mixed" data-t="opt.mixed">Mixed · all levels, Japanese clues</option>
           </select>
         </label>
         <div class="cw-date">
@@ -144,19 +146,21 @@
         <p class="sec-mark"><span class="sec-num" lang="ja">遊</span><span class="sec-label">How to play / <span lang="ja"><ruby>遊<rt>あそ</rt></ruby>び<ruby>方<rt>かた</rt></ruby></span></span></p>
         <ul class="cw-howto" data-ui-only="en">
           <li><strong>Type romaji</strong> (ka → か, kya → きや) or kana with a Japanese keyboard. On a phone, use the kana keys under the grid; <span lang="ja">゛゜</span> turns か into が, は into ば or ぱ.</li>
+          <li><strong>Using a Japanese IME?</strong> Type the word in hiragana and press Enter to fill the squares. Don't convert it to kanji. With the IME off, romaji fills each square as you type.</li>
           <li><strong>Small kana are full size.</strong> きゃ is written きや, がっこう is がつこう. The long-vowel mark ー gets its own square.</li>
           <li><strong>Tap a square twice</strong> (or press space) to switch between across and down. Tab moves to the next clue.</li>
           <li><strong>Double-boxed squares</strong> (<span lang="ja">二重マス</span>) spell a bonus keyword, read in order A, B, C….</li>
           <li><strong>Settings</strong> (⚙) switch the page to Japanese, add romaji to the keys, hide Check and Reveal, or keep the answer list hidden after you solve.</li>
-          <li>Beginner uses JLPT N5–N4 words, intermediate N3–N2, advanced N1 plus slang and idioms. Each puzzle mixes in food, pop culture and other fun words.</li>
+          <li>Beginner uses JLPT N5–N4 words, intermediate N3–N2, advanced N1 plus slang and idioms. <strong>Mixed</strong> uses words from every level with clues in Japanese, like a newspaper crossword. Each puzzle mixes in food, pop culture and other fun words.</li>
         </ul>
         <ul class="cw-howto" data-ui-only="ja" lang="ja">
           <li><strong>ローマ字で入力</strong>（ka → か、kya → きや）するか、日本語キーボードでかなを入力します。スマホではマスの下のかなキーを使います。<span>゛゜</span>で か→が、は→ば・ぱ に変わります。</li>
+          <li><strong>日本語入力（IME）を使うときは</strong>、ひらがなのままEnterで確定するとマスに入ります。漢字には変換しないでください。IMEをオフにすると、ローマ字が1マスずつ入ります。</li>
           <li><strong>小さいかなは大きく書きます。</strong>きゃ は きや、がっこう は がつこう。長音の「ー」も1マスです。</li>
           <li><strong>同じマスを2回タップ</strong>（またはスペース）でヨコとタテを切り替え。Tabで次のカギへ進みます。</li>
           <li><strong>二重マス</strong>の文字をA、B、C…の順に読むと、キーワードになります。</li>
           <li><strong>設定</strong>（⚙）で、英語表示への切り替え、かなキーのローマ字、チェックと答え表示の非表示、解いた後の単語リストの表示を変えられます。</li>
-          <li>初級はJLPT N5–N4、中級はN3–N2、上級はN1の単語にスラングや慣用句も。どのパズルにも食べ物やポップカルチャーなど、楽しい言葉が入っています。</li>
+          <li>初級はJLPT N5–N4、中級はN3–N2、上級はN1の単語にスラングや慣用句も。<strong>一般</strong>は全レベルの単語に日本語のカギで、新聞のクロスワードのように解けます。どのパズルにも食べ物やポップカルチャーなど、楽しい言葉が入っています。</li>
         </ul>
         <p class="cw-stats" id="stats"></p>
         <p class="cw-credit" data-ui-only="en">Word lists: JLPT vocabulary from <a href="https://github.com/jamsinclair/open-anki-jlpt-decks" target="_blank" rel="noopener">open-anki-jlpt-decks</a> (MIT), based on Jonathan Waller’s JLPT lists (CC BY). Clues written with Claude.</p>
@@ -229,6 +233,6 @@
   </footer>
 
   <script src="../../scripts/site.js?v=3"></script>
-  <script type="module" src="../../scripts/crossword/app.js?v=4"></script>
+  <script type="module" src="../../scripts/crossword/app.js?v=5"></script>
 </body>
 </html>

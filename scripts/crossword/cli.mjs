@@ -3,8 +3,10 @@
 //
 //   node scripts/crossword/cli.mjs words            rebuild data/crossword/words.json from the JLPT lists + extras
 //   node scripts/crossword/cli.mjs status [days]    which of the next days (default 3, from the earliest time zone) have no puzzles yet
-//   node scripts/crossword/cli.mjs draft DATE       build the 6 puzzles for DATE (YYYY-MM-DD) into
-//                                                   data/crossword/drafts/DATE.json (answers in clear, clues empty)
+//   node scripts/crossword/cli.mjs draft DATE       build the 8 puzzles for DATE (YYYY-MM-DD) into
+//                                                   data/crossword/drafts/DATE.json (answers in clear, clues empty).
+//                                                   If DATE is already published, builds only the levels it's missing
+//                                                   (publish then adds them to the day).
 //   node scripts/crossword/cli.mjs publish DATE     check the clues and write data/crossword/puzzles/DATE.json
 //   node scripts/crossword/cli.mjs check            re-check every published puzzle
 //
@@ -14,8 +16,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { gridKana, romaji } from './kana.js';
-import { build, SIZES, LEVELS } from './construct.mjs';
+import { gridKana, romaji, toHira } from './kana.js';
+import { build, SIZES, LEVELS, WORD_LEVELS, JAPANESE_CLUES } from './construct.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const DIR = path.join(ROOT, 'data/crossword');
@@ -73,7 +75,7 @@ async function words() {
   const extras = readJson(EXTRAS, { words: [] }).words;
   for (const x of extras) {
     const a = gridKana(x.reading);
-    if (!a || !LEVELS.includes(x.level)) { console.warn(`Skipping extra word ${x.word} (${x.reading})`); continue; }
+    if (!a || !WORD_LEVELS.includes(x.level)) { console.warn(`Skipping extra word ${x.word} (${x.reading})`); continue; }
     out.push({ w: x.word, r: x.reading, a, m: x.meaning, l: x.level, extra: 1 });
   }
   writeJson(WORDS, { source: 'JLPT vocabulary from jamsinclair/open-anki-jlpt-decks (MIT; based on Jonathan Waller’s tanos.co.uk lists, CC BY) plus data/crossword/extra-words.json', count: out.length, words: out }, false);
@@ -100,16 +102,20 @@ function recentAnswers(date) {
 // --- draft --------------------------------------------------------------------------------
 function draft(date) {
   if (!isDate(date)) die('Usage: draft YYYY-MM-DD');
-  if (fs.existsSync(path.join(PUZZLES, `${date}.json`))) die(`${date} is already published`);
+  const published = readJson(path.join(PUZZLES, `${date}.json`), null);
+  const have = new Set(published ? published.puzzles.map((p) => p.level) : []);
+  const levels = LEVELS.filter((l) => !have.has(l));
+  if (!levels.length) die(`${date} is already published with every level`);
   const out = path.join(DRAFTS, `${date}.json`);
   if (fs.existsSync(out)) { console.log(`Draft already exists: ${path.relative(ROOT, out)}`); return; }
   const { words: list } = readJson(WORDS, { words: [] });
   if (!list.length) die('Run "words" first');
   const exclude = recentAnswers(date);
+  if (published) published.puzzles.forEach((z) => decode(z.key).entries.forEach((e) => exclude.add(e.answer)));
   const blocked = new Set(readJson(path.join(DIR, 'blocklist.json'), { words: [] }).words);
   list.forEach((w) => { if (blocked.has(w.w) || blocked.has(w.a)) exclude.add(w.a); });
   const puzzles = [];
-  for (const level of LEVELS) {
+  for (const level of levels) {
     for (const size of Object.keys(SIZES)) {
       const t = Date.now();
       const p = build({ size, level, words: list, seed: `${date}:${level}:${size}`, exclude });
@@ -126,16 +132,28 @@ function draft(date) {
 const JAPANESE = /[぀-ヿ㐀-鿿ｦ-ﾟ]/;
 export function clueProblems(p) {
   const problems = [];
-  const check = (label, clue, answer) => {
+  const ja = JAPANESE_CLUES.has(p.level);
+  const check = (label, clue, x) => {
     const c = String(clue || '').trim();
     if (!c) { problems.push(`${label}: missing clue`); return; }
+    if (ja) {
+      // Japanese clues (mixed level): mostly Japanese, and never the answer itself
+      if (c.length > 60) problems.push(`${label}: clue over 60 characters`);
+      if (!JAPANESE.test(c)) problems.push(`${label}: clue must be in Japanese`);
+      // The answer's kana in a run of kana (a 2-kana answer only as a whole run), or its written form
+      const runs = (c.match(/[぀-ヿ]+/g) || []).map((r) => gridKana(r) || toHira(r));
+      const kana = runs.some((r) => (x.answer.length > 2 ? r.includes(x.answer) : r === x.answer));
+      const written = x.word && !/^[぀-ヿ]+$/.test(x.word) && c.includes(x.word);
+      if (kana || written) problems.push(`${label}: clue gives away the answer (${x.word || x.answer})`);
+      return;
+    }
     if (c.length > 140) problems.push(`${label}: clue over 140 characters`);
     if (JAPANESE.test(c)) problems.push(`${label}: clue must be English only (no kana or kanji)`);
-    const r = romaji(answer);
-    if (r.length >= 3 && new RegExp(`\\b${r}\\b`, 'i').test(c.replace(/[āīūēō]/g, (x) => ({ ā: 'a', ī: 'i', ū: 'u', ē: 'e', ō: 'o' }[x])))) problems.push(`${label}: clue gives away the answer ("${r}")`);
+    const r = romaji(x.answer);
+    if (r.length >= 3 && new RegExp(`\\b${r}\\b`, 'i').test(c.replace(/[āīūēō]/g, (y) => ({ ā: 'a', ī: 'i', ū: 'u', ē: 'e', ō: 'o' }[y])))) problems.push(`${label}: clue gives away the answer ("${r}")`);
   };
-  p.entries.forEach((e) => check(`${p.level} ${p.size} ${e.num} ${e.dir} (${e.answer})`, e.clue, e.answer));
-  check(`${p.level} ${p.size} keyword (${p.keyword.answer})`, p.keyword.clue, p.keyword.answer);
+  p.entries.forEach((e) => check(`${p.level} ${p.size} ${e.num} ${e.dir} (${e.answer})`, e.clue, e));
+  check(`${p.level} ${p.size} keyword (${p.keyword.answer})`, p.keyword.clue, p.keyword);
   return problems;
 }
 
@@ -158,6 +176,13 @@ function publish(date) {
       keyword: { answer: p.keyword.answer, word: p.keyword.word, reading: p.keyword.reading, meaning: p.keyword.meaning },
     }),
   }));
+  // Adding levels to a day that's already out: keep its puzzles, in level order
+  const old = readJson(path.join(PUZZLES, `${date}.json`), null);
+  if (old) {
+    const ids = new Set(puzzles.map((p) => p.id));
+    puzzles.push(...old.puzzles.filter((p) => !ids.has(p.id)));
+    puzzles.sort((a, b) => LEVELS.indexOf(a.level) - LEVELS.indexOf(b.level) || Object.keys(SIZES).indexOf(a.size) - Object.keys(SIZES).indexOf(b.size));
+  }
   writeJson(path.join(PUZZLES, `${date}.json`), { date, puzzles }, false);
   const index = readJson(INDEX, { dates: [] });
   index.dates = [...new Set([...index.dates, date])].sort();
@@ -188,13 +213,15 @@ function checkAll() {
   console.log(`All ${index.dates.length} days check out`);
 }
 
-// status N: which of the next N days (counted from the earliest time zone's today) aren't published
+// status N: which of the next N days (counted from the earliest time zone's today) aren't fully published
 function status(days = 3) {
   const today = todayEarliest();
   const missing = [];
   for (let i = 0; i < days; i++) {
     const d = addDays(today, i);
-    if (!fs.existsSync(path.join(PUZZLES, `${d}.json`))) missing.push(d);
+    const f = readJson(path.join(PUZZLES, `${d}.json`), null);
+    // Not published, or published without every level (draft then builds just those)
+    if (!f || LEVELS.some((l) => !f.puzzles.some((p) => p.level === l))) missing.push(d);
   }
   console.log(JSON.stringify({ today, missing, drafts: fs.existsSync(DRAFTS) ? fs.readdirSync(DRAFTS) : [] }));
 }

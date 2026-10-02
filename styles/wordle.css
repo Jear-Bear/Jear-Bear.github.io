@@ -97,7 +97,8 @@
 .wd-key-row { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 2fr; gap: 4px; }
 .wd-key.is-wide { font: 600 15px var(--font-gothic); }
 .wd-key.is-enter { background: var(--ink); color: var(--paper); }
-.wd-ime { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+/* Moved under the current row while a Japanese IME composes, so its candidate list opens nearby */
+.wd-ime { position: fixed; left: -9999px; top: 0; width: 1px; height: 1px; padding: 0; border: 0; opacity: 0; font-size: 16px; caret-color: transparent; pointer-events: none; }
 
 /* ---------------------------------------------------------------- how to */
 .wd-section { margin-top: clamp(40px, 7vh, 72px); }
@@ -166,3 +167,4 @@
 html[data-ui="ja"] [data-ui-only="en"], html:not([data-ui="ja"]) [data-ui-only="ja"] { display: none !important; }
 .wd-set-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 0 12px; border-bottom: 1px solid var(--border); }
 .wd-toggle strong { color: var(--ink); font-weight: 600; }
+.wd-tile.is-preview { color: var(--page-ink); text-decoration: underline dotted; text-underline-offset: 0.12em; }

@@ -12,7 +12,9 @@ const $ = (id) => document.getElementById(id);
 // replaceChildren() would print null/false as text
 const fill = (el, ...kids) => el.replaceChildren(...kids.filter((k) => k != null && k !== false));
 const KEY = 'jareddesu.wordle.v1';
-const START = '2026-10-02';             // daily #1
+// Daily #1. Launched on Oct 1 local time, so that's #1 (an earlier START of Oct 2
+// clamped Oct 1 to #1 too, and Oct 1 and 2 got the same word).
+const START = '2026-10-01';
 const TRIES = 8;
 
 // ---------------------------------------------------------------- interface text
@@ -43,6 +45,7 @@ const t = translator({
     tileEmpty: 'empty', 'mark.correct': 'correct', 'mark.present': 'present', 'mark.close': 'close', 'mark.absent': 'absent',
     'key.daku': 'Add dakuten or handakuten', 'key.del': 'Delete', enter: 'Enter',
     short: 'Not enough kana', notWord: 'Not in the word list',
+    imeKanji: 'Only kana count. Press Enter instead of converting to kanji.', newDay: 'A new day, a new word.',
     hardSquare: 'Square {n} must be {ch}', hardContain: 'Guess must contain {ch}', hardLate: 'Change hard mode before your first guess.',
     played: 'Played', winPct: 'Win %', cleanPct: 'No-hint win %', streak: 'Streak',
     statLine: ({ clean, won, cs, cm, max }) => `${clean} of ${won} win${won === 1 ? '' : 's'} without hints · hint-free streak ${cs} (best ${cm}) · best streak ${max}`,
@@ -77,6 +80,7 @@ const t = translator({
     tileEmpty: '空き', 'mark.correct': '正解', 'mark.present': '別の位置', 'mark.close': '濁点違い', 'mark.absent': 'なし',
     'key.daku': '濁点・半濁点をつける', 'key.del': '消す', enter: '決定',
     short: 'かなが足りません', notWord: '単語リストにありません',
+    imeKanji: 'かなだけ入力できます。漢字に変換せず、そのまま確定してください。', newDay: '日付が変わりました。新しい単語です。',
     hardSquare: '{n}マス目は「{ch}」にしてください', hardContain: '「{ch}」を使ってください', hardLate: 'ハードモードは最初の回答の前に切り替えてください。',
     played: 'プレイ', winPct: '勝率', cleanPct: 'ノーヒント勝率', streak: '連勝',
     statLine: ({ clean, won, cs, cm, max }) => `ヒントなしの勝ち ${clean}/${won}回 · ノーヒント連勝 ${cs}（最高 ${cm}） · 最高連勝 ${max}`,
@@ -177,6 +181,7 @@ function sameBase(x, y) {
 let game = null;          // { key, answer, guesses: [], done, won, mode, level, len, day }
 let typed = '';           // current row
 let tail = '';            // unfinished romaji
+let composing = '';       // Japanese IME text not yet committed
 let data = null;
 
 async function start({ fresh = false } = {}) {
@@ -268,12 +273,16 @@ function renderBoard() {
     const g = game.guesses[r];
     const marks = g ? score(g, game.answer) : null;
     const isCur = !game.done && r === game.guesses.length;
-    const letters = g ? [...g] : isCur ? [...typed] : [];
+    // While a Japanese IME is composing, show its kana in the row (and any romaji after them as the tail)
+    const cm = composing.match(/^([^a-z']*)([a-z']*)$/i) || ['', '', ''];
+    const pending = [...cm[1]].map((ch) => (ch === 'ー' ? 'ー' : gridKana(ch))).filter(Boolean).join('');
+    const letters = g ? [...g] : isCur ? [...(typed + pending)].slice(0, game.len) : [];
+    const rowTail = composing ? cm[2] : tail;
     return h('div', { class: `wd-row${isCur ? ' is-cur' : ''}`, role: 'row' },
       Array.from({ length: game.len }, (_, i) => h('div', {
-        class: `wd-tile${marks ? ` is-${marks[i]}` : letters[i] ? ' is-filled' : ''}`, role: 'gridcell', lang: 'ja',
+        class: `wd-tile${marks ? ` is-${marks[i]}` : letters[i] ? ' is-filled' : ''}${isCur && composing && i >= [...typed].length && letters[i] ? ' is-preview' : ''}`, role: 'gridcell', lang: 'ja',
         'aria-label': letters[i] ? `${letters[i]}${marks ? `, ${t(`mark.${marks[i]}`)}` : ''}` : t('tileEmpty'),
-      }, letters[i] || (isCur && i === letters.length && tail ? h('span', { class: 'wd-tail' }, tail) : ''))));
+      }, letters[i] || (isCur && i === letters.length && rowTail ? h('span', { class: 'wd-tail' }, rowTail) : ''))));
   }));
 }
 
@@ -391,7 +400,9 @@ function shake(msg) {
 }
 
 function onKey(e) {
-  if (e.isComposing || e.key === 'Process' || e.ctrlKey || e.metaKey || e.altKey) return;
+  // keyCode 229: a key the IME is handling (Safari sends the committing Enter this way)
+  if (e.isComposing || e.key === 'Process' || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'Enter' && Date.now() - composedAt < 80) return;
   if (!$('result').hidden || !$('settings').hidden) { if (e.key === 'Escape') closeOverlays(); return; }
   const k = e.key;
   if (k === 'Enter') { e.preventDefault(); submit(); return; }
@@ -554,8 +565,27 @@ $('btn-settings').addEventListener('click', () => { $('settings').hidden = false
 });
 const ime = $('ime');
 ime.addEventListener('keydown', onKey);
-ime.addEventListener('compositionend', (e) => { for (const ch of e.data || '') add(ch); ime.value = ''; });
-ime.addEventListener('input', (e) => { if (!e.isComposing && ime.value) { for (const ch of ime.value) add(ch); ime.value = ''; } });
+// Japanese IME: show the kana being composed in the row; they're added when committed (Enter)
+let composedAt = 0;
+ime.addEventListener('compositionstart', () => {
+  const r = $('board').querySelector('.wd-row.is-cur');
+  if (r) { const b = r.getBoundingClientRect(); Object.assign(ime.style, { left: `${b.left}px`, top: `${b.bottom}px` }); }
+});
+ime.addEventListener('compositionupdate', (e) => { if (game && !game.done) { composing = e.data || ''; renderBoard(); } });
+ime.addEventListener('compositionend', (e) => {
+  composing = '';
+  composedAt = Date.now();
+  const text = e.data || '';
+  if (/[^ぁ-ゖァ-ヺー・\s]/.test(text) && !/^[a-z']+$/i.test(text)) toast(t('imeKanji'));
+  for (const ch of text) add(ch);
+  ime.value = '';
+  renderBoard();
+});
+ime.addEventListener('input', (e) => {
+  if (e.isComposing) return;
+  if (Date.now() - composedAt < 80) { ime.value = ''; return; }      // Safari repeats the committed text
+  if (ime.value) { for (const ch of ime.value) add(ch); ime.value = ''; }
+});
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && (!$('result').hidden || !$('settings').hidden)) { closeOverlays(); return; }
   if (e.target === ime || e.target.closest('input, select, textarea, button')) return;
@@ -573,6 +603,16 @@ document.querySelectorAll('[data-lang-seg] button').forEach((b) => b.addEventLis
   renderBoard();
   renderKeys();
 }));
+
+// A new daily word at local midnight: if the page is left open on today's
+// daily, move to the new one unless a game is half played
+let today = localDate();
+setInterval(() => {
+  const now = localDate();
+  if (now === today) return;
+  today = now;
+  if (settings.mode === 'daily' && game && (game.done || !game.guesses.length)) { start(); toast(t('newDay')); }
+}, 30000);
 
 t.apply();
 start();
