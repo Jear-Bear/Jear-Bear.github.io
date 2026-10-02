@@ -2,7 +2,7 @@
 // cli.mjs — make and publish the daily crosswords.
 //
 //   node scripts/crossword/cli.mjs words            rebuild data/crossword/words.json from the JLPT lists + extras
-//   node scripts/crossword/cli.mjs status [days]    which of the next days (default 7) have no puzzles yet
+//   node scripts/crossword/cli.mjs status [days]    which of the next days (default 3, from the earliest time zone) have no puzzles yet
 //   node scripts/crossword/cli.mjs draft DATE       build the 6 puzzles for DATE (YYYY-MM-DD) into
 //                                                   data/crossword/drafts/DATE.json (answers in clear, clues empty)
 //   node scripts/crossword/cli.mjs publish DATE     check the clues and write data/crossword/puzzles/DATE.json
@@ -31,7 +31,9 @@ const readJson = (p, fallback) => { try { return JSON.parse(fs.readFileSync(p, '
 const writeJson = (p, v, pretty = true) => { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, `${JSON.stringify(v, null, pretty ? 2 : 0)}\n`); };
 const isDate = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s || '');
 const addDays = (d, n) => new Date(Date.parse(`${d}T00:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
-const todayCentral = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Chicago' }).format(new Date());
+// Puzzles switch at each visitor's local midnight, so a day has to be live
+// before it starts anywhere: in the earliest time zone, UTC+14 (Kiribati).
+const todayEarliest = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Pacific/Kiritimati' }).format(new Date());
 const die = (msg) => { console.error(msg); process.exit(1); };
 
 // --- words --------------------------------------------------------------------------------
@@ -186,8 +188,9 @@ function checkAll() {
   console.log(`All ${index.dates.length} days check out`);
 }
 
-function status(days = 7) {
-  const today = todayCentral();
+// status N: which of the next N days (counted from the earliest time zone's today) aren't published
+function status(days = 3) {
+  const today = todayEarliest();
   const missing = [];
   for (let i = 0; i < days; i++) {
     const d = addDays(today, i);
@@ -201,5 +204,5 @@ if (cmd === 'words') await words();
 else if (cmd === 'draft') draft(arg);
 else if (cmd === 'publish') publish(arg);
 else if (cmd === 'check') checkAll();
-else if (cmd === 'status') status(Number(arg) || 7);
+else if (cmd === 'status') status(Number(arg) || 3);
 else die('Commands: words | status [days] | draft DATE | publish DATE | check');

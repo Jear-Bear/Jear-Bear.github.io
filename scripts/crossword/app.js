@@ -77,14 +77,42 @@ async function init() {
   const today = localDate();
   const asked = new URLSearchParams(location.search).get('date');
   const pastOrToday = dates.filter((d) => d <= today);
-  date = asked && dates.includes(asked) ? asked : (pastOrToday[pastOrToday.length - 1] || dates[0] || null);
+  // Future puzzles are published early (so every time zone gets one at its midnight) but stay hidden
+  date = asked && pastOrToday.includes(asked) ? asked : (pastOrToday[pastOrToday.length - 1] || null);
   wireControls();
   buildKeys();
   await openDay();
+  watchMidnight();
 }
 
+// A new puzzle at local midnight: if you're on today's puzzle when the date
+// changes, move to the new day (your progress on the old one is saved)
+function watchMidnight() {
+  let day = localDate();
+  setInterval(async () => {
+    const now = localDate();
+    if (now === day) return;
+    const wasToday = date === day;
+    day = now;
+    try { dates = (await getJson('index.json')).dates || dates; } catch { /* keep the list */ }
+    renderBar();
+    if (wasToday && dates.includes(now) && !(st && !st.done && Object.keys(st.cells).length)) {
+      date = now;
+      history.replaceState(null, '', location.pathname);
+      await openDay();
+      toast('A new day, a new puzzle.');
+    } else if (dates.includes(now)) toast('Today’s puzzle is out. Use › to go to it.');
+  }, 30000);
+}
+
+const untilMidnight = () => {
+  const now = new Date();
+  const s = Math.max(0, Math.floor((new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1) - now) / 1000));
+  return `${String(Math.floor(s / 3600)).padStart(2, '0')}:${String(Math.floor((s % 3600) / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+};
+
 async function openDay() {
-  if (!date) { showEmpty('The first puzzles are on their way. Check back soon.'); return; }
+  if (!date) { showEmpty('Today’s puzzle is on its way. Check back soon.'); return; }
   try { day = await getJson(`puzzles/${date}.json`); } catch { showEmpty('Couldn’t load this puzzle. Try again in a moment.'); return; }
   openPuzzle();
 }
@@ -551,13 +579,17 @@ function renderStats() {
     : '';
 }
 
+let nextTimer = null;
 function celebrate(assisted) {
   const kw = pz.key.keyword;
   fill($('done-body'), 
     h('p', { class: 'cw-done-time' }, fmtTime(st.time), assisted ? h('span', { class: 'cw-muted' }, ' · with reveals') : null),
     h('p', {}, `${LEVEL_NAMES[pz.level]} ${SIZE_NAMES[pz.size]} · ${fmtDate(date)}`),
     h('p', { class: 'cw-done-kw' }, 'Keyword: ', h('strong', { lang: 'ja' }, kw.word), ` (${kw.reading}) · ${kw.meaning}`),
-    h('p', { class: 'cw-muted' }, 'Every answer, with its kanji and meaning, is listed under the puzzle.'));
+    h('p', { class: 'cw-muted' }, 'Every answer, with its kanji and meaning, is listed under the puzzle.'),
+    date === localDate() ? h('p', { class: 'cw-next', id: 'cw-next' }, `Next puzzle in ${untilMidnight()} (your midnight)`) : null);
+  clearInterval(nextTimer);
+  nextTimer = setInterval(() => { const el = $('cw-next'); if (!el || $('done').hidden) { clearInterval(nextTimer); return; } el.textContent = `Next puzzle in ${untilMidnight()} (your midnight)`; }, 1000);
   $('done').hidden = false;
   $('done-share').focus();
 }
