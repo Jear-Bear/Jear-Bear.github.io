@@ -6,15 +6,88 @@
 // browser (localStorage). Everything from data is inserted as text.
 
 import { toHiragana } from '../kanji/romaji.js?v=1';
-import { gridKana, cycleDakuten } from './kana.js?v=1';
+import { gridKana, cycleDakuten, romaji } from './kana.js?v=1';
+import { translator, lang, setLang, dateLocale } from '../games/i18n.js?v=1';
 
 const $ = (id) => document.getElementById(id);
 // replaceChildren() would print null/false as text
 const fill = (el, ...kids) => el.replaceChildren(...kids.filter((k) => k != null && k !== false));
 const KEY = 'jareddesu.crossword.v1';
 const DATA = '../../data/crossword';
-const LEVEL_NAMES = { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' };
-const SIZE_NAMES = { mini: 'Mini', daily: 'Daily' };
+
+// ---------------------------------------------------------------- interface text
+const t = translator({
+  en: {
+    'size.mini': 'Mini', 'size.daily': 'Daily',
+    'level.beginner': 'Beginner', 'level.intermediate': 'Intermediate', 'level.advanced': 'Advanced',
+    'opt.beginner': 'Beginner · N5–N4', 'opt.intermediate': 'Intermediate · N3–N2', 'opt.advanced': 'Advanced · N1+',
+    level: 'Level', bar: 'Puzzle options', sizeGroup: 'Size', prev: 'Previous puzzle', next: 'Next puzzle', settings: 'Settings',
+    today: 'Today · {date}',
+    check: 'Check', reveal: 'Reveal', square: 'Square', word: 'Word', puzzle: 'Puzzle', autocheck: 'Autocheck', clear: 'Clear puzzle',
+    pause: 'Pause', paused: 'Paused', resume: 'Resume', prevClue: 'Previous clue', nextClue: 'Next clue',
+    grid: 'Crossword grid', keys: 'Kana keyboard', ime: 'Type answers (romaji or kana)',
+    'key.daku': 'Add dakuten or handakuten', 'key.del': 'Delete', 'key.next': 'Next clue',
+    clueId: ({ num, dir }) => `${num}${dir === 'across' ? 'A' : 'D'}`,
+    cell: ({ num, r, c }) => `${num ? `${num}, ` : ''}row ${r}, column ${c}`,
+    keyword: 'Keyword ', kwLine: 'Keyword: ',
+    'empty.soon': 'Today’s puzzle is on its way. Check back soon.',
+    'empty.fail': 'Couldn’t load this puzzle. Try again in a moment.',
+    'toast.newDay': 'A new day, a new puzzle.',
+    'toast.out': 'Today’s puzzle is out. Use › to go to it.',
+    'toast.wrong': ({ n }) => `${n} square${n === 1 ? '' : 's'} to fix.`,
+    'toast.ok': 'Nothing wrong so far.',
+    'toast.off': 'Not quite. Something’s off — try Check.',
+    'confirm.clear': 'Clear this puzzle and start over? Your time resets too.',
+    copied: 'Copied.',
+    stats: ({ level, size, solved, best, streak, longest }) => `${level} ${size}: ${solved} solved · best ${best} · streak ${streak} (longest ${longest}).`,
+    withReveals: ' · with reveals',
+    listed: 'Every answer, with its kanji and meaning, is listed under the puzzle.',
+    nextIn: 'Next puzzle in {time} (your midnight)',
+    solved: 'solved', share: 'Copy result', doneClose: 'Keep looking', pastTitle: 'Past puzzles', close: 'Close',
+    'th.word': 'Word', 'th.reading': 'Reading', 'th.meaning': 'Meaning', 'th.clue': 'Clue',
+    shareText: ({ size, level, date, time, reveals }) => `Kana Crossword · ${size} · ${level} · ${date}\nSolved in ${time}${reveals ? ' (with reveals)' : ''} ✅`,
+    'set.title': 'Settings', 'set.lang': 'Language',
+    'set.romaji': 'Show romaji', 'set.romaji.d': 'under the kana keys.',
+    'set.assist': 'Hide Check and Reveal', 'set.assist.d': 'for a solve with no help.',
+    'set.words': 'Show answers and meanings', 'set.words.d': 'under the puzzle after you solve it.',
+  },
+  ja: {
+    'size.mini': 'ミニ', 'size.daily': 'デイリー',
+    'level.beginner': '初級', 'level.intermediate': '中級', 'level.advanced': '上級',
+    'opt.beginner': '初級 · N5–N4', 'opt.intermediate': '中級 · N3–N2', 'opt.advanced': '上級 · N1+',
+    level: 'レベル', bar: 'パズルの設定', sizeGroup: 'サイズ', prev: '前のパズル', next: '次のパズル', settings: '設定',
+    today: '今日 · {date}',
+    check: 'チェック', reveal: '答えを見る', square: 'マス', word: '単語', puzzle: '全体', autocheck: '自動チェック', clear: '最初からやり直す',
+    pause: '一時停止', paused: '一時停止中', resume: '再開', prevClue: '前のカギ', nextClue: '次のカギ',
+    grid: 'クロスワードの盤面', keys: 'かなキーボード', ime: '答えを入力（ローマ字・かな）',
+    'key.daku': '濁点・半濁点をつける', 'key.del': '消す', 'key.next': '次のカギ',
+    clueId: ({ num, dir }) => `${dir === 'across' ? 'ヨコ' : 'タテ'}${num}`,
+    cell: ({ num, r, c }) => `${num ? `${num}番、` : ''}${r}行${c}列`,
+    keyword: 'キーワード', kwLine: 'キーワード：',
+    'empty.soon': '今日のパズルは準備中です。少し後でまた来てね。',
+    'empty.fail': 'パズルを読み込めませんでした。少し待ってから試してください。',
+    'toast.newDay': '日付が変わりました。新しいパズルです。',
+    'toast.out': '今日のパズルが出ました。› で移動できます。',
+    'toast.wrong': ({ n }) => `${n}マス間違っています。`,
+    'toast.ok': '今のところ間違いはありません。',
+    'toast.off': '惜しい！どこかが違います。チェックを使ってみて。',
+    'confirm.clear': 'このパズルを最初からやり直しますか？タイムもリセットされます。',
+    copied: 'コピーしました。',
+    stats: ({ level, size, solved, best, streak, longest }) => `${level}${size}：${solved}回クリア · ベスト ${best} · 連続 ${streak}日（最長 ${longest}日）`,
+    withReveals: ' · 答えを見て',
+    listed: '答えの漢字と意味は、パズルの下に並んでいます。',
+    nextIn: '次のパズルまで {time}（あなたの時間で0時）',
+    solved: 'クリア', share: '結果をコピー', doneClose: '閉じる', pastTitle: '過去のパズル', close: '閉じる',
+    'th.word': '単語', 'th.reading': '読み', 'th.meaning': '意味', 'th.clue': 'カギ',
+    shareText: ({ size, level, date, time, reveals }) => `かなクロスワード · ${size} · ${level} · ${date}\n${time}でクリア${reveals ? '（答えを見て）' : ''} ✅`,
+    'set.title': '設定', 'set.lang': '表示言語',
+    'set.romaji': 'ローマ字を表示', 'set.romaji.d': '（かなキーの下に）',
+    'set.assist': 'チェックと答えを隠す', 'set.assist.d': '（ヒントなしで解きたい人に）',
+    'set.words': '答えと意味を表示', 'set.words.d': '（解いた後、パズルの下に）',
+  },
+});
+const LEVEL_NAME = (l) => t(`level.${l}`);
+const SIZE_NAME = (s) => t(`size.${s}`);
 const LETTERS = 'ABCDEFGHIJ';
 const coarse = window.matchMedia('(pointer: coarse)').matches;
 
@@ -45,7 +118,7 @@ function h(tag, attrs, ...kids) {
 
 // ---------------------------------------------------------------- dates
 const localDate = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-const fmtDate = (iso) => new Date(`${iso}T12:00:00`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+const fmtDate = (iso, year = true) => new Date(`${iso}T12:00:00`).toLocaleDateString(dateLocale(), { weekday: 'short', month: 'short', day: 'numeric', year: year ? 'numeric' : undefined });
 const fmtTime = (s) => { s = Math.max(0, Math.round(s)); const m = Math.floor(s / 60); return m >= 60 ? `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}` : `${m}:${String(s % 60).padStart(2, '0')}`; };
 
 let dates = [];
@@ -71,6 +144,7 @@ async function getJson(path) {
 const settings = store.settings;
 settings.size = settings.size || 'mini';
 settings.level = settings.level || 'beginner';
+if (settings.words == null) settings.words = true;
 
 async function init() {
   try { dates = (await getJson('index.json')).dates || []; } catch { dates = []; }
@@ -79,7 +153,9 @@ async function init() {
   const pastOrToday = dates.filter((d) => d <= today);
   // Future puzzles are published early (so every time zone gets one at its midnight) but stay hidden
   date = asked && pastOrToday.includes(asked) ? asked : (pastOrToday[pastOrToday.length - 1] || null);
+  t.apply();
   wireControls();
+  wireSettings();
   buildKeys();
   await openDay();
   watchMidnight();
@@ -100,8 +176,8 @@ function watchMidnight() {
       date = now;
       history.replaceState(null, '', location.pathname);
       await openDay();
-      toast('A new day, a new puzzle.');
-    } else if (dates.includes(now)) toast('Today’s puzzle is out. Use › to go to it.');
+      toast(t('toast.newDay'));
+    } else if (dates.includes(now)) toast(t('toast.out'));
   }, 30000);
 }
 
@@ -112,8 +188,8 @@ const untilMidnight = () => {
 };
 
 async function openDay() {
-  if (!date) { showEmpty('Today’s puzzle is on its way. Check back soon.'); return; }
-  try { day = await getJson(`puzzles/${date}.json`); } catch { showEmpty('Couldn’t load this puzzle. Try again in a moment.'); return; }
+  if (!date) { showEmpty(t('empty.soon')); return; }
+  try { day = await getJson(`puzzles/${date}.json`); } catch { showEmpty(t('empty.fail')); return; }
   openPuzzle();
 }
 
@@ -172,7 +248,7 @@ function renderBar() {
   document.querySelectorAll('#size-seg button').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.size === settings.size)));
   $('level').value = settings.level;
   const today = localDate();
-  $('date-label').textContent = date === today ? `Today · ${fmtDate(date).replace(/, \d{4}$/, '')}` : fmtDate(date);
+  $('date-label').textContent = date ? (date === today ? t('today', { date: fmtDate(date, false) }) : fmtDate(date)) : '';
   const i = dates.indexOf(date);
   $('date-prev').disabled = i <= 0;
   $('date-next').disabled = i < 0 || i >= dates.length - 1 || dates[i + 1] > today;
@@ -187,7 +263,7 @@ function wireControls() {
   $('date-label').addEventListener('click', () => openDates(go));
   $('dates-close').addEventListener('click', () => { $('dates').hidden = true; });
   $('dates').addEventListener('click', (e) => { if (e.target === e.currentTarget) $('dates').hidden = true; });
-  $('timer').addEventListener('click', () => { if (!st.done) pause(); });
+  $('timer').addEventListener('click', () => { if (st && !st.done) pause(); });
   $('resume').addEventListener('click', resume);
   $('clue-prev').addEventListener('click', () => nextEntry(-1));
   $('clue-next').addEventListener('click', () => nextEntry(1));
@@ -206,10 +282,47 @@ function wireControls() {
   ime.addEventListener('input', (e) => { if (!e.isComposing && ime.value) { typeText(ime.value); ime.value = ''; } });
   document.addEventListener('keydown', (e) => {
     if (e.target === ime || e.target.closest('input, select, textarea, details, button') || !pz || $('play').hidden) return;
-    if (!$('done').hidden || !$('dates').hidden) return;
+    if (!$('done').hidden || !$('dates').hidden || !$('settings').hidden) return;
     onKey(e);
   });
   document.addEventListener('visibilitychange', () => { if (document.hidden) stopClock(); else if (pz && !st.done && $('paused').hidden) startClock(); });
+}
+
+// ---------------------------------------------------------------- settings
+function wireSettings() {
+  const sheet = $('settings');
+  const close = () => { sheet.hidden = true; if (pz && !st.done && $('paused').hidden) startClock(); };
+  $('btn-settings').addEventListener('click', () => { stopClock(); sheet.hidden = false; });
+  $('settings-close').addEventListener('click', close);
+  sheet.addEventListener('click', (e) => { if (e.target === sheet) close(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !sheet.hidden) close(); });
+  sheet.querySelectorAll('[data-lang-seg] button').forEach((b) => b.addEventListener('click', () => { setLang(b.dataset.lang); relabel(); }));
+  [['opt-romaji', 'romaji'], ['opt-noassist', 'noassist'], ['opt-words', 'words']].forEach(([id, k]) => {
+    $(id).checked = Boolean(settings[k]);
+    $(id).addEventListener('change', (e) => {
+      settings[k] = e.target.checked;
+      save();
+      if (k === 'romaji') $('keys').classList.toggle('show-romaji', settings.romaji);
+      if (k === 'noassist') applyAssist();
+      if (k === 'words' && pz) { renderWords(); renderKeyword(); }
+    });
+  });
+  applyAssist();
+}
+function applyAssist() { $('play').classList.toggle('no-assist', Boolean(settings.noassist)); }
+
+// Language switch: redraw everything that has text in it (progress is untouched)
+function relabel() {
+  t.apply();
+  buildKeys();
+  if (!pz) { if (date) renderBar(); return; }
+  renderBar();
+  renderGrid();
+  renderClues();
+  renderKeyword();
+  renderWords();
+  renderStats();
+  select(cur.r, cur.c, cur.dir);
 }
 
 function openDates(go) {
@@ -218,7 +331,7 @@ function openDates(go) {
   list.replaceChildren(...dates.filter((d) => d <= today).reverse().map((d) => {
     const done = ['mini', 'daily'].filter((s) => (store.progress[`${d}-${settings.level}-${s}`] || {}).done);
     return h('li', {}, h('button', { type: 'button', class: d === date ? 'is-on' : '', onclick: () => { $('dates').hidden = true; go(d); } },
-      h('span', {}, fmtDate(d)), h('span', { class: 'cw-date-done' }, done.map((s) => `${SIZE_NAMES[s]} ✓`).join(' · '))));
+      h('span', {}, fmtDate(d)), h('span', { class: 'cw-date-done' }, done.map((s) => `${SIZE_NAME(s)} ✓`).join(' · '))));
   }));
   $('dates').hidden = false;
 }
@@ -231,7 +344,7 @@ function renderGrid() {
     if (x.black) return h('div', { class: 'cw-cell is-black', 'aria-hidden': 'true' });
     const el = h('div', {
       class: `cw-cell${x.kw ? ' is-kw' : ''}`, role: 'gridcell', 'data-r': x.r, 'data-c': x.c,
-      'aria-label': `${x.num ? `${x.num}, ` : ''}row ${x.r + 1}, column ${x.c + 1}`,
+      'aria-label': t('cell', { num: x.num, r: x.r + 1, c: x.c + 1 }),
       onclick: () => {
         const same = cur.r === x.r && cur.c === x.c;
         select(x.r, x.c, same ? otherDir(x) : (x[cur.dir] ? cur.dir : otherDir(x)));
@@ -273,7 +386,7 @@ function select(r, c, dir) {
     y.el.querySelector('.cw-letter').dataset.tail = '';
   });
   // Clue bar and list
-  $('clue-text').replaceChildren(h('strong', {}, `${e.num}${e.dir === 'across' ? 'A' : 'D'}`), ' ', e.clue, h('span', { class: 'cw-len' }, ` (${e.len})`));
+  $('clue-text').replaceChildren(h('strong', {}, t('clueId', e)), ' ', h('span', { lang: 'en' }, e.clue), h('span', { class: 'cw-len' }, ` (${e.len})`));
   document.querySelectorAll('.cw-clue-list li').forEach((li) => {
     li.classList.toggle('is-cur', li.dataset.id === e.id);
     li.classList.toggle('is-cross', Boolean(cross) && li.dataset.id === cross.id);
@@ -293,7 +406,7 @@ function renderClues() {
   for (const dir of ['across', 'down']) {
     $(`clues-${dir}`).replaceChildren(...pz.entries.filter((e) => e.dir === dir).map((e) => h('li', {
       'data-id': e.id, onclick: () => { const [r, c] = firstEmpty(e); select(r, c, dir); if (!coarse) $('ime').focus({ preventScroll: true }); },
-    }, h('span', { class: 'cw-clue-num' }, e.num), h('span', { class: 'cw-clue-body' }, e.clue, h('span', { class: 'cw-len' }, ` (${e.len})`)))));
+    }, h('span', { class: 'cw-clue-num' }, e.num), h('span', { class: 'cw-clue-body', lang: 'en' }, e.clue, h('span', { class: 'cw-len' }, ` (${e.len})`)))));
   }
   markFilledClues();
 }
@@ -324,9 +437,9 @@ function nextEntry(step) {
 function renderKeyword() {
   const k = pz.keyword;
   fill($('keyword'), 
-    h('p', { class: 'cw-kw-clue' }, h('strong', {}, 'Keyword '), h('span', { lang: 'ja' }, '（二重マス）'), ' ', k.clue),
+    h('p', { class: 'cw-kw-clue' }, h('strong', {}, t('keyword')), h('span', { lang: 'ja' }, '（二重マス）'), ' ', h('span', { lang: 'en' }, k.clue)),
     h('div', { class: 'cw-kw-boxes' }, k.cells.map(([r, c], i) => h('span', { class: 'cw-kw-box' }, h('span', { class: 'cw-kw-label' }, LETTERS[i]), h('span', { lang: 'ja' }, val(r, c))))),
-    st.done ? h('p', { class: 'cw-kw-answer' }, h('span', { lang: 'ja' }, pz.key.keyword.word), ` (${pz.key.keyword.reading}) · ${pz.key.keyword.meaning}`) : null);
+    st.done ? h('p', { class: 'cw-kw-answer' }, h('span', { lang: 'ja' }, pz.key.keyword.word), ` (${pz.key.keyword.reading})`, settings.words ? h('span', { lang: 'en' }, ` · ${pz.key.keyword.meaning}`) : null) : null);
 }
 
 // ---------------------------------------------------------------- typing
@@ -452,7 +565,7 @@ function buildKeys() {
   const keys = $('keys');
   keys.replaceChildren(...KEY_ROWS.flatMap((row) => [...row].map((k) => h('button', {
     type: 'button', class: `cw-key${'゛⌫↵'.includes(k) ? ' is-fn' : ''}`, lang: 'ja',
-    'aria-label': { '゛': 'Add dakuten or handakuten', '⌫': 'Delete', '↵': 'Next clue' }[k] || k,
+    'aria-label': { '゛': t('key.daku'), '⌫': t('key.del'), '↵': t('key.next') }[k] || k,
     onpointerdown: (e) => { e.preventDefault(); },
     onclick: () => {
       if (!pz || st.done && k !== '↵') return;
@@ -461,7 +574,8 @@ function buildKeys() {
       else if (k === '゛') dakuten();
       else put(k);
     },
-  }, k === '゛' ? '゛゜' : k))));
+  }, k === '゛' ? '゛゜' : k, '゛⌫↵ー'.includes(k) ? null : h('span', { class: 'cw-key-r' }, romaji(k))))));
+  keys.classList.toggle('show-romaji', Boolean(settings.romaji));
 }
 
 // ---------------------------------------------------------------- check / reveal
@@ -481,12 +595,12 @@ function check(what, { quiet = false } = {}) {
   });
   st.checked = true;
   save();
-  if (!quiet) toast(wrong ? `${wrong} square${wrong === 1 ? '' : 's'} to fix.` : 'Nothing wrong so far.');
+  if (!quiet) toast(wrong ? t('toast.wrong', { n: wrong }) : t('toast.ok'));
 }
 
 function reveal(what) {
   if (what === 'clear') {
-    if (!confirm('Clear this puzzle and start over? Your time resets too.')) return;
+    if (!confirm(t('confirm.clear'))) return;
     store.progress[pz.id] = { cells: {}, wrong: {}, revealed: {}, time: 0, done: false };
     save(true);
     openPuzzle();
@@ -508,7 +622,7 @@ function checkSolved() {
   if (st.done) return;
   const open = pz.cells.filter((x) => !x.black);
   if (!open.every((x) => val(x.r, x.c))) return;
-  if (!open.every((x) => val(x.r, x.c) === x.answer)) { toast('Not quite. Something’s off — try Check.'); return; }
+  if (!open.every((x) => val(x.r, x.c) === x.answer)) { toast(t('toast.off')); return; }
   st.done = true;
   st.solvedAt = Date.now();
   stopClock();
@@ -575,7 +689,7 @@ function recordStats(assisted) {
 function renderStats() {
   const s = store.stats[`${pz.level}-${pz.size}`];
   $('stats').textContent = s
-    ? `${LEVEL_NAMES[pz.level]} ${SIZE_NAMES[pz.size]}: ${s.solved} solved · best ${s.best != null ? fmtTime(s.best) : '—'} · streak ${s.streak} (longest ${s.longest}).`
+    ? t('stats', { level: LEVEL_NAME(pz.level), size: SIZE_NAME(pz.size), solved: s.solved, best: s.best != null ? fmtTime(s.best) : '—', streak: s.streak, longest: s.longest })
     : '';
 }
 
@@ -583,35 +697,35 @@ let nextTimer = null;
 function celebrate(assisted) {
   const kw = pz.key.keyword;
   fill($('done-body'), 
-    h('p', { class: 'cw-done-time' }, fmtTime(st.time), assisted ? h('span', { class: 'cw-muted' }, ' · with reveals') : null),
-    h('p', {}, `${LEVEL_NAMES[pz.level]} ${SIZE_NAMES[pz.size]} · ${fmtDate(date)}`),
-    h('p', { class: 'cw-done-kw' }, 'Keyword: ', h('strong', { lang: 'ja' }, kw.word), ` (${kw.reading}) · ${kw.meaning}`),
-    h('p', { class: 'cw-muted' }, 'Every answer, with its kanji and meaning, is listed under the puzzle.'),
-    date === localDate() ? h('p', { class: 'cw-next', id: 'cw-next' }, `Next puzzle in ${untilMidnight()} (your midnight)`) : null);
+    h('p', { class: 'cw-done-time' }, fmtTime(st.time), assisted ? h('span', { class: 'cw-muted' }, t('withReveals')) : null),
+    h('p', {}, `${LEVEL_NAME(pz.level)} ${SIZE_NAME(pz.size)} · ${fmtDate(date)}`),
+    h('p', { class: 'cw-done-kw' }, t('kwLine'), h('strong', { lang: 'ja' }, kw.word), ` (${kw.reading})`, settings.words ? h('span', { lang: 'en' }, ` · ${kw.meaning}`) : null),
+    settings.words ? h('p', { class: 'cw-muted' }, t('listed')) : null,
+    date === localDate() ? h('p', { class: 'cw-next', id: 'cw-next' }, t('nextIn', { time: untilMidnight() })) : null);
   clearInterval(nextTimer);
-  nextTimer = setInterval(() => { const el = $('cw-next'); if (!el || $('done').hidden) { clearInterval(nextTimer); return; } el.textContent = `Next puzzle in ${untilMidnight()} (your midnight)`; }, 1000);
+  nextTimer = setInterval(() => { const el = $('cw-next'); if (!el || $('done').hidden) { clearInterval(nextTimer); return; } el.textContent = t('nextIn', { time: untilMidnight() }); }, 1000);
   $('done').hidden = false;
   $('done-share').focus();
 }
 
 function share() {
-  const text = `Kana Crossword · ${SIZE_NAMES[pz.size]} · ${LEVEL_NAMES[pz.level]} · ${fmtDate(date)}\nSolved in ${fmtTime(st.time)}${Object.keys(st.revealed).length ? ' (with reveals)' : ''} ✅\nhttps://www.jareddesu.com/tools/crossword/`;
-  (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => toast('Copied.'), () => toast(text));
+  const text = `${t('shareText', { size: SIZE_NAME(pz.size), level: LEVEL_NAME(pz.level), date: fmtDate(date), time: fmtTime(st.time), reveals: Object.keys(st.revealed).length > 0 })}\nhttps://www.jareddesu.com/tools/crossword/`;
+  (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => toast(t('copied')), () => toast(text));
 }
 
 function renderWords() {
   const sec = $('words-sec');
-  if (!st.done) { sec.hidden = true; return; }
+  if (!st.done || !settings.words) { sec.hidden = true; return; }
   sec.hidden = false;
   const rows = pz.entries.slice().sort((a, b) => a.num - b.num || (a.dir === 'across' ? -1 : 1));
   $('words').replaceChildren(h('table', { class: 'cw-words' },
-    h('thead', {}, h('tr', {}, h('th', {}, ''), h('th', {}, 'Word'), h('th', {}, 'Reading'), h('th', {}, 'Meaning'), h('th', {}, 'Clue'))),
+    h('thead', {}, h('tr', {}, h('th', {}, ''), h('th', {}, t('th.word')), h('th', {}, t('th.reading')), h('th', {}, t('th.meaning')), h('th', {}, t('th.clue')))),
     h('tbody', {}, rows.map((e) => h('tr', {},
-      h('td', { class: 'cw-muted' }, `${e.num}${e.dir === 'across' ? 'A' : 'D'}`),
+      h('td', { class: 'cw-muted' }, t('clueId', e)),
       h('td', { lang: 'ja', class: 'cw-word' }, e.word),
       h('td', { lang: 'ja' }, e.reading),
-      h('td', {}, e.meaning),
-      h('td', { class: 'cw-muted' }, e.clue))))));
+      h('td', { lang: 'en' }, e.meaning),
+      h('td', { class: 'cw-muted', lang: 'en' }, e.clue))))));
 }
 
 // ---------------------------------------------------------------- toast

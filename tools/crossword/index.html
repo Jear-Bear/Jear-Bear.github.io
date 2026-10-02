@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <script>/* theme: set before paint (auto follows the system) */(function(){var d=document.documentElement,k='jareddesu.theme',m=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)');function p(){try{return localStorage.getItem(k)||'auto'}catch(e){return'auto'}}function a(){var t=p();d.dataset.theme=t==='light'||t==='dark'?t:(m&&m.matches?'dark':'light');d.dataset.themePref=t}a();if(m&&m.addEventListener)m.addEventListener('change',a);window.jdTheme={get:p,set:function(t){try{t==='auto'?localStorage.removeItem(k):localStorage.setItem(k,t)}catch(e){}a()}}})();</script>
+  <script>/* games: interface language before paint */try{if(localStorage.getItem('jareddesu.games.lang')==='ja'){document.documentElement.dataset.ui='ja';document.documentElement.lang='ja'}}catch(e){}</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
   <title>Kana Crossword · Jared P.</title>
   <meta name="description" content="A daily Japanese crossword: English clues, hiragana answers. A 5×5 mini and a 9×9 daily, at beginner (N5–N4), intermediate (N3–N2) or advanced (N1+) level." />
@@ -16,7 +17,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Klee+One:wght@600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="../../styles/base.css?v=4">
-  <link rel="stylesheet" href="../../styles/crossword.css?v=3">
+  <link rel="stylesheet" href="../../styles/crossword.css?v=4">
   <!-- Cloudflare Web Analytics (cookieless) -->
   <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
 </head>
@@ -66,65 +67,70 @@
     <div class="container cw">
       <header class="page-head">
         <div class="page-head-copy">
-          <h1 class="page-title">Kana <em>Crossword</em>.</h1>
-          <p class="page-intro">
+          <h1 class="page-title"><span data-ui-only="en">Kana <em>Crossword</em>.</span><span data-ui-only="ja" lang="ja">かな<em>クロスワード</em>。</span></h1>
+          <p class="page-intro" data-ui-only="en">
             English clues, hiragana answers. A new mini and a new daily puzzle every day,
             at three levels. Small kana are written full size (ゃ→や, っ→つ) and ー takes a square,
             like in a Japanese newspaper crossword.
+          </p>
+          <p class="page-intro" data-ui-only="ja" lang="ja">
+            英語のカギに、ひらがなで答えるクロスワード。毎日ミニとデイリーが3つのレベルで登場します。
+            新聞のクロスワードと同じく、小さいかなは大きく書き（ゃ→や、っ→つ）、ーも1マス使います。
           </p>
         </div>
         <p class="page-v"><span class="page-v-ja" lang="ja">十字</span><span class="page-v-en">Crossword</span></p>
       </header>
 
-      <div class="cw-bar" role="toolbar" aria-label="Puzzle options">
-        <div class="cw-seg" role="radiogroup" aria-label="Size" id="size-seg">
-          <button type="button" role="radio" data-size="mini">Mini <span class="cw-seg-sub">5×5</span></button>
-          <button type="button" role="radio" data-size="daily">Daily <span class="cw-seg-sub">9×9</span></button>
+      <div class="cw-bar" role="toolbar" aria-label="Puzzle options" data-t-aria="bar">
+        <div class="cw-seg" role="radiogroup" aria-label="Size" data-t-aria="sizeGroup" id="size-seg">
+          <button type="button" role="radio" data-size="mini"><span data-t="size.mini">Mini</span> <span class="cw-seg-sub">5×5</span></button>
+          <button type="button" role="radio" data-size="daily"><span data-t="size.daily">Daily</span> <span class="cw-seg-sub">9×9</span></button>
         </div>
         <label class="cw-select-wrap">
-          <span class="cw-label">Level</span>
+          <span class="cw-label" data-t="level">Level</span>
           <select id="level" class="cw-select">
-            <option value="beginner">Beginner · N5–N4</option>
-            <option value="intermediate">Intermediate · N3–N2</option>
-            <option value="advanced">Advanced · N1+</option>
+            <option value="beginner" data-t="opt.beginner">Beginner · N5–N4</option>
+            <option value="intermediate" data-t="opt.intermediate">Intermediate · N3–N2</option>
+            <option value="advanced" data-t="opt.advanced">Advanced · N1+</option>
           </select>
         </label>
         <div class="cw-date">
-          <button type="button" class="cw-icon" id="date-prev" aria-label="Previous puzzle">‹</button>
+          <button type="button" class="cw-icon" id="date-prev" aria-label="Previous puzzle" data-t-aria="prev">‹</button>
           <button type="button" class="cw-date-btn" id="date-label" aria-haspopup="dialog">Today</button>
-          <button type="button" class="cw-icon" id="date-next" aria-label="Next puzzle">›</button>
+          <button type="button" class="cw-icon" id="date-next" aria-label="Next puzzle" data-t-aria="next">›</button>
         </div>
+        <button type="button" class="cw-icon cw-gear" id="btn-settings" aria-label="Settings" data-t-aria="settings" aria-haspopup="dialog">⚙</button>
       </div>
 
       <div class="cw-play" id="play">
         <div class="cw-board-col">
           <div class="cw-tools">
-            <button type="button" class="cw-timer" id="timer" aria-label="Pause">0:00</button>
-            <div class="cw-menus">
-              <details class="cw-menu" id="menu-check"><summary>Check</summary>
-                <div class="cw-menu-list"><button type="button" data-check="cell">Square</button><button type="button" data-check="word">Word</button><button type="button" data-check="puzzle">Puzzle</button><label class="cw-auto"><input type="checkbox" id="autocheck"> Autocheck</label></div>
+            <button type="button" class="cw-timer" id="timer" aria-label="Pause" data-t-aria="pause">0:00</button>
+            <div class="cw-menus" id="assist">
+              <details class="cw-menu" id="menu-check"><summary data-t="check">Check</summary>
+                <div class="cw-menu-list"><button type="button" data-check="cell" data-t="square">Square</button><button type="button" data-check="word" data-t="word">Word</button><button type="button" data-check="puzzle" data-t="puzzle">Puzzle</button><label class="cw-auto"><input type="checkbox" id="autocheck"> <span data-t="autocheck">Autocheck</span></label></div>
               </details>
-              <details class="cw-menu" id="menu-reveal"><summary>Reveal</summary>
-                <div class="cw-menu-list"><button type="button" data-reveal="cell">Square</button><button type="button" data-reveal="word">Word</button><button type="button" data-reveal="puzzle">Puzzle</button><button type="button" data-reveal="clear" class="cw-danger">Clear puzzle</button></div>
+              <details class="cw-menu" id="menu-reveal"><summary data-t="reveal">Reveal</summary>
+                <div class="cw-menu-list"><button type="button" data-reveal="cell" data-t="square">Square</button><button type="button" data-reveal="word" data-t="word">Word</button><button type="button" data-reveal="puzzle" data-t="puzzle">Puzzle</button><button type="button" data-reveal="clear" class="cw-danger" data-t="clear">Clear puzzle</button></div>
               </details>
             </div>
           </div>
           <div class="cw-board-wrap">
-            <div class="cw-grid" id="grid" role="grid" aria-label="Crossword grid"></div>
-            <div class="cw-paused" id="paused" hidden><p>Paused</p><button type="button" class="btn btn-primary" id="resume">Resume</button></div>
+            <div class="cw-grid" id="grid" role="grid" aria-label="Crossword grid" data-t-aria="grid"></div>
+            <div class="cw-paused" id="paused" hidden><p data-t="paused">Paused</p><button type="button" class="btn btn-primary" id="resume" data-t="resume">Resume</button></div>
           </div>
           <div class="cw-clue-bar" id="clue-bar">
-            <button type="button" class="cw-icon" id="clue-prev" aria-label="Previous clue">‹</button>
+            <button type="button" class="cw-icon" id="clue-prev" aria-label="Previous clue" data-t-aria="prevClue">‹</button>
             <button type="button" class="cw-clue-text" id="clue-text" aria-live="polite"></button>
-            <button type="button" class="cw-icon" id="clue-next" aria-label="Next clue">›</button>
+            <button type="button" class="cw-icon" id="clue-next" aria-label="Next clue" data-t-aria="nextClue">›</button>
           </div>
-          <div class="cw-keys" id="keys" aria-label="Kana keyboard"></div>
+          <div class="cw-keys" id="keys" aria-label="Kana keyboard" data-t-aria="keys"></div>
           <div class="cw-keyword" id="keyword"></div>
-          <input class="cw-ime" id="ime" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Type answers (romaji or kana)">
+          <input class="cw-ime" id="ime" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Type answers (romaji or kana)" data-t-aria="ime">
         </div>
         <div class="cw-clues" id="clues">
-          <section class="cw-clue-list"><h2>Across <span lang="ja">ヨコのカギ</span></h2><ol id="clues-across"></ol></section>
-          <section class="cw-clue-list"><h2>Down <span lang="ja">タテのカギ</span></h2><ol id="clues-down"></ol></section>
+          <section class="cw-clue-list"><h2><span data-ui-only="en">Across </span><span lang="ja">ヨコのカギ</span></h2><ol id="clues-across"></ol></section>
+          <section class="cw-clue-list"><h2><span data-ui-only="en">Down </span><span lang="ja">タテのカギ</span></h2><ol id="clues-down"></ol></section>
         </div>
       </div>
       <p class="cw-empty" id="empty" hidden></p>
@@ -136,88 +142,64 @@
 
       <section class="sec cw-section">
         <p class="sec-mark"><span class="sec-num" lang="ja">遊</span><span class="sec-label">How to play / <span lang="ja"><ruby>遊<rt>あそ</rt></ruby>び<ruby>方<rt>かた</rt></ruby></span></span></p>
-        <ul class="cw-howto">
+        <ul class="cw-howto" data-ui-only="en">
           <li><strong>Type romaji</strong> (ka → か, kya → きや) or kana with a Japanese keyboard. On a phone, use the kana keys under the grid; <span lang="ja">゛゜</span> turns か into が, は into ば or ぱ.</li>
           <li><strong>Small kana are full size.</strong> きゃ is written きや, がっこう is がつこう. The long-vowel mark ー gets its own square.</li>
           <li><strong>Tap a square twice</strong> (or press space) to switch between across and down. Tab moves to the next clue.</li>
           <li><strong>Double-boxed squares</strong> (<span lang="ja">二重マス</span>) spell a bonus keyword, read in order A, B, C….</li>
+          <li><strong>Settings</strong> (⚙) switch the page to Japanese, add romaji to the keys, hide Check and Reveal, or keep the answer list hidden after you solve.</li>
           <li>Beginner uses JLPT N5–N4 words, intermediate N3–N2, advanced N1 plus slang and idioms. Each puzzle mixes in food, pop culture and other fun words.</li>
         </ul>
+        <ul class="cw-howto" data-ui-only="ja" lang="ja">
+          <li><strong>ローマ字で入力</strong>（ka → か、kya → きや）するか、日本語キーボードでかなを入力します。スマホではマスの下のかなキーを使います。<span>゛゜</span>で か→が、は→ば・ぱ に変わります。</li>
+          <li><strong>小さいかなは大きく書きます。</strong>きゃ は きや、がっこう は がつこう。長音の「ー」も1マスです。</li>
+          <li><strong>同じマスを2回タップ</strong>（またはスペース）でヨコとタテを切り替え。Tabで次のカギへ進みます。</li>
+          <li><strong>二重マス</strong>の文字をA、B、C…の順に読むと、キーワードになります。</li>
+          <li><strong>設定</strong>（⚙）で、英語表示への切り替え、かなキーのローマ字、チェックと答え表示の非表示、解いた後の単語リストの表示を変えられます。</li>
+          <li>初級はJLPT N5–N4、中級はN3–N2、上級はN1の単語にスラングや慣用句も。どのパズルにも食べ物やポップカルチャーなど、楽しい言葉が入っています。</li>
+        </ul>
         <p class="cw-stats" id="stats"></p>
-        <p class="cw-credit">Word lists: JLPT vocabulary from <a href="https://github.com/jamsinclair/open-anki-jlpt-decks" target="_blank" rel="noopener">open-anki-jlpt-decks</a> (MIT), based on Jonathan Waller’s JLPT lists (CC BY). Clues written with Claude.</p>
+        <p class="cw-credit" data-ui-only="en">Word lists: JLPT vocabulary from <a href="https://github.com/jamsinclair/open-anki-jlpt-decks" target="_blank" rel="noopener">open-anki-jlpt-decks</a> (MIT), based on Jonathan Waller’s JLPT lists (CC BY). Clues written with Claude.</p>
+        <p class="cw-credit" data-ui-only="ja" lang="ja">単語リスト：<a href="https://github.com/jamsinclair/open-anki-jlpt-decks" target="_blank" rel="noopener">open-anki-jlpt-decks</a>（MIT）のJLPT語彙。Jonathan WallerさんのJLPTリスト（CC BY）が元です。カギはClaudeと一緒に作っています。</p>
       </section>
     </div>
   </main>
 
   <div class="cw-overlay" id="done" hidden>
     <div class="cw-sheet" role="dialog" aria-modal="true" aria-labelledby="done-title">
-      <p class="eyebrow">solved</p>
-      <h2 class="cw-sheet-title" id="done-title">お見事！</h2>
+      <p class="eyebrow" data-t="solved">solved</p>
+      <h2 class="cw-sheet-title" id="done-title" lang="ja">お見事！</h2>
       <div id="done-body"></div>
       <div class="cw-sheet-actions">
-        <button type="button" class="btn btn-primary" id="done-share">Copy result</button>
-        <button type="button" class="btn-link" id="done-close">Keep looking</button>
+        <button type="button" class="btn btn-primary" id="done-share" data-t="share">Copy result</button>
+        <button type="button" class="btn-link" id="done-close" data-t="doneClose">Keep looking</button>
       </div>
     </div>
   </div>
   <div class="cw-overlay" id="dates" hidden>
     <div class="cw-sheet" role="dialog" aria-modal="true" aria-labelledby="dates-title">
-      <h2 class="cw-sheet-title" id="dates-title">Past puzzles</h2>
+      <h2 class="cw-sheet-title" id="dates-title" data-t="pastTitle">Past puzzles</h2>
       <ol class="cw-date-list" id="date-list"></ol>
-      <div class="cw-sheet-actions"><button type="button" class="btn-link" id="dates-close">Close</button></div>
+      <div class="cw-sheet-actions"><button type="button" class="btn-link" id="dates-close" data-t="close">Close</button></div>
+    </div>
+  </div>
+  <div class="cw-overlay" id="settings" hidden>
+    <div class="cw-sheet" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <h2 class="cw-sheet-title" id="settings-title" data-t="set.title">Settings</h2>
+      <div class="cw-set-row">
+        <span class="cw-label" data-t="set.lang">Language</span>
+        <div class="cw-seg" role="radiogroup" aria-label="Language" data-t-aria="set.lang" data-lang-seg>
+          <button type="button" role="radio" data-lang="en">English</button>
+          <button type="button" role="radio" data-lang="ja" lang="ja">日本語</button>
+        </div>
+      </div>
+      <label class="cw-toggle"><input type="checkbox" id="opt-romaji"> <span><strong data-t="set.romaji">Show romaji</strong> <span data-t="set.romaji.d">under the kana keys.</span></span></label>
+      <label class="cw-toggle"><input type="checkbox" id="opt-noassist"> <span><strong data-t="set.assist">Hide Check and Reveal</strong> <span data-t="set.assist.d">for a solve with no help.</span></span></label>
+      <label class="cw-toggle"><input type="checkbox" id="opt-words"> <span><strong data-t="set.words">Show answers and meanings</strong> <span data-t="set.words.d">under the puzzle after you solve it.</span></span></label>
+      <div class="cw-sheet-actions"><button type="button" class="btn-link" id="settings-close" data-t="close">Close</button></div>
     </div>
   </div>
   <div class="cw-toast" id="toast" role="status" aria-live="polite" hidden></div>
-
-  <!-- Kanji detail -->
-  <div class="kj-overlay" id="detail-overlay" hidden>
-    <div class="kj-sheet" role="dialog" aria-modal="true" aria-labelledby="detail-char">
-      <button class="kj-close" id="detail-close" aria-label="Close">×</button>
-      <div id="detail-body"></div>
-    </div>
-  </div>
-
-  <!-- Add a list -->
-  <div class="kj-overlay" id="import-overlay" hidden>
-    <div class="kj-sheet" role="dialog" aria-modal="true" aria-labelledby="import-title">
-      <button class="kj-close" id="import-close" aria-label="Close">×</button>
-      <p class="eyebrow">your list</p>
-      <h2 class="kj-sheet-title" id="import-title">Add your own list.</h2>
-      <label class="kj-field">
-        <span class="kj-opt-label">Name</span>
-        <input type="text" id="list-name" maxlength="40" placeholder="e.g. Chapter 3 vocab">
-      </label>
-      <label class="kj-field">
-        <span class="kj-opt-label">Paste kanji or words</span>
-        <textarea id="list-text" rows="6" lang="ja" placeholder="学 校 先 生&#10;or one word per line:&#10;学校　がっこう　school"></textarea>
-      </label>
-      <div class="kj-file-row">
-        <label class="btn-link kj-file-btn">Upload CSV or Excel <input type="file" id="list-file" accept=".csv,.tsv,.txt,.xlsx,.xlsm,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></label>
-        <span class="kj-help" id="list-file-name"></span>
-      </div>
-      <p class="kj-help">Every kanji found is added. Words (two or more characters) are kept for word practice; add a kana reading and an English meaning in the same row or line if you have them.</p>
-      <p class="kj-preview" id="list-preview" aria-live="polite"></p>
-      <div class="kj-sheet-actions">
-        <button class="btn btn-primary" id="list-save" disabled>Save list</button>
-        <button class="btn-link" id="list-cancel">Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Session summary -->
-  <div class="kj-overlay" id="summary-overlay" hidden>
-    <div class="kj-sheet kj-summary" role="dialog" aria-modal="true" aria-labelledby="summary-title">
-      <p class="eyebrow">session done</p>
-      <h2 class="kj-sheet-title" id="summary-title">Nice work.</h2>
-      <div id="summary-body"></div>
-      <div class="kj-sheet-actions">
-        <button class="btn btn-primary" id="summary-again">Keep going</button>
-        <button class="btn-link" id="summary-done">Back to dashboard</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="kj-toasts" id="toasts" aria-live="polite"></div>
 
   <footer class="colophon">
     <nav class="colophon-links" aria-label="Footer">
@@ -247,6 +229,6 @@
   </footer>
 
   <script src="../../scripts/site.js?v=3"></script>
-  <script type="module" src="../../scripts/crossword/app.js?v=3"></script>
+  <script type="module" src="../../scripts/crossword/app.js?v=4"></script>
 </body>
 </html>

@@ -6,6 +6,7 @@
 
 import { toHiragana } from '../kanji/romaji.js?v=1';
 import { gridKana, cycleDakuten, romaji } from '../crossword/kana.js?v=1';
+import { translator, setLang } from '../games/i18n.js?v=1';
 
 const $ = (id) => document.getElementById(id);
 // replaceChildren() would print null/false as text
@@ -13,7 +14,90 @@ const fill = (el, ...kids) => el.replaceChildren(...kids.filter((k) => k != null
 const KEY = 'jareddesu.wordle.v1';
 const START = '2026-10-02';             // daily #1
 const TRIES = 8;
-const LEVEL_NAMES = { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' };
+
+// ---------------------------------------------------------------- interface text
+const THEMES_JA = {
+  'Food & drink': '食べ物・飲み物', 'Body & health': '体と健康', 'Family & people': '家族・人', 'Time & calendar': '時間・暦',
+  'Numbers & counting': '数・数え方', 'Weather & nature': '天気・自然', Animals: '動物', 'Around the house': '家の中',
+  Clothes: '服', 'Getting around': '乗り物・交通', 'Around town': '町の中', 'School & work': '学校・仕事', Feelings: '気持ち',
+  'Colors & looks': '色・見た目', 'Fun & hobbies': '遊び・趣味', 'A thing or an idea': 'もの・こと',
+  'A describing word': '様子を表す言葉', 'Something you do': '動作', 'Something people say': 'あいさつ・決まり文句',
+  'How, when or how much': '様子・程度を表す言葉', 'Pop culture': 'ポップカルチャー', 'Everyday life': '日常生活',
+  'Japanese culture': '日本文化', 'Places in Japan': '日本の地名', 'Sound words': 'オノマトペ', 'Things people say': 'よく言う言葉',
+  'Hard-to-translate words': '訳しにくい言葉', 'Life in Japan': '日本の暮らし', Sayings: 'ことわざ・慣用句', Slang: 'スラング',
+};
+const t = translator({
+  en: {
+    'level.beginner': 'Beginner', 'level.intermediate': 'Intermediate', 'level.advanced': 'Advanced',
+    'opt.beginner': 'Beginner · N5–N4', 'opt.intermediate': 'Intermediate · N3–N2', 'opt.advanced': 'Advanced · N1+',
+    bar: 'Game options', modeGroup: 'Mode', lenGroup: 'Word length', 'mode.daily': 'Daily', 'mode.practice': 'Practice',
+    len4: '4 kana', len5: '5 kana', level: 'Level', statistics: 'Statistics', settings: 'Settings', close: 'Close',
+    board: 'Guesses', keys: 'Kana keyboard', ime: 'Type your guess (romaji or kana)',
+    loadFail: 'Couldn’t load the word list. Try again in a moment.',
+    titleDaily: 'Daily #{day} · {level} · {len} kana', titlePractice: 'Practice · {level} · {len} kana',
+    theme: 'Theme', meaning: 'Meaning', kana: 'Kana',
+    kanaHint: ({ n }) => [' Square ', String(n), ' is '],
+    hint1: 'Hint: show the meaning', hint2: 'Hint: show one kana',
+    'pos.verb': 'verb', 'pos.adjective': 'い-adjective', 'pos.na-adjective': 'な-adjective', 'pos.adverb': 'adverb',
+    'pos.expression': 'expression', 'pos.counter': 'counter', 'pos.noun': 'noun',
+    tileEmpty: 'empty', 'mark.correct': 'correct', 'mark.present': 'present', 'mark.close': 'close', 'mark.absent': 'absent',
+    'key.daku': 'Add dakuten or handakuten', 'key.del': 'Delete', enter: 'Enter',
+    short: 'Not enough kana', notWord: 'Not in the word list',
+    hardSquare: 'Square {n} must be {ch}', hardContain: 'Guess must contain {ch}', hardLate: 'Change hard mode before your first guess.',
+    played: 'Played', winPct: 'Win %', cleanPct: 'No-hint win %', streak: 'Streak',
+    statLine: ({ clean, won, cs, cm, max }) => `${clean} of ${won} win${won === 1 ? '' : 's'} without hints · hint-free streak ${cs} (best ${cm}) · best streak ${max}`,
+    distTitle: 'Guess distribution · daily {level}, {len} kana', withHints: '{n} with hints',
+    keyClean: ' without hints   ', keyHint: ' 💡 with hints',
+    statsEyebrow: 'statistics', statsTitle: 'Your daily record',
+    solvedIn: 'solved in {n}/{tries}', lost: 'out of guesses', usedHints: ({ n }) => (n ? ` · ${n} hint${n === 1 ? '' : 's'}` : ' · no hints'),
+    copy: 'Copy result', nextWord: 'Next word →', keepPlaying: 'Keep playing in practice →',
+    nextIn: 'Next daily word in {time}', copied: 'Copied. Paste it anywhere.',
+    shareDaily: 'Kana Wordle #{day} {level} {len}', sharePractice: 'Kana Wordle practice {level} {len}',
+    'set.title': 'Settings', 'set.lang': 'Language',
+    'set.hard': 'Hard mode', 'set.hard.d': 'Green and yellow kana must be used in later guesses.',
+    'set.any': 'Accept any kana', 'set.any.d': 'Guesses don\'t have to be dictionary words.',
+    'set.notheme': 'Hide the theme', 'set.notheme.d': 'for a harder game.',
+    'set.nohints': 'Hide the hint buttons', 'set.nohints.d': 'so you can\'t tap one by accident.',
+    'set.meaning': 'Show the meaning', 'set.meaning.d': 'of the answer when the game ends.',
+    'set.romaji': 'Show romaji', 'set.romaji.d': 'under the kana keys.',
+  },
+  ja: {
+    'level.beginner': '初級', 'level.intermediate': '中級', 'level.advanced': '上級',
+    'opt.beginner': '初級 · N5–N4', 'opt.intermediate': '中級 · N3–N2', 'opt.advanced': '上級 · N1+',
+    bar: 'ゲームの設定', modeGroup: 'モード', lenGroup: '文字数', 'mode.daily': 'デイリー', 'mode.practice': '練習',
+    len4: '4文字', len5: '5文字', level: 'レベル', statistics: '記録', settings: '設定', close: '閉じる',
+    board: '回答', keys: 'かなキーボード', ime: '回答を入力（ローマ字・かな）',
+    loadFail: '単語リストを読み込めませんでした。少し待ってから試してください。',
+    titleDaily: 'デイリー #{day} · {level} · {len}文字', titlePractice: '練習 · {level} · {len}文字',
+    theme: 'テーマ', meaning: '意味', kana: 'かな',
+    kanaHint: ({ n }) => [` ${n}マス目は `],
+    hint1: 'ヒント：意味を見る', hint2: 'ヒント：かなを一つ見る',
+    'pos.verb': '動詞', 'pos.adjective': 'い形容詞', 'pos.na-adjective': 'な形容詞', 'pos.adverb': '副詞',
+    'pos.expression': '表現', 'pos.counter': '助数詞', 'pos.noun': '名詞',
+    tileEmpty: '空き', 'mark.correct': '正解', 'mark.present': '別の位置', 'mark.close': '濁点違い', 'mark.absent': 'なし',
+    'key.daku': '濁点・半濁点をつける', 'key.del': '消す', enter: '決定',
+    short: 'かなが足りません', notWord: '単語リストにありません',
+    hardSquare: '{n}マス目は「{ch}」にしてください', hardContain: '「{ch}」を使ってください', hardLate: 'ハードモードは最初の回答の前に切り替えてください。',
+    played: 'プレイ', winPct: '勝率', cleanPct: 'ノーヒント勝率', streak: '連勝',
+    statLine: ({ clean, won, cs, cm, max }) => `ヒントなしの勝ち ${clean}/${won}回 · ノーヒント連勝 ${cs}（最高 ${cm}） · 最高連勝 ${max}`,
+    distTitle: '回数の分布 · デイリー {level}・{len}文字', withHints: 'ヒントあり {n}回',
+    keyClean: ' ヒントなし   ', keyHint: ' 💡 ヒントあり',
+    statsEyebrow: '記録', statsTitle: 'デイリーの成績',
+    solvedIn: '{n}/{tries}回で正解', lost: '回数切れ', usedHints: ({ n }) => (n ? ` · ヒント${n}回` : ' · ヒントなし'),
+    copy: '結果をコピー', nextWord: '次の単語 →', keepPlaying: '練習モードで続ける →',
+    nextIn: '次の単語まで {time}', copied: 'コピーしました。どこにでも貼り付けられます。',
+    shareDaily: 'かなWordle #{day} {level} {len}文字', sharePractice: 'かなWordle 練習 {level} {len}文字',
+    'set.title': '設定', 'set.lang': '表示言語',
+    'set.hard': 'ハードモード', 'set.hard.d': '緑と黄色のかなは、次の回答でも使わないといけません。',
+    'set.any': 'どんなかなでもOK', 'set.any.d': '辞書にない言葉でも回答できます。',
+    'set.notheme': 'テーマを隠す', 'set.notheme.d': '（もっと難しくしたい人に）',
+    'set.nohints': 'ヒントボタンを隠す', 'set.nohints.d': '（うっかり押さないように）',
+    'set.meaning': '意味を表示', 'set.meaning.d': '（ゲームが終わったとき、答えの意味を表示）',
+    'set.romaji': 'ローマ字を表示', 'set.romaji.d': '（かなキーの下に）',
+  },
+});
+const LEVEL_NAME = (l) => t(`level.${l}`);
+const themeName = (name) => (document.documentElement.dataset.ui === 'ja' && THEMES_JA[name]) || name;
 const RANK = { absent: 1, close: 2, present: 3, correct: 4 };
 const EMOJI = { correct: '🟩', present: '🟨', close: '🟦', absent: '⬜' };
 
@@ -27,6 +111,7 @@ const settings = store.settings;
 settings.mode = settings.mode || 'daily';
 settings.len = settings.len || 4;
 settings.level = settings.level || 'beginner';
+if (settings.meaning == null) settings.meaning = true;
 
 function h(tag, attrs, ...kids) {
   const n = document.createElement(tag);
@@ -97,7 +182,7 @@ let data = null;
 async function start({ fresh = false } = {}) {
   closeOverlays();
   renderBar();
-  try { data = await words(settings.len); } catch { $('title').textContent = 'Couldn’t load the word list. Try again in a moment.'; return; }
+  try { data = await words(settings.len); } catch { $('title').textContent = t('loadFail'); return; }
   const pool = data.answers[settings.level];
   if (settings.mode === 'daily') {
     const today = localDate();
@@ -145,12 +230,11 @@ function renderBar() {
 
 function renderTitle() {
   $('title').textContent = game.mode === 'daily'
-    ? `Daily #${game.day} · ${LEVEL_NAMES[game.level]} · ${game.len} kana`
-    : `Practice · ${LEVEL_NAMES[game.level]} · ${game.len} kana`;
+    ? t('titleDaily', { day: game.day, level: LEVEL_NAME(game.level), len: game.len })
+    : t('titlePractice', { level: LEVEL_NAME(game.level), len: game.len });
 }
 
 // Theme, then up to two hints on request: the English meaning, then one kana
-const POS_LABEL = { verb: 'verb', adjective: 'い-adjective', 'na-adjective': 'な-adjective', adverb: 'adverb', expression: 'expression', counter: 'counter', noun: 'noun' };
 function hintKana() {
   const solved = new Set();
   game.guesses.forEach((g) => score(g, game.answer).forEach((m, i) => { if (m === 'correct') solved.add(i); }));
@@ -163,15 +247,15 @@ function renderHints() {
   const showTheme = !settings.notheme || game.done;
   const parts = [];
   if (showTheme && info.t) {
-    parts.push(h('p', { class: 'wd-theme' }, h('span', { class: 'wd-theme-label' }, 'Theme'), ` ${info.t}`, info.p && !/^(Something you do|A describing word|How, when or how much|Something people say|A thing or an idea)$/.test(info.t) ? h('span', { class: 'wd-muted' }, ` · ${POS_LABEL[info.p] || info.p}`) : null));
+    parts.push(h('p', { class: 'wd-theme' }, h('span', { class: 'wd-theme-label' }, t('theme')), ` ${themeName(info.t)}`, info.p && !/^(Something you do|A describing word|How, when or how much|Something people say|A thing or an idea)$/.test(info.t) ? h('span', { class: 'wd-muted' }, ` · ${t(`pos.${info.p}`)}`) : null));
   }
-  if (game.hints >= 1 && info.m) parts.push(h('p', { class: 'wd-hint' }, h('span', { class: 'wd-theme-label' }, 'Meaning'), ` ${info.m}`));
+  if (game.hints >= 1 && info.m) parts.push(h('p', { class: 'wd-hint' }, h('span', { class: 'wd-theme-label' }, t('meaning')), ' ', h('span', { lang: 'en' }, info.m)));
   if (game.hints >= 2) {
     const k = game.hintKana || hintKana();
-    if (k) { game.hintKana = k; parts.push(h('p', { class: 'wd-hint' }, h('span', { class: 'wd-theme-label' }, 'Kana'), ' Square ', String(k.i + 1), ' is ', h('strong', { lang: 'ja' }, k.ch))); }
+    if (k) { game.hintKana = k; parts.push(h('p', { class: 'wd-hint' }, h('span', { class: 'wd-theme-label' }, t('kana')), ...t('kanaHint', { n: k.i + 1 }), h('strong', { lang: 'ja' }, k.ch))); }
   }
-  if (!game.done && game.hints < 2) {
-    const label = game.hints === 0 ? 'Hint: show the meaning' : 'Hint: show one kana';
+  if (!game.done && game.hints < 2 && !settings.nohints) {
+    const label = game.hints === 0 ? t('hint1') : t('hint2');
     parts.push(h('button', { type: 'button', class: 'wd-hint-btn', onclick: () => { game.hints++; save(); renderHints(); } }, '💡 ', label));
   }
   box.replaceChildren(...parts);
@@ -188,7 +272,7 @@ function renderBoard() {
     return h('div', { class: `wd-row${isCur ? ' is-cur' : ''}`, role: 'row' },
       Array.from({ length: game.len }, (_, i) => h('div', {
         class: `wd-tile${marks ? ` is-${marks[i]}` : letters[i] ? ' is-filled' : ''}`, role: 'gridcell', lang: 'ja',
-        'aria-label': letters[i] ? `${letters[i]}${marks ? `, ${marks[i]}` : ''}` : 'empty',
+        'aria-label': letters[i] ? `${letters[i]}${marks ? `, ${t(`mark.${marks[i]}`)}` : ''}` : t('tileEmpty'),
       }, letters[i] || (isCur && i === letters.length && tail ? h('span', { class: 'wd-tail' }, tail) : ''))));
   }));
 }
@@ -215,7 +299,7 @@ function renderKeys() {
     const fn = k === '゛';
     return h('button', {
       type: 'button', class: `wd-key${fn ? ' is-fn' : ''}${best[k] ? ` is-${best[k]}` : ''}`, lang: 'ja',
-      'aria-label': fn ? 'Add dakuten or handakuten' : k,
+      'aria-label': fn ? t('key.daku') : k,
       onpointerdown: (e) => e.preventDefault(),
       onclick: () => (fn ? dakuten() : add(k)),
     }, fn ? h('span', { class: 'wd-daku' }, 'が・ぱ') : k, !fn && k !== 'ー' ? h('span', { class: 'wd-key-r' }, romaji(k)) : null);
@@ -223,8 +307,8 @@ function renderKeys() {
   // Voiced kana appear on the board but have no key of their own; show their colour on the base key's corner
   keys.replaceChildren(...kanaKeys,
     h('div', { class: 'wd-key-row' },
-      h('button', { type: 'button', class: 'wd-key is-wide is-fn', onpointerdown: (e) => e.preventDefault(), onclick: back, 'aria-label': 'Delete' }, '⌫'),
-      h('button', { type: 'button', class: 'wd-key is-wide is-enter', onpointerdown: (e) => e.preventDefault(), onclick: submit }, 'Enter')));
+      h('button', { type: 'button', class: 'wd-key is-wide is-fn', onpointerdown: (e) => e.preventDefault(), onclick: back, 'aria-label': t('key.del') }, '⌫'),
+      h('button', { type: 'button', class: 'wd-key is-wide is-enter', onpointerdown: (e) => e.preventDefault(), onclick: submit }, t('enter'))));
   // Mark base keys whose voiced forms were tried
   Object.entries(best).forEach(([ch, s]) => {
     let base = ch;
@@ -259,8 +343,8 @@ function dakuten() {
 function submit() {
   if (!game || game.done) return;
   if (tail === 'n') { typed += 'ん'; tail = ''; }
-  if ([...typed].length < game.len) { shake('Not enough kana'); return; }
-  if (!settings.any && !data.valid.has(typed)) { shake('Not in the word list'); return; }
+  if ([...typed].length < game.len) { shake(t('short')); return; }
+  if (!settings.any && !data.valid.has(typed)) { shake(t('notWord')); return; }
   if (settings.hard) {
     const miss = hardModeMiss(typed);
     if (miss) { shake(miss); return; }
@@ -283,10 +367,10 @@ function hardModeMiss(guess) {
   for (const prev of game.guesses) {
     const marks = score(prev, game.answer);
     for (let i = 0; i < marks.length; i++) {
-      if (marks[i] === 'correct' && g[i] !== prev[i]) return `Square ${i + 1} must be ${prev[i]}`;
+      if (marks[i] === 'correct' && g[i] !== prev[i]) return t('hardSquare', { n: i + 1, ch: prev[i] });
     }
     for (let i = 0; i < marks.length; i++) {
-      if (marks[i] === 'present' && !g.includes(prev[i])) return `Guess must contain ${prev[i]}`;
+      if (marks[i] === 'present' && !g.includes(prev[i])) return t('hardContain', { ch: prev[i] });
     }
   }
   return null;
@@ -374,21 +458,21 @@ function statsBlock() {
   const now = game.mode === 'daily' && game.won ? game.guesses.length - 1 : -1;
   const tile = (v, l) => h('div', { class: 'wd-stat' }, h('span', { class: 'wd-stat-v' }, v), h('span', { class: 'wd-stat-l' }, l));
   return h('div', { class: 'wd-stats' },
-    h('div', { class: 'wd-stat-row' }, tile(s.played, 'Played'), tile(pct(s.won, s.played), 'Win %'), tile(pct(clean, s.played), 'No-hint win %'), tile(s.streak, 'Streak')),
+    h('div', { class: 'wd-stat-row' }, tile(s.played, t('played')), tile(pct(s.won, s.played), t('winPct')), tile(pct(clean, s.played), t('cleanPct')), tile(s.streak, t('streak'))),
     h('p', { class: 'wd-stat-line' },
-      `${clean} of ${s.won} win${s.won === 1 ? '' : 's'} without hints · hint-free streak ${s.cleanStreak} (best ${s.cleanMax}) · best streak ${s.max}`),
-    h('p', { class: 'wd-dist-title' }, `Guess distribution · daily ${LEVEL_NAMES[game.level]}, ${game.len} kana`),
+      t('statLine', { clean, won: s.won, cs: s.cleanStreak, cm: s.cleanMax, max: s.max })),
+    h('p', { class: 'wd-dist-title' }, t('distTitle', { level: LEVEL_NAME(game.level), len: game.len })),
     h('ol', { class: 'wd-dist' }, s.dist.map((n, i) => {
       const k = s.distHint[i];
       const bar = h('span', { class: `wd-dist-bar${i === now ? ' is-now' : ''}` },
         n || !k ? h('span', { class: 'wd-dist-clean' }, n) : null,
-        k ? h('span', { class: 'wd-dist-hint', title: `${k} with hints` }, `💡${k}`) : null);
+        k ? h('span', { class: 'wd-dist-hint', title: t('withHints', { n: k }) }, `💡${k}`) : null);
       bar.style.width = `${Math.max(8, ((n + k) / max) * 100)}%`;
       if (n && k) bar.querySelector('.wd-dist-clean').style.flexGrow = n;
       if (k) bar.querySelector('.wd-dist-hint').style.flexGrow = k;
       return h('li', {}, h('span', { class: 'wd-dist-n' }, i + 1), bar);
     })),
-    s.hinted ? h('p', { class: 'wd-dist-key' }, h('span', { class: 'wd-key-swatch' }), ' without hints   ', h('span', { class: 'wd-key-swatch is-hint' }), ' 💡 with hints') : null);
+    s.hinted ? h('p', { class: 'wd-dist-key' }, h('span', { class: 'wd-key-swatch' }), t('keyClean'), h('span', { class: 'wd-key-swatch is-hint' }), t('keyHint')) : null);
 }
 
 function showResult({ statsOnly = false } = {}) {
@@ -396,23 +480,23 @@ function showResult({ statsOnly = false } = {}) {
   const actions = $('result-actions');
   actions.replaceChildren();
   if (statsOnly || !game.done) {
-    $('result-eyebrow').textContent = 'statistics';
-    $('result-title').textContent = 'Your daily record';
+    $('result-eyebrow').textContent = t('statsEyebrow');
+    $('result-title').textContent = t('statsTitle');
     fill($('result-body'), statsBlock());
   } else {
     const used = game.usedHints ?? game.hints ?? 0;
-    $('result-eyebrow').textContent = (game.won ? `solved in ${game.guesses.length}/${TRIES}` : 'out of guesses') + (used ? ` · ${used} hint${used === 1 ? '' : 's'}` : ' · no hints');
+    $('result-eyebrow').textContent = (game.won ? t('solvedIn', { n: game.guesses.length, tries: TRIES }) : t('lost')) + t('usedHints', { n: used });
     $('result-title').textContent = game.won ? ['天才！', '見事！', 'すごい！', 'いいね！', 'よし！', 'ナイス！', 'ふう…', 'セーフ！'][game.guesses.length - 1] : 'ざんねん…';
     fill($('result-body'), 
       h('div', { class: 'wd-answer' },
         h('p', { class: 'wd-answer-word', lang: 'ja' }, info.w),
         h('p', { class: 'wd-answer-reading', lang: 'ja' }, info.r, h('span', { class: 'wd-muted' }, ` · ${romaji(info.r)}`)),
-        info.m ? h('p', { class: 'wd-answer-meaning' }, info.m) : null),
+        info.m && settings.meaning ? h('p', { class: 'wd-answer-meaning', lang: 'en' }, info.m) : null),
       game.mode === 'daily' ? statsBlock() : null,
       game.mode === 'daily' ? h('p', { class: 'wd-next', id: 'next-in' }) : null);
-    actions.append(h('button', { type: 'button', class: 'btn btn-primary', onclick: share }, 'Copy result'));
-    if (game.mode === 'practice') actions.append(h('button', { type: 'button', class: 'btn-link', onclick: () => start({ fresh: true }) }, 'Next word →'));
-    else actions.append(h('button', { type: 'button', class: 'btn-link', onclick: () => { settings.mode = 'practice'; save(); start(); } }, 'Keep playing in practice →'));
+    actions.append(h('button', { type: 'button', class: 'btn btn-primary', onclick: share }, t('copy')));
+    if (game.mode === 'practice') actions.append(h('button', { type: 'button', class: 'btn-link', onclick: () => start({ fresh: true }) }, t('nextWord')));
+    else actions.append(h('button', { type: 'button', class: 'btn-link', onclick: () => { settings.mode = 'practice'; save(); start(); } }, t('keepPlaying')));
     tickCountdown();
   }
   $('result').hidden = false;
@@ -427,18 +511,18 @@ function tickCountdown() {
     const now = new Date();
     const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     const s = Math.max(0, Math.floor((next - now) / 1000));
-    el.textContent = `Next daily word in ${String(Math.floor(s / 3600)).padStart(2, '0')}:${String(Math.floor((s % 3600) / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+    el.textContent = t('nextIn', { time: `${String(Math.floor(s / 3600)).padStart(2, '0')}:${String(Math.floor((s % 3600) / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}` });
   };
   run();
   countdown = setInterval(run, 1000);
 }
 
 function share() {
-  const head = game.mode === 'daily' ? `Kana Wordle #${game.day} ${LEVEL_NAMES[game.level]} ${game.len}` : `Kana Wordle practice ${LEVEL_NAMES[game.level]} ${game.len}`;
+  const head = game.mode === 'daily' ? t('shareDaily', { day: game.day, level: LEVEL_NAME(game.level), len: game.len }) : t('sharePractice', { level: LEVEL_NAME(game.level), len: game.len });
   const grid = game.guesses.map((g) => score(g, game.answer).map((m) => EMOJI[m]).join('')).join('\n');
   const hints = game.hints ? ` ${'💡'.repeat(game.hints)}` : '';
   const text = `${head} ${game.won ? game.guesses.length : 'X'}/${TRIES}${settings.hard ? '*' : ''}${hints}\n${grid}\nhttps://www.jareddesu.com/tools/wordle/`;
-  (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => toast('Copied. Paste it anywhere.'), () => toast(text));
+  (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => toast(t('copied')), () => toast(text));
 }
 
 // ---------------------------------------------------------------- misc
@@ -461,18 +545,34 @@ $('btn-settings').addEventListener('click', () => { $('settings').hidden = false
   $(id).addEventListener('click', (e) => { if (e.target === e.currentTarget) closeOverlays(); });
   $(`${id}-close`).addEventListener('click', closeOverlays);
 });
-[['opt-hard', 'hard'], ['opt-any', 'any'], ['opt-romaji', 'romaji'], ['opt-notheme', 'notheme']].forEach(([id, k]) => {
+[['opt-hard', 'hard'], ['opt-any', 'any'], ['opt-romaji', 'romaji'], ['opt-notheme', 'notheme'], ['opt-nohints', 'nohints'], ['opt-meaning', 'meaning']].forEach(([id, k]) => {
   $(id).checked = Boolean(settings[k]);
   $(id).addEventListener('change', (e) => {
-    if (k === 'hard' && game && game.guesses.length && !game.done) { e.target.checked = Boolean(settings.hard); toast('Change hard mode before your first guess.'); return; }
-    settings[k] = e.target.checked; save(); if (k === 'romaji') renderKeys(); if (k === 'notheme' && game) renderHints();
+    if (k === 'hard' && game && game.guesses.length && !game.done) { e.target.checked = Boolean(settings.hard); toast(t('hardLate')); return; }
+    settings[k] = e.target.checked; save(); if (k === 'romaji') renderKeys(); if ((k === 'notheme' || k === 'nohints') && game) renderHints();
   });
 });
 const ime = $('ime');
 ime.addEventListener('keydown', onKey);
 ime.addEventListener('compositionend', (e) => { for (const ch of e.data || '') add(ch); ime.value = ''; });
 ime.addEventListener('input', (e) => { if (!e.isComposing && ime.value) { for (const ch of ime.value) add(ch); ime.value = ''; } });
-document.addEventListener('keydown', (e) => { if (e.target === ime || e.target.closest('input, select, textarea, button')) return; onKey(e); });
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && (!$('result').hidden || !$('settings').hidden)) { closeOverlays(); return; }
+  if (e.target === ime || e.target.closest('input, select, textarea, button')) return;
+  onKey(e);
+});
 $('board').addEventListener('click', () => { if (!window.matchMedia('(pointer: coarse)').matches) ime.focus({ preventScroll: true }); });
 
+// Language switch: redraw everything that has text in it
+document.querySelectorAll('[data-lang-seg] button').forEach((b) => b.addEventListener('click', () => {
+  setLang(b.dataset.lang);
+  t.apply();
+  if (!game) return;
+  renderTitle();
+  renderHints();
+  renderBoard();
+  renderKeys();
+}));
+
+t.apply();
 start();
