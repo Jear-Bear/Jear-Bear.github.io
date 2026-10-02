@@ -161,3 +161,8 @@
 :root[data-theme="dark"] .wd-key.is-absent { background: #161412; color: rgba(255, 255, 255, 0.4); }
 :root[data-theme="dark"] .wd-dist-hint { background: repeating-linear-gradient(135deg, #4d463d 0 6px, #433d35 6px 12px); }
 :root[data-theme="dark"] .wd-key-swatch.is-hint { background: repeating-linear-gradient(135deg, #4d463d 0 3px, #433d35 3px 6px); }
+
+/* ---------------------------------------------------------------- language */
+html[data-ui="ja"] [data-ui-only="en"], html:not([data-ui="ja"]) [data-ui-only="ja"] { display: none !important; }
+.wd-set-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 0 12px; border-bottom: 1px solid var(--border); }
+.wd-toggle strong { color: var(--ink); font-weight: 600; }

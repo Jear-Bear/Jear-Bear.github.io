@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <script>/* theme: set before paint (auto follows the system) */(function(){var d=document.documentElement,k='jareddesu.theme',m=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)');function p(){try{return localStorage.getItem(k)||'auto'}catch(e){return'auto'}}function a(){var t=p();d.dataset.theme=t==='light'||t==='dark'?t:(m&&m.matches?'dark':'light');d.dataset.themePref=t}a();if(m&&m.addEventListener)m.addEventListener('change',a);window.jdTheme={get:p,set:function(t){try{t==='auto'?localStorage.removeItem(k):localStorage.setItem(k,t)}catch(e){}a()}}})();</script>
+  <script>/* games: interface language before paint */try{if(localStorage.getItem('jareddesu.games.lang')==='ja'){document.documentElement.dataset.ui='ja';document.documentElement.lang='ja'}}catch(e){}</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
   <title>Kana Wordle · Jared P.</title>
   <meta name="description" content="Guess the hidden Japanese word in hiragana. A new 4-kana and 5-kana word every day at beginner (N5–N4), intermediate (N3–N2) or advanced (N1+) level, plus unlimited practice." />
@@ -16,7 +17,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Klee+One:wght@600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="../../styles/base.css?v=4">
-  <link rel="stylesheet" href="../../styles/wordle.css?v=4">
+  <link rel="stylesheet" href="../../styles/wordle.css?v=5">
   <!-- Cloudflare Web Analytics (cookieless) -->
   <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
 </head>
@@ -66,8 +67,12 @@
     <div class="container wd">
       <header class="page-head">
         <div class="page-head-copy">
-          <h1 class="page-title">Kana <em>Wordle</em>.</h1>
-          <p class="page-intro">
+          <h1 class="page-title"><span data-ui-only="en">Kana <em>Wordle</em>.</span><span data-ui-only="ja" lang="ja">かな<em>Wordle</em>。</span></h1>
+          <p class="page-intro" data-ui-only="ja" lang="ja">
+            ひらがなで隠れた単語を当てよう。緑は文字も位置も正解、黄色は単語のどこか別の位置にある文字、
+            青は濁点ひとつ違い（か と が）。毎日新しい単語が出ます。練習モードなら何回でも遊べます。
+          </p>
+          <p class="page-intro" data-ui-only="en">
             Guess the hidden word in hiragana. Green is the right kana in the right spot, yellow is in the
             word somewhere else, and blue means you're one dakuten away (か vs が). A new word every day,
             or practice as much as you like.
@@ -76,55 +81,66 @@
         <p class="page-v"><span class="page-v-ja" lang="ja">言葉</span><span class="page-v-en">Wordle</span></p>
       </header>
 
-      <div class="wd-bar" role="toolbar" aria-label="Game options">
-        <div class="wd-seg" role="radiogroup" aria-label="Mode" id="mode-seg">
-          <button type="button" role="radio" data-mode="daily">Daily</button>
-          <button type="button" role="radio" data-mode="practice">Practice</button>
+      <div class="wd-bar" role="toolbar" aria-label="Game options" data-t-aria="bar">
+        <div class="wd-seg" role="radiogroup" aria-label="Mode" data-t-aria="modeGroup" id="mode-seg">
+          <button type="button" role="radio" data-mode="daily" data-t="mode.daily">Daily</button>
+          <button type="button" role="radio" data-mode="practice" data-t="mode.practice">Practice</button>
         </div>
-        <div class="wd-seg" role="radiogroup" aria-label="Word length" id="len-seg">
-          <button type="button" role="radio" data-len="4">4 kana</button>
-          <button type="button" role="radio" data-len="5">5 kana</button>
+        <div class="wd-seg" role="radiogroup" aria-label="Word length" data-t-aria="lenGroup" id="len-seg">
+          <button type="button" role="radio" data-len="4" data-t="len4">4 kana</button>
+          <button type="button" role="radio" data-len="5" data-t="len5">5 kana</button>
         </div>
         <label class="wd-select-wrap">
-          <span class="wd-label">Level</span>
+          <span class="wd-label" data-t="level">Level</span>
           <select id="level" class="wd-select">
-            <option value="beginner">Beginner · N5–N4</option>
-            <option value="intermediate">Intermediate · N3–N2</option>
-            <option value="advanced">Advanced · N1+</option>
+            <option value="beginner" data-t="opt.beginner">Beginner · N5–N4</option>
+            <option value="intermediate" data-t="opt.intermediate">Intermediate · N3–N2</option>
+            <option value="advanced" data-t="opt.advanced">Advanced · N1+</option>
           </select>
         </label>
         <div class="wd-bar-end">
-          <button type="button" class="wd-icon" id="btn-stats" aria-label="Statistics">統</button>
-          <button type="button" class="wd-icon" id="btn-settings" aria-label="Settings">⚙</button>
+          <button type="button" class="wd-icon" id="btn-stats" aria-label="Statistics" data-t-aria="statistics">統</button>
+          <button type="button" class="wd-icon" id="btn-settings" aria-label="Settings" data-t-aria="settings">⚙</button>
         </div>
       </div>
 
       <div class="wd-game">
         <p class="wd-title" id="title"></p>
         <div class="wd-hints" id="hints" aria-live="polite"></div>
-        <div class="wd-board" id="board" role="grid" aria-label="Guesses"></div>
-        <div class="wd-keys" id="keys" aria-label="Kana keyboard"></div>
-        <input class="wd-ime" id="ime" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Type your guess (romaji or kana)">
+        <div class="wd-board" id="board" role="grid" aria-label="Guesses" data-t-aria="board"></div>
+        <div class="wd-keys" id="keys" aria-label="Kana keyboard" data-t-aria="keys"></div>
+        <input class="wd-ime" id="ime" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Type your guess (romaji or kana)" data-t-aria="ime">
       </div>
 
       <section class="sec wd-section">
         <p class="sec-mark"><span class="sec-num" lang="ja">遊</span><span class="sec-label">How to play / <span lang="ja"><ruby>遊<rt>あそ</rt></ruby>び<ruby>方<rt>かた</rt></ruby></span></span></p>
-        <ul class="wd-howto">
+        <ul class="wd-howto" data-ui-only="en">
           <li><strong>Guess the word</strong> in 8 tries. Each guess must be a real word (any level counts).</li>
           <li><span class="wd-chip is-correct" lang="ja">か</span> right kana, right spot. <span class="wd-chip is-present" lang="ja">か</span> in the word, wrong spot. <span class="wd-chip is-close" lang="ja">か</span> right spot, but the answer has が (or ぱ, ば…). <span class="wd-chip is-absent" lang="ja">か</span> not in the word.</li>
           <li><strong>Stuck?</strong> The theme hints at the word's topic or type. Open up to two hints: the English meaning, then one kana. Hints show as 💡 in your shared result.</li>
+          <li><strong>Settings</strong> (⚙) switch the page to Japanese, hide the theme or the hint buttons, and choose whether the meaning shows at the end.</li>
           <li><strong>Small kana are full size</strong> (きゃ → きや) and ー counts as a kana.</li>
           <li><strong>Type romaji</strong> (ka, kya, nn) or use the kana keys; <span lang="ja">゛゜</span> adds a dakuten to the last kana.</li>
           <li>Beginner answers are JLPT N5–N4 words, intermediate N3–N2, advanced N1 plus slang and pop culture. The daily word is the same for everyone.</li>
         </ul>
-        <p class="wd-credit">Words: JLPT vocabulary from <a href="https://github.com/jamsinclair/open-anki-jlpt-decks" target="_blank" rel="noopener">open-anki-jlpt-decks</a> (MIT) and common words from <a href="https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project" target="_blank" rel="noopener">JMdict</a> (EDRDG, CC BY-SA 4.0).</p>
+        <ul class="wd-howto" data-ui-only="ja" lang="ja">
+          <li><strong>8回以内に</strong>単語を当てよう。回答は実在する単語でなければいけません（どのレベルの単語でもOK）。</li>
+          <li><span class="wd-chip is-correct">か</span> 文字も位置も正解。<span class="wd-chip is-present">か</span> 単語に入っているが位置が違う。<span class="wd-chip is-close">か</span> 位置は合っているが、答えは「が」（または「ぱ」「ば」など）。<span class="wd-chip is-absent">か</span> 単語に入っていない。</li>
+          <li><strong>困ったら</strong>テーマを見てみよう。単語のジャンルや品詞がわかります。ヒントは2つまで：英語の意味、次にかな一文字。使ったヒントは共有する結果に💡で表示されます。</li>
+          <li><strong>設定</strong>（⚙）で、英語表示への切り替え、テーマやヒントボタンの非表示、最後に意味を表示するかを選べます。</li>
+          <li><strong>小さいかなは大きく書きます</strong>（きゃ → きや）。「ー」も1文字です。</li>
+          <li><strong>ローマ字</strong>（ka、kya、nn）かかなキーで入力します。<span>゛゜</span>で最後のかなに濁点・半濁点をつけます。</li>
+          <li>初級はJLPT N5–N4、中級はN3–N2、上級はN1の単語にスラングやポップカルチャーも。デイリーの単語はみんな同じです。</li>
+        </ul>
+        <p class="wd-credit" data-ui-only="ja" lang="ja">単語：<a href="https://github.com/jamsinclair/open-anki-jlpt-decks" target="_blank" rel="noopener">open-anki-jlpt-decks</a>（MIT）のJLPT語彙と、<a href="https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project" target="_blank" rel="noopener">JMdict</a>（EDRDG、CC BY-SA 4.0）のよく使う単語。</p>
+        <p class="wd-credit" data-ui-only="en">Words: JLPT vocabulary from <a href="https://github.com/jamsinclair/open-anki-jlpt-decks" target="_blank" rel="noopener">open-anki-jlpt-decks</a> (MIT) and common words from <a href="https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project" target="_blank" rel="noopener">JMdict</a> (EDRDG, CC BY-SA 4.0).</p>
       </section>
     </div>
   </main>
 
   <div class="wd-overlay" id="result" hidden>
     <div class="wd-sheet" role="dialog" aria-modal="true" aria-labelledby="result-title">
-      <button type="button" class="wd-close" id="result-close" aria-label="Close">×</button>
+      <button type="button" class="wd-close" id="result-close" aria-label="Close" data-t-aria="close">×</button>
       <p class="eyebrow" id="result-eyebrow"></p>
       <h2 class="wd-sheet-title" id="result-title"></h2>
       <div id="result-body"></div>
@@ -133,12 +149,21 @@
   </div>
   <div class="wd-overlay" id="settings" hidden>
     <div class="wd-sheet" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-      <button type="button" class="wd-close" id="settings-close" aria-label="Close">×</button>
-      <h2 class="wd-sheet-title" id="settings-title">Settings</h2>
-      <label class="wd-toggle"><input type="checkbox" id="opt-hard"> <span><strong>Hard mode</strong>: green and yellow kana must be used in later guesses.</span></label>
-      <label class="wd-toggle"><input type="checkbox" id="opt-any"> <span><strong>Accept any kana</strong>: guesses don't have to be dictionary words.</span></label>
-      <label class="wd-toggle"><input type="checkbox" id="opt-notheme"> <span><strong>Hide the theme</strong> for a harder game.</span></label>
-      <label class="wd-toggle"><input type="checkbox" id="opt-romaji"> <span><strong>Show romaji</strong> under the kana keys.</span></label>
+      <button type="button" class="wd-close" id="settings-close" aria-label="Close" data-t-aria="close">×</button>
+      <h2 class="wd-sheet-title" id="settings-title" data-t="set.title">Settings</h2>
+      <div class="wd-set-row">
+        <span class="wd-label" data-t="set.lang">Language</span>
+        <div class="wd-seg" role="radiogroup" aria-label="Language" data-t-aria="set.lang" data-lang-seg>
+          <button type="button" role="radio" data-lang="en">English</button>
+          <button type="button" role="radio" data-lang="ja" lang="ja">日本語</button>
+        </div>
+      </div>
+      <label class="wd-toggle"><input type="checkbox" id="opt-hard"> <span><strong data-t="set.hard">Hard mode</strong> <span data-t="set.hard.d">Green and yellow kana must be used in later guesses.</span></span></label>
+      <label class="wd-toggle"><input type="checkbox" id="opt-any"> <span><strong data-t="set.any">Accept any kana</strong> <span data-t="set.any.d">Guesses don't have to be dictionary words.</span></span></label>
+      <label class="wd-toggle"><input type="checkbox" id="opt-notheme"> <span><strong data-t="set.notheme">Hide the theme</strong> <span data-t="set.notheme.d">for a harder game.</span></span></label>
+      <label class="wd-toggle"><input type="checkbox" id="opt-nohints"> <span><strong data-t="set.nohints">Hide the hint buttons</strong> <span data-t="set.nohints.d">so you can't tap one by accident.</span></span></label>
+      <label class="wd-toggle"><input type="checkbox" id="opt-meaning"> <span><strong data-t="set.meaning">Show the meaning</strong> <span data-t="set.meaning.d">of the answer when the game ends.</span></span></label>
+      <label class="wd-toggle"><input type="checkbox" id="opt-romaji"> <span><strong data-t="set.romaji">Show romaji</strong> <span data-t="set.romaji.d">under the kana keys.</span></span></label>
     </div>
   </div>
   <div class="wd-toast" id="toast" role="status" aria-live="polite" hidden></div>
@@ -171,6 +196,6 @@
   </footer>
 
   <script src="../../scripts/site.js?v=3"></script>
-  <script type="module" src="../../scripts/wordle/app.js?v=4"></script>
+  <script type="module" src="../../scripts/wordle/app.js?v=5"></script>
 </body>
 </html>
