@@ -45,7 +45,7 @@ same date always produces the same grids.
 
 ```
 node scripts/crossword/cli.mjs words           # rebuild data/crossword/words.json (after editing extra-words.json)
-node scripts/crossword/cli.mjs status 3        # which of today + the next 2 days (Central time) have no puzzles
+node scripts/crossword/cli.mjs status 3        # which of the next 3 days (from the earliest time zone) have no puzzles
 node scripts/crossword/cli.mjs draft DATE      # build DATE's 6 puzzles into data/crossword/drafts/DATE.json
 node scripts/crossword/cli.mjs publish DATE    # check the clues, write data/crossword/puzzles/DATE.json
 node scripts/crossword/cli.mjs check           # re-check every published day
@@ -113,10 +113,18 @@ Daily Kana Crossword for jareddesu.com. Work in the Jear-Bear.github.io repo on 
 2. Open data/crossword/drafts/DATE.json. For each of its 6 puzzles, fill in "clue" for every entry and for the keyword. Follow "Clue style" in docs/crossword.md exactly: English only, crossword-style (puns, misdirection, fill-in-the-blanks, pop culture), matched to the answer's part of speech and register, specific enough to tell apart homophones, pitched to the puzzle's level, under 100 characters. Use "word", "reading" and "meaning" to understand each answer; never put the answer's kana, kanji or romaji in a clue. Read your clues back once and sharpen any that are flat or ambiguous.
 3. Run: node scripts/crossword/cli.mjs publish DATE. If it lists problems, fix those clues and publish again. Then run: node scripts/crossword/cli.mjs check.
 4. Optional, at most 5 per run: if a fun, well-known word would make future puzzles better (food, anime, games, memes, folklore, slang), add it to data/crossword/extra-words.json with word, reading (hiragana, ー allowed), meaning, level and tags, then run: node scripts/crossword/cli.mjs words.
-5. Commit only data/crossword/ (never drafts) to a new branch named crossword-DATE, open a pull request titled "Crossword: DATE", and merge it.
+5. Commit only data/crossword/ (never drafts) as Jared Perlmutter <jperlmutter1@gmail.com> with no co-author lines, to a new branch named crossword-DATE, open a pull request titled "Crossword: DATE", and merge it.
 Reply in one line with the dates published.
 ```
 
-If a run is missed, the next one catches up (it checks today and the next two
-days). The site shows today's puzzle by the visitor's local date, and falls
-back to the latest published day.
+**When puzzles change.** Like Wordle, each visitor gets a new puzzle at their
+own local midnight. (The NYT crossword instead releases one puzzle worldwide
+at 10 PM Eastern.) For that to work everywhere, a day's puzzles must be
+published before that day starts in the earliest time zone, UTC+14 (Kiribati),
+which is about 19 hours before it starts in Central time. So `status` counts
+from Kiribati's date and the routine keeps today plus the next two days
+published there. Running 2 days per run, it catches up after a missed day,
+and the time of day it runs doesn't matter. Future days are published early
+but stay hidden in the player until the visitor's own date reaches them; an
+open page switches to the new puzzle at midnight (unless a puzzle is half
+done) and the solved card counts down to it.

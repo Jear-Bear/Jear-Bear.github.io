@@ -151,3 +151,4 @@
 .cw-date-list button.is-on { font-weight: 600; }
 .cw-date-done { color: var(--page-ink); font-size: 12px; }
 .cw-toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 300; max-width: min(420px, calc(100vw - 32px)); padding: 12px 16px; background: var(--ink); color: var(--paper); font-size: 14px; white-space: pre-line; }
+.cw-next { font-size: 13px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
