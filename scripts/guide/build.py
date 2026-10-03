@@ -104,7 +104,7 @@ def expand(body, root):
         t = html.escape(title, quote=True)
         return (
             f'<div class="g-yt" data-id="{vid}"><button type="button" class="g-yt-btn" aria-label="Play video: {t}">'
-            f'<img src="https://i.ytimg.com/vi/{vid}/hqdefault.jpg" alt="" loading="lazy" width="480" height="360">'
+            f'<img src="https://i.ytimg.com/vi/{vid}/maxresdefault.jpg" alt="" loading="lazy" width="1280" height="720">'
             f'<span class="g-yt-play" aria-hidden="true"></span></button>'
             f'<p class="g-yt-cap"><span class="g-yt-tag">Video</span> {title}</p></div>'
         )
