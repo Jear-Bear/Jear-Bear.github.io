@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script>/* theme: set before paint (auto follows the system) */(function(){var d=document.documentElement,k='jareddesu.theme',m=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)');function p(){try{return localStorage.getItem(k)||'auto'}catch(e){return'auto'}}function a(){var t=p();d.dataset.theme=t==='light'||t==='dark'?t:(m&&m.matches?'dark':'light');d.dataset.themePref=t}a();if(m&&m.addEventListener)m.addEventListener('change',a);window.jdTheme={get:p,set:function(t){try{t==='auto'?localStorage.removeItem(k):localStorage.setItem(k,t)}catch(e){}a()}}})();</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>SRS without becoming an Anki drone · Jared’s Ultimate Japanese Guide</title>
+  <meta name="description" content="How many new cards a day, which words are worth a card, what to do about a backlog, and why flashcards should fill gaps, not run your life." />
+  <link rel="canonical" href="https://www.jareddesu.com/guide/srs/" />
+  <meta property="og:title" content="SRS without becoming an Anki drone · Jared’s Ultimate Japanese Guide" />
+  <meta property="og:description" content="How many new cards a day, which words are worth a card, what to do about a backlog, and why flashcards should fill gaps, not run your life." />
+  <meta property="og:type" content="article" />
+
+  <link rel="icon" href="../../images/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../../styles/base.css?v=4">
+  <link rel="stylesheet" href="../../styles/guide.css?v=1">
+  <!-- Cloudflare Web Analytics (cookieless) -->
+  <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
+</head>
+<body data-page="guide" data-chapter="srs">
+  <div class="g-progress" aria-hidden="true"><span></span></div>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="masthead">
+    <a href="../../" class="mark" aria-label="まだまだJared, home">
+      <span class="mark-ja" lang="ja">まだまだ</span>
+      <span class="mark-en">Jared</span>
+    </a>
+    <nav class="masthead-nav" aria-label="Site">
+      <ul>
+        <li><a href="../../about/">About</a></li>
+        <li><a href="../../projects/">Projects</a></li>
+        <li><a href="../../tools/">Tools</a></li>
+        <li><a href="../../guide/">Guide</a></li>
+        <li><a href="../../sponsorships/">Sponsorships</a></li>
+        <li><a href="../../contact/">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Menu</button>
+  </header>
+
+  <div class="menu-sheet" id="site-menu" hidden>
+    <div class="menu-sheet-head">
+      <a href="../../" class="mark" aria-label="まだまだJared, home">
+        <span class="mark-ja" lang="ja">まだまだ</span>
+        <span class="mark-en">Jared</span>
+      </a>
+      <button class="menu-toggle menu-close" type="button">Close</button>
+    </div>
+    <nav aria-label="Site">
+      <ul>
+        <li><a href="../../about/">About <span lang="ja">自己紹介</span></a></li>
+        <li><a href="../../projects/">Projects <span lang="ja">制作</span></a></li>
+        <li><a href="../../tools/">Tools <span lang="ja">ツール</span></a></li>
+        <li><a href="../../guide/">Guide <span lang="ja">ガイド</span></a></li>
+        <li><a href="../../sponsorships/">Sponsorships <span lang="ja">スポンサー</span></a></li>
+        <li><a href="../../contact/">Contact <span lang="ja">お問い合わせ</span></a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <main id="main" class="g-main">
+    <div class="container g-wrap">
+      <aside class="g-side" aria-label="Guide chapters">
+        <a class="g-side-home" href="../">Jared’s Ultimate Japanese Guide</a>
+        <div class="g-side-progress"><span class="g-side-bar"><span></span></span><span class="g-side-count">0 / 14</span></div>
+        <ol class="g-toc">
+<li data-slug="start-here"><a href="../../guide/start-here/"><span class="g-toc-n" lang="ja">始</span><span class="g-toc-t">Start here</span><span class="g-toc-check" aria-hidden="true"></span></a></li>
+<li data-slug="your-why"><a href="../../guide/your-why/"><span class="g-toc-n" lang="ja">志</span><span class="g-toc-t">Find your why</span><span class="g-toc-check" aria-hidden="true"></span></a></li>
+<li data-slug="kana"><a href="../../guide/kana/"><span class="g-toc-n" lang="ja">仮</span><span class="g-toc-t">Kana and typing</span><span class="g-toc-check" aria-hidden="true"></span></a></li>
+<li data-slug="starter-kit"><a href="../../guide/starter-kit/"><span class="g-toc-n" lang="ja">基</span><span class="g-toc-t">The starter kit</span><span class="g-toc-check" aria-hidden="true"></span></a></li>
+<li data-slug="toolbox"><a href="../../guide/toolbox/"><span class="g-toc-n" lang="ja">具</span><span class="g-toc-t">The toolbox</span><span class="g-toc-check" aria-hidden="true"></span></a></li>
+<li data-slug="srs"><a href="../../guide/srs/" aria-current="page"><span class="g-toc-n" lang="ja">覚</span><span class="g-toc-t">SRS without becoming an Anki drone</span><span class="g-toc-check" aria-hidden="true"></span></a></li>
+<li data-slug="immersion"><a href="../../guide/immersion/"><span class="g-toc-n" lang="ja">浸</span><span class="g-toc-t">Immersion that actually works</span><span class="g-toc-check" aria-hidden="true"></span></a></li>
+<li data-slug="reading"><a href="../../guide/reading/"><span class="g-toc-n" lang="ja">読</span><span class="g-toc-t">Reading</span><span class="g-toc-check" aria-hidden="true"></span></a></li>
+<li data-slug="kanji"><a href="../../guide/kanji/"><span class="g-toc-n" lang="ja">字</span><span class="g-toc-t">Kanji without the wall</span><span class="g-toc-check" aria-hidden="true"></span></a></li>
+<li data-slug="grammar"><a href="../../guide/grammar/"><span class="g-toc-n" lang="ja">文</span><span class="g-toc-t">Grammar, going monolingual, and thinking in Japanese</span><span class="g-toc-check" aria-hidden="true"></span></a></li>
+<li data-slug="speaking"><a href="../../guide/speaking/"><span class="g-toc-n" lang="ja">話</span><span class="g-toc-t">Speaking (and not dying of embarrassment)</span><span class="g-toc-check" aria-hidden="true"></span></a></li>
+<li data-slug="your-life-in-japanese"><a href="../../guide/your-life-in-japanese/"><span class="g-toc-n" lang="ja">暮</span><span class="g-toc-t">Make your life Japanese</span><span class="g-toc-check" aria-hidden="true"></span></a></li>
+<li data-slug="staying-in-it"><a href="../../guide/staying-in-it/"><span class="g-toc-n" lang="ja">続</span><span class="g-toc-t">Staying in it</span><span class="g-toc-check" aria-hidden="true"></span></a></li>
+<li data-slug="roadmap"><a href="../../guide/roadmap/"><span class="g-toc-n" lang="ja">道</span><span class="g-toc-t">Roadmap and resources</span><span class="g-toc-check" aria-hidden="true"></span></a></li>
+        </ol>
+        <p class="g-side-onpage-label">On this page</p>
+        <ol class="g-onpage" id="onpage"></ol>
+      </aside>
+
+      <article class="g-article" data-slug="srs">
+        <header class="g-hero">
+          <p class="g-hero-kicker"><a href="../">Jared’s Ultimate Japanese Guide</a> <span aria-hidden="true">·</span> Chapter 5 <span lang="ja">第五章</span></p>
+          <h1 class="g-hero-title">SRS without becoming an Anki drone</h1>
+          <p class="g-hero-ja" lang="ja">覚える仕組み</p>
+          <p class="g-hero-lede">How many new cards a day, which words are worth a card, what to do about a backlog, and why flashcards should fill gaps, not run your life.</p>
+          <p class="g-hero-meta"><span>11 min read</span><span>Beginner → Intermediate</span><span class="g-hero-done" hidden>✓ Read</span></p>
+          <span class="g-hero-kanji" aria-hidden="true" lang="ja">覚</span>
+        </header>
+
+        <div class="g-body">
+
+
+<blockquote class="g-quote"><p>You don’t need to memorize harder. You just need a system that remembers for you.</p><cite>— me</cite></blockquote>
+
+<p>I used to think the more words I memorized in a day, the faster I’d get good. So I crammed. Before my JLPT N2, I memorized 300 words the night before. Did it help the next day? Yes. Did I remember them the next week? Not a chance. That’s short-term memory. An SRS is how you turn the words you meet into long-term memory without burning out.</p>
+
+<h2>How many new cards a day?</h2>
+
+<p>Here’s the trap: every new card you add today turns into reviews for months. Ten new cards a day isn’t ten cards a day. Play with it:</p>
+
+<div data-widget="reviews"></div>
+
+<aside class="g-callout g-story">
+  <p class="g-callout-label"><span class="g-stamp">話</span>Story time</p>
+  <p>When I first started with Anki, I did 5 new cards a day and thought, “This is way too easy.” So I bumped it to <strong>50</strong>. A few weeks later I had hundreds of reviews every morning, started dreading the app, burned out, and didn’t touch Japanese for <strong>three months</strong>. Going fast cost me way more time than going slow would have.</p>
+</aside>
+
+<p>What I recommend:</p>
+<ul>
+  <li><strong>Start at 5 a day</strong> for a week or even a month.</li>
+  <li><strong>Go up slowly</strong>, 5 at a time, only when your daily reviews feel comfortable.</li>
+  <li><strong>Most people land around 10–20.</strong> Right now I do 10 new words plus 5 new grammar cards a day while I prep for the N1.</li>
+  <li><strong>Aim for 80–90% retention.</strong> If you’re passing fewer than about 75% of your reviews, you’re adding too much. Slow down for a week.</li>
+  <li><strong>Watch for the signs.</strong> Staying up past your bedtime doing reviews you’re not enjoying? Close the app and go to sleep. Seriously.</li>
+</ul>
+
+<h2>Which words are worth a card?</h2>
+
+<p>Two quick checks before you hit the mine button:</p>
+
+<ol>
+  <li><strong>Is the sentence i+1?</strong> “i+1” means you know every word in the sentence except one. All the other words become context that tells you what the new one means. If a sentence has five words you don’t know, the card will be a slog. Skip it and find a better one; there are a million more.</li>
+  <li><strong>Is the word common?</strong> Check the frequency number in your popup. The average native speaker knows around 30,000 words; a word ranked #27,000 isn’t going to give you much bang for your buck yet.</li>
+</ol>
+
+<p>My rough rule:</p>
+<ul>
+  <li><strong>Beginner:</strong> mine words inside the <strong>top 10,000</strong>.</li>
+  <li><strong>Intermediate:</strong> most of what I mined sat between <strong>10,000 and 20,000</strong>. Less frequent, still really useful in everyday conversation.</li>
+  <li><strong>Advanced:</strong> whatever keeps showing up in <em>your</em> content. If you play a lot of JRPGs, fantasy words will be way more common for you than the list says.</li>
+</ul>
+
+<p>And if you think a word will stick easily and you get the meaning, there’s no real harm in adding it. These are rules of thumb, not laws.</p>
+
+<div data-widget="mine"></div>
+
+<h2>Don’t become an Anki drone</h2>
+
+<p>I used to be an Anki drone. Here’s what that looked like:</p>
+<ul>
+  <li>I’d see a card, think “oh, I know this word,” and hit Good without actually <em>reading the sentence</em>. Hundreds of reviews done, almost nothing learned.</li>
+  <li>I’d recognize words in the wild because I had cards for them, but still not understand the sentence. My only picture of each word came from one example sentence, and real Japanese kept using it in ways that didn’t fit.</li>
+</ul>
+
+<p>Some words click the first time you see them. Others need five or ten different sentences before you get the vibe. Take <span class="g-jp" lang="ja">抱く</span>: read <em>daku</em>, it means physically holding something; read <em>idaku</em>, it means harboring a feeling. With one card for one of them, you’ll overgeneralize and sound weird. Seeing a word fifteen times in fifteen different shows beats repping the same card fifteen times.</p>
+
+<p>Every time you see a word in the wild, your brain makes a guess at what it means, and the context either confirms it or corrects it. You see <span class="g-jp" lang="ja">食べる</span> in a sentence about sushi: confirmed, “to eat.” Then you see <span class="g-jp" lang="ja">食べていく</span> and wonder why this guy is eating money, look it up, and learn it also means “make a living.” Your mental model just got a little sharper. That never happens inside a flashcard.</p>
+
+<blockquote class="g-quote"><p>SRS has its place, but it shouldn’t be at the forefront of your language journey.</p><cite>— me, reacting to a “flashcards beat immersion” video</cite></blockquote>
+
+<h2>Flashcards vs immersion: how much of each?</h2>
+
+<p>It depends on your <strong>level</strong>:</p>
+<ul>
+  <li><strong>Beginner:</strong> more flashcards. You’re building the base vocabulary that makes immersion possible.</li>
+  <li><strong>Intermediate:</strong> still a good chunk, since you’re finding tons of unknown words. But immersion should already be most of your time.</li>
+  <li><strong>Advanced:</strong> mostly immersion. You run into fewer unknowns, so you need <em>more</em> hours of content to find them.</li>
+</ul>
+
+<p>Right now, less than 10% of my Japanese time goes to flashcards. Some days after work I’ll do 20 minutes of reviews and then just watch whatever I want. That’s not laziness; that <em>is</em> the method. I started Japanese because I found it beautiful, not to swipe cards like a zombie.</p>
+
+<h2>Backlogs and the “mine everything” question</h2>
+
+<p>At one point I was mining every unknown word I saw, and ended up with a <strong>4,600-card backlog</strong>. Every word in there was useful. They were my babies. I had separation anxiety. I deleted the whole thing anyway, and it felt <em>so</em> much better.</p>
+
+<p>If something’s rare or obscure, either skip it or mark it as known so it stops bugging you. It’ll come back later if it matters.</p>
+
+<aside class="g-callout g-friend">
+  <p class="g-callout-label"><span class="g-stamp">友</span>Honorable mention: Wyatt (Furretar)</p>
+  <p>My friend Wyatt mined <em>every</em> unknown word he ever came across, and he’s just cracked. I’m not sure I’d recommend it to most people (see: my backlog), but it’s proof that there’s more than one way up the mountain if you have the discipline for it.</p>
+</aside>
+
+<h2>Card tricks that help</h2>
+<ul>
+  <li><strong>Picture cards for nouns.</strong> A picture of a kid running late sticks better than the English “I’ve got to go.”</li>
+  <li><strong>Listening cards:</strong> audio on the front, word and definition on the back, if listening is your weak spot.</li>
+  <li><strong>Grammar cards:</strong> mine a sentence where the grammar point is the one unknown. Same i+1 rule.</li>
+  <li><strong>Personal memories stick.</strong> I’ll never forget <span class="g-jp" lang="ja">おなら</span> (fart) because of the anime scene I mined it from. Weird example, I know. Bear with me. Context is everything.</li>
+</ul>
+
+<div class="g-yt" data-id="JgIObAxLwMw"><button type="button" class="g-yt-btn" aria-label="Play video: How to ACTUALLY Memorize Japanese Vocab"><img src="https://i.ytimg.com/vi/JgIObAxLwMw/hqdefault.jpg" alt="" loading="lazy" width="480" height="360"><span class="g-yt-play" aria-hidden="true"></span></button><p class="g-yt-cap"><span class="g-yt-tag">Video</span> How to ACTUALLY Memorize Japanese Vocab</p></div>
+
+<aside class="g-callout g-tldr">
+  <p class="g-callout-label"><span class="g-stamp">要</span>TL;DR</p>
+  <ul>
+    <li>Start at 5 new cards a day. Most people settle around 10–20. Never 50.</li>
+    <li>Mine i+1 sentences with common words (top 10k as a beginner).</li>
+    <li>Actually read the sentence on every card.</li>
+    <li>Flashcards fill gaps; immersion builds the real understanding.</li>
+    <li>Delete a backlog that’s stressing you out. It’ll be fine.</li>
+  </ul>
+</aside>
+
+        </div>
+
+        <footer class="g-chapter-end">
+          <button type="button" class="g-done-btn" data-done="srs"><span class="g-done-box" aria-hidden="true"></span><span class="g-done-text">Mark this chapter as read</span></button>
+          <nav class="g-pn" aria-label="Chapters">
+            <a class="g-pn-card" href="../toolbox/"><span class="g-pn-label">← Previous</span><span class="g-pn-k" lang="ja">具</span><strong>The toolbox</strong></a>
+            <a class="g-pn-card" href="../immersion/"><span class="g-pn-label">Next →</span><span class="g-pn-k" lang="ja">浸</span><strong>Immersion that actually works</strong></a>
+          </nav>
+        </footer>
+      </article>
+    </div>
+  </main>
+
+  <footer class="colophon">
+    <nav class="colophon-links" aria-label="Footer">
+      <ul>
+        <li><a href="../../about/">About</a></li>
+        <li><a href="../../projects/">Projects</a></li>
+        <li><a href="../../tools/">Tools</a></li>
+        <li><a href="../../guide/">Guide</a></li>
+        <li><a href="../../sponsorships/">Sponsorships</a></li>
+        <li><a href="../../contact/">Contact</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a></li>
+        <li><a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a></li>
+        <li><a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a></li>
+        <li><a href="#">RSS</a></li>
+      </ul>
+    </nav>
+    <div class="colophon-box">
+      <p class="colophon-title" lang="ja">奥付</p>
+      <dl>
+        <div><dt>Site / <span lang="ja">サイト</span></dt><dd>jareddesu.com</dd></div>
+        <div><dt>Author / <span lang="ja">著者</span></dt><dd>Jared P. (<span lang="ja">まだまだ</span>Jared)</dd></div>
+        <div><dt>Published / <span lang="ja">発行</span></dt><dd>© 2026</dd></div>
+      </dl>
+    </div>
+  </footer>
+
+  <script src="../../scripts/site.js?v=3"></script>
+  <script type="module" src="../../scripts/guide/guide.js?v=1"></script>
+</body>
+</html>

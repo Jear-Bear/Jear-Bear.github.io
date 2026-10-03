@@ -1,0 +1,71 @@
+  <main id="main" class="g-main">
+    <div class="container">
+      <header class="g-hub-hero">
+        <p class="eyebrow">A free, interactive guide to learning Japanese through immersion</p>
+        <h1 class="g-hub-title">Jared’s Ultimate <em>Japanese</em> Guide.</h1>
+        <p class="g-hub-ja" lang="ja">日本語ガイド · 全{{count}}章</p>
+        <p class="g-hub-lede">
+          Everything I wish someone had told me before I wasted six years on textbooks, burned out four times,
+          and finally figured out how to actually get good at Japanese. It’s free, it’s in chapters, and
+          it remembers where you left off.
+        </p>
+        <div class="g-hub-actions">
+          <a class="btn btn-primary" href="{{first}}/">Start at chapter 0 →</a>
+          <span class="g-hub-progress">
+            <svg class="g-ring" viewBox="0 0 36 36" aria-hidden="true"><circle class="bg" cx="18" cy="18" r="15"/><circle class="fg" cx="18" cy="18" r="15" stroke-dasharray="94.25" stroke-dashoffset="94.25"/></svg>
+            <span><span data-read-count>0 of {{count}}</span> chapters read</span>
+          </span>
+        </div>
+        <p class="g-resume" id="g-resume"></p>
+        <div class="g-hub-why" id="g-hub-why"><small>YOUR WHY</small><q></q></div>
+        <span class="g-hub-stamp" aria-hidden="true" lang="ja">没入</span>
+      </header>
+
+      <div class="g-hub-stats">
+        <div class="g-hub-stat"><b><span data-count="4000" data-suffix="+">4,000+</span></b><span>hours of Japanese, and counting</span></div>
+        <div class="g-hub-stat"><b><span data-count="8">8</span> yrs</b><span>since my first hiragana (2 of them done right)</span></div>
+        <div class="g-hub-stat"><b>N2 → N1</b><span>passed N2 on try #3; N1 this December</span></div>
+        <div class="g-hub-stat"><b><span data-count="15">15</span>/day</b><span>new cards right now (10 words + 5 grammar)</span></div>
+      </div>
+
+      <section class="sec">
+        <p class="sec-mark"><span class="sec-num" lang="ja">読</span><span class="sec-label">How to read this / <span lang="ja">使い方</span></span></p>
+        <div>
+          <p class="lede" style="margin-bottom:1em">
+            The chapters go roughly in the order you’ll need them, from your very first kana to keeping
+            yourself going years in. Total beginner? Start at chapter 0 and go in order. Already
+            immersing? Jump to whatever’s bugging you; every chapter stands on its own.
+          </p>
+          <p class="lede">
+            There’s stuff to poke at in every chapter: calculators, little games, a pitch-accent viewer,
+            a conversation simulator. Your progress, checklists, and the “why” you pin in chapter 1 are saved
+            in your browser. No account, no tracking, no course to sell you at the end. Knowledge is free.
+          </p>
+        </div>
+      </section>
+
+      <ul class="g-cards" aria-label="Chapters">
+{{chapters}}
+      </ul>
+
+      <section class="sec" style="margin-top:clamp(64px,10vh,120px)">
+        <p class="sec-mark"><span class="sec-num" lang="ja">謝</span><span class="sec-label">Thanks / <span lang="ja">謝辞</span></span></p>
+        <div>
+          <h2 class="sec-title">Standing on some very cracked shoulders.</h2>
+          <ul class="g-credits">
+            <li><strong><a class="text-link" href="https://learnjapanese.moe/" target="_blank" rel="noopener">TheMoeWay (TMW)</a></strong>. Their guide is the blueprint a lot of us followed, and its layout inspired this one.</li>
+            <li><strong><a class="text-link" href="https://www.youtube.com/@sevenstop7" target="_blank" rel="noopener">SevenStop</a></strong>. Near-perfect N1 in about three years, and the guest in my myths video. “Grammar is mostly just more words.”</li>
+            <li><strong><a class="text-link" href="https://www.youtube.com/@HypotheticalTiger" target="_blank" rel="noopener">Hypothetical Tiger</a></strong>. A friend, now living in Japan. Immerse → make cards from immersion → rep cards → repeat until fluent.</li>
+            <li><strong><a class="text-link" href="https://www.youtube.com/@Furretar" target="_blank" rel="noopener">Wyatt (Furretar)</a></strong>. Just cracked. Honorable mention for mining every unknown word he ever saw.</li>
+            <li><strong>DASmallWorlds</strong>. His annotated resource guide (JLPT N1, studying for Kanken 1) is the best case for the structured route I know of.</li>
+            <li><strong>Everyone in the Discord</strong>. Hundreds of people grinding together. <a class="text-link" href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Come say hi</a>.</li>
+          </ul>
+          <p class="g-disclosure" style="margin-top:24px">
+            Disclosure: some links (Migaku, italki) are affiliate links or past sponsors. I only recommend
+            stuff I actually use, and every free alternative is listed right next to them.
+            Looking for the old blog posts? They’re in the <a class="text-link" href="../archive/blog/">archive</a>.
+          </p>
+        </div>
+      </section>
+    </div>
+  </main>
