@@ -80,18 +80,29 @@ async function get(url) {
 
 const cands = JSON.parse(fs.readFileSync(path.join(HERE, 'candidates.json'), 'utf8'));
 const items = [...cands.words, ...cands.phrases];
-const lib = [];
-const rejected = [];
+// resumable: earlier runs' results live in OUT (the pitch-audio-build branch)
+const load = (f, d) => { try { return JSON.parse(fs.readFileSync(path.join(OUT, f), 'utf8')); } catch { return d; } };
+const lib = load('library.json', []);
+const rejected = load('rejected.json', []);
+const done = new Set([...lib.map((e) => e.title), ...rejected.map((r) => r[2])]);
+const save = () => {
+  fs.writeFileSync(path.join(OUT, 'library.json'), JSON.stringify(lib));
+  fs.writeFileSync(path.join(OUT, 'rejected.json'), JSON.stringify(rejected, null, 1));
+};
+const BUDGET_MS = +(process.env.BUDGET_MIN || 20) * 60000;
+const t0 = Date.now();
 for (const [i, c] of items.entries()) {
+  if (done.has(c.title)) continue;
+  if (Date.now() - t0 > BUDGET_MS) { console.log('time budget reached; run again to continue'); break; }
   const id = crypto.createHash('md5').update(c.title).digest('hex').slice(0, 10);
   try {
     const wavBuf = await get(c.url);
     const tr = trace(readWav(wavBuf));
     const norm = normalizeTrace(tr);
     const voiced = tr.filter((s) => s.hz).length;
-    if (norm.points.length < 6) { rejected.push([c.text, 'too little voice']); continue; }
+    if (norm.points.length < 6) { rejected.push([c.text, 'too little voice', c.title]); continue; }
     const entry = {
-      id, text: c.text, type: c.type,
+      id, title: c.title, text: c.text, type: c.type,
       contour: resample(norm.points, 100).map((v) => Math.round(v * 1000) / 1000),
       credit: { author: c.author, license: c.license, licenseUrl: c.licenseUrl, url: 'https://commons.wikimedia.org/wiki/' + encodeURIComponent(c.title.replace(/ /g, '_')) },
     };
@@ -100,7 +111,7 @@ for (const [i, c] of items.entries()) {
       const kind = kindOf(c.accent, n);
       const target = kind === 'heiban' || kind === 'odaka' ? 0 : c.accent; // odaka falls on the next particle
       const ps = patternScore(norm.points, n, target);
-      if (!ps.pass) { rejected.push([c.text, `${kind}: ${ps.note} (${ps.levels.join('')})`]); continue; }
+      if (!ps.pass) { rejected.push([c.text, `${kind}: ${ps.note} (${ps.levels.join('')})`, c.title]); continue; }
       Object.assign(entry, { reading: c.reading, moras: m, pattern: { kind, drop: c.accent }, voiced });
     }
     const wav = path.join(OUT, 'tmp', id + '.wav');
@@ -111,12 +122,14 @@ for (const [i, c] of items.entries()) {
     entry.audio = `audio/${id}.mp3`;
     lib.push(entry);
   } catch (e) {
-    rejected.push([c.text, String(e.message || e)]);
+    if (!/download failed/.test(e.message)) rejected.push([c.text, String(e.message || e), c.title]);
   }
+  save();
   if (i % 25 === 0) console.log(i, '/', items.length, 'kept', lib.length);
   await sleep(250);
 }
 fs.rmSync(path.join(OUT, 'tmp'), { recursive: true, force: true });
-fs.writeFileSync(path.join(OUT, 'library.json'), JSON.stringify(lib));
-fs.writeFileSync(path.join(OUT, 'rejected.json'), JSON.stringify(rejected, null, 1));
-console.log('kept', lib.length, 'rejected', rejected.length);
+save();
+const left = items.filter((c) => !lib.some((e) => e.title === c.title) && !rejected.some((r) => r[2] === c.title)).length;
+fs.writeFileSync(path.join(OUT, 'STATUS.txt'), `kept ${lib.length}, rejected ${rejected.length}, left ${left}\n`);
+console.log('kept', lib.length, 'rejected', rejected.length, 'left', left);

@@ -30,10 +30,17 @@ jobs:
         with:
           node-version: 22
       - run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+      - name: Pick up earlier results (the build resumes where it stopped)
+        run: |
+          git clone -q --depth 1 -b pitch-audio-build "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" "$RUNNER_TEMP/pitch-out" \
+            || mkdir -p "$RUNNER_TEMP/pitch-out"
+          rm -rf "$RUNNER_TEMP/pitch-out/.git"
       - run: node scripts/pitch/build/fetch-recordings.mjs
         env:
           OUT: ${{ runner.temp }}/pitch-out
+          BUDGET_MIN: '20'
       - name: Push results to the pitch-audio-build branch
+        if: always()
         run: |
           cd "$RUNNER_TEMP/pitch-out"
           git init -q -b pitch-audio-build
