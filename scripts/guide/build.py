@@ -50,6 +50,8 @@ LINKS = {
     "asbplayer": "https://github.com/killergerbah/asbplayer",
     "gsm": "https://github.com/bpwhelan/GameSentenceMiner",
     "lapis": "https://github.com/donkuri/lapis",
+    "donkuri": "https://donkuri.github.io/learn-japanese/",
+    "lazyguide": "https://lazyguidejp.github.io/jp-lazy-guide/",
     "jpdb": "https://jpdb.io/",
     "immersionkit": "https://www.immersionkit.com/",
     "taekim": "https://guidetojapanese.org/learn/",
@@ -162,7 +164,7 @@ def page(*, title, description, canonical, root, body, body_attrs=""):
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="{root}styles/base.css?v=4">
-  <link rel="stylesheet" href="{root}styles/guide.css?v=1">
+  <link rel="stylesheet" href="{root}styles/guide.css?v=2">
 {fix(beacon)}
 </head>
 <body data-page="guide"{body_attrs}>
