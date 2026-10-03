@@ -1,10 +1,10 @@
 // app.js — Pitch Mirror orchestration.
 import { CLIPS, KINDS } from './data/clips.js?v=2';
-import { detectPitch } from './engine/pitch-detect.js?v=2';
+import { detectPitch } from './engine/pitch-detect.js?v=3';
 import {
   moraPattern, dropIndex, synthContour, normalizeTrace, resample,
-} from './engine/contour.js?v=2';
-import { patternScore, contourScore } from './engine/scoring.js?v=2';
+} from './engine/contour.js?v=3';
+import { patternScore, contourScore } from './engine/scoring.js?v=3';
 import * as Store from './store.js?v=2';
 
 const PM_VERSION = 2;
