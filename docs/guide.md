@@ -63,3 +63,10 @@ is needed.
   Like a Native?*, *Japanese Fluency in 2026*, and *How Polite Can Japanese
   Really Get?* (no captions sent yet); *Learning Japanese is Easier Than
   You Think* has no transcript, so it stays embedded only.
+
+## Quick edits
+
+- **Word count on the mountain** (start-here chapter): `WORDS` in
+  `W.mountain` in `scripts/guide/guide.js`. The peak stone is always 凪.
+- **Video thumbnails** use YouTube’s full-HD `maxresdefault.jpg`; if a video
+  doesn’t have one, `guide.js` falls back to `hqdefault.jpg` automatically.

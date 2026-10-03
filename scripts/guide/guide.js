@@ -160,6 +160,12 @@ $$('.g-shot[data-src]').forEach((fig) => {
 // YouTube: load the player only when asked
 $$('.g-yt').forEach((box) => {
   const btn = $('.g-yt-btn', box);
+  // Full-HD thumbnail; older uploads without one get YouTube's 120px grey stand-in (or a 404), so drop to hqdefault.
+  const img = $('img', btn);
+  const fallback = () => { if (!img.src.includes('hqdefault')) img.src = `https://i.ytimg.com/vi/${box.dataset.id}/hqdefault.jpg`; };
+  img.addEventListener('error', fallback);
+  img.addEventListener('load', () => { if (img.naturalWidth <= 120) fallback(); });
+  if (img.complete && img.naturalWidth && img.naturalWidth <= 120) fallback();
   btn.addEventListener('click', () => {
     const f = h('iframe', {
       src: `https://www.youtube-nocookie.com/embed/${box.dataset.id}?autoplay=1&rel=0`,
@@ -229,11 +235,13 @@ const W = {};
 W.mountain = (el) => {
   const kanji = '日人一大年中会本出見行時上生子手言自気間前後話書読聞食飲来学先友家犬猫雨空花山川海夢心愛道光声音色旅映歌恋旨鬼縁粋侘寂凪';
   const rows = 10;
+  const WORDS = 23000;                        // my current known-word count
   const stones = [];
   let k = 0;
   for (let r = rows; r >= 1; r--) {           // bottom row first
     for (let c = 0; c < r; c++) stones.push({ r, c, ch: kanji[k++] || '語' });
   }
+  stones[stones.length - 1].ch = '凪';         // the peak is always my favorite kanji
   const size = 40, W0 = rows * size + 20, H0 = rows * size * 0.92 + 20;
   const svg = s('svg', { class: 'g-mountain-svg', viewBox: `0 0 ${W0} ${H0}`, role: 'img', 'aria-label': 'A mountain built from kanji, one stone per word' });
   const nodes = stones.map((st, i) => {
@@ -250,7 +258,7 @@ W.mountain = (el) => {
     const p = reduced ? 1 : clamp((innerHeight - r.top) / (innerHeight * 0.55 + r.height * 0.6), 0, 1);
     const n = Math.round(p * nodes.length);
     nodes.forEach((t, i) => t.classList.toggle('off', i >= n));
-    count.textContent = fmt(n === nodes.length ? 20000 : (n / nodes.length) * 20000);
+    count.textContent = fmt(n === nodes.length ? WORDS : (n / nodes.length) * WORDS);
   };
   addEventListener('scroll', upd, { passive: true });
   upd();
