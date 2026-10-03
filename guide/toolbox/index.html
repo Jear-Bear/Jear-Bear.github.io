@@ -172,7 +172,19 @@
 <figure class="g-shot" data-src="../../images/guide/asbplayer-crunchyroll.png" style="--r:16/9"><div class="g-shot-ph"><span class="g-shot-label">▢ Screenshot needed</span><span class="g-shot-what">asbplayer showing Japanese subtitles over an anime, with a Yomitan popup open on a word</span><code>images/guide/asbplayer-crunchyroll.png</code></div><figcaption>asbplayer showing Japanese subtitles over an anime, with a Yomitan popup open on a word</figcaption></figure>
 
 <h3>Japan-only Netflix</h3>
-<p>Netflix Japan has tons of shows with proper Japanese subtitles. You need a VPN set to Japan to see that library (the free <a href="https://www.vpngate.net/en/" target="_blank" rel="noopener">VPN Gate</a> works). Heads up: using a VPN for this is against Netflix’s terms, so do it at your own risk. I made a video on the phone setup:</p>
+<p>Netflix Japan has tons of shows with proper Japanese subtitles, plus some you can’t get anywhere else (孤独のグルメ, my comfort show, is one). You need a VPN set to Japan to see that library. Heads up: using a VPN for this is against Netflix’s terms, so do it at your own risk.</p>
+
+<p>The free <a href="https://www.vpngate.net/en/" target="_blank" rel="noopener">VPN Gate</a> works, and the phone setup is built into both iPhone and Android:</p>
+<ol>
+  <li>On the VPN Gate site, untick every protocol filter except <strong>L2TP/IPsec</strong> and refresh the list. Stick to servers with the Japanese flag.</li>
+  <li>Skip any server marked “academic use only.” Copy the bold <strong>hostname</strong> of one that looks good.</li>
+  <li>On your phone, go to Settings → VPN → add a VPN. Set the type to <strong>L2TP</strong>, paste the hostname as the server, and type <code>vpn</code> for the account, the password and the secret. Yes, all three are just “vpn.”</li>
+  <li>Turn it on and open Netflix. The Japanese shows appear, and your home feed gets more Japanese the more you watch.</li>
+</ol>
+
+<p><strong>Is it safe?</strong> Your connection to the server is encrypted, so your internet provider and the people on your Wi-Fi only see that you’re using a VPN. The server’s volunteer operator can see your IP and which sites you visit, but your Netflix login is still protected by HTTPS. VPN Gate is a research project from the University of Tsukuba, run on servers volunteers donate. That’s fine for immersion. I wouldn’t do my banking through it.</p>
+
+<p>The real problem is reliability, not security. Netflix blocks a lot of these servers, so if one stops working, go back to the list and add another. On a computer it’s a different setup; my friend <a href="https://www.youtube.com/@sevenstop7" target="_blank" rel="noopener">SevenStop</a> has a video for that.</p>
 
 <div class="g-yt" data-id="JENfgPm1_cA"><button type="button" class="g-yt-btn" aria-label="Play video: Unlock Japan-Only Netflix on Your Phone"><img src="https://i.ytimg.com/vi/JENfgPm1_cA/hqdefault.jpg" alt="" loading="lazy" width="480" height="360"><span class="g-yt-play" aria-hidden="true"></span></button><p class="g-yt-cap"><span class="g-yt-tag">Video</span> Unlock Japan-Only Netflix on Your Phone</p></div>
 

@@ -55,9 +55,11 @@ is needed.
 
 - No affiliate links: italki makes a unique tracking link per collab, so
   Migaku and italki link to their plain sites.
-- Videos whose transcripts weren’t available yet (the AJATT updates #1–3,
-  *Easier Than You Think*, *Practice with Natives*, *7 Reading Tricks*,
-  the tutor, Netflix, scams, 2026 goals, keyboard, Nagoya, Locals React,
-  worst language exchange, 15 ways to say “I”, keigo, JLPT update). Some are
-  embedded already; their content can be folded in once the captions are
-  exported.
+- Captions folded in (Oct 2026): keyboard layout, Netflix on your phone,
+  worst language exchange, Stray, the Q&A livestream, 15 ways to say “I”,
+  2025 trends, Nagoya week 1, Locals React, Practice with Natives (Ohana),
+  JLPT/CEFR update, scam ads, YouTube & anime workflow, 7 reading tricks,
+  and AJATT updates #1–3. Still not covered: *Can a Tutor Help You Speak
+  Like a Native?*, *Japanese Fluency in 2026*, and *How Polite Can Japanese
+  Really Get?* (no captions sent yet); *Learning Japanese is Easier Than
+  You Think* has no transcript, so it stays embedded only.
