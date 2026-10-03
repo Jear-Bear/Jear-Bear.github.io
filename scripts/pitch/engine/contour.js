@@ -56,9 +56,10 @@ export function normalizeTrace(samples) {
   if (hi - lo < 0.25) { const mid = (hi + lo) / 2; lo = mid - 0.5; hi = mid + 0.5; } // ~1 octave floor
   const t0 = voiced[0].t, t1 = voiced[voiced.length - 1].t;
   const span = (hi - lo) || 1;
-  const points = voiced.map((s) => ({
+  const points = voiced.map((s, i) => ({
     t: (s.t - t0) / ((t1 - t0) || 1),
     v: (Math.log2(s.hz) - lo) / span,
+    gap: i > 0 && s.t - voiced[i - 1].t > 0.12, // a pause or consonant before this point
   }));
   return { points, t0, t1 };
 }

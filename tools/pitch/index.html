@@ -14,7 +14,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="../../styles/base.css?v=4">
-  <link rel="stylesheet" href="../../styles/pitch.css?v=1">
+  <link rel="stylesheet" href="../../styles/pitch.css?v=2">
   <!-- Cloudflare Web Analytics (cookieless) -->
   <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
 </head>
@@ -84,12 +84,7 @@
             <button class="pm-chip" data-filter="type" data-val="word">Words</button>
             <button class="pm-chip" data-filter="type" data-val="sentence">Sentences</button>
           </div>
-          <div class="pm-filter-group" role="group" aria-label="Voice">
-            <button class="pm-chip is-active" data-filter="gender" data-val="all">Any voice</button>
-            <button class="pm-chip" data-filter="gender" data-val="f">Female</button>
-            <button class="pm-chip" data-filter="gender" data-val="m">Male</button>
-          </div>
-          <div class="pm-filter-group" id="genre-group" role="group" aria-label="Genre"></div>
+          <div class="pm-filter-group" id="kind-group" role="group" aria-label="Accent pattern"></div>
         </div>
 
         <!-- Modes -->
@@ -171,6 +166,7 @@
             <span class="pm-word-text" id="pm-text" lang="ja">箸</span>
             <span class="pm-word-reading" id="pm-reading" lang="ja">はし</span>
             <span class="pm-word-pattern" id="pm-pattern-label">atamadaka</span>
+            <span class="pm-word-credit" id="pm-credit"></span>
           </div>
 
           <div class="pm-staff-wrap">
@@ -244,6 +240,6 @@
   </footer>
 
   <script src="../../scripts/site.js?v=3"></script>
-  <script type="module" src="../../scripts/pitch/app.js?v=1"></script>
+  <script type="module" src="../../scripts/pitch/app.js?v=2"></script>
 </body>
 </html>

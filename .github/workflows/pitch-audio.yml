@@ -1,0 +1,36 @@
+# Builds Pitch Mirror's recorded clip library from free Lingua Libre
+# recordings (Wikimedia Commons). Downloads each recording, checks its pitch
+# against the dictionary accent, encodes small MP3s, and uploads them as an
+# artifact. Nothing is committed; copy the artifact into tools/pitch/ by hand.
+# See docs/pitch-mirror.md.
+name: Pitch Mirror audio
+
+on:
+  push:
+    paths:
+      - 'scripts/pitch/build/**'
+      - 'scripts/pitch/engine/**'
+      - '.github/workflows/pitch-audio.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+      - run: node scripts/pitch/build/fetch-recordings.mjs
+        env:
+          OUT: ${{ runner.temp }}/pitch-out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pitch-audio
+          path: ${{ runner.temp }}/pitch-out
+          retention-days: 7

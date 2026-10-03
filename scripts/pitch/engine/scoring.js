@@ -1,7 +1,7 @@
 // scoring.js — the two scores from the plan.
 //  · patternScore: lenient, pedagogical — did you drop in the right place?
 //  · contourScore: detailed, karaoke-style — how close was the shape?
-import { resample, dtwDistance } from './contour.js';
+import { resample, dtwDistance } from './contour.js?v=2';
 
 // Estimate the drop mora from an attempt's normalized {t,v} curve.
 // Split the voiced span into `n` mora-segments, take each segment's mean,
