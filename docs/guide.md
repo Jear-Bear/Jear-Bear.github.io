@@ -19,7 +19,7 @@ fragment and the built pages.
 
 - **New chapter:** add `NN-slug.html` with a `<!--META {...} -->` line at
   the top (title, ja, kanji, minutes, stage, lede). The number sets the order.
-- **Links** shared across chapters (affiliate links, tools, friends’
+- **Links** shared across chapters (tools, sponsors, friends’
   channels) live in `LINKS` in `scripts/guide/build.py`. Use
   `{{link:name}}` in a chapter.
 - **Videos:** `<yt id="VIDEO_ID">Title</yt>`, loaded only when clicked.
@@ -53,9 +53,8 @@ is needed.
 
 ## Still to fill in
 
-- Chapter 6 tier list: the name of the horror-game Let’s Player (“name TBD”).
-- The italki link in `LINKS` is the plain site. Swap in an affiliate link
-  if there is one.
+- No affiliate links: italki makes a unique tracking link per collab, so
+  Migaku and italki link to their plain sites.
 - Videos whose transcripts weren’t available yet (the AJATT updates #1–3,
   *Easier Than You Think*, *Practice with Natives*, *7 Reading Tricks*,
   the tutor, Netflix, scams, 2026 goals, keyboard, Nagoya, Locals React,

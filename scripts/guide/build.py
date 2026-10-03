@@ -17,7 +17,7 @@ and may use these shorthands, expanded here:
                                                 shows up on its own
     <photo name="file.jpg">What photo</photo>   same, for photos of you
     {{root}}                                    relative path to the site root
-    {{link:migaku}}                             affiliate / shared links (LINKS below)
+    {{link:migaku}}                             shared links (LINKS below)
 
 Run:  python3 scripts/guide/build.py
 Writes guide/index.html and guide/<slug>/index.html.
@@ -36,9 +36,9 @@ TEMPLATE = ROOT / "tools" / "crossword" / "index.html"   # shared header/footer 
 GUIDE_TITLE = "Jared’s Ultimate Japanese Guide"
 GUIDE_JA = "日本語ガイド"
 
-# Affiliate and shared links, in one place
+# Shared links, in one place (no affiliate links)
 LINKS = {
-    "migaku": "https://migaku.com/jareddesu",
+    "migaku": "https://migaku.com/",
     "italki": "https://www.italki.com/",
     "discord": "https://discord.gg/SqeuUd39sJ",
     "youtube": "https://youtube.com/@jareddesu",
