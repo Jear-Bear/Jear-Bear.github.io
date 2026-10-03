@@ -113,7 +113,7 @@ html.no-js .g-reveal { opacity: 1; transform: none; }
 .g-callout { position: relative; max-width: var(--g-col); margin: 2em 0; padding: 20px 22px 18px; border: 1px solid var(--rule); background: var(--paper-light); }
 .g-callout > :last-child { margin-bottom: 0; }
 .g-callout-label { display: flex; align-items: center; gap: 10px; font-size: 12px; letter-spacing: .08em; color: var(--muted); margin-bottom: 10px; text-transform: uppercase; }
-.g-callout-label .g-stamp { display: inline-grid; place-items: center; width: 26px; height: 26px; border: 1.5px solid var(--page-color); color: var(--page-ink); border-radius: 50%; font-family: var(--font-mincho); font-weight: 700; font-size: 13px; text-transform: none; letter-spacing: 0; }
+.g-callout-label .g-stamp { display: inline-flex; align-items: center; justify-content: center; flex: none; box-sizing: border-box; width: 26px; height: 26px; padding: 0; border: 1.5px solid var(--page-color); color: var(--page-ink); border-radius: 50%; font-family: var(--font-mincho); font-weight: 700; font-size: 13px; line-height: 1; text-indent: 0; text-transform: none; letter-spacing: 0; }
 .g-story { border-left: 3px solid var(--page-color); }
 .g-story .g-callout-label { color: var(--page-ink); }
 .g-tldr { background: transparent; border: 2px solid var(--ink); }

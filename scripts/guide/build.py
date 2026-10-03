@@ -164,7 +164,7 @@ def page(*, title, description, canonical, root, body, body_attrs=""):
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="{root}styles/base.css?v=4">
-  <link rel="stylesheet" href="{root}styles/guide.css?v=2">
+  <link rel="stylesheet" href="{root}styles/guide.css?v=3">
 {fix(beacon)}
 </head>
 <body data-page="guide"{body_attrs}>
@@ -223,7 +223,7 @@ def chapter_page(chapters, i):
 
       <article class="g-article" data-slug="{c['slug']}">
         <header class="g-hero">
-          <p class="g-hero-kicker"><a href="../">{GUIDE_TITLE}</a> <span aria-hidden="true">·</span> Chapter {c['num']} <span lang="ja">{kanji_num(c['num']) + '章' if c['num'] == 0 else '第' + kanji_num(c['num']) + '章'}</span></p>
+          <p class="g-hero-kicker"><a href="../">{GUIDE_TITLE}</a> <span aria-hidden="true">·</span> Chapter {c['num'] + 1} <span lang="ja">第{kanji_num(c['num'] + 1)}章</span></p>
           <h1 class="g-hero-title">{c['title_html'] if 'title_html' in c else html.escape(c['title'])}</h1>
           <p class="g-hero-ja" lang="ja">{c['ja']}</p>
           <p class="g-hero-lede">{c['lede']}</p>
@@ -259,7 +259,7 @@ def hub_page(chapters):
         cards.append(
             f'<li class="g-card g-reveal" data-slug="{c["slug"]}" style="--i:{c["num"]}"><a href="{c["slug"]}/">'
             f'<span class="g-card-k" lang="ja">{c["kanji"]}</span>'
-            f'<span class="g-card-n">Chapter {c["num"]} <span lang="ja">{kanji_num(c["num"]) + "章" if c["num"] == 0 else "第" + kanji_num(c["num"]) + "章"}</span></span>'
+            f'<span class="g-card-n">Chapter {c["num"] + 1} <span lang="ja">第{kanji_num(c["num"] + 1)}章</span></span>'
             f'<strong class="g-card-t">{html.escape(c["title"])}</strong>'
             f'<span class="g-card-l">{c["lede"]}</span>'
             f'<span class="g-card-meta"><span>{c["minutes"]} min</span><span>{c.get("stage", "Everyone")}</span><span class="g-card-done">✓ Read</span></span>'
