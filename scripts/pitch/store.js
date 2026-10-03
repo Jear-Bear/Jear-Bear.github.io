@@ -10,7 +10,7 @@ export function defaultStore() {
   return {
     version: 1,
     createdAt: Date.now(),
-    settings: { showContour: false, gender: 'all', genre: 'all', type: 'all', lastMode: 'repeat' },
+    settings: { showContour: false, kind: 'all', type: 'all', lastMode: 'repeat' },
     progress: {}, // id → { attempts, bestPattern: bool, bestContour: number }
     userClips: [], // metadata only; audio blob lives in IDB
   };
@@ -32,7 +32,7 @@ export function load() {
 let pending = null;
 export function save(store, { now = false } = {}) {
   const write = () => {
-    try { localStorage.setItem(LS_KEY, JSON.stringify(store)); } catch {}
+    try { localStorage.setItem(LS_KEY, JSON.stringify({ ...store, userClips: store.userClips.map(({ audio, ...m }) => m) })); } catch {}
   };
   if (now) { clearTimeout(pending); pending = null; write(); return; }
   if (pending) return;
@@ -96,7 +96,7 @@ export async function deleteAudio(id) {
 
 // progress export/import (audio excluded — too large; users keep source files)
 export function exportJSON(store) {
-  const data = { ...store, userClips: store.userClips.map(({ audioInMemory, ...m }) => m) };
+  const data = { ...store, userClips: store.userClips.map(({ audio, ...m }) => m) };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);

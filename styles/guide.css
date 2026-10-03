@@ -479,3 +479,11 @@ html.no-js .g-reveal { opacity: 1; transform: none; }
   .g-tier-l { font-size: 1.05rem; }
   .g-msg { max-width: 92%; }
 }
+
+/* Bonus easter egg at the end of the roadmap */
+.g-bonus { margin: 2.5em 0 0; border-top: 1px dashed var(--rule); padding-top: 16px; }
+.g-bonus summary { cursor: pointer; color: var(--muted); font-size: 14px; }
+.g-bonus summary:hover { color: var(--ink); }
+.g-bonus figure { margin: 16px 0 0; max-width: 420px; }
+.g-bonus img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); background: #fff; }
+.g-bonus figcaption { margin-top: 8px; font-size: 13px; color: var(--muted); }

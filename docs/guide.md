@@ -31,6 +31,21 @@ fragment and the built pages.
 Reader progress (chapters read, the pinned “why”, checklists) is saved in
 the reader’s browser under `jareddesu.guide.v1`.
 
+## Voice
+
+The guide should read like Jared talking, edited: an opinionated walkthrough
+of how he learned, not a course pitch. When adding or editing text:
+
+- Write in paragraphs, first person, the way he talks in the unscripted videos
+  (Q&A streams, AJATT updates). Stories and reasons carry the point.
+- No punchy one-line "lessons", teaser lines ("Here's the thing:"), or
+  rhythmic triplets. Lists only for real steps or resources.
+- No TL;DR boxes or stat tiles. Callout boxes only if something truly needs to
+  stand apart (there are none right now).
+- Only claims and stories that are in his videos or that he has confirmed.
+  The source transcripts are the rough notes.
+- Keep the widgets and video embeds; they carry a lot of the explaining.
+
 ## Screenshots and photos to add
 
 Each placeholder shows a dashed box until the image exists. Drop the file

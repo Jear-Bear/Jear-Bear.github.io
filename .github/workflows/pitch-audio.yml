@@ -1,0 +1,46 @@
+# Builds Pitch Mirror's recorded clip library from free Lingua Libre
+# recordings (Wikimedia Commons). Downloads each recording, checks its pitch
+# against the dictionary accent and encodes small MP3s. The result is pushed
+# to the throwaway branch `pitch-audio-build` (never to main); copy it into
+# tools/pitch/ from there. See docs/pitch-mirror.md.
+name: Pitch Mirror audio
+
+on:
+  workflow_dispatch:   # run by hand from the Actions tab
+
+permissions:
+  contents: write   # only to push the pitch-audio-build branch
+
+concurrency:
+  group: pitch-audio
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+      - name: Pick up earlier results (the build resumes where it stopped)
+        run: |
+          git clone -q --depth 1 -b pitch-audio-build "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" "$RUNNER_TEMP/pitch-out" \
+            || mkdir -p "$RUNNER_TEMP/pitch-out"
+          rm -rf "$RUNNER_TEMP/pitch-out/.git"
+      - run: node scripts/pitch/build/fetch-recordings.mjs
+        env:
+          OUT: ${{ runner.temp }}/pitch-out
+          BUDGET_MIN: '20'
+      - name: Push results to the pitch-audio-build branch
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/pitch-out"
+          git init -q -b pitch-audio-build
+          git config user.name "github-actions[bot]"
+          git config user.email "41898099+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Pitch Mirror audio build ${GITHUB_SHA::7}"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" pitch-audio-build

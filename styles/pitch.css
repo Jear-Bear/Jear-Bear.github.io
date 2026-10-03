@@ -104,6 +104,11 @@ body.pm-focus main, body.pm-focus .container.pm { margin: 0; padding: 0; max-wid
 .pm-word-text { font-family: var(--font-mincho); font-size: clamp(2.4rem, 8vw, 3.6rem); color: var(--ink); line-height: 1.1; }
 .pm-word-reading { font-family: 'Noto Sans JP', sans-serif; font-size: 1.1rem; color: var(--muted); }
 .pm-word-pattern { font: 400 0.78rem 'Space Mono', monospace; color: var(--page-color); letter-spacing: .04em; margin-top: 4px; }
+.pm-word-credit { font-size: 0.72rem; color: var(--muted); margin-top: 6px; }
+.pm-word-credit a { color: inherit; }
+.pm-credits { margin-top: 14px; font-size: 0.82rem; color: var(--ink-soft); line-height: 1.6; }
+.pm-credits summary { cursor: pointer; }
+.pm-credits ul { columns: 2 220px; margin: 12px 0 0; padding-left: 18px; }
 
 .pm-staff-wrap {
   width: 100%; height: min(34vh, 260px);
@@ -111,10 +116,11 @@ body.pm-focus main, body.pm-focus .container.pm { margin: 0; padding: 0; max-wid
 }
 .pm-staff { display: block; width: 100%; height: 100%; }
 
-.pm-verdict { min-height: 1.6em; display: flex; gap: 16px; align-items: baseline; font: 400 0.95rem var(--font-gothic); }
+.pm-verdict { min-height: 1.6em; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; align-items: baseline; text-align: center; font: 400 0.95rem var(--font-gothic); }
+.pm-v-pattern { white-space: nowrap; }
 .pm-v-pattern.ok { color: var(--pm-ok); font-weight: 500; }
 .pm-v-pattern.miss { color: var(--pm-miss); font-weight: 500; }
-.pm-v-contour { font-family: 'Space Mono', monospace; color: var(--muted); }
+.pm-v-contour { color: var(--muted); }
 .pm-v-contour strong { color: var(--ink); }
 .pm-v-miss { color: var(--muted); }
 

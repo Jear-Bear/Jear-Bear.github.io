@@ -1,13 +1,13 @@
 // app.js — Pitch Mirror orchestration.
-import { CLIPS, GENRES } from './data/clips.js?v=1';
-import { detectPitch } from './engine/pitch-detect.js?v=1';
+import { CLIPS, KINDS } from './data/clips.js?v=4';
+import { detectPitch } from './engine/pitch-detect.js?v=4';
 import {
   moraPattern, dropIndex, synthContour, normalizeTrace, resample,
-} from './engine/contour.js?v=1';
-import { patternScore, contourScore } from './engine/scoring.js?v=1';
-import * as Store from './store.js?v=1';
+} from './engine/contour.js?v=4';
+import { shapeScore, PASS, GREAT } from './engine/scoring.js?v=5';
+import * as Store from './store.js?v=2';
 
-const PM_VERSION = 1;
+const PM_VERSION = 2;
 console.info(`[Pitch Mirror] v${PM_VERSION}`);
 
 const $ = (id) => document.getElementById(id);
@@ -26,8 +26,10 @@ let micStream = null;
 let recording = false;
 let rafId = 0;
 let liveSamples = [];     // {t, hz}
+let player = null;        // current target <audio>
 let recStart = 0;
-const allClips = () => CLIPS.concat(store.userClips);
+const KIND_LABEL = Object.fromEntries(KINDS);
+const allClips = () => CLIPS;
 
 // derive target contour + drop for a clip
 function prep(clip) {
@@ -61,10 +63,10 @@ function toast(html, cls = '') {
 }
 
 // ------------------------------------------------------------ dashboard
-function renderGenres() {
-  const g = $('genre-group');
-  g.innerHTML = `<button class="pm-chip is-active" data-filter="genre" data-val="all">Any genre</button>` +
-    GENRES.map((x) => `<button class="pm-chip" data-filter="genre" data-val="${x}">${x}</button>`).join('');
+function renderKinds() {
+  const g = $('kind-group');
+  g.innerHTML = `<button class="pm-chip is-active" data-filter="kind" data-val="all">Any pattern</button>` +
+    KINDS.map(([x, label]) => `<button class="pm-chip" data-filter="kind" data-val="${x}">${label}</button>`).join('');
 }
 
 function applyFilterActive() {
@@ -85,8 +87,7 @@ function buildPool() {
   if (mode === 'repeat') {
     if (s.type !== 'all') p = p.filter((c) => c.type === s.type);
   }
-  if (s.gender !== 'all') p = p.filter((c) => c.gender === s.gender || !c.gender);
-  if (s.genre !== 'all') p = p.filter((c) => c.genre === s.genre);
+  if (s.kind !== 'all') p = p.filter((c) => c.pattern.kind === s.kind);
   // shuffle
   for (let i = p.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [p[i], p[j]] = [p[j], p[i]]; }
   // pairs mode: interleave members of each pair adjacently
@@ -102,8 +103,8 @@ function renderStats() {
   const avgContour = contours.length ? Math.round(contours.reduce((a, b) => a + b, 0) / contours.length) : 0;
   const cells = [
     [attempts, 'total attempts'],
-    [`${patternHits}`, 'patterns matched'],
-    [contours.length ? `${avgContour}` : '—', 'avg contour'],
+    [`${patternHits}`, 'clips passed'],
+    [contours.length ? `${avgContour}` : '—', 'avg best shape'],
     [store.userClips.length, 'your clips'],
   ];
   $('pm-stats').innerHTML = cells.map(([v, l]) =>
@@ -118,7 +119,7 @@ function renderClipList() {
   }
   list.innerHTML = store.userClips.map((c) => `
     <li class="pm-clip-item">
-      <span lang="ja">${c.text || '(untitled)'}</span>
+      <span lang="ja">${String(c.text || '(untitled)').replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]))}</span>
       <button class="btn-link kt-danger" data-del="${c.id}">Remove</button>
     </li>`).join('');
   list.querySelectorAll('[data-del]').forEach((b) => b.addEventListener('click', async () => {
@@ -140,17 +141,20 @@ async function startSession() {
   // mic needed for everything except pure listening; ask once up front
   if (!micStream) { pendingStart = true; show('pm-permission'); return; }
   idx = 0;
-  $('pm-mode-label').textContent = $(`[data-mode="${mode}"] .pm-mode-name`)?.textContent || 'Practice';
+  setModeLabel();
   show('pm-review');
   loadClip();
 }
 
 let pendingStart = false;
+function setModeLabel() {
+  $('pm-mode-label').textContent = document.querySelector(`[data-mode="${mode}"] .pm-mode-name`)?.textContent || 'Practice';
+}
 async function grantMic() {
   try {
     micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
     audio(); // unlock AudioContext within the user gesture
-    if (pendingStart) { pendingStart = false; idx = 0; $('pm-mode-label').textContent = $(`[data-mode="${mode}"] .pm-mode-name`)?.textContent || 'Practice'; show('pm-review'); loadClip(); }
+    if (pendingStart) { pendingStart = false; idx = 0; setModeLabel(); show('pm-review'); loadClip(); }
   } catch {
     toast('Microphone access denied — you can still play targets, but not record.', 'kt-toast-error');
     show('pm-dashboard');
@@ -163,7 +167,17 @@ function loadClip() {
   $('pm-text').textContent = current.text;
   $('pm-reading').textContent = current.reading || '';
   $('pm-pattern-label').textContent = current.type === 'free' ? 'free record'
-    : `${current.pattern.kind || '—'}${current.drop ? ' · drop ' + current.drop : ''}`;
+    : current.source === 'you' ? 'your clip · shape match'
+    : current.type === 'sentence' ? 'sentence · shape match'
+    : `${KIND_LABEL[current.pattern.kind] || '—'}${current.drop ? ' · drops after mora ' + current.drop : ''}`;
+  $('pm-credit').textContent = '';
+  if (current.credit) {
+    const a = document.createElement('a');
+    a.href = current.credit.url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = current.credit.license;
+    $('pm-credit').append(`Recording: ${current.credit.author} · `, a);
+  } else if (current.source !== 'you' && current.type !== 'free') {
+    $('pm-credit').textContent = 'Guide tone: no one has recorded this word yet';
+  }
   $('pm-progress').textContent = `${(idx % pool.length) + 1} / ${pool.length}`;
   $('pm-verdict').innerHTML = '';
   liveSamples = [];
@@ -178,9 +192,9 @@ function playTarget() {
   if (current.type === 'free') return;
   // real audio file?
   if (current.audio) {
-    const a = new Audio(current.audio);
-    a.play().catch(() => {});
-    if (window.speechSynthesis) {} // skip TTS when real audio exists
+    if (player) player.pause();
+    player = new Audio(current.audio);
+    player.play().catch(() => toast('Couldn’t play that recording.', 'kt-toast-error'));
     return;
   }
   // synthetic: glide a tone through the normalized contour
@@ -189,7 +203,7 @@ function playTarget() {
   const osc = ac.createOscillator();
   const gain = ac.createGain();
   osc.type = 'triangle';
-  const base = current.gender === 'm' ? 110 : 196; // comfortable per voice
+  const base = 165; // a comfortable middle register
   const span = base * 0.5;
   const freqs = new Float32Array(current.target.length);
   for (let i = 0; i < current.target.length; i++) freqs[i] = base + current.target[i] * span;
@@ -201,17 +215,6 @@ function playTarget() {
   gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
   osc.connect(gain).connect(ac.destination);
   osc.start(t0); osc.stop(t0 + dur + 0.02);
-  // optional word identity via TTS, where a JA voice exists
-  speakWord();
-}
-
-function speakWord() {
-  if (!window.speechSynthesis || !current.reading) return;
-  const v = speechSynthesis.getVoices().find((x) => x.lang && x.lang.toLowerCase().startsWith('ja'));
-  if (!v) return; // no Japanese voice installed — tone is enough
-  const u = new SpeechSynthesisUtterance(current.text);
-  u.voice = v; u.lang = 'ja-JP'; u.rate = 0.85; u.volume = 0.9;
-  setTimeout(() => speechSynthesis.speak(u), 500);
 }
 
 // ------------------------------------------------------------ recording loop
@@ -229,18 +232,24 @@ async function toggleRecord() {
   const analyser = ac.createAnalyser();
   analyser.fftSize = 2048;
   src.connect(analyser);
+  if (player) player.pause();
   const buf = new Float32Array(analyser.fftSize);
   recStart = performance.now();
-  const maxMs = Math.max(2500, current.moras.length * 700);
+  const maxMs = current.type === 'free' ? 15000 : Math.max(4000, (current.moras.length || 4) * 900);
+  let lastVoiced = 0, voicedCount = 0;
 
   const loop = () => {
     if (!recording) return;
     analyser.getFloatTimeDomainData(buf);
     const r = detectPitch(buf, ac.sampleRate);
-    const t = (performance.now() - recStart) / 1000;
+    const now = performance.now();
+    const t = (now - recStart) / 1000;
     liveSamples.push({ t, hz: r ? r.hz : 0 });
+    if (r) { lastVoiced = now; voicedCount++; }
     drawStaff();
-    if (performance.now() - recStart > maxMs) { stopRecord(); return; }
+    // stop on its own once you've said something and gone quiet for a moment
+    const quiet = voicedCount > 8 && now - lastVoiced > 700;
+    if (now - recStart > maxMs || (quiet && current.type !== 'free')) { stopRecord(); return; }
     rafId = requestAnimationFrame(loop);
   };
   rafId = requestAnimationFrame(loop);
@@ -263,33 +272,30 @@ function score() {
     drawStaff(true);
     return;
   }
-  const n = current.moras.length || 2;
-  // Odaka words fall on the FOLLOWING particle, so within the word itself the
-  // contour looks like heiban (no internal drop). Score against drop 0 and
-  // tell the user where the real downstep lands.
-  const isOdaka = current.pattern.kind === 'odaka';
-  const scoreDrop = isOdaka ? 0 : current.drop;
-  const ps = patternScore(norm.points, n, scoreDrop);
-  const showContour = store.settings.showContour;
-  let contour = null;
-  if (showContour) contour = contourScore(resample(norm.points, 64), current.targetResampled);
-
-  Store.recordAttempt(store, current.id, ps.pass, contour);
-
-  const odakaNote = isOdaka && ps.pass
-    ? `<span class="pm-v-contour">flat within the word — the drop lands on the next particle (◌を→low)</span>`
-    : '';
-  const verdict = `
-    <span class="pm-v-pattern ${ps.pass ? 'ok' : 'miss'}">
-      ${ps.pass ? '✓ pattern matched' : '✗ ' + ps.note}
-    </span>
-    ${odakaNote}
-    ${showContour ? `<span class="pm-v-contour">contour <strong>${contour}</strong></span>` : ''}`;
-  $('pm-verdict').innerHTML = verdict;
-  if (ps.pass) toast('<strong>✓</strong> nailed the pitch', '');
+  // words: half how close you are to the native voice, half how close to the
+  // textbook pattern (so a recording's quirks can't carry a wrong pattern)
+  const c = current.type === 'word' && current.hl && current.contour?.length
+    ? Math.round((shapeScore(norm.points, current.target) + shapeScore(norm.points, synthContour(current.hl))) / 2)
+    : shapeScore(norm.points, current.target);
+  const pass = c >= PASS;
+  Store.recordAttempt(store, current.id, pass, c);
+  const tip = c >= GREAT ? 'really close'
+    : pass ? 'close — keep shadowing it'
+    : current.type === 'word' && current.pattern.kind ? `listen again: ${TIP[current.pattern.kind]}`
+    : 'listen again and copy the rises and falls';
+  $('pm-verdict').innerHTML = `<span class="pm-v-pattern ${pass ? 'ok' : 'miss'}">${pass ? '✓' : '✗'} shape match <strong>${c}</strong> / 100</span>
+    <span class="pm-v-contour">${tip}</span>`;
+  if (c >= GREAT) toast('<strong>✓</strong> nailed the pitch', '');
   drawStaff(true);
   renderStats();
 }
+
+const TIP = {
+  heiban: 'start low, go up, and stay up to the end',
+  atamadaka: 'start high and fall right after the first mora',
+  nakadaka: 'go up, then fall after the marked mora',
+  odaka: 'go up and stay up; the fall comes on the next particle',
+};
 
 // ------------------------------------------------------------ the pitch staff
 const cv = $('pm-staff');
@@ -382,7 +388,7 @@ function drawStaff(finished = false) {
       let started = false;
       for (const p of pts) {
         const x = X(p.t), y = Y(p.v);
-        if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
+        if (!started || p.gap) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
       }
       ctx.strokeStyle = finished ? ink : accent;
       ctx.lineWidth = 3;
@@ -417,7 +423,7 @@ async function addUserClip(file) {
   } catch { /* fall back to flat target */ }
   const clip = {
     id, text: text || file.name.replace(/\.[^.]+$/, ''), reading: '', moras: moras.length ? moras : ['—'],
-    type: 'sentence', pattern: {}, audio: url, contour, gender: '', genre: 'mined', source: 'you',
+    type: 'sentence', pattern: {}, audio: url, contour, source: 'you',
   };
   store.userClips.push(clip);
   await Store.putAudio(id, blob);
@@ -441,12 +447,29 @@ function contourFromBuffer(decoded) {
   return resample(norm.points, 100);
 }
 
+// saved clips keep their audio in IndexedDB; blob: URLs die on reload, so rebuild them
+async function restoreClipAudio() {
+  for (const c of store.userClips) {
+    const blob = await Store.getAudio(c.id);
+    c.audio = blob ? URL.createObjectURL(blob) : null;
+  }
+}
+
+function renderCredits() {
+  const rec = CLIPS.filter((c) => c.credit);
+  const esc = (t) => String(t).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+  $('pm-credits-sum').textContent = `Recording credits (${rec.length} clips)`;
+  $('pm-credits-list').innerHTML = rec.map((c) =>
+    `<li><a href="${esc(c.credit.url)}" target="_blank" rel="noopener" lang="ja">${esc(c.text)}</a> · ${esc(c.credit.author)} · ${esc(c.credit.license)}</li>`).join('');
+}
+
 // ------------------------------------------------------------ wiring
-renderGenres();
+restoreClipAudio();
+renderCredits();
+renderKinds();
 applyFilterActive();
 renderStats();
 renderClipList();
-$('pm-show-contour').checked = !!store.settings.showContour;
 
 document.querySelector('.pm-filters').addEventListener('click', (e) => {
   const chip = e.target.closest('.pm-chip');
@@ -463,11 +486,6 @@ document.querySelector('.pm-modes').addEventListener('click', (e) => {
   store.settings.lastMode = mode;
   Store.save(store);
   applyFilterActive();
-});
-
-$('pm-show-contour').addEventListener('change', (e) => {
-  store.settings.showContour = e.target.checked;
-  Store.save(store);
 });
 
 $('pm-start').addEventListener('click', startSession);
