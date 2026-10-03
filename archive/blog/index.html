@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="robots" content="noindex">
+  <script>/* theme: set before paint (auto follows the system) */(function(){var d=document.documentElement,k='jareddesu.theme',m=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)');function p(){try{return localStorage.getItem(k)||'auto'}catch(e){return'auto'}}function a(){var t=p();d.dataset.theme=t==='light'||t==='dark'?t:(m&&m.matches?'dark':'light');d.dataset.themePref=t}a();if(m&&m.addEventListener)m.addEventListener('change',a);window.jdTheme={get:p,set:function(t){try{t==='auto'?localStorage.removeItem(k):localStorage.setItem(k,t)}catch(e){}a()}}})();</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog · Jared P.</title>
+  <meta name="description" content="Notes on Japanese learning, hobbies, technology, and whatever else is on my mind. By Jared Perlmutter." />
+
+  <link rel="icon" href="../../images/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../../styles/base.css?v=4">
+  <link rel="stylesheet" href="../../styles/blog.css?v=2b">
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Cloudflare Web Analytics (cookieless) -->
+  <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
+</head>
+<body data-page="blog">
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="masthead">
+    <a href="../../" class="mark" aria-label="まだまだJared, home">
+      <span class="mark-ja" lang="ja">まだまだ</span>
+      <span class="mark-en">Jared</span>
+    </a>
+    <nav class="masthead-nav" aria-label="Site">
+      <ul>
+        <li><a href="../../about/">About</a></li>
+        <li><a href="../../projects/">Projects</a></li>
+        <li><a href="../../tools/">Tools</a></li>
+        <li><a href="../../guide/">Guide</a></li>
+        <li><a href="../../sponsorships/">Sponsorships</a></li>
+        <li><a href="../../contact/">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Menu</button>
+  </header>
+
+  <div class="menu-sheet" id="site-menu" hidden>
+    <div class="menu-sheet-head">
+      <a href="../../" class="mark" aria-label="まだまだJared, home">
+        <span class="mark-ja" lang="ja">まだまだ</span>
+        <span class="mark-en">Jared</span>
+      </a>
+      <button class="menu-toggle menu-close" type="button">Close</button>
+    </div>
+    <nav aria-label="Site">
+      <ul>
+        <li><a href="../../about/">About <span lang="ja">自己紹介</span></a></li>
+        <li><a href="../../projects/">Projects <span lang="ja">制作</span></a></li>
+        <li><a href="../../tools/">Tools <span lang="ja">ツール</span></a></li>
+        <li><a href="../../guide/">Guide <span lang="ja">ガイド</span></a></li>
+        <li><a href="../../sponsorships/">Sponsorships <span lang="ja">スポンサー</span></a></li>
+        <li><a href="../../contact/">Contact <span lang="ja">お問い合わせ</span></a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <main id="main">
+    <div class="container">
+      <header class="page-head">
+        <div class="page-head-copy">
+          <p class="eyebrow">archive · the old blog</p>
+          <h1 class="page-title">Notes on <em>nothing in particular</em>.</h1>
+          <p class="page-intro">
+            The old blog, kept here for posterity. New writing lives in
+            <a class="text-link" href="../../guide/">Jared’s Ultimate Japanese Guide</a>.
+          </p>
+        </div>
+        <p class="page-v"><span class="page-v-ja" lang="ja">ブログ</span><span class="page-v-en">Blog</span></p>
+      </header>
+
+      <section class="blog-section" aria-label="Posts">
+        <div class="post-list" id="post-list">
+          <!-- Posts inserted by blog.js -->
+          <div class="post-loading">loading posts…</div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Modal for blog post content -->
+  <div class="post-modal" id="post-modal" aria-hidden="true">
+    <div class="post-modal-backdrop"></div>
+    <article class="post-modal-content">
+      <button class="post-modal-close" id="post-modal-close" aria-label="Close">×</button>
+      <header class="post-modal-header">
+        <div class="post-modal-meta">
+          <span class="post-modal-category" id="post-modal-category">Category</span>
+          <span class="post-modal-date" id="post-modal-date">Date</span>
+        </div>
+        <h2 class="post-modal-title" id="post-modal-title">Title</h2>
+      </header>
+      <div class="post-modal-body" id="post-modal-body"></div>
+    </article>
+  </div>
+
+  <footer class="colophon">
+    <nav class="colophon-links" aria-label="Footer">
+      <ul>
+        <li><a href="../../about/">About</a></li>
+        <li><a href="../../projects/">Projects</a></li>
+        <li><a href="../../tools/">Tools</a></li>
+        <li><a href="../../guide/">Guide</a></li>
+        <li><a href="../../sponsorships/">Sponsorships</a></li>
+        <li><a href="../../contact/">Contact</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a></li>
+        <li><a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a></li>
+        <li><a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a></li>
+        <li><a href="#">RSS</a></li>
+      </ul>
+    </nav>
+    <div class="colophon-box">
+      <p class="colophon-title" lang="ja">奥付</p>
+      <dl>
+        <div><dt>Site / <span lang="ja">サイト</span></dt><dd>jareddesu.com</dd></div>
+        <div><dt>Author / <span lang="ja">著者</span></dt><dd>Jared P. (<span lang="ja">まだまだ</span>Jared)</dd></div>
+        <div><dt>Published / <span lang="ja">発行</span></dt><dd>© 2026</dd></div>
+      </dl>
+    </div>
+  </footer>
+
+  <script src="../../scripts/site.js?v=3"></script>
+  <script src="../../scripts/blog.js?v=2"></script>
+</body>
+</html>

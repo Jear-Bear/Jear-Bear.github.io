@@ -25,7 +25,7 @@ youtube.src = "images/youtube.png";
 var instagram = new Image();
 instagram.src = "images/instagram.png";
 var text = new Image();
-text.src = "images/text.png";
+text.src = "images/text.png?v=2";
 var text_width = 3;
 
 const rgbaColors = [
@@ -208,14 +208,14 @@ function initBabylon() {
 		const pentagon4 = createPentagon("pentagon4", instagram, babylonScene);
 
 	if (aspect_ratio >= 0.9 && aspect_ratio <= 1) {
-		text.src = "images/text_compressed.png";
+		text.src = "images/text_compressed.png?v=2";
 		text_width = 2;
 	} 
 	else if (aspect_ratio > 1) {
-		text.src = "images/text.png";
+		text.src = "images/text.png?v=2";
 	} 
 	else {
-		text.src = "images/text_super_compressed.png";
+		text.src = "images/text_super_compressed.png?v=2";
 		text_width = 1;
 	}
 	
@@ -606,7 +606,7 @@ function TestParticles() {
 			    window.location.href = "about_me.html";
 			    break;
 			case 1:
-			    window.location.href = "blog.html";
+			    window.location.href = "guide/";
 			    break;
 			case 2:
 			    window.location.href = "projects.html";
@@ -709,7 +709,7 @@ function TestParticles() {
         if (aspect_ratio >= 0.9 && aspect_ratio <= 1) {
             if(worldY.between(4.78, 5.152)) {
                 if (worldX.between(-4.052, -1.99)) window.location.replace("https://jareddesu.com/about/");
-                else if (worldX.between(-1.50, -0.47)) window.location.replace("https://jareddesu.com/blog/");
+                else if (worldX.between(-1.75, -0.22)) window.location.replace("https://jareddesu.com/guide/");
                 else if (worldX.between(0.218, 1.913)) window.location.replace("https://jareddesu.com/projects/");
                 else if (worldX.between(2.2, 3.99)) window.location.replace("https://jareddesu.com/contact/");
             }
@@ -718,7 +718,7 @@ function TestParticles() {
         else if (aspect_ratio > 1) {
             if(worldY.between(4.80, 5.18)) {
                 if (worldX.between(-4.03, -2.02)) window.location.replace("https://jareddesu.com/about/");
-                else if (worldX.between(-1.45, -0.472)) window.location.replace("https://jareddesu.com/blog/");
+                else if (worldX.between(-1.68, -0.24)) window.location.replace("https://jareddesu.com/guide/");
                 else if (worldX.between(0.223, 1.937)) window.location.replace("https://jareddesu.com/projects/");
                 else if (worldX.between(2.178, 4.057)) window.location.replace("https://jareddesu.com/contact/");
             }
@@ -727,7 +727,7 @@ function TestParticles() {
         else {
             if (worldY.between(4.82, 5.15)) {
                 if (worldX.between(-2.178, -0.139)) window.location.replace("https://jareddesu.com/about/");
-                else if (worldX.between(0.75, 1.77)) window.location.replace("https://jareddesu.com/blog/");
+                else if (worldX.between(0.51, 2.01)) window.location.replace("https://jareddesu.com/guide/");
             }
             if(worldY.between(4.251, 4.609)) {
                 if (worldX.between(-2.039, -0.331)) window.location.replace("https://jareddesu.com/projects/");
