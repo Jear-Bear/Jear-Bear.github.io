@@ -4,12 +4,13 @@
 // (CC0 / CC BY / CC BY-SA), with the accent for each word from Kanjium
 // (CC BY-SA 4.0). For every recording it:
 //   1. downloads the WAV,
-//   2. runs the same pitch detector the page uses and checks that where the
-//      speaker's pitch falls matches the dictionary accent (recordings that
-//      don't match, or are too quiet to read, are dropped),
+//   2. runs the same pitch detector the page uses (recordings too quiet to
+//      read are dropped) and keeps the raw pitch trace in traces.json,
 //   3. trims silence and encodes a small mono MP3 with ffmpeg,
 //   4. stores the recording's own pitch contour as the on-screen target.
-// Output: out/audio/*.mp3 + out/library.json. Run by .github/workflows/pitch-audio.yml.
+// make-clips.mjs then keeps only the words whose pitch drop matches the
+// dictionary accent. Output: out/audio/*.mp3, library.json, traces.json.
+// Run by .github/workflows/pitch-audio.yml.
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
@@ -82,12 +83,18 @@ const cands = JSON.parse(fs.readFileSync(path.join(HERE, 'candidates.json'), 'ut
 const items = [...cands.words, ...cands.phrases];
 // resumable: earlier runs' results live in OUT (the pitch-audio-build branch)
 const load = (f, d) => { try { return JSON.parse(fs.readFileSync(path.join(OUT, f), 'utf8')); } catch { return d; } };
-const lib = load('library.json', []);
-const rejected = load('rejected.json', []);
+// (results from before traces.json existed are ignored, so the build starts over)
+const fresh = !fs.existsSync(path.join(OUT, 'traces.json'));
+const lib = fresh ? [] : load('library.json', []);
+const traces = load('traces.json', {});
+const rejected = fresh ? [] : load('rejected.json', []);
+if (fresh) fs.rmSync(path.join(OUT, 'audio'), { recursive: true, force: true });
+fs.mkdirSync(path.join(OUT, 'audio'), { recursive: true });
 const done = new Set([...lib.map((e) => e.title), ...rejected.map((r) => r[2])]);
 const save = () => {
   fs.writeFileSync(path.join(OUT, 'library.json'), JSON.stringify(lib));
   fs.writeFileSync(path.join(OUT, 'rejected.json'), JSON.stringify(rejected, null, 1));
+  fs.writeFileSync(path.join(OUT, 'traces.json'), JSON.stringify(traces));
 };
 const BUDGET_MS = +(process.env.BUDGET_MIN || 20) * 60000;
 const t0 = Date.now();
@@ -111,8 +118,7 @@ for (const [i, c] of items.entries()) {
       const kind = kindOf(c.accent, n);
       const target = kind === 'heiban' || kind === 'odaka' ? 0 : c.accent; // odaka falls on the next particle
       const ps = patternScore(norm.points, n, target);
-      if (!ps.pass) { rejected.push([c.text, `${kind}: ${ps.note} (${ps.levels.join('')})`, c.title]); continue; }
-      Object.assign(entry, { reading: c.reading, moras: m, pattern: { kind, drop: c.accent }, voiced });
+      Object.assign(entry, { reading: c.reading, moras: m, pattern: { kind, drop: c.accent }, voiced, check: ps.pass ? 'ok' : `${ps.note} (${ps.levels.join('')})` });
     }
     const wav = path.join(OUT, 'tmp', id + '.wav');
     fs.writeFileSync(wav, wavBuf);
@@ -120,6 +126,7 @@ for (const [i, c] of items.entries()) {
       '-af', 'silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.05,areverse,silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.08,areverse',
       '-ac', '1', '-ar', '24000', '-b:a', '48k', path.join(OUT, 'audio', id + '.mp3')]);
     entry.audio = `audio/${id}.mp3`;
+    traces[id] = tr.map((q) => [Math.round(q.t * 1000), Math.round(q.hz * 10) / 10]);
     lib.push(entry);
   } catch (e) {
     if (!/download failed/.test(e.message)) rejected.push([c.text, String(e.message || e), c.title]);
