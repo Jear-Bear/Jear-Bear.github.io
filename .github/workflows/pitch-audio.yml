@@ -1,8 +1,8 @@
 # Builds Pitch Mirror's recorded clip library from free Lingua Libre
 # recordings (Wikimedia Commons). Downloads each recording, checks its pitch
-# against the dictionary accent, encodes small MP3s, and uploads them as an
-# artifact. Nothing is committed; copy the artifact into tools/pitch/ by hand.
-# See docs/pitch-mirror.md.
+# against the dictionary accent and encodes small MP3s. The result is pushed
+# to the throwaway branch `pitch-audio-build` (never to main); copy it into
+# tools/pitch/ from there. See docs/pitch-mirror.md.
 name: Pitch Mirror audio
 
 on:
@@ -14,7 +14,11 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write   # only to push the pitch-audio-build branch
+
+concurrency:
+  group: pitch-audio
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -29,8 +33,12 @@ jobs:
       - run: node scripts/pitch/build/fetch-recordings.mjs
         env:
           OUT: ${{ runner.temp }}/pitch-out
-      - uses: actions/upload-artifact@v4
-        with:
-          name: pitch-audio
-          path: ${{ runner.temp }}/pitch-out
-          retention-days: 7
+      - name: Push results to the pitch-audio-build branch
+        run: |
+          cd "$RUNNER_TEMP/pitch-out"
+          git init -q -b pitch-audio-build
+          git config user.name "github-actions[bot]"
+          git config user.email "41898099+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Pitch Mirror audio build ${GITHUB_SHA::7}"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" pitch-audio-build

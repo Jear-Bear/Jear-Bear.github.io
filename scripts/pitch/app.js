@@ -119,7 +119,7 @@ function renderClipList() {
   }
   list.innerHTML = store.userClips.map((c) => `
     <li class="pm-clip-item">
-      <span lang="ja">${c.text || '(untitled)'}</span>
+      <span lang="ja">${String(c.text || '(untitled)').replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]))}</span>
       <button class="btn-link kt-danger" data-del="${c.id}">Remove</button>
     </li>`).join('');
   list.querySelectorAll('[data-del]').forEach((b) => b.addEventListener('click', async () => {
@@ -170,9 +170,14 @@ function loadClip() {
     : current.source === 'you' ? 'your clip · shape match'
     : current.type === 'sentence' ? 'sentence · shape match'
     : `${KIND_LABEL[current.pattern.kind] || '—'}${current.drop ? ' · drops after mora ' + current.drop : ''}`;
-  $('pm-credit').innerHTML = current.credit
-    ? `Recording: ${current.credit.author} · <a href="${current.credit.url}" target="_blank" rel="noopener">${current.credit.license}</a>`
-    : current.source === 'you' ? '' : 'Guide tone (no recording yet)';
+  $('pm-credit').textContent = '';
+  if (current.credit) {
+    const a = document.createElement('a');
+    a.href = current.credit.url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = current.credit.license;
+    $('pm-credit').append(`Recording: ${current.credit.author} · `, a);
+  } else if (current.source !== 'you' && current.type !== 'free') {
+    $('pm-credit').textContent = 'Guide tone: no one has recorded this word yet';
+  }
   $('pm-progress').textContent = `${(idx % pool.length) + 1} / ${pool.length}`;
   $('pm-verdict').innerHTML = '';
   liveSamples = [];
@@ -461,8 +466,17 @@ async function restoreClipAudio() {
   }
 }
 
+function renderCredits() {
+  const rec = CLIPS.filter((c) => c.credit);
+  const esc = (t) => String(t).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+  $('pm-credits-sum').textContent = `Recording credits (${rec.length} clips)`;
+  $('pm-credits-list').innerHTML = rec.map((c) =>
+    `<li><a href="${esc(c.credit.url)}" target="_blank" rel="noopener" lang="ja">${esc(c.text)}</a> · ${esc(c.credit.author)} · ${esc(c.credit.license)}</li>`).join('');
+}
+
 // ------------------------------------------------------------ wiring
 restoreClipAudio();
+renderCredits();
 renderKinds();
 applyFilterActive();
 renderStats();
