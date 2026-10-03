@@ -1,12 +1,38 @@
 // make-clips.mjs — turns the workflow's library.json into scripts/pitch/data/clips.js.
-// Usage: node scripts/pitch/build/make-clips.mjs path/to/library.json
-// Keeps one recording per word (public-domain first, then the clearest), marks
-// minimal pairs, and adds guide-tone clips for classic pairs nobody has recorded yet.
+// Usage: node scripts/pitch/build/make-clips.mjs path/to/build-output
+// (the folder from the pitch-audio-build branch: library.json, traces.json, audio/).
+// Keeps word recordings whose pitch matches the dictionary accent, one per word
+// (public-domain first, then the clearest), plus the phrase recordings; marks
+// minimal pairs; adds guide-tone clips for classic pairs nobody has recorded
+// yet; recomputes each target contour with the current engine; and copies the
+// MP3s it uses into tools/pitch/audio/.
 import fs from 'fs';
 import path from 'path';
+import { normalizeTrace, resample, synthContour, moraPattern } from '../engine/contour.js';
+import { patternScore, shapeScore } from '../engine/scoring.js';
 
 const HERE = path.dirname(new URL(import.meta.url).pathname);
-const lib = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+// Commons titles of recordings that sound off to a human ear; never use these
+const SKIP = new Set([]);
+const SRC = process.argv[2];
+const traces = JSON.parse(fs.readFileSync(path.join(SRC, 'traces.json'), 'utf8'));
+const curveOf = (id) => normalizeTrace(traces[id].map(([t, hz]) => ({ t: t / 1000, hz }))).points;
+const lib = JSON.parse(fs.readFileSync(path.join(SRC, 'library.json'), 'utf8')).filter((c) => {
+  if (!traces[c.id]) return false;
+  // speakers left out: likely not native Japanese speakers
+  if (/I JethroBT/.test(c.credit.author)) return false;
+  if (SKIP.has(c.title)) return false;
+  const pts = curveOf(c.id);
+  if (pts.length < 6) return false;
+  c.contour = resample(pts, 64).map((v) => Math.round(v * 100) / 100);
+  c.credit.author = c.credit.author.replace(/^Speaker:\s*/, '').split('\n')[0].trim();
+  if (c.type !== 'word') return true;
+  const target = c.pattern.kind === 'heiban' || c.pattern.kind === 'odaka' ? 0 : c.pattern.drop;
+  // the drop has to land in the right place AND the whole shape has to look
+  // like the textbook pattern, so learners copy a clean example
+  const ideal = synthContour(moraPattern(c.pattern.kind, c.pattern.drop, c.moras.length));
+  return patternScore(pts, c.moras.length, target).pass && shapeScore(pts, ideal) >= 60;
+});
 const licRank = { CC0: 0, 'CC BY 4.0': 1, 'CC BY-SA 4.0': 2 };
 const better = (a, b) => (licRank[a.credit.license] - licRank[b.credit.license]) || ((b.voiced || 0) - (a.voiced || 0));
 
@@ -72,5 +98,9 @@ export const CLIPS = ${JSON.stringify(out)};
 `;
 const dest = path.join(HERE, '..', 'data', 'clips.js');
 fs.writeFileSync(dest, header + '\n' + body);
+const audioDir = path.join(HERE, '..', '..', '..', 'tools', 'pitch', 'audio');
+fs.rmSync(audioDir, { recursive: true, force: true });
+fs.mkdirSync(audioDir, { recursive: true });
+for (const c of out) if (c.audio) fs.copyFileSync(path.join(SRC, c.audio), path.join(audioDir, path.basename(c.audio)));
 const n = (f) => out.filter(f).length;
 console.log(`${out.length} clips: ${n((c) => c.type === 'word')} words (${n((c) => c.audio && c.type === 'word')} recorded), ${n((c) => c.pair)} in pairs, ${n((c) => c.type === 'sentence')} sentences`);

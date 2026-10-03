@@ -48,8 +48,26 @@ export function synthContour(hl, pointsPerMora = 16) {
 
 // Convert a live sample series [{t, hz}] into a normalized 0..1 curve, using
 // the series' OWN log-pitch range (this is the relative-pitch step).
-export function normalizeTrace(samples) {
+// Clean up a raw trace: fix octave jumps (a frame read at double or half the
+// real pitch) against a running median, and drop isolated one-frame blips.
+export function cleanTrace(samples) {
   const voiced = samples.filter((s) => s && s.hz > 0);
+  const logs = voiced.map((s) => Math.log2(s.hz));
+  const out = [];
+  for (let i = 0; i < voiced.length; i++) {
+    const win = logs.slice(Math.max(0, i - 3), i + 4).sort((a, b) => a - b);
+    const med = win[Math.floor(win.length / 2)];
+    let l = logs[i];
+    while (l - med > 0.6) l -= 1;   // read an octave too high
+    while (med - l > 0.6) l += 1;   // read an octave too low
+    if (Math.abs(l - med) > 0.35 && win.length >= 5) continue; // still off: a blip
+    out.push({ t: voiced[i].t, hz: 2 ** l });
+  }
+  return out;
+}
+
+export function normalizeTrace(samples) {
+  const voiced = cleanTrace(samples);
   if (voiced.length < 2) return { points: [], t0: 0, t1: 0 };
   const logs = voiced.map((s) => Math.log2(s.hz));
   const floor = Math.min(...logs);

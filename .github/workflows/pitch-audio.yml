@@ -6,12 +6,7 @@
 name: Pitch Mirror audio
 
 on:
-  push:
-    paths:
-      - 'scripts/pitch/build/**'
-      - 'scripts/pitch/engine/**'
-      - '.github/workflows/pitch-audio.yml'
-  workflow_dispatch:
+  workflow_dispatch:   # run by hand from the Actions tab
 
 permissions:
   contents: write   # only to push the pitch-audio-build branch

@@ -116,10 +116,11 @@ body.pm-focus main, body.pm-focus .container.pm { margin: 0; padding: 0; max-wid
 }
 .pm-staff { display: block; width: 100%; height: 100%; }
 
-.pm-verdict { min-height: 1.6em; display: flex; gap: 16px; align-items: baseline; font: 400 0.95rem var(--font-gothic); }
+.pm-verdict { min-height: 1.6em; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; align-items: baseline; text-align: center; font: 400 0.95rem var(--font-gothic); }
+.pm-v-pattern { white-space: nowrap; }
 .pm-v-pattern.ok { color: var(--pm-ok); font-weight: 500; }
 .pm-v-pattern.miss { color: var(--pm-miss); font-weight: 500; }
-.pm-v-contour { font-family: 'Space Mono', monospace; color: var(--muted); }
+.pm-v-contour { color: var(--muted); }
 .pm-v-contour strong { color: var(--ink); }
 .pm-v-miss { color: var(--muted); }
 

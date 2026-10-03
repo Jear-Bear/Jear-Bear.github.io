@@ -1,10 +1,10 @@
 // app.js — Pitch Mirror orchestration.
-import { CLIPS, KINDS } from './data/clips.js?v=2';
-import { detectPitch } from './engine/pitch-detect.js?v=3';
+import { CLIPS, KINDS } from './data/clips.js?v=4';
+import { detectPitch } from './engine/pitch-detect.js?v=4';
 import {
   moraPattern, dropIndex, synthContour, normalizeTrace, resample,
-} from './engine/contour.js?v=3';
-import { patternScore, contourScore } from './engine/scoring.js?v=3';
+} from './engine/contour.js?v=4';
+import { shapeScore, PASS, GREAT } from './engine/scoring.js?v=5';
 import * as Store from './store.js?v=2';
 
 const PM_VERSION = 2;
@@ -103,8 +103,8 @@ function renderStats() {
   const avgContour = contours.length ? Math.round(contours.reduce((a, b) => a + b, 0) / contours.length) : 0;
   const cells = [
     [attempts, 'total attempts'],
-    [`${patternHits}`, 'patterns matched'],
-    [contours.length ? `${avgContour}` : '—', 'avg contour'],
+    [`${patternHits}`, 'clips passed'],
+    [contours.length ? `${avgContour}` : '—', 'avg best shape'],
     [store.userClips.length, 'your clips'],
   ];
   $('pm-stats').innerHTML = cells.map(([v, l]) =>
@@ -272,41 +272,30 @@ function score() {
     drawStaff(true);
     return;
   }
-  const n = current.moras.length || 2;
-  if (current.source === 'you' || current.type === 'sentence' || !current.pattern.kind) {
-    const c = contourScore(resample(norm.points, 64), current.targetResampled);
-    Store.recordAttempt(store, current.id, c >= 70, c);
-    $('pm-verdict').innerHTML = `<span class="pm-v-pattern ${c >= 70 ? 'ok' : 'miss'}">shape match <strong>${c}</strong> / 100</span>
-      <span class="pm-v-contour">${c >= 85 ? 'really close' : c >= 70 ? 'close — keep shadowing it' : 'listen again and copy the rises and falls'}</span>`;
-    drawStaff(true); renderStats();
-    return;
-  }
-  // Odaka words fall on the FOLLOWING particle, so within the word itself the
-  // contour looks like heiban (no internal drop). Score against drop 0 and
-  // tell the user where the real downstep lands.
-  const isOdaka = current.pattern.kind === 'odaka';
-  const scoreDrop = isOdaka ? 0 : current.drop;
-  const ps = patternScore(norm.points, n, scoreDrop);
-  const showContour = store.settings.showContour;
-  let contour = null;
-  if (showContour) contour = contourScore(resample(norm.points, 64), current.targetResampled);
-
-  Store.recordAttempt(store, current.id, ps.pass, contour);
-
-  const odakaNote = isOdaka && ps.pass
-    ? `<span class="pm-v-contour">flat within the word — the drop lands on the next particle (◌を→low)</span>`
-    : '';
-  const verdict = `
-    <span class="pm-v-pattern ${ps.pass ? 'ok' : 'miss'}">
-      ${ps.pass ? '✓ pattern matched' : '✗ ' + ps.note}
-    </span>
-    ${odakaNote}
-    ${showContour ? `<span class="pm-v-contour">contour <strong>${contour}</strong></span>` : ''}`;
-  $('pm-verdict').innerHTML = verdict;
-  if (ps.pass) toast('<strong>✓</strong> nailed the pitch', '');
+  // words: half how close you are to the native voice, half how close to the
+  // textbook pattern (so a recording's quirks can't carry a wrong pattern)
+  const c = current.type === 'word' && current.hl && current.contour?.length
+    ? Math.round((shapeScore(norm.points, current.target) + shapeScore(norm.points, synthContour(current.hl))) / 2)
+    : shapeScore(norm.points, current.target);
+  const pass = c >= PASS;
+  Store.recordAttempt(store, current.id, pass, c);
+  const tip = c >= GREAT ? 'really close'
+    : pass ? 'close — keep shadowing it'
+    : current.type === 'word' && current.pattern.kind ? `listen again: ${TIP[current.pattern.kind]}`
+    : 'listen again and copy the rises and falls';
+  $('pm-verdict').innerHTML = `<span class="pm-v-pattern ${pass ? 'ok' : 'miss'}">${pass ? '✓' : '✗'} shape match <strong>${c}</strong> / 100</span>
+    <span class="pm-v-contour">${tip}</span>`;
+  if (c >= GREAT) toast('<strong>✓</strong> nailed the pitch', '');
   drawStaff(true);
   renderStats();
 }
+
+const TIP = {
+  heiban: 'start low, go up, and stay up to the end',
+  atamadaka: 'start high and fall right after the first mora',
+  nakadaka: 'go up, then fall after the marked mora',
+  odaka: 'go up and stay up; the fall comes on the next particle',
+};
 
 // ------------------------------------------------------------ the pitch staff
 const cv = $('pm-staff');
@@ -481,7 +470,6 @@ renderKinds();
 applyFilterActive();
 renderStats();
 renderClipList();
-$('pm-show-contour').checked = !!store.settings.showContour;
 
 document.querySelector('.pm-filters').addEventListener('click', (e) => {
   const chip = e.target.closest('.pm-chip');
@@ -498,11 +486,6 @@ document.querySelector('.pm-modes').addEventListener('click', (e) => {
   store.settings.lastMode = mode;
   Store.save(store);
   applyFilterActive();
-});
-
-$('pm-show-contour').addEventListener('change', (e) => {
-  store.settings.showContour = e.target.checked;
-  Store.save(store);
 });
 
 $('pm-start').addEventListener('click', startSession);
