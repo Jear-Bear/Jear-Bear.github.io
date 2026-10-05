@@ -19,13 +19,22 @@ and may use these shorthands, expanded here:
     {{root}}                                    relative path to the site root
     {{link:migaku}}                             shared links (LINKS below)
 
+Audio: when guide/audio/<slug>.mp3 and <slug>.words.json exist (made by
+scripts/guide/audio.py), the chapter gets a "Listen" player, and the spoken
+words are lined up with the page text into guide/<slug>/sync.json so the
+words light up as they're read. The page is split into words the same way
+guide.js does it (WordSplitter below and words() in guide.js must agree).
+
 Run:  python3 scripts/guide/build.py
 Writes guide/index.html and guide/<slug>/index.html.
 """
 
+import difflib
+import hashlib
 import html
 import json
 import re
+from html.parser import HTMLParser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -132,6 +141,124 @@ def expand(body, root):
     return body
 
 
+# ------------------------------------------------------------------ audio sync
+# Text inside these is never narrated (and guide.js rewrites some of it)
+SKIP_TAGS = {"script", "style", "svg", "figure", "button", "template"}
+VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
+SPLIT = re.compile(r"[\s\u2013\u2014/\-]+")
+
+
+def norm(w):
+    w = w.lower().replace("\u2019", "'").replace("\u2018", "'")
+    return "".join(ch for ch in w if ch.isalnum())
+
+
+class WordSplitter(HTMLParser):
+    """Page words in reading order, skipping widgets, videos and figures."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.stack, self.skip, self.words = [], 0, []
+
+    def handle_starttag(self, tag, attrs):
+        if tag in VOID:
+            return
+        a = dict(attrs)
+        sk = tag in SKIP_TAGS or "data-widget" in a or "g-yt" in (a.get("class") or "").split()
+        self.stack.append((tag, sk))
+        self.skip += sk
+
+    def handle_endtag(self, tag):
+        if not any(t == tag for t, _ in self.stack):
+            return
+        while self.stack:
+            t, sk = self.stack.pop()
+            self.skip -= sk
+            if t == tag:
+                break
+
+    def handle_data(self, data):
+        if self.skip:
+            return
+        for tok in SPLIT.split(data):
+            n = norm(tok)
+            if n:
+                self.words.append(n)
+
+
+def page_words(*fragments):
+    out = []
+    for frag in fragments:
+        sp = WordSplitter()
+        sp.feed(frag)
+        sp.close()
+        out += sp.words
+    return out
+
+
+def align(page, spoken):
+    """Start/end time for each page word (None where it wasn't heard).
+
+    Matching words take their spoken times. Short unmatched runs between two
+    matches (a Japanese word Whisper misheard, a number read out loud) share
+    the time between them; long runs (a list you skipped) stay unlit.
+    """
+    heard = [norm(w) for w, _, _ in spoken]
+    sm = difflib.SequenceMatcher(None, page, heard, autojunk=False)
+    times = [None] * len(page)
+    for a, b, n in sm.get_matching_blocks():
+        for k in range(n):
+            times[a + k] = (spoken[b + k][1], spoken[b + k][2])
+    i = 0
+    while i < len(page):
+        if times[i] is not None:
+            i += 1
+            continue
+        j = i
+        while j < len(page) and times[j] is None:
+            j += 1
+        if 0 < i and j < len(page):
+            t0, t1 = times[i - 1][1], times[j][0]
+            run = j - i
+            per = (t1 - t0) / run if run else 0
+            if (run <= 6 and 0 <= per <= 1.5) or 0.12 <= per <= 1.0:
+                for k in range(run):
+                    times[i + k] = (round(t0 + per * k, 2), round(t0 + per * (k + 1), 2))
+        i = j
+    return times, sum(n for _, _, n in sm.get_matching_blocks())
+
+
+def audio_for(c, body_html):
+    """Writes guide/<slug>/sync.json and returns the player markup, or ''."""
+    slug = c["slug"]
+    snd = OUT / "audio" / f"{slug}.mp3"
+    wf = OUT / "audio" / f"{slug}.words.json"
+    sync = OUT / slug / "sync.json"
+    if not (snd.exists() and wf.exists()):
+        if sync.exists():
+            sync.unlink()
+        return ""
+    data = json.loads(wf.read_text(encoding="utf-8"))
+    words = page_words(c.get("title_html") or html.escape(c["title"]), c["lede"], body_html)
+    times, matched = align(words, data["words"])
+    flat = []
+    for t in times:
+        flat += list(t) if t else [-1, -1]
+    sync.parent.mkdir(exist_ok=True)
+    sync_text = json.dumps({"w": words, "t": flat}, ensure_ascii=False, separators=(",", ":"))
+    sync.write_text(sync_text, encoding="utf-8")
+    lit = sum(1 for t in times if t)
+    print(f"  audio {slug}: {matched}/{len(words)} words matched, {lit} lit")
+    mins = max(1, round(data["duration"] / 60))
+    # Cache-busters: a new take or a text edit changes the URL
+    va = hashlib.sha1(wf.read_bytes()).hexdigest()[:8]
+    vs = hashlib.sha1(sync_text.encode()).hexdigest()[:8]
+    return (f'<div class="g-listen" data-audio="../audio/{slug}.mp3?v={va}" data-sync="sync.json?v={vs}" '
+            f'data-dur="{data["duration"]}" data-title="{html.escape(c["title"], quote=True)}">'
+            f'<button type="button" class="g-listen-btn"><span class="g-listen-ic" aria-hidden="true"></span>'
+            f'<span>Listen to me read it</span><span class="g-listen-min">{mins} min</span></button></div>')
+
+
 def template_parts():
     t = TEMPLATE.read_text(encoding="utf-8")
     head_scripts = re.search(r"(<script>/\* theme:.*?</script>)", t, re.S).group(1)
@@ -164,7 +291,7 @@ def page(*, title, description, canonical, root, body, body_attrs=""):
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="{root}styles/base.css?v=4">
-  <link rel="stylesheet" href="{root}styles/guide.css?v=3">
+  <link rel="stylesheet" href="{root}styles/guide.css?v=4">
 {fix(beacon)}
 </head>
 <body data-page="guide"{body_attrs}>
@@ -176,7 +303,7 @@ def page(*, title, description, canonical, root, body, body_attrs=""):
 {fix(footer)}
 
   <script src="{root}scripts/site.js?v=3"></script>
-  <script type="module" src="{root}scripts/guide/guide.js?v=1"></script>
+  <script type="module" src="{root}scripts/guide/guide.js?v=2"></script>
 </body>
 </html>
 """
@@ -200,6 +327,7 @@ def chapter_page(chapters, i):
     prev_c = chapters[i - 1] if i > 0 else None
     next_c = chapters[i + 1] if i + 1 < len(chapters) else None
     body = expand(c["body"], root)
+    listen = audio_for(c, body)
 
     def nav_card(x, label):
         if not x:
@@ -228,6 +356,7 @@ def chapter_page(chapters, i):
           <p class="g-hero-ja" lang="ja">{c['ja']}</p>
           <p class="g-hero-lede">{c['lede']}</p>
           <p class="g-hero-meta"><span>{c['minutes']} min read</span><span>{c.get('stage', 'Everyone')}</span><span class="g-hero-done" hidden>✓ Read</span></p>
+          {listen}
           <span class="g-hero-kanji" aria-hidden="true" lang="ja">{c['kanji']}</span>
         </header>
 

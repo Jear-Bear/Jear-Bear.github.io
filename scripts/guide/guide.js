@@ -841,6 +841,183 @@ W.stages = (el) => {
   });
 };
 
+// --------------------------------------------------------------- listen
+// Chapters Jared has recorded get a player. guide/<slug>/sync.json (from
+// build.py) holds the page's words in reading order and when each is said.
+// words() must split the page exactly like WordSplitter in build.py.
+const SKIP = '[data-widget], .g-yt, figure, button, script, style, svg, template, .g-h2-n';
+const normWord = (w) => w.toLowerCase().replace(/[‘’]/g, "'").replace(/[^\p{L}\p{N}]/gu, '');
+
+function words() {
+  const out = [];
+  ['.g-hero-title', '.g-hero-lede', '.g-body'].forEach((sel) => {
+    const root = $(sel);
+    if (!root) return;
+    const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: (n) => (n.parentElement.closest(SKIP) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT),
+    });
+    const nodes = [];
+    while (walk.nextNode()) nodes.push(walk.currentNode);
+    nodes.forEach((node) => {
+      // Wrap each word in a span; the gaps (spaces, dashes, slashes) stay plain text
+      const parts = node.data.split(/([\s–—/-]+)/);
+      if (!parts.some((p) => normWord(p))) return;
+      const frag = document.createDocumentFragment();
+      parts.forEach((p, i) => {
+        const n = i % 2 ? '' : normWord(p);
+        if (!n) { if (p) frag.append(p); return; }
+        const sp = h('span', { class: 'g-w' }, p);
+        out.push([n, sp]);
+        frag.append(sp);
+      });
+      node.replaceWith(frag);
+    });
+  });
+  return out;
+}
+
+// Pairs the page's words with sync.json's list, stepping over small
+// differences (if the page changed since the last build, say).
+function pair(pageWords, sync) {
+  const res = [];
+  let j = 0;
+  for (let i = 0; i < pageWords.length && j < sync.w.length; i++) {
+    let k = j;
+    while (k < sync.w.length && k < j + 8 && sync.w[k] !== pageWords[i][0]) k++;
+    if (k < sync.w.length && sync.w[k] === pageWords[i][0]) {
+      const s0 = sync.t[2 * k], e0 = sync.t[2 * k + 1];
+      if (s0 >= 0) res.push({ el: pageWords[i][1], s: s0, e: e0 });
+      j = k + 1;
+    }
+  }
+  return res;
+}
+
+const mmss = (t) => { t = Math.max(0, Math.floor(t || 0)); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; };
+
+function listen(box) {
+  const btn = $('.g-listen-btn', box);
+  const audio = new Audio();
+  audio.preload = 'none';
+  audio.src = box.dataset.audio;
+  const total = Number(box.dataset.dur) || 0;
+  const SPEEDS = [1, 1.25, 1.5, 0.75];
+  store.listen = store.listen || {};
+  let ready = null, cues = [], cur = -1, follow = true, userAt = 0, raf = 0, speed = 0;
+
+  const play = h('button', { type: 'button', class: 'g-lb-play', 'aria-label': 'Play' });
+  const back = h('button', { type: 'button', class: 'g-lb-skip', 'aria-label': 'Back 10 seconds' }, '−10');
+  const fwd = h('button', { type: 'button', class: 'g-lb-skip', 'aria-label': 'Forward 10 seconds' }, '+10');
+  const seek = h('input', { type: 'range', class: 'g-lb-seek', min: 0, max: Math.round(total) || 1, step: 'any', value: 0, 'aria-label': 'Position' });
+  const time = h('span', { class: 'g-lb-time' }, `0:00 / ${mmss(total)}`);
+  const rate = h('button', { type: 'button', class: 'g-lb-rate', 'aria-label': 'Playback speed' }, '1×');
+  const refollow = h('button', { type: 'button', class: 'g-lb-follow', hidden: true }, 'Follow along');
+  const close = h('button', { type: 'button', class: 'g-lb-close', 'aria-label': 'Close player' }, '×');
+  const bar = h('div', { class: 'g-lb', role: 'region', 'aria-label': 'Audio player', hidden: true },
+    h('div', { class: 'g-lb-in' }, back, play, fwd, seek, time, refollow, rate, close));
+  document.body.append(bar);
+
+  const load = () => ready || (ready = fetch(box.dataset.sync).then((r) => r.json()).then((sync) => {
+    cues = pair(words(), sync);
+    $('.g-article').classList.add('g-has-words');
+  }).catch((err) => { console.error('Sync failed', err); }));
+
+  const paint = (i) => {
+    if (i === cur) return;
+    if (cues[cur]) cues[cur].el.classList.remove('is-now');
+    cur = i;
+    const c = cues[cur];
+    if (!c) return;
+    c.el.classList.add('is-now');
+    if (!follow) { refollow.hidden = false; return; }
+    const r = c.el.getBoundingClientRect();
+    const barTop = bar.getBoundingClientRect().top || innerHeight;
+    if (r.top < innerHeight * 0.18 || r.bottom > barTop - innerHeight * 0.15) {
+      c.el.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' });
+    }
+  };
+  const find = (t) => {
+    // Last word that has started; stay lit through short pauses
+    let lo = 0, hi = cues.length - 1, ans = -1;
+    while (lo <= hi) { const m = (lo + hi) >> 1; if (cues[m].s <= t) { ans = m; lo = m + 1; } else hi = m - 1; }
+    return ans;
+  };
+  const tick = () => {
+    const t = audio.currentTime;
+    if (Date.now() - userAt > 6000 && !follow) { follow = true; refollow.hidden = true; }
+    paint(find(t));
+    if (!seek.matches(':active')) seek.value = t;
+    time.textContent = `${mmss(t)} / ${mmss(audio.duration || total)}`;
+    if (!audio.paused) raf = requestAnimationFrame(tick);
+  };
+  const setPlaying = (on) => {
+    play.classList.toggle('is-playing', on);
+    play.setAttribute('aria-label', on ? 'Pause' : 'Play');
+    btn.classList.toggle('is-playing', on);
+  };
+
+  const start = async () => {
+    bar.hidden = false;
+    document.body.classList.add('g-listening');
+    await load();
+    // Pick up where this reader stopped last time
+    const at = store.listen[CHAPTER];
+    if (!audio.currentTime && at > 5 && at < total - 10) {
+      if (audio.readyState) audio.currentTime = at - 2;
+      else audio.addEventListener('loadedmetadata', () => { audio.currentTime = at - 2; }, { once: true });
+    }
+    follow = true; refollow.hidden = true;
+    try { await audio.play(); } catch (err) { console.warn(err); }
+  };
+  const toggle = () => (audio.paused ? start() : audio.pause());
+
+  btn.addEventListener('click', toggle);
+  play.addEventListener('click', toggle);
+  back.addEventListener('click', () => { audio.currentTime = Math.max(0, audio.currentTime - 10); tick(); });
+  fwd.addEventListener('click', () => { audio.currentTime = Math.min(audio.duration || total, audio.currentTime + 10); tick(); });
+  seek.addEventListener('input', () => { audio.currentTime = Number(seek.value); follow = true; refollow.hidden = true; tick(); });
+  rate.addEventListener('click', () => { speed = (speed + 1) % SPEEDS.length; audio.playbackRate = SPEEDS[speed]; rate.textContent = `${SPEEDS[speed]}×`; });
+  refollow.addEventListener('click', () => { follow = true; userAt = 0; refollow.hidden = true; cur = -1; tick(); });
+  close.addEventListener('click', () => {
+    audio.pause();
+    bar.hidden = true;
+    document.body.classList.remove('g-listening');
+    if (cues[cur]) cues[cur].el.classList.remove('is-now');
+    cur = -1;
+  });
+  audio.addEventListener('play', () => { setPlaying(true); cancelAnimationFrame(raf); raf = requestAnimationFrame(tick); });
+  audio.addEventListener('pause', () => { setPlaying(false); store.listen[CHAPTER] = audio.currentTime; save(); });
+  audio.addEventListener('ended', () => { setPlaying(false); store.listen[CHAPTER] = 0; save(); });
+  audio.addEventListener('seeked', tick);
+  audio.addEventListener('loadedmetadata', () => { seek.max = audio.duration; });
+
+  // Scrolling yourself pauses the auto-scroll for a few seconds
+  const mine = () => { if (!audio.paused) { userAt = Date.now(); follow = false; } };
+  addEventListener('wheel', mine, { passive: true });
+  addEventListener('touchmove', mine, { passive: true });
+  addEventListener('keydown', (e) => { if (['PageDown', 'PageUp', 'ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key) && !e.target.closest('input, textarea')) mine(); });
+
+  // Tap any word to jump there (links still work as links)
+  $('.g-article').addEventListener('click', (e) => {
+    if (bar.hidden || e.target.closest('a, button, input, textarea')) return;
+    const w = e.target.closest('.g-w');
+    if (!w || window.getSelection().toString()) return;
+    const c = cues.find((x) => x.el === w);
+    if (!c) return;
+    audio.currentTime = c.s;
+    follow = true; refollow.hidden = true;
+    if (audio.paused) start(); else tick();
+  });
+
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({ title: box.dataset.title, artist: 'まだまだJared', album: 'Jared’s Ultimate Japanese Guide' });
+    navigator.mediaSession.setActionHandler('seekbackward', () => back.click());
+    navigator.mediaSession.setActionHandler('seekforward', () => fwd.click());
+  }
+}
+const listenBox = $('.g-listen');
+if (listenBox && CHAPTER) listen(listenBox);
+
 $$('[data-widget]').forEach((el) => {
   const fn = W[el.dataset.widget];
   if (!fn) { console.warn('Unknown widget', el.dataset.widget); return; }

@@ -1,5 +1,6 @@
-# GitHub Pages (Jekyll) settings. Only keeps the sponsor CRM Worker's source
-# and tooling out of the published site; everything else is unchanged.
+# GitHub Pages (Jekyll) settings. Keeps the sponsor CRM Worker's source,
+# tooling and raw guide recordings out of the published site.
 exclude:
   - workers/
   - .github/
+  - guide/audio/raw/
