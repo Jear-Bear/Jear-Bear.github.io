@@ -487,3 +487,41 @@ html.no-js .g-reveal { opacity: 1; transform: none; }
 .g-bonus figure { margin: 16px 0 0; max-width: 420px; }
 .g-bonus img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); background: #fff; }
 .g-bonus figcaption { margin-top: 8px; font-size: 13px; color: var(--muted); }
+
+/* --- Listen: Jared reading the chapter, words lit as he says them ------ */
+.g-listen { margin-top: 20px; }
+.g-listen-btn { display: inline-flex; align-items: center; gap: 10px; padding: 9px 16px 9px 10px; min-height: 44px; border: 1px solid var(--page-color); background: transparent; color: var(--page-ink); font: 500 14px var(--font-gothic); cursor: pointer; transition: background .15s, color .15s; }
+.g-listen-btn:hover, .g-listen-btn.is-playing { background: var(--page-color); color: #fff; }
+.g-listen-min { color: var(--muted); font-size: 13px; }
+.g-listen-btn:hover .g-listen-min, .g-listen-btn.is-playing .g-listen-min { color: inherit; opacity: .85; }
+.g-listen-ic { position: relative; width: 26px; height: 26px; flex: none; border-radius: 50%; background: var(--page-color); }
+.g-listen-ic::after { content: ""; position: absolute; left: 9px; top: 7px; border: 5px solid transparent; border-left: 8px solid #fff; border-right: 0; }
+.g-listen-btn.is-playing .g-listen-ic, .g-listen-btn:hover .g-listen-ic { background: #fff; }
+.g-listen-btn.is-playing .g-listen-ic::after, .g-listen-btn:hover .g-listen-ic::after { border-left-color: var(--page-color); }
+.g-listen-btn.is-playing .g-listen-ic::after { left: 8px; top: 7px; width: 8px; height: 10px; border: 0; border-left: 3px solid var(--page-color); border-right: 3px solid var(--page-color); }
+
+.g-lb { position: fixed; z-index: 170; left: 0; right: 0; bottom: 0; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: var(--paper); border-top: 1px solid var(--rule-strong); box-shadow: var(--shadow-md); }
+.g-lb[hidden] { display: none; }
+.g-lb-in { max-width: 54rem; margin: 0 auto; display: flex; align-items: center; gap: 10px; }
+.g-lb button { flex: none; min-width: 40px; min-height: 40px; padding: 0 8px; border: 1px solid var(--rule); background: transparent; color: var(--ink); font: 500 13px var(--font-gothic); cursor: pointer; }
+.g-lb button:hover { border-color: var(--ink); }
+.g-lb .g-lb-play { position: relative; width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--page-color); }
+.g-lb .g-lb-play::after { content: ""; position: absolute; left: 17px; top: 14px; border: 8px solid transparent; border-left: 12px solid #fff; border-right: 0; }
+.g-lb .g-lb-play.is-playing::after { left: 15px; top: 14px; width: 14px; height: 16px; border: 0; border-left: 4px solid #fff; border-right: 4px solid #fff; box-sizing: border-box; }
+.g-lb-seek { flex: 1; min-width: 60px; accent-color: var(--page-color); }
+.g-lb-time { flex: none; font: 500 12px var(--font-gothic); color: var(--muted); font-variant-numeric: tabular-nums; }
+.g-lb .g-lb-follow { border-color: var(--page-color); color: var(--page-ink); }
+.g-lb .g-lb-close { border: 0; font-size: 22px; line-height: 1; color: var(--muted); }
+@media (max-width: 640px) {
+  .g-lb-in { flex-wrap: wrap; gap: 8px; }
+  .g-lb-seek { order: -1; flex-basis: 100%; }
+  .g-lb-time { margin-right: auto; }
+}
+body.g-listening { padding-bottom: 120px; }
+@media (max-width: 1099px) { body.g-listening .g-side-toggle { bottom: calc(120px + env(safe-area-inset-bottom)); } }
+
+.g-w { border-radius: 2px; transition: background-color .12s, box-shadow .12s; }
+.g-listening .g-has-words .g-w { cursor: pointer; }
+.g-w.is-now { background: color-mix(in srgb, var(--page-color) 24%, transparent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--page-color) 24%, transparent); }
+@media (prefers-reduced-motion: reduce) { .g-w { transition: none; } }
+:root[data-theme="dark"] .g-w.is-now { background: color-mix(in srgb, var(--page-color) 45%, transparent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--page-color) 45%, transparent); }

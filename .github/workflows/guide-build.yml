@@ -1,0 +1,75 @@
+# Rebuilds the guide whenever a chapter changes on main, so edits made on
+# github.com go live without running build.py by hand. When a recording is
+# dropped in guide/audio/raw/, it first compresses it and transcribes it with
+# faster-whisper (free, runs on the runner's CPU), so the chapter gets a
+# "Listen" player with words that light up as they're read.
+# See docs/guide.md ("Audio").
+name: Guide build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'guide/_chapters/**'
+      - 'guide/audio/**'
+      - 'scripts/guide/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: guide-build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Check out
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Any new recordings?
+        id: raw
+        run: |
+          if find guide/audio/raw -maxdepth 1 -type f ! -name '*.md' 2>/dev/null | grep -q .; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Cache the speech model
+        if: steps.raw.outputs.found == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: whisper-small.en-v1
+
+      - name: Install ffmpeg and faster-whisper
+        if: steps.raw.outputs.found == 'true'
+        run: |
+          command -v ffmpeg || (sudo apt-get update -q && sudo apt-get install -y -q ffmpeg)
+          pip install -q faster-whisper
+
+      - name: Transcribe recordings
+        if: steps.raw.outputs.found == 'true'
+        run: python3 scripts/guide/audio.py
+
+      - name: Build the guide
+        run: python3 scripts/guide/build.py
+
+      - name: Commit if changed
+        run: |
+          git add -A guide
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ "${{ steps.raw.outputs.found }}" = "true" ]; then
+            git commit -q -m "Guide: add chapter audio"
+          else
+            git commit -q -m "Guide: rebuild"
+          fi
+          git pull -q --rebase origin "${GITHUB_REF_NAME}"
+          git push -q origin "HEAD:${GITHUB_REF_NAME}"
