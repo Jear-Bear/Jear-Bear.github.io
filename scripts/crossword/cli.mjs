@@ -17,7 +17,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gridKana, romaji, toHira } from './kana.js';
-import { build, rng, SIZES, LEVELS, WORD_LEVELS, JAPANESE_CLUES } from './construct.mjs';
+import { build, rng, SIZES, SHAPES, LEVELS, WORD_LEVELS, JAPANESE_CLUES } from './construct.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const DIR = path.join(ROOT, 'data/crossword');
@@ -28,8 +28,10 @@ const PUZZLES = path.join(DIR, 'puzzles');
 const INDEX = path.join(DIR, 'index.json');
 const THEMES = path.join(DIR, 'themes.json');
 const SOURCE = 'https://raw.githubusercontent.com/jamsinclair/open-anki-jlpt-decks/1ad66734417aca9dbcca6b2d5ee440cb13ab3ba0/src';
-// Don't reuse an answer at the same level for this many days. The beginner
-// list is small (about 1,300 words, ~45 used a day), so it gets a shorter window.
+// Don't reuse an answer of 3+ kana at the same level for this many days. The
+// beginner list is small (about 1,300 words, ~45 used a day), so it gets a
+// shorter window. Two-kana answers may repeat (only ~150 at N1, and a 9x9
+// uses about ten), like the short words every crossword leans on.
 const RECENT_DAYS = { beginner: 7, intermediate: 14, advanced: 14, mixed: 7 };
 
 const readJson = (p, fallback) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return fallback; } };
@@ -95,9 +97,10 @@ function recentAnswers(date, level) {
   for (let i = 1; i <= RECENT_DAYS[level]; i++) {
     const d = addDays(date, -i);
     const p = readJson(path.join(PUZZLES, `${d}.json`), null);
-    if (p) p.puzzles.filter((z) => z.level === level).forEach((z) => decode(z.key).entries.forEach((e) => used.add(e.answer)));
+    const add = (e) => { if (e.answer.length >= 3) used.add(e.answer); };
+    if (p) p.puzzles.filter((z) => z.level === level).forEach((z) => decode(z.key).entries.forEach(add));
     const dr = readJson(path.join(DRAFTS, `${d}.json`), null);          // unpublished drafts count too
-    if (dr) dr.puzzles.filter((z) => z.level === level).forEach((z) => z.entries.forEach((e) => used.add(e.answer)));
+    if (dr) dr.puzzles.filter((z) => z.level === level).forEach((z) => z.entries.forEach(add));
   }
   return used;
 }
@@ -113,6 +116,18 @@ export function themeFor(date) {
   for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
   const day = Math.floor(Date.parse(`${date}T00:00:00Z`) / 86400000);
   return order[((day % order.length) + order.length) % order.length];
+}
+
+// --- shape of the day ---------------------------------------------------------------------
+// About one day in three, the Mini or the Daily (sometimes both) gets a fun
+// shape of black squares (SHAPES in construct.mjs), the same at every level.
+// Shapes start on Oct 10, 2026, so days already out keep their grids.
+const SHAPES_FROM = '2026-10-10';
+export function shapeFor(date, size) {
+  if (date < SHAPES_FROM) return null;
+  if (rng(`shape:${date}:${size}`)() >= 0.3) return null;
+  const names = Object.keys(SHAPES[size]);
+  return names[Math.floor(rng(`shape-name:${date}:${size}`)() * names.length)];
 }
 
 // --- draft --------------------------------------------------------------------------------
@@ -141,11 +156,12 @@ function draft(date) {
     for (const size of Object.keys(SIZES)) {
       const t = Date.now();
       const exclude = new Set([...today, ...recent]);
-      const p = build({ size, level, words: list, seed: `${date}:${level}:${size}`, exclude, theme });
+      const shape = shapeFor(date, size);
+      const p = build({ size, level, words: list, seed: `${date}:${level}:${size}`, exclude, theme, shape });
       p.entries.forEach((e) => today.add(e.answer));
       today.add(p.keyword.answer);                                     // no repeated keyword either
       puzzles.push(p);
-      console.log(`${level} ${size}: ${p.entries.length} entries, ${p.entries.filter((e) => e.theme).length} on theme, keyword ${p.keyword.answer}${p.keyword.theme ? ' (theme)' : ''} (${Date.now() - t} ms)`);
+      console.log(`${level} ${size}: ${p.entries.length} entries, ${p.entries.filter((e) => e.theme).length} on theme, keyword ${p.keyword.answer}${p.keyword.theme ? ' (theme)' : ''}${p.shape ? `, shape ${p.shape}` : shape ? `, shape ${shape} didn't fill (plain grid)` : ''} (${Date.now() - t} ms)`);
     }
   }
   writeJson(out, { date, theme: theme ? { id: theme.id, en: theme.en, ja: theme.ja } : null, note: 'Fill in every "clue" (entries and keyword), then run: node scripts/crossword/cli.mjs publish ' + date + '. Clues may nod to the theme; don’t force it.', puzzles });
@@ -190,7 +206,7 @@ function publish(date) {
   const problems = d.puzzles.flatMap(clueProblems);
   if (problems.length) die(`Fix these first:\n- ${problems.join('\n- ')}`);
   const puzzles = d.puzzles.map((p) => ({
-    id: `${date}-${p.level}-${p.size}`, size: p.size, level: p.level, width: p.width, height: p.height,
+    id: `${date}-${p.level}-${p.size}`, size: p.size, level: p.level, width: p.width, height: p.height, ...(p.shape ? { shape: p.shape } : {}),
     grid: p.rows.map((r) => r.replace(/[^#]/g, '.')),
     clues: p.entries.map((e) => ({ num: e.num, dir: e.dir, row: e.row, col: e.col, len: e.len, clue: e.clue.trim() })),
     keyword: { cells: p.keyword.cells, clue: p.keyword.clue.trim() },

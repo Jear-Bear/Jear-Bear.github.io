@@ -7,7 +7,7 @@ hiragana answers. It follows the conventions of Japanese newspaper puzzles
 - **One kana per square.** Small kana are written full size (きゃ → きや,
   っ → つ), dakuten stay (が is its own letter), and ー takes a square.
 - **Black squares never touch side by side**, the four corners are white,
-  and some squares belong to only one word.
+  and some squares belong to only one word. (Except on shape days, below.)
 - **Numbering** is shared by across (ヨコのカギ) and down (タテのカギ).
 - **Keyword (二重マス):** double-boxed squares, read in order A, B, C…, spell
   a bonus word with its own clue.
@@ -29,9 +29,32 @@ from `data/crossword/extra-words.json` (food, pop culture, slang, folklore)
 when the fill allows. Mixed was added on Oct 2, 2026 and back-filled for
 Oct 1–4.
 
-An answer isn't reused at the same level for 7 days (Beginner, Mixed) or 14
-days (Intermediate, Advanced), and never twice on the same day. The beginner
-list is only about 1,300 words, so a longer window would run it dry.
+An answer of 3+ kana isn't reused at the same level for 7 days (Beginner,
+Mixed) or 14 days (Intermediate, Advanced), and no answer appears twice on
+the same day. The beginner list is only about 1,300 words, so a longer window
+would run it dry. Two-kana answers may repeat: N1 has only ~150 of them and a
+9×9 uses about ten, so blocking them made Advanced grids fail to fill.
+
+Beginner and Advanced 9×9s keep entries to 5 kana (Intermediate and Mixed go
+up to 7). Each level has only ~10–45 words of seven kana, and long slots were
+the main reason those grids failed to fill.
+
+## Shape days
+
+Starting Oct 10, 2026, about one day in three the Mini or the Daily (sometimes
+both) gets a fun NYT-style shape: black squares that touch and make a picture.
+Daily shapes: stairs, gem, plus, X, pinwheel, heart, corners. Mini shapes:
+stairs, diagonal, pinwheel, window. They're defined in `SHAPES` in
+`scripts/crossword/construct.mjs` as a motif of `#` squares; the rest of the
+grid is filled in around the motif with extra black squares placed in mirrored
+pairs, so the grid looks designed. Shapes can appear mirrored or turned (the
+heart stays upright), and their entries stay at 5 kana or less.
+
+A fully-crossed shaped grid like the NYT Mini rarely fills from kana word
+lists, so if a shape won't fill at some level (usually the Beginner Mini),
+that puzzle quietly gets a normal grid. The shape for a date is fixed
+(`shapeFor` in `cli.mjs`), so every level shares it. Draft output says which
+shape each puzzle got, and published puzzles carry a `shape` field.
 
 ## Daily theme
 
