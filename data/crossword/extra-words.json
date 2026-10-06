@@ -112,6 +112,11 @@
     { "word": "ちゃぶ台返し", "reading": "ちゃぶだいがえし", "meaning": "flipping the dinner table in rage", "level": "advanced", "tags": ["pop"] },
     { "word": "空気", "reading": "くうき", "meaning": "air; the mood you're supposed to read", "level": "advanced", "tags": ["society"] },
     { "word": "猫の手", "reading": "ねこのて", "meaning": "'a cat's paw', any help at all", "level": "advanced", "tags": ["idioms"] },
-    { "word": "一期一会", "reading": "いちごいちえ", "meaning": "once-in-a-lifetime encounter", "level": "advanced", "tags": ["idioms"] }
+    { "word": "一期一会", "reading": "いちごいちえ", "meaning": "once-in-a-lifetime encounter", "level": "advanced", "tags": ["idioms"] },
+    { "word": "焼き鳥", "reading": "やきとり", "meaning": "grilled chicken skewers", "level": "beginner", "tags": ["food"] },
+    { "word": "すき焼き", "reading": "すきやき", "meaning": "sukiyaki, sweet soy beef hot pot", "level": "beginner", "tags": ["food"] },
+    { "word": "とんかつ", "reading": "とんかつ", "meaning": "breaded pork cutlet", "level": "beginner", "tags": ["food"] },
+    { "word": "屋台", "reading": "やたい", "meaning": "street food stall, festival stand", "level": "intermediate", "tags": ["food", "culture"] },
+    { "word": "もちもち", "reading": "もちもち", "meaning": "soft and chewy, like mochi", "level": "intermediate", "tags": ["food", "onomatopoeia"] }
   ]
 }
