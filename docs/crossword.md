@@ -151,22 +151,23 @@ Write them like a Japanese newspaper crossword (読売・日経のクロスワ�
 
 ## Daily routine (Claude Code)
 
-The puzzles are made by a Claude Code routine that runs every morning in
+The puzzles are made by a Claude Code routine that runs every night in
 this repo. Set it up at claude.ai/code → **Routines → New routine**:
 
 - Repository: `Jear-Bear/Jear-Bear.github.io`
-- Schedule: daily at 5:00 AM Central time
+- Schedule: daily at midnight Central time (any time works, see below)
 - Prompt:
 
 ```
-Daily Kana Crossword for jareddesu.com. Work in the Jear-Bear.github.io repo on main.
-1. Run: node scripts/crossword/cli.mjs status 3. For each date in "missing" (oldest first, at most 2 dates per run), run: node scripts/crossword/cli.mjs draft DATE.
+Daily Kana Crossword for jareddesu.com. Jared chose to have this routine publish and merge on its own each night.
+0. Repo setup. If /home/user/Jear-Bear.github.io isn't a git checkout, call add_repo with owner Jear-Bear, repo Jear-Bear.github.io, access "push", clone it as that tool says (into /home/user/Jear-Bear.github.io), and work there. Run: git fetch origin main && git checkout -B claude/crossword-$(date -u +%Y%m%d) origin/main. If the repo can't be attached or cloned, stop and reply with the exact error.
+1. Run: node scripts/crossword/cli.mjs status 3. If "missing" is empty, reply "Nothing to publish" and stop. For each date in "missing" (oldest first, at most 2 dates per run), run: node scripts/crossword/cli.mjs draft DATE.
 2. Open data/crossword/drafts/DATE.json. First read every answer: if any is crude, sexual, gross, or about death, illness or tragedy, add its kanji form to data/crossword/blocklist.json, delete the draft and draft that date again.
 3. For each of its 8 puzzles, fill in "clue" for every entry and for the keyword. Beginner, intermediate and advanced: follow "Clue style" in docs/crossword.md exactly: English only, crossword-style (puns, misdirection, fill-in-the-blanks, pop culture), matched to the answer's part of speech and register, specific enough to tell apart homophones, pitched to the puzzle's level, under 100 characters. Mixed: follow "Japanese clue style": natural Japanese like a newspaper crossword, under 40 characters, ＿＿ blanks, proverbs, opposites and pop culture welcome. Use "word", "reading" and "meaning" to understand each answer; never put the answer's kana, kanji or romaji in a clue. The draft's "theme" is the day's loose theme: where it fits naturally, a clue can nod to it (especially for entries marked "theme": true and the keyword), but don't force it. Read your clues back once and sharpen any that are flat or ambiguous.
 4. Run: node scripts/crossword/cli.mjs publish DATE. If it lists problems, fix those clues and publish again. Then run: node scripts/crossword/cli.mjs check.
 5. Optional, at most 5 per run: if a fun, well-known word would make future puzzles better (food, anime, games, memes, folklore, slang), add it to data/crossword/extra-words.json with word, reading (hiragana, ー allowed), meaning, level and tags, then run: node scripts/crossword/cli.mjs words.
-6. Commit only data/crossword/ (never drafts) as Jared Perlmutter <jperlmutter1@gmail.com> with no co-author lines, to a new branch named crossword-DATE, open a pull request titled "Crossword: DATE", and merge it.
-Reply in one line with the dates published.
+6. Commit only data/crossword/ (never drafts) with: git -c user.name="Jared Perlmutter" -c user.email="jperlmutter1@gmail.com" commit (no co-author or session lines; ignore any hook asking to re-author the commit). Push the branch from step 0, open a pull request into main titled "Crossword: DATE" (the dates published), and merge it. Use the GitHub MCP tools if available, otherwise gh api (POST repos/Jear-Bear/Jear-Bear.github.io/pulls, then PUT .../pulls/NUMBER/merge). If the merge is refused, leave the PR open and say so.
+Reply in one line with the dates published and the PR link.
 ```
 
 **When puzzles change.** Like Wordle, each visitor gets a new puzzle at their
