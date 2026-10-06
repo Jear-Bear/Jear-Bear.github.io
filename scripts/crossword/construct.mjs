@@ -7,19 +7,21 @@
 // A, B, C… they spell a bonus word.
 
 export const SIZES = {
-  mini: { n: 5, maxRun: 5, blacks: [3, 6], keyword: [3, 4], minEntries: 6, fun: 1 },
-  daily: { n: 9, maxRun: 7, blacks: [14, 20], keyword: [4, 6], minEntries: 18, fun: 2 },
+  mini: { n: 5, maxRun: 5, blacks: [3, 6], keyword: [3, 4], minEntries: 6, fun: 1, tries: 8 },
+  daily: { n: 9, maxRun: 7, blacks: [14, 20], keyword: [4, 6], minEntries: 18, fun: 2, tries: 2 },
 };
 export const LEVELS = ['beginner', 'intermediate', 'advanced', 'mixed'];
 // Levels a word in extra-words.json can have (mixed draws on all of them)
 export const WORD_LEVELS = ['beginner', 'intermediate', 'advanced'];
-// Word-list levels per puzzle level, best match first (later ones only help the fill).
-// Mixed is a plain Japanese crossword: every level, with Japanese clues.
+// Word-list levels per puzzle level. Every answer comes from the puzzle's own
+// level (solvers noticed N5 words like さむい in Intermediate when easier
+// words were allowed to help the fill). Mixed is a plain Japanese crossword:
+// every level, with Japanese clues.
 const POOLS = {
-  beginner: [['n5', 'n4', 'beginner'], []],
-  intermediate: [['n3', 'n2', 'intermediate'], ['n5', 'n4', 'beginner']],
-  advanced: [['n1', 'advanced'], ['n3', 'n2', 'intermediate']],
-  mixed: [['n5', 'n4', 'n3', 'n2', 'n1', 'beginner', 'intermediate', 'advanced'], []],
+  beginner: ['n5', 'n4', 'beginner'],
+  intermediate: ['n3', 'n2', 'intermediate'],
+  advanced: ['n1', 'advanced'],
+  mixed: ['n5', 'n4', 'n3', 'n2', 'n1', 'beginner', 'intermediate', 'advanced'],
 };
 // Levels whose clues are written in Japanese
 export const JAPANESE_CLUES = new Set(['mixed']);
@@ -37,17 +39,35 @@ export function rng(seedText) {
   };
 }
 
+// --- Themes -------------------------------------------------------------------------------
+// A loose theme (data/crossword/themes.json): a word fits when a theme word
+// shows up in the first two senses of its meaning, or (extra words) by tag.
+const escapeRe = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+export function themeMatcher(theme) {
+  if (!theme) return () => false;
+  const yes = new RegExp(`\\b(?:${theme.words.map(escapeRe).join('|')})(?:s|es|ed|d|ing|er|ers)?\\b`, 'i');
+  const no = theme.not && theme.not.length ? new RegExp(theme.not.join('|'), 'i') : null;
+  const tags = new Set(theme.tags || []);
+  return (w) => {
+    if (w.t && w.t.some((t) => tags.has(t))) return true;
+    const senses = String(w.m).replace(/\([^)]*\)/g, '').split(/[,;]/).slice(0, 2).join(', ');
+    return yes.test(senses) && !(no && no.test(w.m));
+  };
+}
+
 // --- Word pool --------------------------------------------------------------------------
-export function pool(words, level, { exclude = new Set() } = {}) {
-  const [main, helpers] = POOLS[level];
+export function pool(words, level, { exclude = new Set(), theme = null } = {}) {
+  const levels = POOLS[level];
+  const fits = themeMatcher(theme);
   const list = [];
   const seen = new Set();
   words.forEach((w) => {
-    if (seen.has(w.a) || exclude.has(w.a)) return;
-    const weight = main.includes(w.l) ? (w.extra ? 12 : 3) : helpers.includes(w.l) ? 1 : 0;
-    if (!weight) return;
+    if (seen.has(w.a) || exclude.has(w.a) || !levels.includes(w.l)) return;
     seen.add(w.a);
-    list.push({ ...w, weight });
+    const th = fits(w) ? 1 : 0;
+    // Fun words come up more often (weights are relative). Theme words aren't
+    // weighted: that makes grids much harder to fill. They're seeded instead.
+    list.push({ ...w, th, weight: w.extra ? 12 : 3 });
   });
   return list;
 }
@@ -140,7 +160,7 @@ function pattern(size, rand) {
 }
 
 // --- Fill ---------------------------------------------------------------------------------
-function fill(size, list, idx, rand, { budget = 12000 } = {}) {
+function fill(size, list, idx, rand, { budget = 12000, seeds = 0 } = {}) {
   const pat = pattern(size, rand);
   if (!pat) return null;
   const { n } = SIZES[size];
@@ -187,7 +207,7 @@ function fill(size, list, idx, rand, { budget = 12000 } = {}) {
       if (!bestList || m.length < bestList.length) { best = k; bestList = m; if (m.length === 1) break; }
     }
     if (best < 0) return true;
-    // Weighted shuffle: the level's own words first, with variety
+    // Weighted shuffle: fun words come up more often, with variety
     const order = bestList.map((id) => ({ id, key: Math.pow(rand(), 1 / list[id].weight) })).sort((a, b) => b.key - a.key).slice(0, 24);
     const s = slots[best];
     for (const { id } of order) {
@@ -205,6 +225,28 @@ function fill(size, list, idx, rand, { budget = 12000 } = {}) {
     }
     return false;
   };
+  // Theme seeds: drop a few theme words into slots that don't cross each
+  // other, then let the search fill in around them.
+  if (seeds) {
+    const themeIds = list.map((w, id) => (w.th ? id : -1)).filter((id) => id >= 0);
+    const taken = new Set();
+    const order = slots.map((s, k) => ({ k, key: rand() + Math.abs(s.cells.length - 4) / 3 })).sort((a, b) => a.key - b.key);   // 3–5 kana slots first
+    let placed = 0;
+    for (const { k } of order) {
+      if (placed >= seeds) break;
+      const s = slots[k];
+      if (s.cells.length < 3 || s.cells.some((c) => cellSlots.get(c).some((j) => taken.has(j)))) continue;
+      const fits = themeIds.filter((id) => list[id].a.length === s.cells.length && !used.has(list[id].a))
+        .map((id) => ({ id, key: Math.pow(rand(), 1 / list[id].weight) })).sort((a, b) => b.key - a.key).slice(0, 12);
+      for (const { id } of fits) {
+        const w = list[id].a;
+        s.cells.forEach((c, i) => { letters[c] = w[i]; });
+        const crossing = s.cells.flatMap((c) => cellSlots.get(c)).filter((j) => j !== k);
+        if (crossing.every((j) => matches(j, 1).length)) { assigned[k] = id; used.add(w); taken.add(k); crossing.forEach((j) => taken.add(j)); placed++; break; }
+        s.cells.forEach((c) => { letters[c] = ''; });
+      }
+    }
+  }
   if (!solve()) return null;
   return { n, black: pat.black, letters, slots, assigned };
 }
@@ -215,8 +257,9 @@ function keyword(size, filled, list, rand) {
   const answers = new Set(filled.assigned.map((id) => list[id].a));
   const where = new Map();
   filled.letters.forEach((ch, i) => { if (ch) { if (!where.has(ch)) where.set(ch, []); where.get(ch).push(i); } });
-  const cands = list.filter((w) => w.a.length >= lo && w.a.length <= hi && !answers.has(w.a) && w.weight >= 3 && !w.a.includes('ー'))
-    .map((w) => ({ w, key: rand() })).sort((a, b) => a.key - b.key);
+  // Theme words first, so the bonus word usually lands on the theme
+  const cands = list.filter((w) => w.a.length >= lo && w.a.length <= hi && !answers.has(w.a) && !w.a.includes('ー'))
+    .map((w) => ({ w, key: rand() + (w.th ? 0 : 1) })).sort((a, b) => a.key - b.key);
   for (const { w } of cands) {
     const taken = new Set();
     const cells = [];
@@ -232,22 +275,31 @@ function keyword(size, filled, list, rand) {
 }
 
 // Build one puzzle. Returns the draft object (answers in clear, clues empty).
-export function build({ size, level, words, seed, exclude = new Set() }) {
+// With a theme, one theme word is seeded into the empty grid, the bonus
+// keyword is a theme word when the letters allow, and of the first few grids
+// that fill, the one with the most theme answers wins. The theme stays loose
+// on purpose: weighting theme words in the search makes grids fail to fill.
+export function build({ size, level, words, seed, exclude = new Set(), theme = null }) {
   const rand = rng(seed);
-  const list = pool(words, level, { exclude });
+  const list = pool(words, level, { exclude, theme });
   const idx = indexPool(list, SIZES[size].maxRun);
-  for (let attempt = 0; attempt < 400; attempt++) {
-    const f = fill(size, list, idx, rand);
+  const keep = theme ? SIZES[size].tries : 1;
+  let best = null;
+  // Most random patterns don't fill (a 9x9 from the small beginner list fills
+  // only a few percent of the time), so try plenty; failures are fast.
+  for (let attempt = 0; attempt < 1500 && !(best && best.n >= keep); attempt++) {
+    const f = fill(size, list, idx, rand, { seeds: theme && attempt < 300 ? 1 : 0 });
     if (!f) continue;
-    const share = f.assigned.filter((id) => list[id].weight >= 3).length / f.assigned.length;
-    if (share < 0.6) continue;                                   // mostly the level's own words
     // At least a word or two from the fun / pop-culture list (relaxed if it keeps failing)
     const fun = f.assigned.filter((id) => list[id].extra).length;
     if (attempt < 150 && fun < SIZES[size].fun) continue;
     const kw = keyword(size, f, list, rand);
     if (!kw) continue;
-    return toDraft({ size, level, f, list, kw });
+    const score = f.assigned.filter((id) => list[id].th).length + (kw.word.th ? 2 : 0);
+    if (!best || score > best.score) best = { f, kw, score, n: (best ? best.n : 0) + 1 };
+    else best.n++;
   }
+  if (best) return toDraft({ size, level, f: best.f, list, kw: best.kw });
   throw new Error(`Couldn't build a ${level} ${size} puzzle for seed ${seed}`);
 }
 
@@ -263,13 +315,13 @@ function toDraft({ size, level, f, list, kw }) {
     const w = list[f.assigned[k]];
     return {
       num: starts.get(s.cells[0]), dir: s.dir, row: Math.floor(s.cells[0] / n), col: s.cells[0] % n, len: s.cells.length,
-      answer: w.a, word: w.w, reading: w.r, meaning: w.m, source: w.l, clue: '',
+      answer: w.a, word: w.w, reading: w.r, meaning: w.m, source: w.l, ...(w.th ? { theme: true } : {}), clue: '',
     };
   }).sort((a, b) => (a.dir === b.dir ? a.num - b.num : a.dir === 'across' ? -1 : 1));
   return {
     size, level, width: n, height: n,
     rows: Array.from({ length: n }, (_, r) => Array.from({ length: n }, (_, c) => (f.black[r * n + c] ? '#' : f.letters[r * n + c])).join('')),
     entries,
-    keyword: { answer: kw.word.a, word: kw.word.w, reading: kw.word.r, meaning: kw.word.m, cells: kw.cells.map((i) => [Math.floor(i / n), i % n]), clue: '' },
+    keyword: { answer: kw.word.a, word: kw.word.w, reading: kw.word.r, meaning: kw.word.m, ...(kw.word.th ? { theme: true } : {}), cells: kw.cells.map((i) => [Math.floor(i / n), i % n]), clue: '' },
   };
 }

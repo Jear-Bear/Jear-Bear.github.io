@@ -18,14 +18,37 @@ levels.
 | Level | Answers from | Clues |
 |---|---|---|
 | Beginner | JLPT N5–N4, plus beginner fun words | English |
-| Intermediate | JLPT N3–N2, plus intermediate fun words (N5–N4 help the fill) | English |
-| Advanced | JLPT N1, plus slang, idioms and pop culture (N3–N2 help the fill) | English |
+| Intermediate | JLPT N3–N2, plus intermediate fun words | English |
+| Advanced | JLPT N1, plus slang, idioms and pop culture | English |
 | Mixed (一般) | Every level, like a newspaper crossword | Japanese |
 
-At least 60% of a puzzle's answers come from its own level, and each one
-includes at least one word from `data/crossword/extra-words.json` (food, pop
-culture, slang, folklore). Mixed was added on Oct 2, 2026 and back-filled for
+Every answer comes from the puzzle's own level. (Until Oct 6, 2026, up to
+40% could come from the level below to help the fill, and solvers noticed
+N5 words like さむい in Intermediate.) Each puzzle includes at least one word
+from `data/crossword/extra-words.json` (food, pop culture, slang, folklore)
+when the fill allows. Mixed was added on Oct 2, 2026 and back-filled for
 Oct 1–4.
+
+An answer isn't reused at the same level for 7 days (Beginner, Mixed) or 14
+days (Intermediate, Advanced), and never twice on the same day. The beginner
+list is only about 1,300 words, so a longer window would run it dry.
+
+## Daily theme
+
+Since Oct 6, 2026, each day has a loose theme (食べ物 Food & drink, 学校 School
+days, 動物 Animals…), shown above the puzzle. The 24 themes are in
+`data/crossword/themes.json` and come round in a fixed shuffled order, once
+every 24 days. A word fits a theme when one of the theme's `words` appears in
+the first two senses of its English meaning (none of `not` does), or, for
+extra words, by tag. In each puzzle:
+
+- one theme word is placed in the empty grid before the rest fills in,
+- the bonus keyword is a theme word whenever the letters allow (almost always),
+- of the first few grids that fill, the one with the most theme answers wins.
+
+It's loose on purpose: favoring theme words throughout the search makes
+grids fail to fill, so most answers are still ordinary words. Clues can nod
+to the theme, but don't force it. Days before Oct 6 have no theme.
 
 ## Where the words and clues come from
 
@@ -48,7 +71,7 @@ same date always produces the same grids.
 ```
 node scripts/crossword/cli.mjs words           # rebuild data/crossword/words.json (after editing extra-words.json)
 node scripts/crossword/cli.mjs status 3        # which of the next 3 days (from the earliest time zone) have no puzzles
-node scripts/crossword/cli.mjs draft DATE      # build DATE's 8 puzzles into data/crossword/drafts/DATE.json
+node scripts/crossword/cli.mjs draft DATE      # build DATE's 8 puzzles (and pick its theme) into data/crossword/drafts/DATE.json
                                                # (for a day that's already published: only the levels it's missing)
 node scripts/crossword/cli.mjs publish DATE    # check the clues, write data/crossword/puzzles/DATE.json
 node scripts/crossword/cli.mjs check           # re-check every published day
@@ -139,7 +162,7 @@ this repo. Set it up at claude.ai/code → **Routines → New routine**:
 Daily Kana Crossword for jareddesu.com. Work in the Jear-Bear.github.io repo on main.
 1. Run: node scripts/crossword/cli.mjs status 3. For each date in "missing" (oldest first, at most 2 dates per run), run: node scripts/crossword/cli.mjs draft DATE.
 2. Open data/crossword/drafts/DATE.json. First read every answer: if any is crude, sexual, gross, or about death, illness or tragedy, add its kanji form to data/crossword/blocklist.json, delete the draft and draft that date again.
-3. For each of its 8 puzzles, fill in "clue" for every entry and for the keyword. Beginner, intermediate and advanced: follow "Clue style" in docs/crossword.md exactly: English only, crossword-style (puns, misdirection, fill-in-the-blanks, pop culture), matched to the answer's part of speech and register, specific enough to tell apart homophones, pitched to the puzzle's level, under 100 characters. Mixed: follow "Japanese clue style": natural Japanese like a newspaper crossword, under 40 characters, ＿＿ blanks, proverbs, opposites and pop culture welcome. Use "word", "reading" and "meaning" to understand each answer; never put the answer's kana, kanji or romaji in a clue. Read your clues back once and sharpen any that are flat or ambiguous.
+3. For each of its 8 puzzles, fill in "clue" for every entry and for the keyword. Beginner, intermediate and advanced: follow "Clue style" in docs/crossword.md exactly: English only, crossword-style (puns, misdirection, fill-in-the-blanks, pop culture), matched to the answer's part of speech and register, specific enough to tell apart homophones, pitched to the puzzle's level, under 100 characters. Mixed: follow "Japanese clue style": natural Japanese like a newspaper crossword, under 40 characters, ＿＿ blanks, proverbs, opposites and pop culture welcome. Use "word", "reading" and "meaning" to understand each answer; never put the answer's kana, kanji or romaji in a clue. The draft's "theme" is the day's loose theme: where it fits naturally, a clue can nod to it (especially for entries marked "theme": true and the keyword), but don't force it. Read your clues back once and sharpen any that are flat or ambiguous.
 4. Run: node scripts/crossword/cli.mjs publish DATE. If it lists problems, fix those clues and publish again. Then run: node scripts/crossword/cli.mjs check.
 5. Optional, at most 5 per run: if a fun, well-known word would make future puzzles better (food, anime, games, memes, folklore, slang), add it to data/crossword/extra-words.json with word, reading (hiragana, ー allowed), meaning, level and tags, then run: node scripts/crossword/cli.mjs words.
 6. Commit only data/crossword/ (never drafts) as Jared Perlmutter <jperlmutter1@gmail.com> with no co-author lines, to a new branch named crossword-DATE, open a pull request titled "Crossword: DATE", and merge it.

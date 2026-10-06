@@ -17,7 +17,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gridKana, romaji, toHira } from './kana.js';
-import { build, SIZES, LEVELS, WORD_LEVELS, JAPANESE_CLUES } from './construct.mjs';
+import { build, rng, SIZES, LEVELS, WORD_LEVELS, JAPANESE_CLUES } from './construct.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const DIR = path.join(ROOT, 'data/crossword');
@@ -26,8 +26,11 @@ const EXTRAS = path.join(DIR, 'extra-words.json');
 const DRAFTS = path.join(DIR, 'drafts');
 const PUZZLES = path.join(DIR, 'puzzles');
 const INDEX = path.join(DIR, 'index.json');
+const THEMES = path.join(DIR, 'themes.json');
 const SOURCE = 'https://raw.githubusercontent.com/jamsinclair/open-anki-jlpt-decks/1ad66734417aca9dbcca6b2d5ee440cb13ab3ba0/src';
-const RECENT_DAYS = 21;               // don't reuse an answer used in the last three weeks
+// Don't reuse an answer at the same level for this many days. The beginner
+// list is small (about 1,300 words, ~45 used a day), so it gets a shorter window.
+const RECENT_DAYS = { beginner: 7, intermediate: 14, advanced: 14, mixed: 7 };
 
 const readJson = (p, fallback) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return fallback; } };
 const writeJson = (p, v, pretty = true) => { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, `${JSON.stringify(v, null, pretty ? 2 : 0)}\n`); };
@@ -76,7 +79,7 @@ async function words() {
   for (const x of extras) {
     const a = gridKana(x.reading);
     if (!a || !WORD_LEVELS.includes(x.level)) { console.warn(`Skipping extra word ${x.word} (${x.reading})`); continue; }
-    out.push({ w: x.word, r: x.reading, a, m: x.meaning, l: x.level, extra: 1 });
+    out.push({ w: x.word, r: x.reading, a, m: x.meaning, l: x.level, extra: 1, ...(x.tags && x.tags.length ? { t: x.tags } : {}) });
   }
   writeJson(WORDS, { source: 'JLPT vocabulary from jamsinclair/open-anki-jlpt-decks (MIT; based on Jonathan Waller’s tanos.co.uk lists, CC BY) plus data/crossword/extra-words.json', count: out.length, words: out }, false);
   const by = out.reduce((m, w) => ((m[w.l] = (m[w.l] || 0) + 1), m), {});
@@ -87,16 +90,29 @@ async function words() {
 function decode(s) { return JSON.parse(Buffer.from(String(s).split('').reverse().join(''), 'base64').toString('utf8')); }
 function encode(v) { return Buffer.from(JSON.stringify(v), 'utf8').toString('base64').split('').reverse().join(''); }
 
-function recentAnswers(date) {
+function recentAnswers(date, level) {
   const used = new Set();
-  for (let i = 1; i <= RECENT_DAYS; i++) {
+  for (let i = 1; i <= RECENT_DAYS[level]; i++) {
     const d = addDays(date, -i);
     const p = readJson(path.join(PUZZLES, `${d}.json`), null);
-    if (p) p.puzzles.forEach((z) => decode(z.key).entries.forEach((e) => used.add(e.answer)));
+    if (p) p.puzzles.filter((z) => z.level === level).forEach((z) => decode(z.key).entries.forEach((e) => used.add(e.answer)));
     const dr = readJson(path.join(DRAFTS, `${d}.json`), null);          // unpublished drafts count too
-    if (dr) dr.puzzles.forEach((z) => z.entries.forEach((e) => used.add(e.answer)));
+    if (dr) dr.puzzles.filter((z) => z.level === level).forEach((z) => z.entries.forEach((e) => used.add(e.answer)));
   }
   return used;
+}
+
+// --- theme of the day ---------------------------------------------------------------------
+// Every theme comes round once per cycle, in a fixed shuffled order so
+// neighbouring days feel different. A day already published keeps its theme.
+export function themeFor(date) {
+  const { themes } = readJson(THEMES, { themes: [] });
+  if (!themes.length) return null;
+  const order = [...themes].sort((x, y) => x.id.localeCompare(y.id));
+  const rand = rng('themes');
+  for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+  const day = Math.floor(Date.parse(`${date}T00:00:00Z`) / 86400000);
+  return order[((day % order.length) + order.length) % order.length];
 }
 
 // --- draft --------------------------------------------------------------------------------
@@ -110,21 +126,29 @@ function draft(date) {
   if (fs.existsSync(out)) { console.log(`Draft already exists: ${path.relative(ROOT, out)}`); return; }
   const { words: list } = readJson(WORDS, { words: [] });
   if (!list.length) die('Run "words" first');
-  const exclude = recentAnswers(date);
-  if (published) published.puzzles.forEach((z) => decode(z.key).entries.forEach((e) => exclude.add(e.answer)));
+  // Today's answers (any level) and blocked words are always out; recent
+  // days' answers are out for the same level
+  const today = new Set();
+  if (published) published.puzzles.forEach((z) => decode(z.key).entries.forEach((e) => today.add(e.answer)));
   const blocked = new Set(readJson(path.join(DIR, 'blocklist.json'), { words: [] }).words);
-  list.forEach((w) => { if (blocked.has(w.w) || blocked.has(w.a)) exclude.add(w.a); });
+  list.forEach((w) => { if (blocked.has(w.w) || blocked.has(w.a)) today.add(w.a); });
+  const { themes } = readJson(THEMES, { themes: [] });
+  const theme = (published && published.theme && themes.find((t) => t.id === published.theme.id)) || themeFor(date);
+  if (theme) console.log(`Theme: ${theme.en} (${theme.ja})`);
   const puzzles = [];
   for (const level of levels) {
+    const recent = recentAnswers(date, level);
     for (const size of Object.keys(SIZES)) {
       const t = Date.now();
-      const p = build({ size, level, words: list, seed: `${date}:${level}:${size}`, exclude });
-      p.entries.forEach((e) => exclude.add(e.answer));
+      const exclude = new Set([...today, ...recent]);
+      const p = build({ size, level, words: list, seed: `${date}:${level}:${size}`, exclude, theme });
+      p.entries.forEach((e) => today.add(e.answer));
+      today.add(p.keyword.answer);                                     // no repeated keyword either
       puzzles.push(p);
-      console.log(`${level} ${size}: ${p.entries.length} entries, keyword ${p.keyword.answer} (${Date.now() - t} ms)`);
+      console.log(`${level} ${size}: ${p.entries.length} entries, ${p.entries.filter((e) => e.theme).length} on theme, keyword ${p.keyword.answer}${p.keyword.theme ? ' (theme)' : ''} (${Date.now() - t} ms)`);
     }
   }
-  writeJson(out, { date, note: 'Fill in every "clue" (entries and keyword), then run: node scripts/crossword/cli.mjs publish ' + date, puzzles });
+  writeJson(out, { date, theme: theme ? { id: theme.id, en: theme.en, ja: theme.ja } : null, note: 'Fill in every "clue" (entries and keyword), then run: node scripts/crossword/cli.mjs publish ' + date + '. Clues may nod to the theme; don’t force it.', puzzles });
   console.log(`Wrote ${path.relative(ROOT, out)}`);
 }
 
@@ -183,7 +207,8 @@ function publish(date) {
     puzzles.push(...old.puzzles.filter((p) => !ids.has(p.id)));
     puzzles.sort((a, b) => LEVELS.indexOf(a.level) - LEVELS.indexOf(b.level) || Object.keys(SIZES).indexOf(a.size) - Object.keys(SIZES).indexOf(b.size));
   }
-  writeJson(path.join(PUZZLES, `${date}.json`), { date, puzzles }, false);
+  const theme = d.theme || (old && old.theme) || null;
+  writeJson(path.join(PUZZLES, `${date}.json`), { date, ...(theme ? { theme } : {}), puzzles }, false);
   const index = readJson(INDEX, { dates: [] });
   index.dates = [...new Set([...index.dates, date])].sort();
   writeJson(INDEX, index);
