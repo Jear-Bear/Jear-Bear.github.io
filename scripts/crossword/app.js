@@ -25,6 +25,7 @@ const t = translator({
     'ime.kanji': 'Only kana fit in the squares. Press Enter instead of converting to kanji.',
     level: 'Level', bar: 'Puzzle options', sizeGroup: 'Size', prev: 'Previous puzzle', next: 'Next puzzle', settings: 'Settings',
     today: 'Today · {date}',
+    themeToday: 'Today’s theme', themeDay: 'Theme',
     check: 'Check', reveal: 'Reveal', square: 'Square', word: 'Word', puzzle: 'Puzzle', autocheck: 'Autocheck', clear: 'Clear puzzle',
     pause: 'Pause', paused: 'Paused', resume: 'Resume', prevClue: 'Previous clue', nextClue: 'Next clue',
     grid: 'Crossword grid', keys: 'Kana keyboard', ime: 'Type answers (romaji or kana)',
@@ -61,6 +62,7 @@ const t = translator({
     'ime.kanji': 'マスに入るのはかなだけです。漢字に変換せず、そのまま確定してください。',
     level: 'レベル', bar: 'パズルの設定', sizeGroup: 'サイズ', prev: '前のパズル', next: '次のパズル', settings: '設定',
     today: '今日 · {date}',
+    themeToday: '今日のテーマ', themeDay: 'テーマ',
     check: 'チェック', reveal: '答えを見る', square: 'マス', word: '単語', puzzle: '全体', autocheck: '自動チェック', clear: '最初からやり直す',
     pause: '一時停止', paused: '一時停止中', resume: '再開', prevClue: '前のカギ', nextClue: '次のカギ',
     grid: 'クロスワードの盤面', keys: 'かなキーボード', ime: '答えを入力（ローマ字・かな）',
@@ -256,6 +258,17 @@ function renderBar() {
   $('level').value = settings.level;
   const today = localDate();
   $('date-label').textContent = date ? (date === today ? t('today', { date: fmtDate(date, false) }) : fmtDate(date)) : '';
+  // The day's loose theme (days before Oct 6, 2026 don't have one)
+  const th = day && day.date === date ? day.theme : null;
+  $('theme').hidden = !th;
+  if (th) {
+    const ja = lang() === 'ja';
+    $('theme-k').textContent = t(date === today ? 'themeToday' : 'themeDay');
+    $('theme-name').textContent = ja ? th.ja : th.en;
+    $('theme-name').lang = ja ? 'ja' : 'en';
+    $('theme-ja').textContent = ja ? th.en : th.ja;
+    $('theme-ja').lang = ja ? 'en' : 'ja';
+  }
   const i = dates.indexOf(date);
   $('date-prev').disabled = i <= 0;
   $('date-next').disabled = i < 0 || i >= dates.length - 1 || dates[i + 1] > today;

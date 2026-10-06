@@ -168,3 +168,11 @@ html[data-ui="ja"] [data-ui-only="en"], html:not([data-ui="ja"]) [data-ui-only="
 .cw-play.no-assist .cw-menus { display: none; }
 /* A word being composed with a Japanese IME, before it's committed */
 .cw-cell.is-preview .cw-letter { color: var(--page-ink); text-decoration: underline dotted; text-underline-offset: 0.12em; text-decoration-thickness: 2px; }
+
+/* Today's loose theme, under the options bar */
+.cw-theme { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 0 0 14px; padding: 8px 12px; border-left: 3px solid var(--page-color); background: var(--page-color-soft, var(--paper-deep)); font: 14px var(--font-gothic); color: var(--ink); }
+.cw-theme[hidden] { display: none; }
+.cw-theme-k { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+:root[lang="ja"] .cw-theme-k, .cw-theme-k:lang(ja) { text-transform: none; letter-spacing: .02em; }
+.cw-theme-name { font-weight: 600; font-size: 15px; }
+.cw-theme-ja { color: var(--muted); }

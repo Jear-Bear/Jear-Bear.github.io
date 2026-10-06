@@ -17,7 +17,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Klee+One:wght@600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="../../styles/base.css?v=4">
-  <link rel="stylesheet" href="../../styles/crossword.css?v=5">
+  <link rel="stylesheet" href="../../styles/crossword.css?v=6">
   <!-- Cloudflare Web Analytics (cookieless) -->
   <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
 </head>
@@ -103,6 +103,8 @@
         </div>
         <button type="button" class="cw-icon cw-gear" id="btn-settings" aria-label="Settings" data-t-aria="settings" aria-haspopup="dialog">⚙</button>
       </div>
+
+      <p class="cw-theme" id="theme" hidden><span class="cw-theme-k" id="theme-k">Today’s theme</span><strong class="cw-theme-name" id="theme-name"></strong><span class="cw-theme-ja" id="theme-ja" lang="ja"></span></p>
 
       <div class="cw-play" id="play">
         <div class="cw-board-col">
@@ -233,6 +235,6 @@
   </footer>
 
   <script src="../../scripts/site.js?v=3"></script>
-  <script type="module" src="../../scripts/crossword/app.js?v=5"></script>
+  <script type="module" src="../../scripts/crossword/app.js?v=6"></script>
 </body>
 </html>
