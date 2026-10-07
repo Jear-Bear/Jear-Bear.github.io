@@ -122,31 +122,99 @@ function connected(black, n) {
   return seen.size === black.filter((b) => !b).length;
 }
 
-function pattern(size, rand) {
-  const { n, maxRun, blacks: [lo, hi] } = SIZES[size];
+// --- Shapes ---------------------------------------------------------------------------------
+// Now and then a puzzle gets a fun NYT-style shape: a motif of black squares
+// that may touch and form a picture (stairs, a heart, a tetris piece...).
+// Some are tidy and some lopsided on purpose. '#' is a motif square; the rest
+// of the grid is filled in around it with the usual pattern rules, so the
+// grid stays fillable. (Fully-crossed shaped grids like
+// the NYT's rarely fill with kana: there are only ~60 seven-kana words.)
+// A motif may appear mirrored or turned, except UPRIGHT ones.
+export const SHAPES = {
+  mini: {
+    stairs: ['##...', '#....', '.....', '....#', '...##'],
+    diagonal: ['#....', '.#...', '.....', '...#.', '....#'],
+    pinwheel: ['#....', '...#.', '.....', '.#...', '....#'],
+    window: ['.....', '.#.#.', '.....', '.#.#.', '.....'],
+    tetris: ['##...', '.....', '...#.', '..##.', '.....'],
+    zigzag: ['.....', '##...', '.....', '...##', '.....'],
+  },
+  daily: {
+    stairs: ['###......', '##.......', '#........', '.........', '....#....', '.........', '........#', '.......##', '......###'],
+    gem: ['.........', '.........', '....#....', '...###...', '..#####..', '...###...', '....#....', '.........', '.........'],
+    plus: ['.........', '.........', '.........', '....#....', '...###...', '....#....', '.........', '.........', '.........'],
+    xmark: ['#.......#', '.#.....#.', '..#...#..', '.........', '.........', '.........', '..#...#..', '.#.....#.', '#.......#'],
+    pinwheel: ['...#.....', '...#.....', '...#.....', '.......##', '....#....', '##.......', '.....#...', '.....#...', '.....#...'],
+    heart: ['#########', '##..#..##', '#.......#', '.........', '.........', '#.......#', '##.....##', '###...###', '####.####'],
+    corners: ['##.....##', '#.......#', '.........', '.........', '.........', '.........', '.........', '#.......#', '##.....##'],
+    // Quirky, lopsided ones
+    tetris: ['##.......', '#........', '.........', '......#..', '.....###.', '.........', '.#.......', '.##......', '.#.......'],
+    snake: ['.........', '.###.....', '...#.....', '...###...', '.....#...', '.....###.', '.........', '.........', '.........'],
+    bite: ['####.....', '###......', '##.......', '#........', '.........', '.........', '.........', '.........', '.........'],
+    steps: ['##.......', '.##......', '..##.....', '.........', '.........', '.....##..', '......##.', '.......##', '.........'],
+    blob: ['.........', '.........', '...##....', '..####...', '...###...', '....#....', '.........', '.........', '.........'],
+  },
+};
+const UPRIGHT = new Set(['heart']);
+
+function motif(size, name, rand) {
+  let rows = SHAPES[size][name].map((r) => [...r]);
+  if (rand() < 0.5) rows = rows.map((r) => r.reverse());                                     // mirror
+  if (!UPRIGHT.has(name) && rand() < 0.5) rows = rows[0].map((_, c) => rows.map((r) => r[c])); // turn
+  return rows.flat().map((ch) => ch === '#');
+}
+
+// The square that mirrors i, so extra squares can keep the picture symmetric:
+// left-right for upright shapes (the heart), otherwise turned 180°
+const partner = (i, n, shape) => (UPRIGHT.has(shape) ? Math.floor(i / n) * n + (n - 1 - (i % n)) : n * n - 1 - i);
+
+// Longest entry. Shaped grids, and 9x9s from the smaller beginner and N1
+// lists, keep entries to 5 kana: each level has only ~10-45 words of seven
+// kana, and long slots were the main reason those grids failed to fill.
+const SHORT = new Set(['beginner', 'advanced']);
+const maxRunFor = (size, level, shape) => (shape || SHORT.has(level) ? Math.min(SIZES[size].maxRun, 5) : SIZES[size].maxRun);
+
+function pattern(size, rand, shape = null, maxRun = SIZES[size].maxRun) {
+  const { n, blacks: [lo, hi] } = SIZES[size];
   for (let tries = 0; tries < 500; tries++) {
-    const black = new Array(n * n).fill(false);
-    const target = lo + Math.floor(rand() * (hi - lo + 1));
+    const black = shape ? motif(size, shape, rand) : new Array(n * n).fill(false);
+    // A shape keeps its motif; a 9x9 gets a few extra squares, mirrored in
+    // pairs half the time and scattered (quirkier) the other half
+    const base = black.filter(Boolean).length;
+    const sym = shape && rand() < 0.5;
+    const target = shape ? base + (size === 'mini' ? 0 : 4 + 2 * Math.floor(rand() * 3)) : lo + Math.floor(rand() * (hi - lo + 1));
     const canBlack = (i) => {
       if (black[i]) return false;
       const r = Math.floor(i / n), c = i % n;
       if ((r === 0 || r === n - 1) && (c === 0 || c === n - 1)) return false;       // corners stay white
       return ![[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]].some(([y, x]) => y >= 0 && x >= 0 && y < n && x < n && black[y * n + x]);
     };
-    let guard = 0;
-    while (black.filter(Boolean).length < target && guard++ < 400) {
-      const i = Math.floor(rand() * n * n);
-      if (canBlack(i)) { black[i] = true; if (!connected(black, n)) black[i] = false; }
-    }
-    // Break runs that are too long
-    let ok = true;
-    for (const s of slotsOf(black, n)) {
-      if (s.cells.length <= maxRun) continue;
-      const choices = s.cells.slice(2, -2).filter(canBlack);
-      if (!choices.length) { ok = false; break; }
-      const i = choices[Math.floor(rand() * choices.length)];
+    // Add a square (and, on a shape, its mirror partner when it fits); undo
+    // if it splits the grid
+    const add = (i) => {
+      if (!canBlack(i)) return false;
       black[i] = true;
-      if (!connected(black, n)) { ok = false; break; }
+      const j = sym ? partner(i, n, shape) : i;
+      const pair = j !== i && canBlack(j);
+      if (pair) black[j] = true;
+      if (connected(black, n)) return true;
+      if (pair) { black[j] = false; if (connected(black, n)) return true; }
+      black[i] = false;
+      return false;
+    };
+    let guard = 0;
+    while (black.filter(Boolean).length < target && guard++ < 400) add(Math.floor(rand() * n * n));
+    // Break runs that are too long
+    let ok = connected(black, n);
+    for (let pass = 0; ok && pass < 3; pass++) {
+      for (const s of slotsOf(black, n)) {
+        if (s.cells.length <= maxRun) continue;
+        // Prefer a break that leaves runs of 2+; a 1-square run is fine if
+        // the square is in a word the other way (checked below)
+        let choices = s.cells.slice(2, -2).filter(canBlack);
+        if (!choices.length && shape) choices = s.cells.slice(1, -1).filter(canBlack);
+        if (!choices.length || !add(choices[Math.floor(rand() * choices.length)])) { ok = false; break; }
+      }
     }
     if (!ok || slotsOf(black, n).some((s) => s.cells.length > maxRun)) continue;
     // Every white square must be in an entry
@@ -160,8 +228,8 @@ function pattern(size, rand) {
 }
 
 // --- Fill ---------------------------------------------------------------------------------
-function fill(size, list, idx, rand, { budget = 12000, seeds = 0 } = {}) {
-  const pat = pattern(size, rand);
+function fill(size, list, idx, rand, { budget = 12000, seeds = 0, shape = null, width = 24, maxRun } = {}) {
+  const pat = pattern(size, rand, shape, maxRun);
   if (!pat) return null;
   const { n } = SIZES[size];
   const { slots } = pat;
@@ -208,7 +276,7 @@ function fill(size, list, idx, rand, { budget = 12000, seeds = 0 } = {}) {
     }
     if (best < 0) return true;
     // Weighted shuffle: fun words come up more often, with variety
-    const order = bestList.map((id) => ({ id, key: Math.pow(rand(), 1 / list[id].weight) })).sort((a, b) => b.key - a.key).slice(0, 24);
+    const order = bestList.map((id) => ({ id, key: Math.pow(rand(), 1 / list[id].weight) })).sort((a, b) => b.key - a.key).slice(0, width);
     const s = slots[best];
     for (const { id } of order) {
       const w = list[id].a;
@@ -279,7 +347,7 @@ function keyword(size, filled, list, rand) {
 // keyword is a theme word when the letters allow, and of the first few grids
 // that fill, the one with the most theme answers wins. The theme stays loose
 // on purpose: weighting theme words in the search makes grids fail to fill.
-export function build({ size, level, words, seed, exclude = new Set(), theme = null }) {
+export function build({ size, level, words, seed, exclude = new Set(), theme = null, shape = null }) {
   const rand = rng(seed);
   const list = pool(words, level, { exclude, theme });
   const idx = indexPool(list, SIZES[size].maxRun);
@@ -287,16 +355,23 @@ export function build({ size, level, words, seed, exclude = new Set(), theme = n
   let best = null;
   // Most random patterns don't fill (a 9x9 from the small beginner list fills
   // only a few percent of the time), so try plenty; failures are fast.
-  for (let attempt = 0; attempt < 1500 && !(best && best.n >= keep); attempt++) {
-    const f = fill(size, list, idx, rand, { seeds: theme && attempt < 300 ? 1 : 0 });
+  // A shaped day tries its shape first and falls back to a normal grid if
+  // the shape won't fill at this level.
+  const shaped = shape ? 600 : 0;
+  for (let attempt = 0; attempt < shaped + 1500 && !(best && best.n >= keep); attempt++) {
+    const useShape = attempt < shaped ? shape : null;
+    if (best && best.shape && !useShape) break;                  // keep a shaped grid over a plain one
+    const plain = attempt - shaped;                              // attempts since the plain grids began
+    const f = fill(size, list, idx, rand, { seeds: theme && (useShape ? attempt < 300 : plain < 300) ? 1 : 0, shape: useShape, maxRun: maxRunFor(size, level, useShape) });
     if (!f) continue;
+    f.shape = useShape;
     // At least a word or two from the fun / pop-culture list (relaxed if it keeps failing)
     const fun = f.assigned.filter((id) => list[id].extra).length;
-    if (attempt < 150 && fun < SIZES[size].fun) continue;
+    if ((useShape ? attempt : plain) < 150 && fun < SIZES[size].fun) continue;
     const kw = keyword(size, f, list, rand);
     if (!kw) continue;
     const score = f.assigned.filter((id) => list[id].th).length + (kw.word.th ? 2 : 0);
-    if (!best || score > best.score) best = { f, kw, score, n: (best ? best.n : 0) + 1 };
+    if (!best || score > best.score) best = { f, kw, score, shape: useShape, n: (best ? best.n : 0) + 1 };
     else best.n++;
   }
   if (best) return toDraft({ size, level, f: best.f, list, kw: best.kw });
@@ -319,7 +394,7 @@ function toDraft({ size, level, f, list, kw }) {
     };
   }).sort((a, b) => (a.dir === b.dir ? a.num - b.num : a.dir === 'across' ? -1 : 1));
   return {
-    size, level, width: n, height: n,
+    size, level, width: n, height: n, ...(f.shape ? { shape: f.shape } : {}),
     rows: Array.from({ length: n }, (_, r) => Array.from({ length: n }, (_, c) => (f.black[r * n + c] ? '#' : f.letters[r * n + c])).join('')),
     entries,
     keyword: { answer: kw.word.a, word: kw.word.w, reading: kw.word.r, meaning: kw.word.m, ...(kw.word.th ? { theme: true } : {}), cells: kw.cells.map((i) => [Math.floor(i / n), i % n]), clue: '' },

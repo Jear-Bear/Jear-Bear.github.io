@@ -7,7 +7,7 @@ hiragana answers. It follows the conventions of Japanese newspaper puzzles
 - **One kana per square.** Small kana are written full size (きゃ → きや,
   っ → つ), dakuten stay (が is its own letter), and ー takes a square.
 - **Black squares never touch side by side**, the four corners are white,
-  and some squares belong to only one word.
+  and some squares belong to only one word. (Except on shape days, below.)
 - **Numbering** is shared by across (ヨコのカギ) and down (タテのカギ).
 - **Keyword (二重マス):** double-boxed squares, read in order A, B, C…, spell
   a bonus word with its own clue.
@@ -29,9 +29,36 @@ from `data/crossword/extra-words.json` (food, pop culture, slang, folklore)
 when the fill allows. Mixed was added on Oct 2, 2026 and back-filled for
 Oct 1–4.
 
-An answer isn't reused at the same level for 7 days (Beginner, Mixed) or 14
-days (Intermediate, Advanced), and never twice on the same day. The beginner
-list is only about 1,300 words, so a longer window would run it dry.
+An answer of 3+ kana isn't reused at the same level for 7 days (Beginner,
+Mixed) or 14 days (Intermediate, Advanced), and no answer appears twice on
+the same day. The beginner list is only about 1,300 words, so a longer window
+would run it dry. Two-kana answers may repeat: N1 has only ~150 of them and a
+9×9 uses about ten, so blocking them made Advanced grids fail to fill.
+
+Beginner and Advanced 9×9s keep entries to 5 kana (Intermediate and Mixed go
+up to 7). Each level has only ~10–45 words of seven kana, and long slots were
+the main reason those grids failed to fill.
+
+## Shape days
+
+Starting Oct 10, 2026, about one day in three the Mini or the Daily (sometimes
+both) gets a fun NYT-style shape: black squares that touch and make a picture.
+Daily shapes: stairs, gem, plus, X, pinwheel, heart and corners, plus
+lopsided, quirky ones (tetris pieces, a snake, a bite out of one corner, a
+staircase, a blob). Mini shapes: stairs, diagonal, pinwheel, window, tetris,
+zigzag. They're defined in `SHAPES` in `scripts/crossword/construct.mjs` as a
+motif of `#` squares; the rest of the grid is filled in around the motif.
+Half the time the extra black squares come in mirrored pairs (a tidy,
+designed look), the other half they're scattered (quirkier). Shapes can
+appear mirrored or turned (the heart stays upright), and their entries stay
+at 5 kana or less. To add a shape, add a motif: it must leave the white
+squares connected.
+
+A fully-crossed shaped grid like the NYT Mini rarely fills from kana word
+lists, so if a shape won't fill at some level (usually the Beginner Mini),
+that puzzle quietly gets a normal grid. The shape for a date is fixed
+(`shapeFor` in `cli.mjs`), so every level shares it. Draft output says which
+shape each puzzle got, and published puzzles carry a `shape` field.
 
 ## Daily theme
 
@@ -151,22 +178,23 @@ Write them like a Japanese newspaper crossword (読売・日経のクロスワ�
 
 ## Daily routine (Claude Code)
 
-The puzzles are made by a Claude Code routine that runs every morning in
+The puzzles are made by a Claude Code routine that runs every night in
 this repo. Set it up at claude.ai/code → **Routines → New routine**:
 
 - Repository: `Jear-Bear/Jear-Bear.github.io`
-- Schedule: daily at 5:00 AM Central time
+- Schedule: daily at midnight Central time (any time works, see below)
 - Prompt:
 
 ```
-Daily Kana Crossword for jareddesu.com. Work in the Jear-Bear.github.io repo on main.
-1. Run: node scripts/crossword/cli.mjs status 3. For each date in "missing" (oldest first, at most 2 dates per run), run: node scripts/crossword/cli.mjs draft DATE.
+Daily Kana Crossword for jareddesu.com. Jared chose to have this routine publish and merge on its own each night.
+0. Repo setup. If /home/user/Jear-Bear.github.io isn't a git checkout, call add_repo with owner Jear-Bear, repo Jear-Bear.github.io, access "push", clone it as that tool says (into /home/user/Jear-Bear.github.io), and work there. Run: git fetch origin main && git checkout -B claude/crossword-$(date -u +%Y%m%d) origin/main. If the repo can't be attached or cloned, stop and reply with the exact error.
+1. Run: node scripts/crossword/cli.mjs status 3. If "missing" is empty, reply "Nothing to publish" and stop. For each date in "missing" (oldest first, at most 2 dates per run), run: node scripts/crossword/cli.mjs draft DATE.
 2. Open data/crossword/drafts/DATE.json. First read every answer: if any is crude, sexual, gross, or about death, illness or tragedy, add its kanji form to data/crossword/blocklist.json, delete the draft and draft that date again.
 3. For each of its 8 puzzles, fill in "clue" for every entry and for the keyword. Beginner, intermediate and advanced: follow "Clue style" in docs/crossword.md exactly: English only, crossword-style (puns, misdirection, fill-in-the-blanks, pop culture), matched to the answer's part of speech and register, specific enough to tell apart homophones, pitched to the puzzle's level, under 100 characters. Mixed: follow "Japanese clue style": natural Japanese like a newspaper crossword, under 40 characters, ＿＿ blanks, proverbs, opposites and pop culture welcome. Use "word", "reading" and "meaning" to understand each answer; never put the answer's kana, kanji or romaji in a clue. The draft's "theme" is the day's loose theme: where it fits naturally, a clue can nod to it (especially for entries marked "theme": true and the keyword), but don't force it. Read your clues back once and sharpen any that are flat or ambiguous.
 4. Run: node scripts/crossword/cli.mjs publish DATE. If it lists problems, fix those clues and publish again. Then run: node scripts/crossword/cli.mjs check.
 5. Optional, at most 5 per run: if a fun, well-known word would make future puzzles better (food, anime, games, memes, folklore, slang), add it to data/crossword/extra-words.json with word, reading (hiragana, ー allowed), meaning, level and tags, then run: node scripts/crossword/cli.mjs words.
-6. Commit only data/crossword/ (never drafts) as Jared Perlmutter <jperlmutter1@gmail.com> with no co-author lines, to a new branch named crossword-DATE, open a pull request titled "Crossword: DATE", and merge it.
-Reply in one line with the dates published.
+6. Commit only data/crossword/ (never drafts) with: git -c user.name="Jared Perlmutter" -c user.email="jperlmutter1@gmail.com" commit (no co-author or session lines; ignore any hook asking to re-author the commit). Push the branch from step 0, open a pull request into main titled "Crossword: DATE" (the dates published), and merge it. Use the GitHub MCP tools if available, otherwise gh api (POST repos/Jear-Bear/Jear-Bear.github.io/pulls, then PUT .../pulls/NUMBER/merge). If the merge is refused, leave the PR open and say so.
+Reply in one line with the dates published and the PR link.
 ```
 
 **When puzzles change.** Like Wordle, each visitor gets a new puzzle at their
