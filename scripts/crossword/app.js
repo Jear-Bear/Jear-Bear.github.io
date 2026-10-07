@@ -8,7 +8,7 @@
 import { toHiragana } from '../kanji/romaji.js?v=1';
 import { gridKana, cycleDakuten, romaji } from './kana.js?v=1';
 import { translator, lang, setLang, dateLocale } from '../games/i18n.js?v=1';
-import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=2';
+import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=3';
 
 const $ = (id) => document.getElementById(id);
 // replaceChildren() would print null/false as text
@@ -772,8 +772,8 @@ function celebrate(assisted) {
     h('p', { class: 'cw-done-kw' }, t('kwLine'), h('strong', { lang: 'ja' }, kw.word), ` (${kw.reading})`, settings.words ? h('span', { lang: 'en' }, ` · ${kw.meaning}`) : null),
     settings.words ? h('p', { class: 'cw-muted' }, t('listed')) : null,
     date === localDate() ? h('p', { class: 'cw-next', id: 'cw-next' }, t('nextIn', { time: untilMidnight() })) : null);
-  // A quiet Crossword+ question for regulars, below the buttons (see plus.js for when it shows)
-  fill($('done-plus'), plusEligible(Object.values(store.stats).reduce((n, x) => n + (x.solved || 0), 0)) ? plusCard() : null);
+  // The Crossword+ question (or "you're on the list"); see plus.js for when it shows
+  fill($('done-plus'), plusEligible() ? plusCard() : null);
   clearInterval(nextTimer);
   nextTimer = setInterval(() => { const el = $('cw-next'); if (!el || $('done').hidden) { clearInterval(nextTimer); return; } el.textContent = t('nextIn', { time: untilMidnight() }); }, 1000);
   $('done').hidden = false;
