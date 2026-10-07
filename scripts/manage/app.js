@@ -8,9 +8,9 @@ import { store, reload, subscribe } from './store.js';
 import { dashboardView, pipelineView, companiesView, videosView, paymentsView, ratesView } from './views.js';
 import { openDeal, openCompany } from './panels.js';
 import { openImport, exportAs, CSV_TABLES } from './io.js';
-import { calendarView } from './cal-view.js';
+import { calendarView, invalidate as invalidateCalendar } from './cal-view.js';
 import { reviewView, refreshReviewCount, whenReviewCountChanges } from './review.js';
-import { insightsView } from './insights-view.js';
+import { insightsView, invalidateInsights } from './insights-view.js';
 import { trafficView } from './traffic-view.js';
 import { DEFAULT_AVOID, DEFAULT_TEMPLATES, templatesFrom, avoidFrom } from './pitching.js';
 import { closePanel, panelOpen, panelDirty, toast, button, busy } from './ui.js';
@@ -121,11 +121,38 @@ async function start() {
   }
   route();
   refreshReviewCount();
+  lastSync = Date.now();
 }
 
 // Re-render the current view whenever the data changes
 subscribe((s) => { if (!s.loading && s.state && current && current.rerender) current.rerender(); });
 window.addEventListener('hashchange', route);
+
+// --- Stay in sync across devices --------------------------------------------------------------
+// Everything is loaded once at sign-in, so a tab left open on another device
+// kept showing tasks you'd already dismissed or done elsewhere. Now the desk
+// refetches when you come back to it after a minute away, and every 5
+// minutes while it's open, unless you're in the middle of editing something.
+const AWAY_MS = 60 * 1000;
+const EVERY_MS = 5 * 60 * 1000;
+let lastSync = Date.now();
+let hiddenAt = null;
+async function freshen() {
+  if (!store.state || !hasSession() || store.loading || panelDirty()) return;
+  lastSync = Date.now();
+  invalidateCalendar();
+  invalidateInsights();
+  await reload();                      // re-renders the current view with fresh data
+  if (!panelOpen()) route();           // views that load their own data (calendar, traffic…) fetch again
+  refreshReviewCount();
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { hiddenAt = Date.now(); return; }
+  if (hiddenAt && Date.now() - hiddenAt >= AWAY_MS) freshen();
+  hiddenAt = null;
+});
+window.addEventListener('focus', () => { if (Date.now() - lastSync >= AWAY_MS) freshen(); });
+setInterval(() => { if (!document.hidden && Date.now() - lastSync >= EVERY_MS) freshen(); }, 30 * 1000);
 
 // --- Settings --------------------------------------------------------------------------
 function settingsView(root) {

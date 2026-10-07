@@ -39,6 +39,16 @@ Beginner and Advanced 9×9s keep entries to 5 kana (Intermediate and Mixed go
 up to 7). Each level has only ~10–45 words of seven kana, and long slots were
 the main reason those grids failed to fill.
 
+## Unchecked squares
+
+An unchecked square ("unch") belongs to only one entry, so the solver gets
+just one clue for it. Japanese-style patterns make a lot of them, so the
+builder now generates up to 40 candidate patterns and keeps the one with the
+fewest unches (then 10, then any, if a level struggles to fill). Unches also
+count against a grid when picking among finished fills. Result: about 1–4
+per Mini (was ~6) and 4–12 per Daily (was ~17), with every level still
+filling in a few minutes a day.
+
 ## Shape days
 
 Starting Oct 10, 2026, about one day in three the Mini or the Daily (sometimes

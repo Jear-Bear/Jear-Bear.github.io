@@ -174,7 +174,33 @@ const partner = (i, n, shape) => (UPRIGHT.has(shape) ? Math.floor(i / n) * n + (
 const SHORT = new Set(['beginner', 'advanced']);
 const maxRunFor = (size, level, shape) => (shape || SHORT.has(level) ? Math.min(SIZES[size].maxRun, 5) : SIZES[size].maxRun);
 
-function pattern(size, rand, shape = null, maxRun = SIZES[size].maxRun) {
+// Unchecked squares ("unches"): white squares in only one entry. Solvers find
+// them unfair (no second clue to help), so of several valid patterns we keep
+// the one with the fewest.
+export function unches(black, n) {
+  const W = (r, c) => r >= 0 && c >= 0 && r < n && c < n && !black[r * n + c];
+  let u = 0;
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < n; c++) {
+      if (W(r, c) && !((W(r, c - 1) || W(r, c + 1)) && (W(r - 1, c) || W(r + 1, c)))) u++;
+    }
+  }
+  return u;
+}
+
+function pattern(size, rand, shape = null, maxRun = SIZES[size].maxRun, tries = 1) {
+  let best = null;
+  for (let k = 0; k < tries; k++) {
+    const p = onePattern(size, rand, shape, maxRun);
+    if (!p) continue;
+    p.unches = unches(p.black, SIZES[size].n);
+    if (!best || p.unches < best.unches) best = p;
+    if (best.unches === 0) break;
+  }
+  return best;
+}
+
+function onePattern(size, rand, shape = null, maxRun = SIZES[size].maxRun) {
   const { n, blacks: [lo, hi] } = SIZES[size];
   for (let tries = 0; tries < 500; tries++) {
     const black = shape ? motif(size, shape, rand) : new Array(n * n).fill(false);
@@ -228,8 +254,8 @@ function pattern(size, rand, shape = null, maxRun = SIZES[size].maxRun) {
 }
 
 // --- Fill ---------------------------------------------------------------------------------
-function fill(size, list, idx, rand, { budget = 12000, seeds = 0, shape = null, width = 24, maxRun } = {}) {
-  const pat = pattern(size, rand, shape, maxRun);
+function fill(size, list, idx, rand, { budget = 12000, seeds = 0, shape = null, width = 24, maxRun, tries = 1 } = {}) {
+  const pat = pattern(size, rand, shape, maxRun, tries);
   if (!pat) return null;
   const { n } = SIZES[size];
   const { slots } = pat;
@@ -362,7 +388,10 @@ export function build({ size, level, words, seed, exclude = new Set(), theme = n
     const useShape = attempt < shaped ? shape : null;
     if (best && best.shape && !useShape) break;                  // keep a shaped grid over a plain one
     const plain = attempt - shaped;                              // attempts since the plain grids began
-    const f = fill(size, list, idx, rand, { seeds: theme && (useShape ? attempt < 300 : plain < 300) ? 1 : 0, shape: useShape, maxRun: maxRunFor(size, level, useShape) });
+    // Fewest unches first: pick the best of 40 patterns, then of 10, then any
+    const phase = useShape ? attempt : plain;
+    const tries = phase < 400 ? 40 : phase < 800 ? 10 : 1;
+    const f = fill(size, list, idx, rand, { seeds: theme && (useShape ? attempt < 300 : plain < 300) ? 1 : 0, shape: useShape, maxRun: maxRunFor(size, level, useShape), tries });
     if (!f) continue;
     f.shape = useShape;
     // At least a word or two from the fun / pop-culture list (relaxed if it keeps failing)
@@ -370,7 +399,8 @@ export function build({ size, level, words, seed, exclude = new Set(), theme = n
     if ((useShape ? attempt : plain) < 150 && fun < SIZES[size].fun) continue;
     const kw = keyword(size, f, list, rand);
     if (!kw) continue;
-    const score = f.assigned.filter((id) => list[id].th).length + (kw.word.th ? 2 : 0);
+    // Theme answers count for the score, unchecked squares against it
+    const score = f.assigned.filter((id) => list[id].th).length + (kw.word.th ? 2 : 0) - unches(f.black, f.n) / 3;
     if (!best || score > best.score) best = { f, kw, score, shape: useShape, n: (best ? best.n : 0) + 1 };
     else best.n++;
   }
