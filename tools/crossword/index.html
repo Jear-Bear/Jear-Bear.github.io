@@ -17,7 +17,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Klee+One:wght@600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="../../styles/base.css?v=4">
-  <link rel="stylesheet" href="../../styles/crossword.css?v=6">
+  <link rel="stylesheet" href="../../styles/crossword.css?v=7">
   <!-- Cloudflare Web Analytics (cookieless) -->
   <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
 </head>
@@ -168,6 +168,21 @@
         <p class="cw-credit" data-ui-only="en">Word lists: JLPT vocabulary from <a href="https://github.com/jamsinclair/open-anki-jlpt-decks" target="_blank" rel="noopener">open-anki-jlpt-decks</a> (MIT), based on Jonathan Waller’s JLPT lists (CC BY). Clues written with Claude.</p>
         <p class="cw-credit" data-ui-only="ja" lang="ja">単語リスト：<a href="https://github.com/jamsinclair/open-anki-jlpt-decks" target="_blank" rel="noopener">open-anki-jlpt-decks</a>（MIT）のJLPT語彙。Jonathan WallerさんのJLPTリスト（CC BY）が元です。カギはClaudeと一緒に作っています。</p>
       </section>
+
+      <section class="sec cw-section" id="plus-sec">
+        <p class="sec-mark"><span class="sec-num" lang="ja">無</span><span class="sec-label" data-ui-only="en">Free, and staying free / <span lang="ja"><ruby>無料<rt>むりょう</rt></ruby></span></span><span class="sec-label" data-ui-only="ja" lang="ja">ずっと<ruby>無料<rt>むりょう</rt></ruby></span></p>
+        <div class="cw-plus-about" data-ui-only="en">
+          <p>Every daily puzzle here is free: all four levels, both sizes, every check and reveal. No ads, no account, nothing to install. That isn’t changing.</p>
+          <p>Writing them does take time every day, so I’m thinking about an optional <strong>Crossword+</strong> for people who want more: every past puzzle and a few bonus ones each week. Nothing that’s free now would move behind it.</p>
+          <p>If that sounds useful, leave your email and I’ll send one note when it’s ready. And if you’d just like to say thanks, <a data-support-link href="https://www.youtube.com/@jareddesu/join" target="_blank" rel="noopener">joining the channel on YouTube</a> helps keep this going. Either way, thanks for playing.</p>
+        </div>
+        <div class="cw-plus-about" data-ui-only="ja" lang="ja">
+          <p>毎日のパズルはすべて無料です。4つのレベル、2つのサイズ、チェックも答え表示も全部。広告なし、登録なし、インストールも不要。これは変わりません。</p>
+          <p>ただ、毎日作るのには時間がかかるので、もっと解きたい人向けに、過去のパズル全部と毎週のボーナスパズルが遊べる任意の<strong>「クロスワード＋」</strong>を考えています。今無料のものが有料になることはありません。</p>
+          <p>興味があれば、メールアドレスを残してください。準備ができたら1通だけお知らせします。応援したい方は、<a data-support-link href="https://www.youtube.com/@jareddesu/join" target="_blank" rel="noopener">YouTubeのメンバーシップ</a>も励みになります。いつも遊んでくれてありがとう！</p>
+        </div>
+        <div id="plus-form"></div>
+      </section>
     </div>
   </main>
 
@@ -180,6 +195,7 @@
         <button type="button" class="btn btn-primary" id="done-share" data-t="share">Copy result</button>
         <button type="button" class="btn-link" id="done-close" data-t="doneClose">Keep looking</button>
       </div>
+      <div id="done-plus"></div>
     </div>
   </div>
   <div class="cw-overlay" id="dates" hidden>
@@ -235,6 +251,6 @@
   </footer>
 
   <script src="../../scripts/site.js?v=3"></script>
-  <script type="module" src="../../scripts/crossword/app.js?v=6"></script>
+  <script type="module" src="../../scripts/crossword/app.js?v=7"></script>
 </body>
 </html>
