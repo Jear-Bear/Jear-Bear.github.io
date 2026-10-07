@@ -124,9 +124,10 @@ function connected(black, n) {
 
 // --- Shapes ---------------------------------------------------------------------------------
 // Now and then a puzzle gets a fun NYT-style shape: a motif of black squares
-// that may touch and form a picture (stairs, a diamond, a heart...). '#' is a
-// motif square; the rest of the grid is filled in around it with the usual
-// pattern rules, so the grid stays fillable. (Fully-crossed shaped grids like
+// that may touch and form a picture (stairs, a heart, a tetris piece...).
+// Some are tidy and some lopsided on purpose. '#' is a motif square; the rest
+// of the grid is filled in around it with the usual pattern rules, so the
+// grid stays fillable. (Fully-crossed shaped grids like
 // the NYT's rarely fill with kana: there are only ~60 seven-kana words.)
 // A motif may appear mirrored or turned, except UPRIGHT ones.
 export const SHAPES = {
@@ -135,6 +136,8 @@ export const SHAPES = {
     diagonal: ['#....', '.#...', '.....', '...#.', '....#'],
     pinwheel: ['#....', '...#.', '.....', '.#...', '....#'],
     window: ['.....', '.#.#.', '.....', '.#.#.', '.....'],
+    tetris: ['##...', '.....', '...#.', '..##.', '.....'],
+    zigzag: ['.....', '##...', '.....', '...##', '.....'],
   },
   daily: {
     stairs: ['###......', '##.......', '#........', '.........', '....#....', '.........', '........#', '.......##', '......###'],
@@ -144,6 +147,12 @@ export const SHAPES = {
     pinwheel: ['...#.....', '...#.....', '...#.....', '.......##', '....#....', '##.......', '.....#...', '.....#...', '.....#...'],
     heart: ['#########', '##..#..##', '#.......#', '.........', '.........', '#.......#', '##.....##', '###...###', '####.####'],
     corners: ['##.....##', '#.......#', '.........', '.........', '.........', '.........', '.........', '#.......#', '##.....##'],
+    // Quirky, lopsided ones
+    tetris: ['##.......', '#........', '.........', '......#..', '.....###.', '.........', '.#.......', '.##......', '.#.......'],
+    snake: ['.........', '.###.....', '...#.....', '...###...', '.....#...', '.....###.', '.........', '.........', '.........'],
+    bite: ['####.....', '###......', '##.......', '#........', '.........', '.........', '.........', '.........', '.........'],
+    steps: ['##.......', '.##......', '..##.....', '.........', '.........', '.....##..', '......##.', '.......##', '.........'],
+    blob: ['.........', '.........', '...##....', '..####...', '...###...', '....#....', '.........', '.........', '.........'],
   },
 };
 const UPRIGHT = new Set(['heart']);
@@ -155,7 +164,7 @@ function motif(size, name, rand) {
   return rows.flat().map((ch) => ch === '#');
 }
 
-// The square that mirrors i, so extra squares keep the picture symmetric:
+// The square that mirrors i, so extra squares can keep the picture symmetric:
 // left-right for upright shapes (the heart), otherwise turned 180°
 const partner = (i, n, shape) => (UPRIGHT.has(shape) ? Math.floor(i / n) * n + (n - 1 - (i % n)) : n * n - 1 - i);
 
@@ -169,8 +178,10 @@ function pattern(size, rand, shape = null, maxRun = SIZES[size].maxRun) {
   const { n, blacks: [lo, hi] } = SIZES[size];
   for (let tries = 0; tries < 500; tries++) {
     const black = shape ? motif(size, shape, rand) : new Array(n * n).fill(false);
-    // A shape keeps its motif; a 9x9 gets a pair or two of extra squares
+    // A shape keeps its motif; a 9x9 gets a few extra squares, mirrored in
+    // pairs half the time and scattered (quirkier) the other half
     const base = black.filter(Boolean).length;
+    const sym = shape && rand() < 0.5;
     const target = shape ? base + (size === 'mini' ? 0 : 4 + 2 * Math.floor(rand() * 3)) : lo + Math.floor(rand() * (hi - lo + 1));
     const canBlack = (i) => {
       if (black[i]) return false;
@@ -183,7 +194,7 @@ function pattern(size, rand, shape = null, maxRun = SIZES[size].maxRun) {
     const add = (i) => {
       if (!canBlack(i)) return false;
       black[i] = true;
-      const j = shape ? partner(i, n, shape) : i;
+      const j = sym ? partner(i, n, shape) : i;
       const pair = j !== i && canBlack(j);
       if (pair) black[j] = true;
       if (connected(black, n)) return true;

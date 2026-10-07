@@ -43,12 +43,16 @@ the main reason those grids failed to fill.
 
 Starting Oct 10, 2026, about one day in three the Mini or the Daily (sometimes
 both) gets a fun NYT-style shape: black squares that touch and make a picture.
-Daily shapes: stairs, gem, plus, X, pinwheel, heart, corners. Mini shapes:
-stairs, diagonal, pinwheel, window. They're defined in `SHAPES` in
-`scripts/crossword/construct.mjs` as a motif of `#` squares; the rest of the
-grid is filled in around the motif with extra black squares placed in mirrored
-pairs, so the grid looks designed. Shapes can appear mirrored or turned (the
-heart stays upright), and their entries stay at 5 kana or less.
+Daily shapes: stairs, gem, plus, X, pinwheel, heart and corners, plus
+lopsided, quirky ones (tetris pieces, a snake, a bite out of one corner, a
+staircase, a blob). Mini shapes: stairs, diagonal, pinwheel, window, tetris,
+zigzag. They're defined in `SHAPES` in `scripts/crossword/construct.mjs` as a
+motif of `#` squares; the rest of the grid is filled in around the motif.
+Half the time the extra black squares come in mirrored pairs (a tidy,
+designed look), the other half they're scattered (quirkier). Shapes can
+appear mirrored or turned (the heart stays upright), and their entries stay
+at 5 kana or less. To add a shape, add a motif: it must leave the white
+squares connected.
 
 A fully-crossed shaped grid like the NYT Mini rarely fills from kana word
 lists, so if a shape won't fill at some level (usually the Beginner Mini),
