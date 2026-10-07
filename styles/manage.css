@@ -647,3 +647,7 @@ body.is-dragging-upload .crm-videos-planned .crm-row.is-video:not(.is-head) { ou
 .crm-traffic-grid { align-items: start; }
 .crm-traffic-grid > .crm-section { margin: 22px 0 0; }
 .crm-traffic-bar ~ .crm-insight { margin: 14px 0 20px; }
+
+/* Crossword+ waitlist (Traffic tab) */
+.crm-waitlist { list-style: none; margin: 8px 0; padding: 0; max-height: 240px; overflow-y: auto; font-size: 13px; }
+.crm-waitlist li { padding: 4px 0; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }

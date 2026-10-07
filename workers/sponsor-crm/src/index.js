@@ -59,6 +59,7 @@ import { ingestStats, pullPublicStats, loadInsights, putIncome, decideRateRule }
 import { handleGo, createInvoice } from './growth.js';
 import { listDrafts, requestDraft, closeDraft } from './drafts.js';
 import { availability, inquiry } from './public.js';
+import { joinWaitlist, leaveWaitlist, listWaitlist } from './waitlist.js';
 import { pullTraffic, loadTraffic, trafficConfigured } from './traffic.js';
 
 const TYPES = {
@@ -172,6 +173,7 @@ async function route(request, env, url) {
   if (a === 'drafts' && !b && m === 'POST') return requestDraft(db, await readJson(request));
   if (a === 'drafts' && b && c === 'cancel' && !d && m === 'POST') return closeDraft(db, b, { status: 'cancelled' });
   if (a === 'insights' && !b && m === 'GET') return loadInsights(db);
+  if (a === 'waitlist' && !b && m === 'GET') return listWaitlist(db);
   if (a === 'stats' && b === 'refresh' && !c && m === 'POST') return pullPublicStats(db);
   if (a === 'income' && !b && m === 'PUT') return putIncome(db, await readJson(request));
   if (a === 'traffic' && !b && m === 'GET') return loadTraffic(env, db, { days: url.searchParams.get('days'), to: url.searchParams.get('to') });
@@ -272,6 +274,19 @@ const app = {
     if (url.pathname === '/public/availability' && request.method === 'GET') {
       if (!configured(env)) return json({ error: 'Not configured' }, 503, origin);
       return json(await availability(env.DB, 'America/Chicago'), 200, origin, { 'Cache-Control': 'public, max-age=900' });
+    }
+    if (url.pathname === '/public/crossword-leave' && request.method === 'GET') {
+      if (!configured(env)) return new Response('Not configured', { status: 503 });
+      return leaveWaitlist(env, url);
+    }
+    if (url.pathname === '/public/crossword-interest' && request.method === 'POST') {
+      if (!origin) return json({ error: 'Origin not allowed' }, 403);
+      if (!configured(env)) return json({ error: 'Not configured' }, 503, origin);
+      try { return json(await joinWaitlist(request, env), 200, origin); } catch (err) {
+        if (err instanceof HttpError) return json({ error: err.message }, err.status, origin);
+        console.error('Waitlist failed', err && err.message);
+        return json({ error: 'Something went wrong' }, 500, origin);
+      }
     }
     if (url.pathname === '/public/inquiry' && request.method === 'POST') {
       if (!origin) return json({ error: 'Origin not allowed' }, 403);

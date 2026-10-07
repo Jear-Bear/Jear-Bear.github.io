@@ -151,15 +151,49 @@ function setupNote(data) {
     h('p', { class: 'crm-method' }, 'The token can only read analytics. It lives in GitHub secrets and the Worker, never in the site or the browser.'));
 }
 
+// --- Crossword+ waitlist ----------------------------------------------------------------------
+// Emails people left on the crossword page for one note when Crossword+
+// launches (workers/sponsor-crm/src/waitlist.js). Shown only here, never stored
+// in the repo. Each person's leave link goes at the bottom of that one email.
+const WANT_LABELS = { archive: 'Every past puzzle', bonus: 'Bonus puzzles', sync: 'Streaks on all devices', print: 'Printable puzzles' };
+const leaveUrl = (token) => `https://sponsor-crm.jared-65b.workers.dev/public/crossword-leave?t=${token}`;
+
+function waitlistSection(w) {
+  if (!w) return null;
+  const copy = button('Copy emails', async () => {
+    try { await navigator.clipboard.writeText(w.rows.map((r) => r.email).join(', ')); toast('Copied', { kind: 'ok', ms: 2000 }); } catch { toast('Couldn’t copy', { kind: 'error' }); }
+  }, { kind: 'chip', disabled: !w.count });
+  const csv = button('Download CSV', () => {
+    const lines = [['email', 'language', 'wants', 'signed_up', 'leave_link'], ...w.rows.map((r) => [r.email, r.lang, r.wants.join(' '), r.created_at.slice(0, 10), leaveUrl(r.token)])];
+    const blob = new Blob([lines.map((l) => l.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')], { type: 'text/csv' });
+    const a = h('a', { href: URL.createObjectURL(blob), download: 'crossword-plus-waitlist.csv' });
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }, { kind: 'chip', disabled: !w.count });
+  const wants = Object.entries(w.wants).map(([k, n]) => ({ key: WANT_LABELS[k] || k, views: n, share: w.count ? n / w.count : 0 })).sort((a, b) => b.views - a.views);
+  return section('Crossword+ waitlist',
+    h('div', { class: 'crm-tiles' },
+      tile('Signed up', num.format(w.count), 'want one email at launch'),
+      tile('Last 7 days', num.format(w.last7), 'new sign-ups'),
+      tile('Most wanted', w.count && wants[0].views ? wants[0].key : '—', w.count && wants[0].views ? `${Math.round(wants[0].share * 100)}% picked it` : 'optional picks'),
+      tile('In Japanese', num.format(w.rows.filter((r) => r.lang === 'ja').length), 'signed up with the Japanese page')),
+    w.count ? h('div', {}, h('h3', { class: 'crm-subhead' }, 'What they’d want'), barList(wants, { limit: 4 })) : h('p', { class: 'crm-muted' }, 'No sign-ups yet. The crossword asks regulars after their 3rd solve, at most once a day, and the page has a short “Free, and staying free” section.'),
+    w.count ? h('details', { class: 'crm-details' }, h('summary', {}, `Show ${num.format(w.count)} email${w.count === 1 ? '' : 's'}`),
+      h('ul', { class: 'crm-waitlist' }, w.rows.map((r) => h('li', {}, r.email, h('span', { class: 'crm-muted' }, ` · ${r.lang} · ${fmtDate(r.created_at.slice(0, 10))}`))))) : null,
+    h('div', { class: 'crm-traffic-bar' }, copy, csv),
+    h('p', { class: 'crm-method' }, 'Promised on the page: one email when Crossword+ is ready, no newsletter. Put each person’s leave link (in the CSV) at the bottom of that email; it deletes them from the list.'));
+}
+
 // --- The Traffic tab --------------------------------------------------------------------------
 export function trafficView(root) {
   let data = null;
   let insights = [];
+  let waitlist = null;
   let error = null;
   const load = async () => {
     try {
-      const [d, ins] = await Promise.all([request('GET', `traffic?days=${range}`), insightData().catch(() => ({ insights: [] }))]);
-      data = d; insights = ins.insights || []; error = null;
+      const [d, ins, wl] = await Promise.all([request('GET', `traffic?days=${range}`), insightData().catch(() => ({ insights: [] })), request('GET', 'waitlist').catch(() => null)]);
+      data = d; insights = ins.insights || []; waitlist = wl; error = null;
     } catch (err) { error = err; }
     render();
   };
@@ -220,6 +254,7 @@ export function trafficView(root) {
         section(DIM_LABELS.device, x.device.length ? shareBar(x.device.slice(0, 4)) : h('p', { class: 'crm-muted' }, 'No data yet.'),
           h('h3', { class: 'crm-subhead' }, DIM_LABELS.browser), barList(x.browser, { limit: 5 }),
           h('h3', { class: 'crm-subhead' }, DIM_LABELS.os), barList(x.os, { limit: 5 }))),
+      waitlistSection(waitlist),
       h('p', { class: 'crm-method' }, 'From Cloudflare Web Analytics: no cookies and no individual visitors, only totals. Cloudflare samples busy periods, so small numbers can be estimates. A visit is someone arriving from another site or typing the address; page views count every page they open. The private Sponsor desk isn’t tracked.'),
     ].filter(Boolean));
   };

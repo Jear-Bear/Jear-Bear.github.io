@@ -176,3 +176,25 @@ html[data-ui="ja"] [data-ui-only="en"], html:not([data-ui="ja"]) [data-ui-only="
 :root[lang="ja"] .cw-theme-k, .cw-theme-k:lang(ja) { text-transform: none; letter-spacing: .02em; }
 .cw-theme-name { font-weight: 600; font-size: 15px; }
 .cw-theme-ja { color: var(--muted); }
+
+/* Crossword+ waitlist (plus.js): quiet, never over the grid */
+.cw-plus { margin-top: 18px; padding: 14px 16px; border: 1px solid var(--border); background: var(--surface); text-align: left; }
+.cw-plus.is-compact { margin-top: 20px; }
+.cw-plus-title { margin: 0 0 4px; font-weight: 600; font-size: 15px; }
+.cw-plus-body { margin: 0 0 10px; font-size: 14px; line-height: 1.6; color: var(--ink-soft); }
+.cw-plus-wants { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.cw-plus-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.cw-plus-chip { font: 13px var(--font-gothic); padding: 6px 10px; min-height: 34px; border: 1px solid var(--border-strong); border-radius: 999px; background: transparent; color: var(--ink-soft); cursor: pointer; }
+.cw-plus-chip[aria-pressed="true"] { background: var(--page-color); border-color: var(--page-color); color: #fff; }
+.cw-plus-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.cw-plus-email { flex: 1 1 200px; min-width: 0; font: 15px var(--font-gothic); padding: 9px 10px; min-height: 42px; border: 1px solid var(--border-strong); background: var(--paper); color: var(--ink); }
+.cw-plus-submit { flex: 0 0 auto; }
+.cw-plus-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.cw-plus-status { margin: 6px 0 0; font-size: 13px; color: var(--muted); min-height: 1em; }
+.cw-plus-status:empty { display: none; }
+.cw-plus-fine { margin: 8px 0 0; font-size: 12px; color: var(--muted); }
+.cw-plus-not { font-size: 12px; }
+.cw-plus-thanks { margin: 0; font-size: 14px; }
+.cw-plus-about p { margin: 0 0 10px; line-height: 1.75; }
+.cw-plus .cw-plus-submit { background: transparent; color: var(--ink); border: 1px solid var(--ink); }
+.cw-plus .cw-plus-submit:hover { background: var(--ink); color: var(--paper); }

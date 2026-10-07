@@ -7,6 +7,8 @@
 //                              company + inbound deal proposal (the form
 //                              still emails you through Web3Forms too)
 //
+// (The Crossword+ waitlist has its own public endpoints in waitlist.js.)
+//
 // Inquiries are rate-limited per IP (hashed) and in total, size-limited and
 // validated; nothing from the form is ever rendered as HTML.
 
@@ -37,19 +39,19 @@ export async function availability(db, tz) {
   return { asOf: today, months };
 }
 
-async function hmacHex(env, text) {
+export async function hmacHex(env, text) {
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(env.CRM_SESSION_KEY), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(text));
   return [...new Uint8Array(sig)].slice(0, 16).map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-async function bump(db, key, limit, ttl, now) {
+export async function bump(db, key, limit, ttl, now) {
   const r = await db.prepare('INSERT INTO public_hits (key, n, expires_at) VALUES (?, 1, ?) ON CONFLICT (key) DO UPDATE SET n = n + 1 RETURNING n')
     .bind(key, now + ttl).first();
   return r.n <= limit;
 }
 
-const text = (v, n) => (typeof v === 'string' ? v.replace(/\u0000/g, '').trim().slice(0, n) : '');
+export const text = (v, n) => (typeof v === 'string' ? v.replace(/\u0000/g, '').trim().slice(0, n) : '');
 
 export async function inquiry(request, env) {
   const db = env.DB;
