@@ -198,3 +198,5 @@ html[data-ui="ja"] [data-ui-only="en"], html:not([data-ui="ja"]) [data-ui-only="
 .cw-plus-about p { margin: 0 0 10px; line-height: 1.75; }
 .cw-plus .cw-plus-submit { background: transparent; color: var(--ink); border: 1px solid var(--ink); }
 .cw-plus .cw-plus-submit:hover { background: var(--ink); color: var(--paper); }
+.cw-plus-onlist { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+.cw-plus.is-compact { margin-top: 6px; padding: 12px 14px; }

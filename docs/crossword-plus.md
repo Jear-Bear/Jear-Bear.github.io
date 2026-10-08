@@ -20,10 +20,10 @@ These are on the crossword page in English and Japanese. Don't break them:
 - **Page section** "Free, and staying free" (無料) below How to play: says what's
   free, what Crossword+ might add, links YouTube channel memberships as a way to
   say thanks, and has the signup form. It never pops up.
-- **Solved screen:** a short question under the Copy result / Keep looking
-  buttons. It shows only from your 3rd solve, at most once a day, never again
-  after signing up, and not for 60 days after "Not for me". It never covers the
-  grid or interrupts a puzzle.
+- **Solved screen (お見事):** a short version above the Copy result / Keep
+  looking buttons, on every solve. Once someone signs up it becomes a
+  one-line "You're on the Crossword+ list"; "Not for me" hides it for 30
+  days. It never covers the grid or interrupts a puzzle.
 - Code: `scripts/crossword/plus.js`. The support link (`SUPPORT_URL`) points to
   the channel's YouTube memberships page; swap it for Ko-fi or Patreon there.
 

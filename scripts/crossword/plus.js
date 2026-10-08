@@ -3,8 +3,9 @@
 // The daily puzzles stay free. This only asks regular solvers whether they'd
 // like optional extras (every past puzzle, bonus puzzles), and if so, takes an
 // email for one note when it's ready. To keep it from being pushy:
-//   - the solved screen shows it only after your 3rd solve, at most once a day,
-//     and never again after "Not for me" (for 60 days) or after you sign up;
+//   - the solved screen (お見事) shows a short version on every solve, until you
+//     sign up (then just a one-line "you're on the list") or tap "Not for me"
+//     (hidden for 30 days);
 //   - it never covers the grid or interrupts a puzzle;
 //   - the page section (always there, below How to play) never pops up.
 // Emails go to the sponsor Worker's private database (waitlist.js), never the repo.
@@ -15,7 +16,7 @@ const API = 'https://sponsor-crm.jared-65b.workers.dev';
 const KEY = 'jareddesu.crossword.plus';
 const SUPPORT_URL = 'https://www.youtube.com/@jareddesu/join';
 const WANTS = ['archive', 'bonus', 'sync', 'print'];
-const HIDE_DAYS = 60;
+const HIDE_DAYS = 30;
 
 const T = {
   en: {
@@ -28,7 +29,8 @@ const T = {
     fine: 'One email when it launches. No newsletter, and you can remove yourself anytime.',
     thanks: 'Thanks! I’ll write once, when it’s ready.', sending: 'Sending…',
     badEmail: 'That email doesn’t look quite right.', failed: 'Couldn’t send that. Please try again in a bit.',
-    hidden: 'Got it, I won’t ask again.',
+    hidden: 'Got it. I won’t ask for a while.',
+    onList: 'You’re on the Crossword+ list. I’ll email once when it’s ready.',
   },
   ja: {
     title: 'もっと解きたい？',
@@ -40,14 +42,14 @@ const T = {
     fine: '始まったときにメールを1通だけ送ります。メルマガはなく、いつでも削除できます。',
     thanks: 'ありがとう！準備ができたら1回だけお知らせします。', sending: '送信中…',
     badEmail: 'メールアドレスを確認してください。', failed: '送信できませんでした。少ししてからもう一度お試しください。',
-    hidden: 'わかりました。もう聞きません。',
+    hidden: 'わかりました。しばらく聞きません。',
+    onList: 'クロスワード＋のリストに登録済みです。準備ができたら1回だけお知らせします。',
   },
 };
 const t = (k) => (T[lang()] || T.en)[k] || T.en[k];
 
 function read() { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; } }
 function write(v) { try { localStorage.setItem(KEY, JSON.stringify({ ...read(), ...v })); } catch { /* private mode */ } }
-const today = () => new Date().toISOString().slice(0, 10);
 
 function h(tag, attrs, ...kids) {
   const n = document.createElement(tag);
@@ -62,10 +64,9 @@ function h(tag, attrs, ...kids) {
 }
 
 // Should the solved screen mention it? solves = puzzles this browser has solved
-export function plusEligible(solves) {
+export function plusEligible() {
   const s = read();
-  if (s.joined || solves < 3 || s.shownOn === today()) return false;
-  return !(s.hideUntil && Date.now() < s.hideUntil);
+  return s.joined || !(s.hideUntil && Date.now() < s.hideUntil);
 }
 
 // The form. compact: the solved-screen version (with "Not for me")
@@ -115,9 +116,9 @@ export function plusForm({ compact = false } = {}) {
   return box;
 }
 
-// For the solved screen: the compact form, remembered as shown today
+// For the solved screen: the short form, or "you’re on the list" once signed up
 export function plusCard() {
-  write({ shownOn: today() });
+  if (read().joined) return h('p', { class: 'cw-plus-onlist' }, t('onList'));
   return plusForm({ compact: true });
 }
 
