@@ -11,7 +11,7 @@ import { openImport, exportAs, CSV_TABLES } from './io.js';
 import { calendarView, invalidate as invalidateCalendar } from './cal-view.js';
 import { reviewView, refreshReviewCount, whenReviewCountChanges } from './review.js';
 import { insightsView, invalidateInsights } from './insights-view.js';
-import { trafficView } from './traffic-view.js';
+import { trafficView } from './traffic-view.js?v=2';
 import { DEFAULT_AVOID, DEFAULT_TEMPLATES, templatesFrom, avoidFrom } from './pitching.js';
 import { closePanel, panelOpen, panelDirty, toast, button, busy } from './ui.js';
 

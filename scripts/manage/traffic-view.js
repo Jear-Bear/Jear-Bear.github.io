@@ -160,6 +160,7 @@ const leaveUrl = (token) => `https://sponsor-crm.jared-65b.workers.dev/public/cr
 
 function waitlistSection(w) {
   if (!w) return null;
+  if (w.error) return section('Crossword+ waitlist', h('p', { class: 'crm-note is-error' }, `Couldn’t load the waitlist: ${w.error}`));
   const copy = button('Copy emails', async () => {
     try { await navigator.clipboard.writeText(w.rows.map((r) => r.email).join(', ')); toast('Copied', { kind: 'ok', ms: 2000 }); } catch { toast('Couldn’t copy', { kind: 'error' }); }
   }, { kind: 'chip', disabled: !w.count });
@@ -181,7 +182,7 @@ function waitlistSection(w) {
     w.count ? h('details', { class: 'crm-details' }, h('summary', {}, `Show ${num.format(w.count)} email${w.count === 1 ? '' : 's'}`),
       h('ul', { class: 'crm-waitlist' }, w.rows.map((r) => h('li', {}, r.email, h('span', { class: 'crm-muted' }, ` · ${r.lang} · ${fmtDate(r.created_at.slice(0, 10))}`))))) : null,
     h('div', { class: 'crm-traffic-bar' }, copy, csv),
-    h('p', { class: 'crm-method' }, 'Promised on the page: one email when Crossword+ is ready, no newsletter. Put each person’s leave link (in the CSV) at the bottom of that email; it deletes them from the list.'));
+    h('p', { class: 'crm-method' }, 'Sign-ups are saved the moment someone presses the button. This list reads them live when you open Traffic (or press Refresh), and the desk refreshes itself every 5 minutes. Promised on the page: one email when Crossword+ is ready, no newsletter. Put each person’s leave link (in the CSV) at the bottom of that email; it deletes them from the list.'));
 }
 
 // --- The Traffic tab --------------------------------------------------------------------------
@@ -192,7 +193,7 @@ export function trafficView(root) {
   let error = null;
   const load = async () => {
     try {
-      const [d, ins, wl] = await Promise.all([request('GET', `traffic?days=${range}`), insightData().catch(() => ({ insights: [] })), request('GET', 'waitlist').catch(() => null)]);
+      const [d, ins, wl] = await Promise.all([request('GET', `traffic?days=${range}`), insightData().catch(() => ({ insights: [] })), request('GET', 'waitlist').catch((err) => ({ error: err.message }))]);
       data = d; insights = ins.insights || []; waitlist = wl; error = null;
     } catch (err) { error = err; }
     render();

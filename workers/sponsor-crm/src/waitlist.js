@@ -23,7 +23,9 @@ export async function joinWaitlist(request, env) {
   let body;
   try { body = JSON.parse((await request.text()).slice(0, 4000)); } catch { throw new HttpError(400, 'Bad form'); }
   if (!body || typeof body !== 'object') throw new HttpError(400, 'Bad form');
-  if (body.website) return { ok: true };                       // honeypot: pretend it worked
+  // Spam trap: bots fill every field. Only the new trap field counts; the old
+  // one ("website") got filled by browser autofill for real people.
+  if (body.trap) return { ok: true };
   const email = text(body.email, 254).toLowerCase();
   if (!EMAIL.test(email)) throw new HttpError(400, 'That email doesn’t look right');
   const wants = Array.isArray(body.wants) ? [...new Set(body.wants.filter((w) => WANTS.includes(w)))] : [];
