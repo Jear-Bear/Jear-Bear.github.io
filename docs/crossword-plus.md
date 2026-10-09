@@ -133,3 +133,44 @@ Check the waitlist after 3 to 4 weeks next to the crossword's daily visits
 (Lemon Squeezy handles the overseas VAT) and moving puzzles older than 7 days
 out of the public repo into the Worker. Under about 50 means keep it free and
 grow the audience first.
+
+## Building it: accounts and subscriptions (plan)
+
+Not built yet. Start once the waitlist hits the launch target above.
+
+**Rules that don't change:** everything free stays free with no account.
+Logging in is only for Crossword+ and, as a free extra, syncing progress.
+
+1. **Domain first.** The site is `www.jareddesu.com` and the Worker is on
+   `workers.dev`; Safari and other browsers block login cookies across two
+   different domains. Move the domain's DNS to Cloudflare (free) and serve the
+   Worker at `api.jareddesu.com`. Then the session cookie is same-site,
+   `HttpOnly`, `Secure`, `SameSite=Lax`.
+2. **Login, in the sponsor Worker.** D1 tables `users` (id, email, created_at)
+   and `sessions` (hashed token, user_id, expires_at). Two ways in:
+   - **Sign in with Google** (free OAuth client; only the email is kept).
+   - **Email link** (type your email, click the link): one-time token, valid
+     15 minutes, sent with a free email service (Resend: 3,000/month).
+   - Skip Apple for now (needs the $99/year developer program). Passkeys later.
+   - A "Delete my account" button that removes everything about the user.
+3. **Payments: Lemon Squeezy** (merchant of record, so it handles VAT and
+   sales tax worldwide). Two products: $2.99/month and $24.99/year, plus a
+   $1.99/month founding discount code for the waitlist. Checkout passes the
+   user id; its webhook (signature checked) sets `plan` and `plan_until` on the
+   user. Subscribers manage their card, switch plans or cancel on Lemon
+   Squeezy's own customer portal, linked from the account menu. No card data
+   ever reaches the Worker.
+4. **Access.** `GET /plus/bonus/:id` and `GET /plus/archive/:date` check the
+   session and plan, then return the puzzle. Bonus files are already sealed for
+   the Worker; sealing archive days older than 7 days the same way keeps them
+   in the repo (see "Keeping every puzzle") while only subscribers can open
+   them. The crossword page shows a lock and a "Crossword+" link on those days
+   instead of the puzzle.
+5. **Free sync for anyone signed in:** crossword streaks and kana/kanji
+   progress (the study backup module) saved to the account, so they follow
+   you between devices.
+6. **Launch:** send the one promised email to the waitlist with the founding
+   code and each person's leave link.
+
+About 3 to 4 PRs: (1) domain + login, (2) payments + webhook, (3) locked
+archive and bonus puzzles in the player, (4) progress sync.
