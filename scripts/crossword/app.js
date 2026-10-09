@@ -8,7 +8,7 @@
 import { toHiragana } from '../kanji/romaji.js?v=1';
 import { gridKana, cycleDakuten, romaji } from './kana.js?v=1';
 import { translator, lang, setLang, dateLocale } from '../games/i18n.js?v=1';
-import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=3';
+import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=4';
 
 const $ = (id) => document.getElementById(id);
 // replaceChildren() would print null/false as text

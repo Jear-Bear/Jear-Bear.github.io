@@ -2,9 +2,16 @@
 
 Crossword+ is an idea for optional extras on top of the free daily
 crossword: every past puzzle and a few bonus puzzles each week. Right now
-it's only a waitlist, to see whether enough people want it before building
-payments. Thinking price: about $3/month or $24/year (roughly half of NYT
-Games), maybe with a founding-supporter price.
+it's a waitlist plus a growing backlog of bonus puzzles, to see whether
+enough people want it before building payments.
+
+**Price:** $2.99/month or $24.99/year (about $2.08/month, roughly 30% off).
+Waitlist members get a founding price of $1.99/month, locked in for as long
+as they stay subscribed. Ending in .99 is the standard for small
+subscriptions, and keeping it under $3 makes it feel like a tip, not a bill.
+
+**Launch when:** about 150–200 sign-ups, or 3–4 weeks of steady sign-ups
+(a few a day, not one spike). Waitlists usually convert at roughly 5–15%.
 
 ## The promises (keep these)
 
@@ -40,6 +47,33 @@ See them in the Sponsor desk → **Traffic** tab → **Crossword+ waitlist**:
 count, last 7 days, what people want most, the list, **Copy emails** and
 **Download CSV**. The CSV has each person's leave link
 (`/public/crossword-leave?t=…`), which deletes them in one click.
+
+## Bonus puzzles (the backlog)
+
+Extra 9×9 puzzles only for Crossword+, rotating intermediate → beginner →
+advanced → mixed, each with its own theme and sometimes a shape. They're
+built and clued like the dailies, then **sealed**: encrypted with the sponsor
+Worker's public key and committed to `data/crossword/bonus/`. The private key
+was generated inside the Worker and lives only in D1, so the files in the
+public repo can't be read by anyone else; at launch the Worker opens them for
+subscribers. `data/crossword/bonus/index.json` lists them (no clues or
+answers).
+
+```
+node scripts/crossword/cli.mjs bonus-key          # once: save the Worker's public key (key.json)
+node scripts/crossword/cli.mjs bonus-draft 2      # build the next 2 into data/crossword/drafts/bonus-NNN.json
+node scripts/crossword/cli.mjs bonus-publish bonus-005   # check clues, seal, add to the index
+```
+
+The Sponsor desk's waitlist card shows **Bonus puzzles ready**: the Worker
+fetches each sealed file from the site and opens it, so the count is only of
+puzzles it can actually read.
+
+Add this to the nightly crossword task (after publishing the dailies):
+
+```
+7. Bonus puzzles: if the newest entry in data/crossword/bonus/index.json was made 7 or more days ago (or the file doesn't exist), run: node scripts/crossword/cli.mjs bonus-draft 2. For each draft (data/crossword/drafts/bonus-NNN.json), apply the same safety check as step 2 and write clues the same way as step 3 (its level is in the draft; mixed gets Japanese clues), then run: node scripts/crossword/cli.mjs bonus-publish bonus-NNN. Commit data/crossword/bonus/ together with the dailies.
+```
 
 ## Telling people (without being pushy)
 

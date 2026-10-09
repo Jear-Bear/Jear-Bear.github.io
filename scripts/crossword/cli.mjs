@@ -198,15 +198,10 @@ export function clueProblems(p) {
 }
 
 // --- publish -------------------------------------------------------------------------------
-function publish(date) {
-  if (!isDate(date)) die('Usage: publish YYYY-MM-DD');
-  const src = path.join(DRAFTS, `${date}.json`);
-  const d = readJson(src, null);
-  if (!d) die(`No draft at ${path.relative(ROOT, src)}`);
-  const problems = d.puzzles.flatMap(clueProblems);
-  if (problems.length) die(`Fix these first:\n- ${problems.join('\n- ')}`);
-  const puzzles = d.puzzles.map((p) => ({
-    id: `${date}-${p.level}-${p.size}`, size: p.size, level: p.level, width: p.width, height: p.height, ...(p.shape ? { shape: p.shape } : {}),
+// A draft puzzle as the player loads it (answers lightly encoded)
+function toPublished(p, id) {
+  return {
+    id, size: p.size, level: p.level, width: p.width, height: p.height, ...(p.shape ? { shape: p.shape } : {}),
     grid: p.rows.map((r) => r.replace(/[^#]/g, '.')),
     clues: p.entries.map((e) => ({ num: e.num, dir: e.dir, row: e.row, col: e.col, len: e.len, clue: e.clue.trim() })),
     keyword: { cells: p.keyword.cells, clue: p.keyword.clue.trim() },
@@ -215,7 +210,17 @@ function publish(date) {
       entries: p.entries.map((e) => ({ num: e.num, dir: e.dir, answer: e.answer, word: e.word, reading: e.reading, meaning: e.meaning })),
       keyword: { answer: p.keyword.answer, word: p.keyword.word, reading: p.keyword.reading, meaning: p.keyword.meaning },
     }),
-  }));
+  };
+}
+
+function publish(date) {
+  if (!isDate(date)) die('Usage: publish YYYY-MM-DD');
+  const src = path.join(DRAFTS, `${date}.json`);
+  const d = readJson(src, null);
+  if (!d) die(`No draft at ${path.relative(ROOT, src)}`);
+  const problems = d.puzzles.flatMap(clueProblems);
+  if (problems.length) die(`Fix these first:\n- ${problems.join('\n- ')}`);
+  const puzzles = d.puzzles.map((p) => toPublished(p, `${date}-${p.level}-${p.size}`));
   // Adding levels to a day that's already out: keep its puzzles, in level order
   const old = readJson(path.join(PUZZLES, `${date}.json`), null);
   if (old) {
@@ -267,10 +272,91 @@ function status(days = 3) {
   console.log(JSON.stringify({ today, missing, drafts: fs.existsSync(DRAFTS) ? fs.readdirSync(DRAFTS) : [] }));
 }
 
+// --- Crossword+ bonus puzzles --------------------------------------------------------------
+// Extra 9x9 puzzles for Crossword+ subscribers, made a couple a week ahead of
+// launch. They're committed to the public repo *sealed*: encrypted with the
+// sponsor Worker's public key (data/crossword/bonus/key.json), so only the
+// Worker can open them. index.json lists what's there (no answers or clues).
+const BONUS = path.join(DIR, 'bonus');
+const BONUS_INDEX = path.join(BONUS, 'index.json');
+const KEY_FILE = path.join(BONUS, 'key.json');
+const WORKER = process.env.CROSSWORD_WORKER || 'https://sponsor-crm.jared-65b.workers.dev';   // override for local testing
+const BONUS_LEVELS = ['intermediate', 'beginner', 'advanced', 'mixed'];
+
+async function bonusKey() {
+  const res = await fetch(`${WORKER}/public/crossword-key`, { headers: { Origin: 'https://www.jareddesu.com' } });
+  if (!res.ok) die(`Couldn’t get the key: HTTP ${res.status}`);
+  const k = await res.json();
+  writeJson(KEY_FILE, { about: 'Public half of the Crossword+ sealing key. The private half lives only in the sponsor Worker (D1). Fetched with: node scripts/crossword/cli.mjs bonus-key', ...k });
+  console.log(`Saved key ${k.kid} to ${path.relative(ROOT, KEY_FILE)}`);
+}
+
+async function seal(obj) {
+  const k = readJson(KEY_FILE, null);
+  if (!k) die('No sealing key yet. Run: node scripts/crossword/cli.mjs bonus-key');
+  const { subtle } = globalThis.crypto;
+  const pub = await subtle.importKey('jwk', { ...k.jwk, ext: true }, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt']);
+  const aesKey = await subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt']);
+  const iv = globalThis.crypto.getRandomValues(new Uint8Array(12));
+  const ct = await subtle.encrypt({ name: 'AES-GCM', iv }, aesKey, new TextEncoder().encode(JSON.stringify(obj)));
+  const ek = await subtle.encrypt({ name: 'RSA-OAEP' }, pub, await subtle.exportKey('raw', aesKey));
+  const b64 = (buf) => Buffer.from(buf instanceof ArrayBuffer ? new Uint8Array(buf) : buf).toString('base64');
+  return { v: 1, kid: k.kid, alg: k.alg, ek: b64(ek), iv: b64(iv), ct: b64(ct) };
+}
+
+function bonusDraft(count = 1) {
+  const index = readJson(BONUS_INDEX, { bonus: [] });
+  const { words: list } = readJson(WORDS, { words: [] });
+  const { themes } = readJson(THEMES, { themes: [] });
+  const blocked = new Set(readJson(path.join(DIR, 'blocklist.json'), { words: [] }).words);
+  const pending = fs.existsSync(DRAFTS) ? fs.readdirSync(DRAFTS).filter((f) => f.startsWith('bonus-')) : [];
+  let n = index.bonus.length + pending.length;
+  for (let i = 0; i < count; i++, n++) {
+    const id = `bonus-${String(n + 1).padStart(3, '0')}`;
+    const out = path.join(DRAFTS, `${id}.json`);
+    if (fs.existsSync(out)) { console.log(`Draft already exists: ${path.relative(ROOT, out)}`); continue; }
+    const level = BONUS_LEVELS[n % BONUS_LEVELS.length];
+    const rand = rng(`bonus:${id}`);
+    const theme = themes.length ? themes[Math.floor(rand() * themes.length)] : null;
+    const names = Object.keys(SHAPES.daily);
+    const shape = rand() < 0.4 ? names[Math.floor(rand() * names.length)] : null;
+    // Fresh answers: nothing from the last two weeks of dailies at this level
+    const exclude = recentAnswers(todayEarliest(), level);
+    list.forEach((w) => { if (blocked.has(w.w) || blocked.has(w.a)) exclude.add(w.a); });
+    const t = Date.now();
+    const p = build({ size: 'daily', level, words: list, seed: `bonus:${id}`, exclude, theme, shape });
+    writeJson(out, { id, theme: theme ? { id: theme.id, en: theme.en, ja: theme.ja } : null,
+      note: `Bonus puzzle. Fill in every "clue" (entries and keyword), then run: node scripts/crossword/cli.mjs bonus-publish ${id}`, puzzles: [p] });
+    console.log(`${id}: ${level} 9x9${p.shape ? `, shape ${p.shape}` : ''}${theme ? `, theme ${theme.en}` : ''}, ${p.entries.length} entries (${Date.now() - t} ms) → ${path.relative(ROOT, out)}`);
+  }
+}
+
+async function bonusPublish(id) {
+  if (!/^bonus-\d{3,}$/.test(id || '')) die('Usage: bonus-publish bonus-001');
+  const src = path.join(DRAFTS, `${id}.json`);
+  const d = readJson(src, null);
+  if (!d) die(`No draft at ${path.relative(ROOT, src)}`);
+  const problems = d.puzzles.flatMap(clueProblems);
+  if (problems.length) die(`Fix these first:\n- ${problems.join('\n- ')}`);
+  const p = d.puzzles[0];
+  const puzzle = { ...toPublished(p, id), ...(d.theme ? { theme: d.theme } : {}) };
+  writeJson(path.join(BONUS, `${id}.json`), await seal(puzzle), false);
+  const index = readJson(BONUS_INDEX, { bonus: [] });
+  index.about = 'Crossword+ bonus puzzles. Each file is sealed (encrypted) for the sponsor Worker; this list has no clues or answers.';
+  index.bonus = [...index.bonus.filter((b) => b.id !== id), { id, level: p.level, size: p.size, ...(p.shape ? { shape: p.shape } : {}), ...(d.theme ? { theme: d.theme.en } : {}), made: new Date().toISOString().slice(0, 10) }]
+    .sort((a, b) => a.id.localeCompare(b.id));
+  writeJson(BONUS_INDEX, index);
+  fs.rmSync(src);
+  console.log(`Sealed ${id} (${p.level}). Backlog: ${index.bonus.length} bonus puzzles`);
+}
+
 const [cmd, arg] = process.argv.slice(2);
 if (cmd === 'words') await words();
 else if (cmd === 'draft') draft(arg);
 else if (cmd === 'publish') publish(arg);
 else if (cmd === 'check') checkAll();
 else if (cmd === 'status') status(Number(arg) || 3);
-else die('Commands: words | status [days] | draft DATE | publish DATE | check');
+else if (cmd === 'bonus-key') await bonusKey();
+else if (cmd === 'bonus-draft') bonusDraft(Number(arg) || 1);
+else if (cmd === 'bonus-publish') await bonusPublish(arg);
+else die('Commands: words | status [days] | draft DATE | publish DATE | check | bonus-key | bonus-draft [n] | bonus-publish ID');

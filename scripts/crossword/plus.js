@@ -74,7 +74,10 @@ export function plusForm({ compact = false } = {}) {
   const chosen = new Set();
   const status = h('p', { class: 'cw-plus-status', role: 'status', 'aria-live': 'polite' });
   const email = h('input', { type: 'email', class: 'cw-plus-email', autocomplete: 'email', inputmode: 'email', required: true, placeholder: t('email'), 'aria-label': t('email'), maxlength: '254' });
-  const honey = h('input', { type: 'text', name: 'website', tabindex: '-1', autocomplete: 'off', class: 'cw-plus-hp', 'aria-hidden': 'true' });
+  // Spam trap only bots fill in. Named so browser autofill and password
+  // managers leave it alone (a field called "website" got autofilled, and the
+  // server quietly dropped those sign-ups).
+  const honey = h('input', { type: 'text', name: 'cw-trap-x9', tabindex: '-1', autocomplete: 'off', 'data-1p-ignore': true, 'data-lpignore': 'true', class: 'cw-plus-hp', 'aria-hidden': 'true' });
   const chips = h('div', { class: 'cw-plus-chips', role: 'group', 'aria-label': t('wantsLabel') },
     WANTS.map((w) => h('button', {
       type: 'button', class: 'cw-plus-chip', 'aria-pressed': 'false',
@@ -93,7 +96,7 @@ export function plusForm({ compact = false } = {}) {
       try {
         const res = await fetch(`${API}/public/crossword-interest`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: v, wants: [...chosen], lang: lang(), website: honey.value }),
+          body: JSON.stringify({ email: v, wants: [...chosen], lang: lang(), trap: honey.value }),
         });
         if (!res.ok) throw new Error(String(res.status));
         write({ joined: true });

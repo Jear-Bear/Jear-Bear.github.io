@@ -158,8 +158,70 @@ function setupNote(data) {
 const WANT_LABELS = { archive: 'Every past puzzle', bonus: 'Bonus puzzles', sync: 'Streaks on all devices', print: 'Printable puzzles' };
 const leaveUrl = (token) => `https://sponsor-crm.jared-65b.workers.dev/public/crossword-leave?t=${token}`;
 
+// Sign-ups per day (bars) and the running total (line), from the first
+// sign-up (or 14 days back) to today, at most 90 days
+function signupChart(rows) {
+  const dayOf = (iso) => iso.slice(0, 10);
+  const counts = new Map();
+  rows.forEach((r) => counts.set(dayOf(r.created_at), (counts.get(dayOf(r.created_at)) || 0) + 1));
+  const today = new Date().toISOString().slice(0, 10);
+  const first = rows.length ? rows.map((r) => dayOf(r.created_at)).sort()[0] : today;
+  const addDay = (d, n) => new Date(Date.parse(`${d}T00:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
+  let start = first < addDay(today, -13) ? first : addDay(today, -13);
+  if (start < addDay(today, -89)) start = addDay(today, -89);
+  let total = rows.filter((r) => dayOf(r.created_at) < start).length;
+  const days = [];
+  for (let d = start; d <= today; d = addDay(d, 1)) { const c = counts.get(d) || 0; total += c; days.push({ day: d, n: c, total }); }
+
+  const frame = h('div', { class: 'crm-chart-frame' });
+  const draw = () => {
+    const W = Math.max(300, frame.clientWidth || 640);
+    const H = W < 520 ? 190 : 220;
+    const pad = { l: 34, r: 34, t: 12, b: 24 };
+    const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
+    const maxN = niceMax(Math.max(1, ...days.map((d) => d.n)));
+    const maxT = niceMax(Math.max(1, total));
+    const n = days.length, step = iw / Math.max(1, n);
+    const bw = Math.max(1.5, Math.min(22, step * 0.7));
+    const x = (i) => pad.l + step * i + step / 2;
+    const yN = (v) => pad.t + ih - (v / maxN) * ih;
+    const yT = (v) => pad.t + ih - (v / maxT) * ih;
+    const svg = s('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}`, class: 'chart-svg', role: 'img', 'aria-label': `Crossword+ sign-ups per day over ${n} days; ${num.format(total)} in total.` });
+    [0, maxN / 2, maxN].forEach((v) => {
+      svg.append(s('line', { x1: pad.l, x2: W - pad.r, y1: yN(v), y2: yN(v), class: 'chart-gridline' }));
+      svg.append(s('text', { x: pad.l - 6, y: yN(v) + 4, 'text-anchor': 'end', class: 'chart-axis' }, compact.format(v)));
+    });
+    [0, maxT].forEach((v) => svg.append(s('text', { x: W - pad.r + 6, y: yT(v) + 4, 'text-anchor': 'start', class: 'chart-axis' }, compact.format(v))));
+    const every = Math.ceil(n / (W < 520 ? 5 : 9));
+    days.forEach((d, i) => {
+      if (d.n > 0) svg.append(s('rect', { x: x(i) - bw / 2, y: yN(d.n), width: bw, height: Math.max(0.5, yN(0) - yN(d.n)), class: 'crm-bar-views' },
+        s('title', {}, `${fmtDate(d.day, { year: true })}: ${num.format(d.n)} sign-up${d.n === 1 ? '' : 's'}, ${num.format(d.total)} in total`)));
+      if ((i % every === 0 && n - 1 - i >= every * 0.7) || i === n - 1) svg.append(s('text', { x: x(i), y: H - 6, 'text-anchor': 'middle', class: 'chart-axis' }, fmtDate(d.day)));
+    });
+    if (n > 1) svg.append(s('path', { d: `M${days.map((d, i) => `${x(i).toFixed(1)},${yT(d.total).toFixed(1)}`).join(' L')}`, class: 'crm-line-visits' }));
+    frame.replaceChildren(svg);
+  };
+  requestAnimationFrame(draw);
+  let last = 0;
+  new ResizeObserver(() => { const w = frame.clientWidth; if (Math.abs(w - last) > 8) { last = w; draw(); } }).observe(frame);
+  return h('div', { class: 'crm-chart' }, frame,
+    h('ul', { class: 'crm-legend' },
+      h('li', {}, h('span', { class: 'crm-swatch is-views' }), 'Sign-ups that day (left scale)'),
+      h('li', {}, h('span', { class: 'crm-swatch is-line-visits' }), 'Total so far (right scale)')));
+}
+
+// Bonus puzzles sealed for Crossword+ (the nightly task adds a couple a week)
+function bonusTile(b) {
+  if (!b) return null;
+  if (b.error) return tile('Bonus puzzles', '—', `Couldn’t check: ${b.error}`);
+  const levels = ['beginner', 'intermediate', 'advanced', 'mixed'].map((l) => `${b.items.filter((i) => i.level === l).length} ${l}`).join(' · ');
+  const broken = b.count - b.readable;
+  return tile('Bonus puzzles ready', num.format(b.readable), b.count ? `${levels}${broken ? ` · ${broken} won’t open` : ''}` : 'none sealed yet');
+}
+
 function waitlistSection(w) {
   if (!w) return null;
+  if (w.error) return section('Crossword+ waitlist', h('p', { class: 'crm-note is-error' }, `Couldn’t load the waitlist: ${w.error}`));
   const copy = button('Copy emails', async () => {
     try { await navigator.clipboard.writeText(w.rows.map((r) => r.email).join(', ')); toast('Copied', { kind: 'ok', ms: 2000 }); } catch { toast('Couldn’t copy', { kind: 'error' }); }
   }, { kind: 'chip', disabled: !w.count });
@@ -176,12 +238,14 @@ function waitlistSection(w) {
       tile('Signed up', num.format(w.count), 'want one email at launch'),
       tile('Last 7 days', num.format(w.last7), 'new sign-ups'),
       tile('Most wanted', w.count && wants[0].views ? wants[0].key : '—', w.count && wants[0].views ? `${Math.round(wants[0].share * 100)}% picked it` : 'optional picks'),
-      tile('In Japanese', num.format(w.rows.filter((r) => r.lang === 'ja').length), 'signed up with the Japanese page')),
+      tile('In Japanese', num.format(w.rows.filter((r) => r.lang === 'ja').length), 'signed up with the Japanese page'),
+      bonusTile(w.bonus)),
+    w.count ? signupChart(w.rows) : null,
     w.count ? h('div', {}, h('h3', { class: 'crm-subhead' }, 'What they’d want'), barList(wants, { limit: 4 })) : h('p', { class: 'crm-muted' }, 'No sign-ups yet. The crossword asks regulars after their 3rd solve, at most once a day, and the page has a short “Free, and staying free” section.'),
     w.count ? h('details', { class: 'crm-details' }, h('summary', {}, `Show ${num.format(w.count)} email${w.count === 1 ? '' : 's'}`),
       h('ul', { class: 'crm-waitlist' }, w.rows.map((r) => h('li', {}, r.email, h('span', { class: 'crm-muted' }, ` · ${r.lang} · ${fmtDate(r.created_at.slice(0, 10))}`))))) : null,
     h('div', { class: 'crm-traffic-bar' }, copy, csv),
-    h('p', { class: 'crm-method' }, 'Promised on the page: one email when Crossword+ is ready, no newsletter. Put each person’s leave link (in the CSV) at the bottom of that email; it deletes them from the list.'));
+    h('p', { class: 'crm-method' }, 'Sign-ups are saved the moment someone presses the button. This list reads them live when you open Traffic (or press Refresh), and the desk refreshes itself every 5 minutes. Promised on the page: one email when Crossword+ is ready, no newsletter. Put each person’s leave link (in the CSV) at the bottom of that email; it deletes them from the list.'));
 }
 
 // --- The Traffic tab --------------------------------------------------------------------------
@@ -192,8 +256,9 @@ export function trafficView(root) {
   let error = null;
   const load = async () => {
     try {
-      const [d, ins, wl] = await Promise.all([request('GET', `traffic?days=${range}`), insightData().catch(() => ({ insights: [] })), request('GET', 'waitlist').catch(() => null)]);
+      const [d, ins, wl] = await Promise.all([request('GET', `traffic?days=${range}`), insightData().catch(() => ({ insights: [] })), request('GET', 'waitlist').catch((err) => ({ error: err.message }))]);
       data = d; insights = ins.insights || []; waitlist = wl; error = null;
+      if (wl && !wl.error) wl.bonus = await request('GET', 'crossword-bonus').catch((err) => ({ error: err.message }));
     } catch (err) { error = err; }
     render();
   };
