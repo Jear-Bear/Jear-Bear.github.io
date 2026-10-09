@@ -1,0 +1,11 @@
+{
+  "about": "Public half of the Crossword+ sealing key. The private half lives only in the sponsor Worker (D1). Fetched with: node scripts/crossword/cli.mjs bonus-key",
+  "kid": "a195130825b4188d",
+  "alg": "RSA-OAEP-256+A256GCM",
+  "jwk": {
+    "kty": "RSA",
+    "n": "vbB9SwYa99hJKpsztp1CrSDxwQu6ySYcKozqgXzCm0vWHLCFBZNkNORgVFZ2fh0Pr18h3cJ0EuyEehvBoOv1_UjcyTNpAeBZHK3rFqnT97cJ-S6xZz1VPk_zSolQBevyt6hLl1LqQM16LGMmDwsKGymKKfFqt26XBVUuB-JxMktiNkKMp0z5wb7jps-52yaFArDOOKjq8-Wp6yxpO8uhx8jaSXzcEMmkRB5Q6nlzlsugnNNkNhjrQ-InaTOTKDXLso1gI19L318GHJcUchhaKJqMT6K9OcDP6Ks2rkdcpIVusGPUlN802S7CCfIBSN36P6fQxLL_qnG6M9JWoQXRU1ZiFMPUz1ssC00ixT05ClHEcYJTCMb2f42ucSm0JNMIwyOyTDaIRxImQmPpSW-A3tb1LylCPdC3jFxgv4lzdRPWXkc-g1W-s0BZlR7dwvj8RQen9GPkq7-Ms-xOlM86cPIleA2aMsgK_WJKZXTbYkeg0ZJrn9RdmS1kdM_gZlqJ",
+    "e": "AQAB",
+    "alg": "RSA-OAEP-256"
+  }
+}

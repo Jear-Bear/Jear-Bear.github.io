@@ -75,6 +75,15 @@ Add this to the nightly crossword task (after publishing the dailies):
 7. Bonus puzzles: if the newest entry in data/crossword/bonus/index.json was made 7 or more days ago (or the file doesn't exist), run: node scripts/crossword/cli.mjs bonus-draft 2. For each draft (data/crossword/drafts/bonus-NNN.json), apply the same safety check as step 2 and write clues the same way as step 3 (its level is in the draft; mixed gets Japanese clues), then run: node scripts/crossword/cli.mjs bonus-publish bonus-NNN. Commit data/crossword/bonus/ together with the dailies.
 ```
 
+## Keeping every puzzle
+
+Every daily ever published stays in `data/crossword/puzzles/` (one file per
+day, all eight puzzles, about 50 KB) and is listed in `index.json`. That's
+about 18 MB a year, so the repo stays far under GitHub's 1 GB guideline for
+decades. Sealed bonus files are about 15 KB each. If the archive ever moves
+behind Crossword+, the Worker's D1 (5 GB free) can hold it just as easily,
+and git history keeps every version regardless.
+
 ## Telling people (without being pushy)
 
 Mention it where people already are, once, as a question, not a sale:
