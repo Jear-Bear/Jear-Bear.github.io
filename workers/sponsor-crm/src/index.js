@@ -60,6 +60,7 @@ import { handleGo, createInvoice } from './growth.js';
 import { listDrafts, requestDraft, closeDraft } from './drafts.js';
 import { availability, inquiry } from './public.js';
 import { joinWaitlist, leaveWaitlist, listWaitlist } from './waitlist.js';
+import { publicKey, bonusBacklog } from './sealed.js';
 import { pullTraffic, loadTraffic, trafficConfigured } from './traffic.js';
 
 const TYPES = {
@@ -174,6 +175,7 @@ async function route(request, env, url) {
   if (a === 'drafts' && b && c === 'cancel' && !d && m === 'POST') return closeDraft(db, b, { status: 'cancelled' });
   if (a === 'insights' && !b && m === 'GET') return loadInsights(db);
   if (a === 'waitlist' && !b && m === 'GET') return listWaitlist(db);
+  if (a === 'crossword-bonus' && !b && m === 'GET') return bonusBacklog(db, env.CROSSWORD_SITE || undefined);
   if (a === 'stats' && b === 'refresh' && !c && m === 'POST') return pullPublicStats(db);
   if (a === 'income' && !b && m === 'PUT') return putIncome(db, await readJson(request));
   if (a === 'traffic' && !b && m === 'GET') return loadTraffic(env, db, { days: url.searchParams.get('days'), to: url.searchParams.get('to') });
@@ -274,6 +276,10 @@ const app = {
     if (url.pathname === '/public/availability' && request.method === 'GET') {
       if (!configured(env)) return json({ error: 'Not configured' }, 503, origin);
       return json(await availability(env.DB, 'America/Chicago'), 200, origin, { 'Cache-Control': 'public, max-age=900' });
+    }
+    if (url.pathname === '/public/crossword-key' && request.method === 'GET') {
+      if (!configured(env)) return json({ error: 'Not configured' }, 503, origin);
+      return json(await publicKey(env.DB), 200, origin);
     }
     if (url.pathname === '/public/crossword-leave' && request.method === 'GET') {
       if (!configured(env)) return new Response('Not configured', { status: 503 });

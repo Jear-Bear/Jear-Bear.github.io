@@ -210,6 +210,15 @@ function signupChart(rows) {
       h('li', {}, h('span', { class: 'crm-swatch is-line-visits' }), 'Total so far (right scale)')));
 }
 
+// Bonus puzzles sealed for Crossword+ (the nightly task adds a couple a week)
+function bonusTile(b) {
+  if (!b) return null;
+  if (b.error) return tile('Bonus puzzles', '—', `Couldn’t check: ${b.error}`);
+  const levels = ['beginner', 'intermediate', 'advanced', 'mixed'].map((l) => `${b.items.filter((i) => i.level === l).length} ${l}`).join(' · ');
+  const broken = b.count - b.readable;
+  return tile('Bonus puzzles ready', num.format(b.readable), b.count ? `${levels}${broken ? ` · ${broken} won’t open` : ''}` : 'none sealed yet');
+}
+
 function waitlistSection(w) {
   if (!w) return null;
   if (w.error) return section('Crossword+ waitlist', h('p', { class: 'crm-note is-error' }, `Couldn’t load the waitlist: ${w.error}`));
@@ -229,7 +238,8 @@ function waitlistSection(w) {
       tile('Signed up', num.format(w.count), 'want one email at launch'),
       tile('Last 7 days', num.format(w.last7), 'new sign-ups'),
       tile('Most wanted', w.count && wants[0].views ? wants[0].key : '—', w.count && wants[0].views ? `${Math.round(wants[0].share * 100)}% picked it` : 'optional picks'),
-      tile('In Japanese', num.format(w.rows.filter((r) => r.lang === 'ja').length), 'signed up with the Japanese page')),
+      tile('In Japanese', num.format(w.rows.filter((r) => r.lang === 'ja').length), 'signed up with the Japanese page'),
+      bonusTile(w.bonus)),
     w.count ? signupChart(w.rows) : null,
     w.count ? h('div', {}, h('h3', { class: 'crm-subhead' }, 'What they’d want'), barList(wants, { limit: 4 })) : h('p', { class: 'crm-muted' }, 'No sign-ups yet. The crossword asks regulars after their 3rd solve, at most once a day, and the page has a short “Free, and staying free” section.'),
     w.count ? h('details', { class: 'crm-details' }, h('summary', {}, `Show ${num.format(w.count)} email${w.count === 1 ? '' : 's'}`),
@@ -248,6 +258,7 @@ export function trafficView(root) {
     try {
       const [d, ins, wl] = await Promise.all([request('GET', `traffic?days=${range}`), insightData().catch(() => ({ insights: [] })), request('GET', 'waitlist').catch((err) => ({ error: err.message }))]);
       data = d; insights = ins.insights || []; waitlist = wl; error = null;
+      if (wl && !wl.error) wl.bonus = await request('GET', 'crossword-bonus').catch((err) => ({ error: err.message }));
     } catch (err) { error = err; }
     render();
   };
