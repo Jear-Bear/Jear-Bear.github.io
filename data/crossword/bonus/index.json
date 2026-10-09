@@ -1,0 +1,35 @@
+{
+  "bonus": [
+    {
+      "id": "bonus-001",
+      "level": "intermediate",
+      "size": "daily",
+      "shape": "corners",
+      "theme": "Words & talk",
+      "made": "2026-10-09"
+    },
+    {
+      "id": "bonus-002",
+      "level": "beginner",
+      "size": "daily",
+      "theme": "Words & talk",
+      "made": "2026-10-09"
+    },
+    {
+      "id": "bonus-003",
+      "level": "advanced",
+      "size": "daily",
+      "shape": "stairs",
+      "theme": "Home life",
+      "made": "2026-10-09"
+    },
+    {
+      "id": "bonus-004",
+      "level": "mixed",
+      "size": "daily",
+      "theme": "On the move",
+      "made": "2026-10-09"
+    }
+  ],
+  "about": "Crossword+ bonus puzzles. Each file is sealed (encrypted) for the sponsor Worker; this list has no clues or answers."
+}
