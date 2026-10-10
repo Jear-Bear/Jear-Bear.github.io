@@ -14,10 +14,12 @@
 import { lang } from '../games/i18n.js?v=1';
 import { gridKana, toHira } from './kana.js?v=1';
 import { info, refresh, currentUser, onAccount, signedIn, sendEmailLink, googleButton, logout, checkout, portal, bonusPuzzle } from './account.js?v=2';
-import { plusPerks, plusBadge, supportLine } from './plus.js?v=9';
+import { plusPerks, plusBadge, supportLine, paywall, nudge } from './plus.js?v=10';
+import { openBrowse } from './browse.js?v=1';
 
 const STORE = 'jareddesu.crossword.deck';
-const KEEP = 12;                 // puzzles kept to replay
+const KEEP = 60;                 // puzzles kept to replay (the list shows the newest few; the rest are under "See all")
+const SHOW = 3;
 const FREE_PER_DAY = 1;
 const MAX_NOTES = 20000;
 
@@ -27,6 +29,7 @@ const T = {
     intro: 'Turn your own Anki deck into crosswords: your words, with your meanings as the clues. One a day is free.',
     plusTitle: 'Crossword+',
     pitch: 'Today’s puzzles are always free. Crossword+ unlocks:',
+    seeAll: 'See all {n}', bonusLockedN: '{n} bonus puzzles are waiting in Crossword+.',
     freeLeft: '1 free puzzle today', freeUsed: 'You’ve made today’s free deck puzzle. With Crossword+ you can make as many as you like.', unlimited: 'Unlimited with Crossword+',
     bonusLocked: 'Bonus puzzles are part of Crossword+.',
     perMonth: '{price} / month', perYear: '{price} / year', yearNote: 'about 30% off',
@@ -62,6 +65,7 @@ const T = {
     intro: '自分のAnkiデッキがクロスワードに。答えは自分の単語、カギは自分で書いた意味です。1日1つは無料。',
     plusTitle: 'クロスワード＋',
     pitch: '今日のパズルはずっと無料。クロスワード＋なら：',
+    seeAll: '全部見る（{n}）', bonusLockedN: 'クロスワード＋で{n}個のボーナスパズルが遊べます。',
     freeLeft: '今日の無料パズル：あと1つ', freeUsed: '今日の無料デッキパズルを作りました。クロスワード＋なら何個でも作れます。', unlimited: 'クロスワード＋で作り放題',
     bonusLocked: 'ボーナスパズルはクロスワード＋の特典です。',
     perMonth: '月{price}', perYear: '年{price}', yearNote: '約30%お得',
@@ -483,37 +487,49 @@ export function mountDeck({ root, play }) {
         seg('size', size, [['mini', t('mini')], ['daily', t('daily')]]),
         seg('kind', kind, [['kana', t('kana'), c.kana < MIN_WORDS], ['kanji', t('kanji'), c.kanji < MIN_WORDS]])),
       h('div', { class: 'cw-deck-row' },
-        h('button', { type: 'button', class: 'btn btn-primary', disabled: busy, onclick: () => (left ? make(s, size, kind) : showPlus()) }, t('make')),
+        h('button', { type: 'button', class: 'btn btn-primary', disabled: busy, onclick: () => (left ? make(s, size, kind) : nudge(document.getElementById('cw-paywall'))) }, t('make')),
         h('span', { class: 'cw-deck-muted' }, isMember ? t('unlimited') : left ? t('freeLeft') : '')),
-      !isMember && !left ? h('p', { class: 'cw-deck-member' }, t('freeUsed')) : null,
+      !isMember && !left ? paywall(t('freeUsed'), showPlus, { id: 'cw-paywall' }) : null,
       made.length ? h('div', {}, h('h3', { class: 'cw-deck-sub' }, t('recent')),
-        h('ul', { class: 'cw-deck-list' }, made.map((p) => h('li', {}, h('button', { type: 'button', onclick: () => play(p) },
-          h('span', {}, `${p.deck.name} · ${t(p.size)} · ${t(p.mode === 'kanji' ? 'kanji' : 'kana')}`),
-          h('span', { class: 'cw-deck-muted' }, `${p.made}${solvedIds().has(p.id) ? ` · ${t('solved')} ✓` : ''}`)))))) : null,
+        h('ul', { class: 'cw-deck-list' }, made.slice(0, SHOW).map((p) => h('li', {}, h('button', { type: 'button', onclick: () => play(p) },
+          h('span', {}, deckLabel(p)),
+          h('span', { class: 'cw-deck-muted' }, `${p.made}${solvedIds().has(p.id) ? ` · ${t('solved')} ✓` : ''}`))))),
+        made.length > SHOW ? h('button', { type: 'button', class: 'btn-link cw-see-all', onclick: () => {
+          const done = solvedIds();
+          openBrowse({ title: t('recent'), items: made.map((p, i) => ({ date: p.made, label: `#${made.length - i} · ${deckLabel(p)}`, done: done.has(p.id), p })), onPick: (x) => play(x.p) });
+        } }, t('seeAll', { n: made.length })) : null) : null,
       h('div', { class: 'cw-deck-row' },
         h('button', { type: 'button', class: 'btn-link', onclick: () => { if (confirm(t('confirmReplace'))) { const x = state(); delete x.words; delete x.name; write(x); render(); } } }, t('replace'))),
     ];
   }
 
+  const deckLabel = (p) => `${p.deck.name} · ${t(p.size)} · ${t(p.mode === 'kanji' ? 'kanji' : 'kana')}`;
+
   function bonusView() {
     if (!bonus) return [];
-    if (!member()) return bonus.length ? [h('h3', { class: 'cw-deck-sub' }, t('bonusTitle')), h('p', { class: 'cw-deck-muted' }, `${bonus.length} · ${t('bonusLocked')}`)] : [];
+    if (!member()) return bonus.length ? [h('h3', { class: 'cw-deck-sub' }, t('bonusTitle')), paywall(t('bonusLockedN', { n: bonus.length }), showPlus)] : [];
     if (!bonus.length) return [h('h3', { class: 'cw-deck-sub' }, t('bonusTitle')), h('p', { class: 'cw-deck-muted' }, t('bonusNone'))];
     const done = solvedIds();
     return [
       h('h3', { class: 'cw-deck-sub' }, t('bonusTitle')),
-      h('ul', { class: 'cw-deck-list' }, bonus.slice().reverse().map((b) => h('li', {}, h('button', { type: 'button', onclick: async () => {
-        setStatus('');
-        try {
-          const r = await bonusPuzzle(b.id);
-          if (!r.ok) { setStatus(t('bonusLoad'), true); return; }
-          const n = Number(b.id.replace(/\D/g, ''));
-          play({ ...r.puzzle, deck: { name: `Bonus #${n}`, line: `Crossword+ bonus #${n}${b.theme ? ` · ${b.theme}` : ''}` } });
-        } catch { setStatus(t('bonusLoad'), true); }
-      } },
-      h('span', {}, `#${Number(b.id.replace(/\D/g, ''))} · ${b.level}${b.theme ? ` · ${b.theme}` : ''}`),
-      h('span', { class: 'cw-deck-muted' }, done.has(b.id) ? `${t('solved')} ✓` : ''))))),
+      h('ul', { class: 'cw-deck-list' }, bonus.slice().reverse().slice(0, SHOW).map((b) => h('li', {}, h('button', { type: 'button', onclick: () => openBonus(b) },
+        h('span', {}, bonusLabel(b)),
+        h('span', { class: 'cw-deck-muted' }, done.has(b.id) ? `${t('solved')} ✓` : ''))))),
+      bonus.length > SHOW ? h('button', { type: 'button', class: 'btn-link cw-see-all', onclick: () => openBrowse({
+        title: t('bonusTitle'), items: bonus.map((b) => ({ date: b.made, label: bonusLabel(b), done: done.has(b.id), b })), onPick: (x) => openBonus(x.b),
+      }) }, t('seeAll', { n: bonus.length })) : null,
     ];
+  }
+
+  const bonusLabel = (b) => `#${Number(b.id.replace(/\D/g, ''))} · ${b.level}${b.theme ? ` · ${b.theme}` : ''}`;
+  async function openBonus(b) {
+    setStatus('');
+    try {
+      const r = await bonusPuzzle(b.id);
+      if (!r.ok) { setStatus(t('bonusLoad'), true); return; }
+      const n = Number(b.id.replace(/\D/g, ''));
+      play({ ...r.puzzle, deck: { name: `Bonus #${n}`, line: `Crossword+ bonus #${n}${b.theme ? ` · ${b.theme}` : ''}` } });
+    } catch { setStatus(t('bonusLoad'), true); }
   }
 
   const solvedIds = () => {

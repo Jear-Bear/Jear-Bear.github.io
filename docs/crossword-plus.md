@@ -43,6 +43,9 @@ sponsor ad (orange, labelled **AD**).
   waitlist form instead; for members it's a thank-you. It never pops up.
 - **My deck** panel: the same perks, the plans and sign-in.
 - **Past day** (🔒): the same purple box with **See Crossword+**.
+- **Hitting a limit** (the free deck puzzle used up, bonus puzzles): a purple
+  box with what happened in bold, the perks and **See Crossword+**. Pressing
+  **Make a puzzle** again scrolls to it and shakes it once.
 - **Solved screen (お見事):** a short version above the Copy result / Keep
   looking buttons, on every solve. "Not for me" hides it for 30 days. It
   never covers the grid or interrupts a puzzle.
@@ -114,7 +117,8 @@ browser), and members can make as many as they like.
   (freeform grids, only the deck's words). The deck and the puzzles stay in
   that browser; nothing from the deck is sent anywhere.
 - After the free one, **Make a puzzle** points to Crossword+. Made puzzles can
-  be replayed any time.
+  be replayed any time: the newest 60 are kept, the panel shows 3, and
+  **See all** opens them by calendar or as a list (same for bonus puzzles).
 
 ## Past puzzles (the archive)
 
@@ -122,6 +126,9 @@ Every day ever published stays in `data/crossword/puzzles/` (one file per
 day, kana and kanji, about 100 KB) and is listed in `index.json`: about
 40 MB a year, far under GitHub's 1 GB guideline for decades.
 
+- The date button opens **Past puzzles** as a month calendar (filled = both
+  sizes solved, tinted = one) or a list by month, with "Unsolved only"
+  (`scripts/crossword/browse.js`).
 - On the page, any day before your own today is for members (🔒 in the date
   list; "Past puzzles are part of Crossword+" with a link).
 - Once a day is in the past in **every** time zone, `publish` seals its file

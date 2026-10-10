@@ -99,6 +99,23 @@ function rich(k, nodes = {}, vars = {}) {
 export function plusPerks() {
   return h('ul', { class: 'cw-perks' }, ['archive', 'deck', 'bonus'].map((k) => h('li', {}, rich(`perk.${k}`))));
 }
+// Shown wherever a free player hits a limit: what happened, in bold, then what Crossword+ adds
+export function paywall(msg, onSee, { id } = {}) {
+  return h('div', { class: 'cw-paywall', id, role: 'note' },
+    plusBadge(),
+    h('p', { class: 'cw-paywall-msg' }, msg),
+    plusPerks(),
+    open && open.prices ? plusPrice(open.prices) : null,
+    h('button', { type: 'button', class: 'btn btn-plus', onclick: onSee }, t('openCta')));
+}
+// Draw the eye to a paywall box that's already on screen
+export function nudge(el) {
+  if (!el) return;
+  el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  el.classList.remove('is-nudge');
+  void el.offsetWidth;
+  el.classList.add('is-nudge');
+}
 export function plusPrice(prices) { return h('p', { class: 'cw-plus-price' }, rich('price', {}, prices)); }
 export function plusBadge() { return h('span', { class: 'cw-plus-badge' }, t('badge')); }
 export function supportLine() {
