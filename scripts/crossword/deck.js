@@ -4,7 +4,7 @@
 // Worker's plus.js and stripe.js).
 //
 // 2. Import: Anki's "Notes in Plain Text" export (or any tab/CSV list, or a
-//    paste). Every deck has different fields, so the player picks which field
+//    paste), or an .apkg deck package. Every deck has different fields, so the player picks which field
 //    is the word, the meaning, and (optionally) the reading.
 // 3. Make a puzzle: built here in a Web Worker (deck-worker.js) from the deck's
 //    words only, then counted against today's limit by the Worker (2 a day).
@@ -38,8 +38,10 @@ const T = {
     manage: 'Manage subscription', welcome: 'Welcome to Crossword+! Thanks for supporting the crossword.', signedInMsg: 'You’re signed in.', cancelled: 'No charge was made.',
     deckTitle: 'My deck', bonusTitle: 'Bonus puzzles', bonusNone: 'The first bonus puzzles are on their way.', bonusLoad: 'Couldn’t open that puzzle. Please try again.',
     importTitle: 'Import your deck',
-    howto: 'In Anki: File → Export, choose “Notes in Plain Text (.txt)”, and export. Then pick the file here. A CSV or a list pasted from a spreadsheet works too.',
+    howto: 'Pick the .apkg file you exported from Anki (File → Export → Anki Deck Package, or the file you downloaded from AnkiWeb). A plain-text export, a CSV, or a list pasted from a spreadsheet works too.',
     file: 'Choose a file', paste: 'Or paste it', read: 'Read it', empty: 'There’s nothing to read in that.',
+    readingApkg: 'Opening your deck…', apkgBad: 'That doesn’t look like an Anki deck package. Try exporting it again, or use “Notes in Plain Text”.',
+    apkgFail: 'Couldn’t open that deck here. Try exporting it as “Notes in Plain Text” instead.', noteType: 'Note type', notesN: '{n} notes',
     pick: 'Which field is which? Every deck is set up differently, so pick them here.',
     fWord: 'Word (the answer)', fMeaning: 'Meaning (the clue)', fReading: 'Reading (optional)', none: 'None: work it out', field: 'Field {n}',
     name: 'Deck name', save: 'Import {n} notes', cancel: 'Cancel', checking: 'Reading…',
@@ -71,8 +73,10 @@ const T = {
     manage: 'プランの管理', welcome: 'クロスワード＋へようこそ！応援ありがとうございます。', signedInMsg: 'ログインしました。', cancelled: '請求はされていません。',
     deckTitle: 'マイデッキ', bonusTitle: 'ボーナスパズル', bonusNone: '最初のボーナスパズルは準備中です。', bonusLoad: 'パズルを開けませんでした。もう一度お試しください。',
     importTitle: 'デッキを読み込む',
-    howto: 'Ankiで「ファイル → 書き出す」を開き、「ノートをプレーンテキストで（.txt）」を選んで書き出します。そのファイルをここで選んでください。CSVや表計算ソフトから貼り付けたリストでも大丈夫です。',
+    howto: 'Ankiで書き出した .apkg ファイル（「ファイル → 書き出す → Ankiデッキパッケージ」、またはAnkiWebでダウンロードしたもの）を選んでください。プレーンテキストやCSV、表計算ソフトから貼り付けたリストでも大丈夫です。',
     file: 'ファイルを選ぶ', paste: 'または貼り付け', read: '読み込む', empty: '読み込めるものがありませんでした。',
+    readingApkg: 'デッキを開いています…', apkgBad: 'Ankiのデッキパッケージではないようです。もう一度書き出すか、「ノートをプレーンテキストで」を使ってください。',
+    apkgFail: 'このデッキはここでは開けませんでした。「ノートをプレーンテキストで」で書き出してみてください。', noteType: 'ノートタイプ', notesN: '{n}件',
     pick: 'どのフィールドが何かを選んでください（デッキごとに違うので）。',
     fWord: '単語（答え）', fMeaning: '意味（カギ）', fReading: '読み（任意）', none: 'なし：自動で探す', field: 'フィールド{n}',
     name: 'デッキの名前', save: '{n}件を読み込む', cancel: 'やめる', checking: '読み込み中…',
@@ -143,6 +147,64 @@ export function parseExport(text) {
   return { notes, width, names: names ? names.filter((_, j) => !skip.has(j)) : null };
 }
 
+// An Anki deck package (.apkg, or a whole collection .colpkg): a zip with the
+// collection as SQLite. Newer Anki writes collection.anki21b (zstd-compressed,
+// note types in their own tables, and a stub collection.anki2 asking you to
+// update); older ones collection.anki21 / .anki2 (note types as JSON in col).
+// The libraries load only when someone picks a package. Returns the note
+// types, most notes first: [{ name, names (field names), notes (rows of fields) }].
+const LIBS = {
+  zip: 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
+  sql: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js',
+  wasm: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.wasm',
+  zstd: 'https://cdn.jsdelivr.net/npm/fzstd@0.1.1/umd/index.js',
+};
+const scripts = {};
+function loadScript(src) {
+  if (!scripts[src]) {
+    scripts[src] = new Promise((resolve, reject) => {
+      const el = document.createElement('script');
+      el.src = src; el.async = true; el.crossOrigin = 'anonymous';
+      el.onload = resolve; el.onerror = () => { delete scripts[src]; reject(new Error('load')); };
+      document.head.append(el);
+    });
+  }
+  return scripts[src];
+}
+const rowsOf = (db, sql) => { const r = db.exec(sql); return r.length ? r[0].values : []; };
+
+export async function parseApkg(file) {
+  await loadScript(LIBS.zip);
+  const zip = await window.JSZip.loadAsync(file);
+  const name = ['collection.anki21b', 'collection.anki21', 'collection.anki2'].find((n) => zip.file(n));
+  if (!name) throw new Error('nocollection');
+  let bytes = await zip.file(name).async('uint8array');
+  if (name.endsWith('b')) { await loadScript(LIBS.zstd); bytes = window.fzstd.decompress(bytes); }
+  await loadScript(LIBS.sql);
+  const SQL = await window.initSqlJs({ locateFile: () => LIBS.wasm });
+  const db = new SQL.Database(bytes);
+  try {
+    const tables = new Set(rowsOf(db, "SELECT name FROM sqlite_master WHERE type = 'table'").map((r) => r[0]));
+    const types = new Map();            // note type id -> { name, names }
+    if (tables.has('notetypes') && tables.has('fields')) {
+      rowsOf(db, 'SELECT id, name FROM notetypes').forEach(([id, n]) => types.set(String(id), { name: n, names: [] }));
+      rowsOf(db, 'SELECT ntid, ord, name FROM fields ORDER BY ntid, ord').forEach(([nt, ord, n]) => { const x = types.get(String(nt)); if (x) x.names[ord] = n; });
+    } else {
+      const col = rowsOf(db, 'SELECT models FROM col');
+      const models = col.length ? JSON.parse(col[0][0] || '{}') : {};
+      Object.entries(models).forEach(([id, m]) => types.set(String(id), { name: m.name, names: (m.flds || []).slice().sort((a, b) => a.ord - b.ord).map((f) => f.name) }));
+    }
+    const byType = new Map();
+    rowsOf(db, 'SELECT mid, flds FROM notes').forEach(([mid, flds]) => {
+      const k = String(mid);
+      if (!byType.has(k)) byType.set(k, []);
+      if (byType.get(k).length < MAX_NOTES) byType.get(k).push(String(flds).split('\x1f'));
+    });
+    return [...byType].map(([k, notes]) => ({ name: (types.get(k) || {}).name || 'Notes', names: (types.get(k) || {}).names || null, notes }))
+      .filter((x) => x.notes.length).sort((a, b) => b.notes.length - a.notes.length);
+  } finally { db.close(); }
+}
+
 // HTML and Anki markup to plain text
 export function clean(s) {
   return String(s || '')
@@ -160,16 +222,30 @@ const withoutFurigana = (s) => s.replace(/\[[^\]]*\]/g, '').replace(/\s+/g, '');
 const furiganaReading = (s) => (/\[[^\]]+\]/.test(s) ? s.replace(/[㐀-鿿々]+\[([^\]]+)\]/g, '$1').replace(/\s+/g, '') : '');
 
 // Guess which fields are the word, meaning and reading from a sample of notes
-function guessFields(notes, width) {
+// Field names are the best hint (Word / Expression / 単語, Meaning / 意味,
+// Reading / 読み); the contents decide when the names don't say
+const NAME_WORD = /^(word|expression|vocab(ulary)?|front|kanji|term|japanese|target ?word|単語|語彙|表現|言葉|漢字)$|(^|\b)(word|expression|vocab)(\b|$)/i;
+const NAME_MEANING = /(meaning|definition|gloss|english|translation|back|意味|英訳|訳)/i;
+const NAME_READING = /(reading|kana|furigana|yomi|読み|ふりがな|かな)/i;
+const NAME_SKIP = /(sentence|example|audio|sound|image|pic|note|frequency|freq|pitch|tags?|例文|文)/i;
+function guessFields(notes, width, names = null) {
   const sample = notes.slice(0, 120);
   const score = (j, test) => sample.filter((r) => test(clean(r[j]))).length / Math.max(1, sample.length);
+  const avgLen = (j) => sample.reduce((n, r) => n + clean(r[j]).length, 0) / Math.max(1, sample.length);
+  const name = (j) => (names && names[j]) || '';
   const cols = Array.from({ length: width }, (_, j) => ({
     j, ja: score(j, (x) => JAPANESE.test(x) && x.length <= 12), latin: score(j, (x) => /[a-z]{2}/i.test(x) && !JAPANESE.test(x)),
-    kana: score(j, (x) => KANA_ONLY.test(x)), kanji: score(j, (x) => KANJI.test(x)),
+    kana: score(j, (x) => KANA_ONLY.test(x)), kanji: score(j, (x) => KANJI.test(x)), len: avgLen(j), skip: NAME_SKIP.test(name(j)),
   }));
-  const word = [...cols].sort((a, b) => (b.ja + b.kanji * 0.5) - (a.ja + a.kanji * 0.5))[0];
-  const meaning = [...cols].filter((c) => c.j !== word.j).sort((a, b) => b.latin - a.latin)[0] || cols.find((c) => c.j !== word.j);
-  const reading = cols.filter((c) => c.j !== word.j && (!meaning || c.j !== meaning.j) && c.kana > 0.6).sort((a, b) => b.kana - a.kana)[0];
+  // A field named like a reading or meaning isn't the word, even if "Word" is in its name ("Word Reading")
+  const named = (re, not = []) => cols.find((c) => re.test(name(c.j)) && !c.skip && !not.some((x) => x.test(name(c.j))));
+  const wordScore = (c) => c.ja + c.kanji * 0.5 - (c.len > 8 ? 1 : 0) - (c.skip ? 2 : 0);
+  const word = named(NAME_WORD, [NAME_MEANING, NAME_READING]) || [...cols].sort((a, b) => wordScore(b) - wordScore(a))[0];
+  const meaning = named(NAME_MEANING, []) && named(NAME_MEANING, []).j !== word.j ? named(NAME_MEANING, [])
+    : [...cols].filter((c) => c.j !== word.j && !c.skip).sort((a, b) => b.latin - a.latin)[0] || cols.find((c) => c.j !== word.j);
+  const namedReading = named(NAME_READING, []);
+  const reading = namedReading && namedReading.j !== word.j && (!meaning || namedReading.j !== meaning.j) ? namedReading
+    : cols.filter((c) => c.j !== word.j && (!meaning || c.j !== meaning.j) && c.kana > 0.6 && !c.skip).sort((a, b) => b.kana - a.kana)[0];
   return { word: word ? word.j : 0, meaning: meaning ? meaning.j : 1, reading: reading ? reading.j : -1 };
 }
 
@@ -310,15 +386,27 @@ export function mountDeck({ root, play }) {
   }
 
   function importer() {
-    const fileIn = h('input', { type: 'file', accept: '.txt,.tsv,.csv,text/plain,text/csv', 'aria-label': t('file') });
+    const fileIn = h('input', { type: 'file', accept: '.apkg,.colpkg,.txt,.tsv,.csv,text/plain,text/csv', 'aria-label': t('file') });
     const area = h('textarea', { 'aria-label': t('paste'), placeholder: t('paste') });
     const start = (text, name) => {
       const p = parseExport(text);
       if (!p.notes.length || p.width < 2) { setStatus(t('empty'), true); return; }
-      draft = { ...p, fields: guessFields(p.notes, p.width), name: (name || 'My deck').replace(/\.(txt|tsv|csv)$/i, '').slice(0, 60) };
+      draft = { ...p, fields: guessFields(p.notes, p.width, p.names), name: (name || 'My deck').replace(/\.(txt|tsv|csv)$/i, '').slice(0, 60) };
       setStatus('');
     };
-    fileIn.addEventListener('change', async () => { const f = fileIn.files[0]; if (f) start(await f.text(), f.name); });
+    fileIn.addEventListener('change', async () => {
+      const f = fileIn.files[0];
+      if (!f) return;
+      if (!/\.(apkg|colpkg)$/i.test(f.name)) { start(await f.text(), f.name); return; }
+      busy = true; setStatus(t('readingApkg'));
+      try {
+        const types = await parseApkg(f);
+        busy = false;
+        if (!types.length) { setStatus(t('empty'), true); return; }
+        draft = { types, type: 0, ...fromType(types[0]), name: f.name.replace(/\.(apkg|colpkg)$/i, '').slice(0, 60) };
+        setStatus('');
+      } catch (e) { busy = false; setStatus(t(e.message === 'nocollection' ? 'apkgBad' : 'apkgFail'), true); }
+    });
     return [
       h('h3', { class: 'cw-deck-sub' }, t('importTitle')),
       h('p', {}, t('howto')),
@@ -327,8 +415,21 @@ export function mountDeck({ root, play }) {
     ];
   }
 
+  // One note type of a package as the rows the field picker works on
+  function fromType(tp) {
+    const width = Math.max(0, ...tp.notes.slice(0, 200).map((r) => r.length));
+    return { notes: tp.notes, width, names: tp.names, fields: guessFields(tp.notes, width, tp.names) };
+  }
+
   function picker() {
     const d = draft;
+    // A package with several note types: pick which one to use
+    const typeSel = d.types && d.types.length > 1 ? h('label', {}, t('noteType'), (() => {
+      const s = h('select', { onchange: (e) => { Object.assign(d, fromType(d.types[Number(e.target.value)]), { type: Number(e.target.value) }); render(); } },
+        d.types.map((tp, i) => h('option', { value: String(i) }, `${tp.name} · ${t('notesN', { n: tp.notes.length })}`)));
+      s.value = String(d.type || 0);
+      return s;
+    })()) : null;
     const label = (j) => (d.names && d.names[j] ? d.names[j] : t('field', { n: j + 1 }));
     const sel = (key, optional) => {
       const s = h('select', { onchange: (e) => { d.fields[key] = Number(e.target.value); render(); } },
@@ -355,6 +456,7 @@ export function mountDeck({ root, play }) {
     return [
       h('h3', { class: 'cw-deck-sub' }, t('importTitle')),
       h('p', {}, t('pick')),
+      typeSel ? h('div', { class: 'cw-deck-fields' }, typeSel) : null,
       preview,
       h('div', { class: 'cw-deck-fields' },
         h('label', {}, t('fWord'), sel('word')), h('label', {}, t('fMeaning'), sel('meaning')), h('label', {}, t('fReading'), sel('reading', true)),

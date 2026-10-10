@@ -89,10 +89,16 @@ Crosswords made from your own Anki deck, on the crossword page under
 **My deck**. **One a day is free** for everyone (no account; counted in the
 browser), and members can make as many as they like.
 
-- **Import:** Anki → File → Export → "Notes in Plain Text (.txt)" (a CSV or a
-  paste works too). Every deck's fields differ, so the member picks which
-  field is the **word**, the **meaning** (the clue) and, optionally, the
-  **reading**. The page guesses first. Without a reading field it uses
+- **Import:** an **.apkg** (Anki → File → Export → Anki Deck Package, or a
+  deck from AnkiWeb; a whole-collection .colpkg works too), or "Notes in
+  Plain Text (.txt)", a CSV, or a paste. Packages are opened in the browser
+  (JSZip, sql.js and fzstd, loaded only when someone picks one): both the
+  current format (`collection.anki21b`, zstd) and the older ones. A package
+  with several note types gets a **Note type** choice.
+- Every deck's fields differ, so the player picks which field is the
+  **word**, the **meaning** (the clue) and, optionally, the **reading**. The
+  page guesses first, from field names (Word, Expression, 単語; Meaning, 意味;
+  Reading, 読み) and then the contents. Without a reading field it uses
   furigana like 漢字[かんじ], or the crossword's own dictionary.
 - **Puzzles:** Mini or Daily, kana or kanji answers, built in the browser
   (freeform grids, only the deck's words). The deck and the puzzles stay in
