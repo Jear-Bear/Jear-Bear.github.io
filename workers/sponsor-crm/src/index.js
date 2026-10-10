@@ -32,6 +32,7 @@
 //   POST /api/traffic/refresh       pull the last 7 days from Cloudflare now
 //   GET  /public/availability       open sponsor slots by month (public, counts only)
 //   POST /public/inquiry            the sponsor-page form → Review (public, rate-limited)
+//   POST /public/click              a click on a sponsor card on the site (counts only)
 //
 // A daily cron refreshes the uploads (capturing 30-day views) and the history.
 //
@@ -56,7 +57,7 @@ import { createServer } from './mcp.js';
 import { handleAuthorize, redirectAllowed } from './authorize.js';
 import { listReview, passProposal, dismissProposal, decideIdea } from './claude.js';
 import { ingestStats, pullPublicStats, loadInsights, putIncome, decideRateRule } from './stats.js';
-import { handleGo, createInvoice } from './growth.js';
+import { handleGo, recordClick, createInvoice } from './growth.js';
 import { listDrafts, requestDraft, closeDraft } from './drafts.js';
 import { availability, inquiry } from './public.js';
 import { joinWaitlist, leaveWaitlist, listWaitlist } from './waitlist.js';
@@ -284,6 +285,11 @@ const app = {
     if (url.pathname === '/public/crossword-leave' && request.method === 'GET') {
       if (!configured(env)) return new Response('Not configured', { status: 503 });
       return leaveWaitlist(env, url);
+    }
+    if (url.pathname === '/public/click' && request.method === 'POST') {
+      if (!origin) return json({ error: 'Origin not allowed' }, 403);
+      if (!configured(env)) return json({ error: 'Not configured' }, 503, origin);
+      return json(await recordClick(request, env, ctx), 200, origin);
     }
     if (url.pathname === '/public/crossword-interest' && request.method === 'POST') {
       if (!origin) return json({ error: 'Origin not allowed' }, 403);

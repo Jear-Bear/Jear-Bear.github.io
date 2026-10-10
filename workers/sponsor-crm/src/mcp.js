@@ -182,6 +182,7 @@ export function createServer(env) {
       const tpl = templates.find((t) => t.id === d.pitch_style || t.name === d.pitch_style) || templates[0];
       const links = live(s.links || []).filter((l) => l.deal_id === d.id).map((l) => ({
         url: `https://www.jareddesu.com/go/${l.slug}`, clicks: (s.linkClicks || []).filter((c) => c.slug === l.slug).reduce((n, c) => n + c.clicks, 0),
+        clicks_by_place: (s.linkClickVia || []).filter((c) => c.slug === l.slug).reduce((o, c) => ({ ...o, [c.via]: (o[c.via] || 0) + c.clicks }), {}),
       }));
       const v = d.video_id ? s.videos.find((x) => x.id === d.video_id) : null;
       const up = v && v.youtube_id ? data.uploads.find((u) => u.youtube_id === v.youtube_id) : null;

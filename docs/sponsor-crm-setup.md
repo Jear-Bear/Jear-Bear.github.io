@@ -188,6 +188,20 @@ is skipped. To stop it, delete the secret.
   per day; no IPs or cookies) and redirects to the sponsor. `utm_*`
   parameters pass through. Clicks show on the deal, in Insights, and in the
   30-day recap. Archiving a link stops it redirecting.
+  Add `?via=<place>` (e.g. `/go/ohanasi?via=yt-shorts`) to tell places
+  apart; the link's panel lists **Clicks by place, last 30 days** (clicks
+  with no place show as "Other links").
+- **Sponsor card on the site** (`scripts/partner.js`, `styles/partner.css`):
+  the current sponsor shows as the last entry on /tools/, a "Practice
+  speaking" section on the crossword and wordle pages, one line on their
+  solved screens, and a mention plus card in the guide's speaking chapter.
+  The links go straight to the sponsor's own tracking link; a click also
+  sends a beacon to `POST /public/click`, counted under the tracked link
+  named in `SPONSOR.slug` with the place it came from (`tools`, `crossword`,
+  `crossword-solved`, `wordle`, `wordle-solved`, `guide`, `guide-card`).
+  That tracked link must exist in the Sponsor desk (same short name), or the
+  clicks aren't counted. To change sponsors, edit `SPONSOR` in partner.js;
+  set it to `null` to hide every slot.
 
 ## Pitching, recaps and the public sponsor page
 
