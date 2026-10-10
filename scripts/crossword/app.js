@@ -6,16 +6,18 @@
 //          or kana, or use the on-screen kana keys.
 //   漢字   the same files (mode: "kanji"): answers in kanji, one per square,
 //          typed with a Japanese IME or picked from tiles under the grid.
-//   My deck (Crossword+) puzzles made from the player's own Anki deck, in
-//          this browser (deck.js).
+//   Crossword+  members only (sign in and Stripe: account.js): puzzles made
+//          from the player's own Anki deck, in this browser, and bonus
+//          puzzles (deck.js).
 // Progress, times and streaks stay in this browser (localStorage).
 // Everything from data is inserted as text.
 
 import { toHiragana } from '../kanji/romaji.js?v=1';
 import { gridKana, cycleDakuten, romaji } from './kana.js?v=1';
 import { translator, lang, setLang, dateLocale } from '../games/i18n.js?v=1';
-import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=5';
-import { mountDeck } from './deck.js?v=1';
+import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=7';
+import { mountDeck } from './deck.js?v=3';
+import { handleReturn, refresh } from './account.js?v=1';
 import { rng } from './construct.mjs?v=1';
 
 const $ = (id) => document.getElementById(id);
@@ -34,7 +36,7 @@ const t = translator({
     'ime.kanji': 'Only kana fit in the squares. Press Enter instead of converting to kanji.',
     'ime.convert': 'Convert to kanji before pressing Enter, or tap a tile.',
     'kanji.type': 'Type with a Japanese keyboard (IME) and convert to kanji, or tap the tiles under the grid.',
-    modeGroup: 'Mode', 'mode.kana': 'Kana', 'mode.kanji': 'Kanji', 'mode.deck': 'My deck',
+    modeGroup: 'Mode', 'mode.kana': 'Kana', 'mode.kanji': 'Kanji', 'mode.deck': 'Crossword+',
     tiles: 'Kanji tiles', 'empty.deck': '',
     level: 'Level', bar: 'Puzzle options', sizeGroup: 'Size', prev: 'Previous puzzle', next: 'Next puzzle', settings: 'Settings',
     today: 'Today · {date}',
@@ -76,7 +78,7 @@ const t = translator({
     'ime.kanji': 'マスに入るのはかなだけです。漢字に変換せず、そのまま確定してください。',
     'ime.convert': '漢字に変換してから確定するか、タイルをタップしてください。',
     'kanji.type': '日本語入力（IME）で漢字に変換して入力するか、盤面の下のタイルをタップしてください。',
-    modeGroup: 'モード', 'mode.kana': 'かな', 'mode.kanji': '漢字', 'mode.deck': 'マイデッキ',
+    modeGroup: 'モード', 'mode.kana': 'かな', 'mode.kanji': '漢字', 'mode.deck': 'クロスワード＋',
     tiles: '漢字タイル', 'empty.deck': '',
     level: 'レベル', bar: 'パズルの設定', sizeGroup: 'サイズ', prev: '前のパズル', next: '次のパズル', settings: '設定',
     today: '今日 · {date}',
@@ -183,11 +185,22 @@ async function init() {
   // Future puzzles are published early (so every time zone gets one at its midnight) but stay hidden
   date = asked && pastOrToday.includes(asked) ? asked : (pastOrToday[pastOrToday.length - 1] || null);
   t.apply();
-  deck = mountDeck({ root: $('deck'), play: (p) => { settings.mode = 'deck'; save(); openPuzzle(p); } });
+  deck = mountDeck({ root: $('deck'), play: (p) => { settings.mode = 'deck'; save(); openPuzzle(p); $('play').scrollIntoView({ block: 'start', behavior: 'smooth' }); } });
+  // Back from an email sign-in link or from Stripe: open the Crossword+ panel and say what happened
+  const back = await handleReturn();
+  if (back) { settings.mode = 'deck'; save(); } else refresh();
+  document.addEventListener('crossword:plus', () => {
+    $('done').hidden = true;
+    settings.mode = 'deck';
+    save();
+    openPuzzle();
+    $('mode-seg').scrollIntoView({ block: 'start', behavior: 'smooth' });
+  });
   wireControls();
   wireSettings();
   buildKeys();
   await openDay();
+  if (back) deck.message(back.kind, back.message);
   watchMidnight();
 }
 
@@ -867,7 +880,7 @@ function celebrate(assisted) {
   const kw = pz.key.keyword;
   fill($('done-body'), 
     h('p', { class: 'cw-done-time' }, fmtTime(st.time), assisted ? h('span', { class: 'cw-muted' }, t('withReveals')) : null),
-    pz.deck ? h('p', {}, `${t('deckLine', { name: pz.deck.name })} · ${SIZE_NAME(pz.size)}`)
+    pz.deck ? h('p', {}, `${pz.deck.line || t('deckLine', { name: pz.deck.name })} · ${SIZE_NAME(pz.size)}`)
       : h('p', {}, `${pz.mode === 'kanji' ? `${t('mode.kanji')} · ` : ''}${LEVEL_NAME(pz.level)} ${SIZE_NAME(pz.size)} · ${fmtDate(date)}`),
     kw ? h('p', { class: 'cw-done-kw' }, t('kwLine'), h('strong', { lang: 'ja' }, kw.word), ` (${kw.reading})`, settings.words ? h('span', { lang: 'en' }, ` · ${kw.meaning}`) : null) : null,
     settings.words ? h('p', { class: 'cw-muted' }, t('listed')) : null,

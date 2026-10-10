@@ -5,9 +5,9 @@ crossword: every past puzzle and a few bonus puzzles each week. Right now
 it's a waitlist plus a growing backlog of bonus puzzles, to see whether
 enough people want it before building payments.
 
-**What's in it:** every past puzzle, a few bonus puzzles a week, and
-crosswords from your own Anki deck (**My deck**, below). The daily kana and
-kanji puzzles stay free.
+**What's in it:** crosswords from your own Anki deck (**My deck**, 2 a day)
+and a few bonus puzzles a week. The daily kana and kanji puzzles stay free,
+and so do all past puzzles (that's one of the promises below).
 
 **Price:** $2.99/month or $24.99/year (about $2.08/month, roughly 30% off).
 Waitlist members get a founding price of $1.99/month, locked in for as long
@@ -95,12 +95,7 @@ deck, on the crossword page under **My deck**.
 - **Limit: 2 a day** per member, reset at their midnight. The Worker counts
   them (`POST /public/plus/deck`), so a new browser doesn't reset it. Made
   puzzles can be replayed any time.
-- **Membership, for now:** you make a **key** in the Sponsor desk → Traffic
-  → **Crossword+ keys** (name, optional email) and send it to them. The key
-  is shown once (only its hash is stored) and works on any device; **Turn
-  off** stops it at once. When payments arrive, the key gets replaced by a
-  login (see "Building it" below); the Worker code is in
-  `workers/sponsor-crm/src/plus.js`.
+- Members only: see "Accounts and payments" below.
 
 ## Keeping every puzzle
 
@@ -161,43 +156,65 @@ Check the waitlist after 3 to 4 weeks next to the crossword's daily visits
 out of the public repo into the Worker. Under about 50 means keep it free and
 grow the audience first.
 
-## Building it: accounts and subscriptions (plan)
+## Accounts and payments (built)
 
-Not built yet. Start once the waitlist hits the launch target above.
+**Signing in** (only for Crossword+; the daily puzzles never need it). An
+account is an email. Two ways in, both optional, same account when the email
+matches:
 
-**Rules that don't change:** everything free stays free with no account.
-Logging in is only for Crossword+ and, as a free extra, syncing progress.
+- **Sign in with Google** (Google's own button; the Worker checks the token
+  against Google's keys and `GOOGLE_CLIENT_ID`).
+- **Email link**: type your email, get a one-time link (20 minutes), sent with
+  Resend. No password anywhere.
 
-1. **Domain first.** The site is `www.jareddesu.com` and the Worker is on
-   `workers.dev`; Safari and other browsers block login cookies across two
-   different domains. Move the domain's DNS to Cloudflare (free) and serve the
-   Worker at `api.jareddesu.com`. Then the session cookie is same-site,
-   `HttpOnly`, `Secure`, `SameSite=Lax`.
-2. **Login, in the sponsor Worker.** D1 tables `users` (id, email, created_at)
-   and `sessions` (hashed token, user_id, expires_at). Two ways in:
-   - **Sign in with Google** (free OAuth client; only the email is kept).
-   - **Email link** (type your email, click the link): one-time token, valid
-     15 minutes, sent with a free email service (Resend: 3,000/month).
-   - Skip Apple for now (needs the $99/year developer program). Passkeys later.
-   - A "Delete my account" button that removes everything about the user.
-3. **Payments: Lemon Squeezy** (merchant of record, so it handles VAT and
-   sales tax worldwide). Two products: $2.99/month and $24.99/year, plus a
-   $1.99/month founding discount code for the waitlist. Checkout passes the
-   user id; its webhook (signature checked) sets `plan` and `plan_until` on the
-   user. Subscribers manage their card, switch plans or cancel on Lemon
-   Squeezy's own customer portal, linked from the account menu. No card data
-   ever reaches the Worker.
-4. **Access.** `GET /plus/bonus/:id` and `GET /plus/archive/:date` check the
-   session and plan, then return the puzzle. Bonus files are already sealed for
-   the Worker; sealing archive days older than 7 days the same way keeps them
-   in the repo (see "Keeping every puzzle") while only subscribers can open
-   them. The crossword page shows a lock and a "Crossword+" link on those days
-   instead of the puzzle.
-5. **Free sync for anyone signed in:** crossword streaks and kana/kanji
-   progress (the study backup module) saved to the account, so they follow
-   you between devices.
-6. **Launch:** send the one promised email to the waitlist with the founding
-   code and each person's leave link.
+Signing in gives the browser a session (90 days; "Sign out" ends it on every
+device). Code: `workers/sponsor-crm/src/plus.js`, `scripts/crossword/account.js`.
 
-About 3 to 4 PRs: (1) domain + login, (2) payments + webhook, (3) locked
-archive and bonus puzzles in the player, (4) progress sync.
+**Paying.** Signed in, a member picks $2.99/month or $24.99/year and goes to
+**Stripe Checkout**. Each account gets one Stripe customer with its email, so
+the subscription belongs to that email. Stripe's webhook keeps the account's
+status current (renewals, failed cards, cancellations), and the page also
+checks the moment they come back from Checkout. **Manage subscription** opens
+Stripe's customer portal (switch month/year, update the card, cancel at the end
+of the period, invoices). Card details only ever go to Stripe.
+Code: `workers/sponsor-crm/src/stripe.js`.
+
+A member is: an active (or trialing, or past-due while Stripe retries)
+subscription, or **free access** you give an email in the Sponsor desk.
+
+### Turning it on
+
+1. **Stripe key.** Stripe → Developers → API keys. Start with the **test**
+   secret key (`sk_test_…`). Add it as the GitHub secret `STRIPE_SECRET_KEY`.
+2. **Google sign-in (optional).** Google Cloud console → APIs & Services →
+   Credentials → Create OAuth client ID → Web application. Authorized
+   JavaScript origins: `https://www.jareddesu.com` and `https://jareddesu.com`.
+   Add the client ID (ends in `.apps.googleusercontent.com`; not a secret) as
+   the GitHub secret or variable `GOOGLE_CLIENT_ID`.
+3. **Email links (optional, but needed for anyone without Google).** Make a
+   free Resend account (3,000 emails/month), add the domain `jareddesu.com`
+   and the DNS records it shows, then add an API key as the GitHub secret
+   `RESEND_API_KEY`. Optional variable `LOGIN_EMAIL_FROM`, e.g.
+   `Jared’s Crossword <crossword@jareddesu.com>`.
+4. GitHub → Actions → **Sponsor CRM deploy** → Run workflow (pushes the new
+   secrets to the Worker).
+5. Sponsor desk → Traffic → Crossword+ members → **Connect Stripe**. It makes
+   the two prices, the portal settings and the webhook (safe to press again).
+   The crossword page then shows the plans, marked "Test mode".
+6. Try it with Stripe's test card `4242 4242 4242 4242`, any future date, any
+   CVC. Check the account shows as paying in the desk, open Manage
+   subscription, cancel, and see it end.
+7. **Go live:** swap `STRIPE_SECRET_KEY` for the live key (`sk_live_…`), run
+   the deploy, press **Connect Stripe** again (live mode has its own prices
+   and webhook).
+
+**Founding price for the waitlist:** in Stripe, make a coupon ($1.00 off,
+forever) and a promotion code for it (e.g. `FOUNDING`). Checkout has a box
+for codes, so put the code in the launch email.
+
+**Tax:** with Stripe you're the seller, so sales tax and VAT are yours to
+handle. Stripe Tax (0.5% per sale) can work it out: turn it on in Stripe and
+set the GitHub variable `STRIPE_AUTOMATIC_TAX` to `true`.
+
+**Not yet:** the desk can't refund (do it in Stripe), and turning an account
+off doesn't cancel its subscription (also in Stripe).

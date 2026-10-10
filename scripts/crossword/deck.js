@@ -1,6 +1,7 @@
-// deck.js — My deck (Crossword+): crosswords made from the player's own Anki deck.
+// deck.js — the Crossword+ panel on the crossword page: sign in, plans, and
+// for members, My deck (crosswords from their own Anki deck) and bonus puzzles.
 //
-// 1. Unlock with a Crossword+ key (checked by the sponsor Worker, plus.js).
+// 1. Sign in and pay (account.js; the sponsor Worker's plus.js and stripe.js).
 // 2. Import: Anki's "Notes in Plain Text" export (or any tab/CSV list, or a
 //    paste). Every deck has different fields, so the player picks which field
 //    is the word, the meaning, and (optionally) the reading.
@@ -11,26 +12,31 @@
 
 import { lang } from '../games/i18n.js?v=1';
 import { gridKana, toHira } from './kana.js?v=1';
-import { plusKey, setPlusKey } from './plus.js?v=5';
+import { info, refresh, currentUser, onAccount, signedIn, sendEmailLink, googleButton, logout, checkout, portal, deckTicket, bonusPuzzle } from './account.js?v=1';
 
-const API = 'https://sponsor-crm.jared-65b.workers.dev';
 const STORE = 'jareddesu.crossword.deck';
 const KEEP = 12;                 // puzzles kept to replay
 const MAX_NOTES = 20000;
 
 const T = {
   en: {
-    title: 'My deck', plus: 'Crossword+',
-    lockedBody: 'Turn your own Anki deck into crosswords: your words, with your meanings as the clues. It’s part of Crossword+, with 2 deck puzzles a day.',
-    keyLabel: 'Crossword+ key', unlock: 'Unlock', checking: 'Checking…',
-    badKey: 'That key didn’t work. Check it, or ask Jared for a new one.', failed: 'Couldn’t reach the server. Please try again in a bit.',
-    notOpen: 'Crossword+ isn’t open to everyone yet.', joinList: 'Join the list for one email when it is.',
+    title: 'Crossword+',
+    pitch: 'The daily puzzles stay free. Crossword+ adds crosswords made from your own Anki deck (2 a day, your words and your meanings as clues) and a few bonus puzzles every week.',
+    perMonth: '{price} / month', perYear: '{price} / year', yearNote: 'about 30% off',
+    signInTitle: 'Sign in', signInWhy: 'Crossword+ is tied to your email, so it works on all your devices. Signing in is only for Crossword+; the daily puzzles never need it.',
+    emailLabel: 'Your email', sendLink: 'Email me a sign-in link', sending: 'Sending…', sent: 'Check your inbox for a sign-in link (it works for 20 minutes). It can take a minute; check spam too.',
+    or: 'or', noSignIn: 'Sign-in isn’t set up yet.',
+    signedInAs: 'Signed in as {email}', signOut: 'Sign out', notOpen: 'Crossword+ isn’t open yet.', joinList: 'Join the list for one email when it is.',
+    choose: 'Choose a plan', paying: 'Opening Stripe…', test: 'Test mode: no real charges.', secure: 'Payment by Stripe. Cancel anytime from “Manage subscription”.',
+    member: 'You’re a Crossword+ member', memberFree: 'You have Crossword+ (on the house)', renews: 'Renews {date}', ends: 'Ends {date}', pastDue: 'Your last payment didn’t go through; Stripe will try again. Update your card in “Manage subscription”.',
+    manage: 'Manage subscription', welcome: 'Welcome to Crossword+! Thanks for supporting the crossword.', signedInMsg: 'You’re signed in.', cancelled: 'No charge was made.',
+    deckTitle: 'My deck', bonusTitle: 'Bonus puzzles', bonusNone: 'The first bonus puzzles are on their way.', bonusLoad: 'Couldn’t open that puzzle. Please try again.',
     importTitle: 'Import your deck',
     howto: 'In Anki: File → Export, choose “Notes in Plain Text (.txt)”, and export. Then pick the file here. A CSV or a list pasted from a spreadsheet works too.',
     file: 'Choose a file', paste: 'Or paste it', read: 'Read it', empty: 'There’s nothing to read in that.',
     pick: 'Which field is which? Every deck is set up differently, so pick them here.',
     fWord: 'Word (the answer)', fMeaning: 'Meaning (the clue)', fReading: 'Reading (optional)', none: 'None: work it out', field: 'Field {n}',
-    name: 'Deck name', save: 'Import {n} notes', cancel: 'Cancel',
+    name: 'Deck name', save: 'Import {n} notes', cancel: 'Cancel', checking: 'Reading…',
     usable: '{kana} of {n} can be kana answers · {kanji} can be kanji answers',
     noReading: '{n} words have no reading, so they’ll be skipped for kana answers.',
     tooFew: 'Only {n} words can be used. A puzzle needs at least {min}; try another field for the word or reading.',
@@ -38,22 +44,28 @@ const T = {
     size: 'Size', mini: 'Mini', daily: 'Daily', answers: 'Answers', kana: 'Kana', kanji: 'Kanji',
     make: 'Make a puzzle', making: 'Building your puzzle…', left: '{n} left today', none_left: 'That’s today’s 2. More tomorrow!',
     limit: 'That’s your 2 deck puzzles for today. More tomorrow!', buildFail: 'Couldn’t fit enough of these words together. Try the Mini, or kana answers.',
-    recent: 'Your deck puzzles', play: 'Play', solved: 'solved',
-    replace: 'Import a different deck', removeKey: 'Sign out this browser', confirmReplace: 'Replace this deck? Your deck puzzles stay.',
-    member: 'Crossword+ · {label}', words: '{n} words',
+    failed: 'Couldn’t reach the server. Please try again in a bit.',
+    recent: 'Your deck puzzles', solved: 'solved',
+    replace: 'Import a different deck', confirmReplace: 'Replace this deck? Your deck puzzles stay.', words: '{n} words',
   },
   ja: {
-    title: 'マイデッキ', plus: 'クロスワード＋',
-    lockedBody: '自分のAnkiデッキがクロスワードに。答えは自分の単語、カギは自分で書いた意味です。クロスワード＋の機能で、1日2つまで作れます。',
-    keyLabel: 'クロスワード＋のキー', unlock: '使う', checking: '確認中…',
-    badKey: 'このキーは使えませんでした。もう一度確認するか、Jaredに新しいキーをもらってください。', failed: 'サーバーにつながりませんでした。少し待ってからもう一度どうぞ。',
-    notOpen: 'クロスワード＋はまだ準備中です。', joinList: 'リストに登録すると、始まったときにメールを1通だけ送ります。',
+    title: 'クロスワード＋',
+    pitch: '毎日のパズルはずっと無料。クロスワード＋では、自分のAnkiデッキからクロスワードを作れます（1日2つ、答えは自分の単語、カギは自分で書いた意味）。毎週のボーナスパズルもあります。',
+    perMonth: '月{price}', perYear: '年{price}', yearNote: '約30%お得',
+    signInTitle: 'ログイン', signInWhy: 'クロスワード＋はメールアドレスにひもづくので、どの端末でも使えます。ログインはクロスワード＋のためだけで、毎日のパズルには必要ありません。',
+    emailLabel: 'メールアドレス', sendLink: 'ログインリンクをメールで送る', sending: '送信中…', sent: 'ログインリンクを送りました（20分間有効）。届くまで少しかかることがあります。迷惑メールも確認してください。',
+    or: 'または', noSignIn: 'ログインはまだ準備中です。',
+    signedInAs: '{email} でログイン中', signOut: 'ログアウト', notOpen: 'クロスワード＋はまだ準備中です。', joinList: 'リストに登録すると、始まったときにメールを1通だけ送ります。',
+    choose: 'プランを選ぶ', paying: 'Stripeを開いています…', test: 'テストモード：実際の請求はありません。', secure: 'お支払いはStripeで。「プランの管理」からいつでも解約できます。',
+    member: 'クロスワード＋のメンバーです', memberFree: 'クロスワード＋をご利用いただけます（招待）', renews: '{date}に更新', ends: '{date}に終了', pastDue: '前回のお支払いができませんでした。Stripeが再度試みます。「プランの管理」でカードを更新してください。',
+    manage: 'プランの管理', welcome: 'クロスワード＋へようこそ！応援ありがとうございます。', signedInMsg: 'ログインしました。', cancelled: '請求はされていません。',
+    deckTitle: 'マイデッキ', bonusTitle: 'ボーナスパズル', bonusNone: '最初のボーナスパズルは準備中です。', bonusLoad: 'パズルを開けませんでした。もう一度お試しください。',
     importTitle: 'デッキを読み込む',
     howto: 'Ankiで「ファイル → 書き出す」を開き、「ノートをプレーンテキストで（.txt）」を選んで書き出します。そのファイルをここで選んでください。CSVや表計算ソフトから貼り付けたリストでも大丈夫です。',
     file: 'ファイルを選ぶ', paste: 'または貼り付け', read: '読み込む', empty: '読み込めるものがありませんでした。',
     pick: 'どのフィールドが何かを選んでください（デッキごとに違うので）。',
     fWord: '単語（答え）', fMeaning: '意味（カギ）', fReading: '読み（任意）', none: 'なし：自動で探す', field: 'フィールド{n}',
-    name: 'デッキの名前', save: '{n}件を読み込む', cancel: 'やめる',
+    name: 'デッキの名前', save: '{n}件を読み込む', cancel: 'やめる', checking: '読み込み中…',
     usable: '{n}語のうち、かなの答えに使えるのは{kana}語・漢字の答えは{kanji}語',
     noReading: '{n}語は読みがわからないので、かなの答えには使いません。',
     tooFew: '使える単語が{n}語しかありません（{min}語以上必要）。単語や読みのフィールドを変えてみてください。',
@@ -61,9 +73,9 @@ const T = {
     size: 'サイズ', mini: 'ミニ', daily: 'デイリー', answers: '答え', kana: 'かな', kanji: '漢字',
     make: 'パズルを作る', making: 'パズルを作っています…', left: '今日はあと{n}つ', none_left: '今日の2つを作りました。また明日！',
     limit: '今日のデッキパズル（2つ）を作りました。また明日！', buildFail: 'この単語ではうまく組めませんでした。ミニか、かなの答えを試してください。',
-    recent: 'デッキのパズル', play: '解く', solved: 'クリア',
-    replace: '別のデッキを読み込む', removeKey: 'このブラウザからキーを外す', confirmReplace: 'デッキを入れ替えますか？作ったパズルは残ります。',
-    member: 'クロスワード＋ · {label}', words: '{n}語',
+    failed: 'サーバーにつながりませんでした。少し待ってからもう一度どうぞ。',
+    recent: 'デッキのパズル', solved: 'クリア',
+    replace: '別のデッキを読み込む', confirmReplace: 'デッキを入れ替えますか？作ったパズルは残ります。', words: '{n}語',
   },
 };
 const t = (k, vars = {}) => String((T[lang()] || T.en)[k] ?? T.en[k] ?? k).replace(/\{(\w+)\}/g, (_, x) => vars[x] ?? '');
@@ -206,40 +218,80 @@ function deckClue(x, kind) {
 // --- the panel --------------------------------------------------------------------------------
 export function mountDeck({ root, play }) {
   let visible = false;
-  let member = null;            // { label, left } once the key checks out
   let draft = null;             // an import in progress: { notes, width, names, fields, name }
   let status = { text: '', error: false };
   let busy = false;
-  let checked = false;
+  let cfg = null;               // account.info()
+  let bonus = null;             // the bonus puzzle list
+  let loaded = false;
+  let googleOk = true;          // false once Google's script fails (blocked, offline): then just email
 
   const state = () => read();
   const setStatus = (text, error = false) => { status = { text, error }; render(); };
+  const fmtDay = (iso) => (iso ? new Date(iso).toLocaleDateString(lang() === 'ja' ? 'ja-JP' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '');
+  onAccount(() => render());
 
-  async function api(path, body) {
-    const res = await fetch(`${API}/public/plus/${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    if (!res.ok && res.status !== 429) throw new Error(String(res.status));
-    return res.json();
-  }
-
-  async function check(key) {
-    busy = true; setStatus(t('checking'));
-    try {
-      const r = await api('check', { key, day: localDate() });
-      if (r.ok) { setPlusKey(key); member = { label: r.label, left: r.left }; status = { text: '', error: false }; }
-      else { member = null; if (key === plusKey()) setPlusKey(''); status = { text: r.error === 'key' ? t('badKey') : r.error || t('failed'), error: true }; }
-    } catch { status = { text: t('failed'), error: true }; }
-    busy = false; checked = true; render();
+  async function load() {
+    if (loaded) return;
+    loaded = true;
+    cfg = await info();
+    await refresh();
+    try { bonus = ((await (await fetch('../../data/crossword/bonus/index.json', { cache: 'no-cache' })).json()).bonus || []); } catch { bonus = []; }
+    render();
   }
 
   // --- views
-  function locked() {
-    const input = h('input', { type: 'text', placeholder: 'CWP-XXXX-XXXX-XXXX-XXXX', 'aria-label': t('keyLabel'), autocomplete: 'off', autocapitalize: 'characters', spellcheck: 'false', value: plusKey() });
-    const go = h('button', { type: 'button', class: 'btn', disabled: busy, onclick: () => { const k = input.value.trim().toUpperCase(); if (k) check(k); } }, t('unlock'));
-    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') go.click(); });
+  function plans() {
+    if (!cfg || !cfg.open) return [h('p', { class: 'cw-deck-muted' }, t('notOpen'), ' ', h('a', { href: '#plus-sec' }, t('joinList')))];
+    const go = (plan) => async (e) => {
+      if (!signedIn()) { document.getElementById('cw-signin')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
+      busy = true; setStatus(t('paying'));
+      try { await checkout(plan); } catch (err) { busy = false; setStatus(err.message || t('failed'), true); }
+    };
     return [
-      h('p', {}, t('lockedBody')),
-      h('div', { class: 'cw-deck-row' }, input, go),
-      h('p', { class: 'cw-deck-muted' }, t('notOpen'), ' ', h('a', { href: '#plus-sec' }, t('joinList'))),
+      h('div', { class: 'cw-deck-row cw-plans' },
+        h('button', { type: 'button', class: 'btn btn-primary', disabled: busy, onclick: go('month') }, t('perMonth', { price: cfg.prices.month })),
+        h('button', { type: 'button', class: 'btn', disabled: busy, onclick: go('year') }, t('perYear', { price: cfg.prices.year }), h('span', { class: 'cw-seg-sub' }, ` · ${t('yearNote')}`))),
+      h('p', { class: 'cw-deck-muted' }, t('secure'), cfg.test ? ` ${t('test')}` : ''),
+    ];
+  }
+
+  function signInBox() {
+    const useGoogle = cfg && cfg.google && googleOk;
+    if (!cfg || (!useGoogle && !cfg.email)) return [h('p', { class: 'cw-deck-muted' }, t('noSignIn'))];
+    const g = h('div', { class: 'cw-google' });
+    // A failed load hides the button (no message: re-rendering would just try again)
+    if (useGoogle) googleButton(g, { onError: (e) => { if (/load/i.test(e.message || '')) { googleOk = false; render(); } else setStatus(e.message || t('failed'), true); } });
+    const email = h('input', { type: 'email', autocomplete: 'email', inputmode: 'email', placeholder: t('emailLabel'), 'aria-label': t('emailLabel'), maxlength: '254' });
+    const send = h('button', { type: 'button', class: 'btn', disabled: busy, onclick: async () => {
+      const v = email.value.trim();
+      if (!v) { email.focus(); return; }
+      busy = true; setStatus(t('sending'));
+      try { await sendEmailLink(v); busy = false; setStatus(t('sent')); } catch (e) { busy = false; setStatus(e.message || t('failed'), true); }
+    } }, t('sendLink'));
+    email.addEventListener('keydown', (e) => { if (e.key === 'Enter') send.click(); });
+    return [
+      h('div', { class: 'cw-signin', id: 'cw-signin' },
+        h('h3', { class: 'cw-deck-sub' }, t('signInTitle')),
+        h('p', { class: 'cw-deck-muted' }, t('signInWhy')),
+        useGoogle ? g : null,
+        useGoogle && cfg.email ? h('p', { class: 'cw-deck-or' }, t('or')) : null,
+        cfg.email ? h('div', { class: 'cw-deck-row' }, email, send) : null),
+    ];
+  }
+
+  function accountLine(u) {
+    return h('p', { class: 'cw-deck-muted' }, t('signedInAs', { email: u.email }), ' · ',
+      h('button', { type: 'button', class: 'btn-link', onclick: async () => { await logout(); setStatus(''); } }, t('signOut')));
+  }
+
+  function membership(u) {
+    const line = u.granted && !u.paid ? t('memberFree')
+      : `${t('member')}${u.renews ? ` · ${t(u.status === 'canceled' ? 'ends' : 'renews', { date: fmtDay(u.renews) })}` : ''}`;
+    return [
+      h('p', { class: 'cw-deck-member' }, '✓ ', line),
+      u.status === 'past_due' ? h('p', { class: 'cw-deck-status is-error' }, t('pastDue')) : null,
+      u.paid ? h('div', { class: 'cw-deck-row' }, h('button', { type: 'button', class: 'btn-link', onclick: async () => { try { await portal(); } catch (e) { setStatus(e.message || t('failed'), true); } } }, t('manage'))) : null,
     ];
   }
 
@@ -297,7 +349,7 @@ export function mountDeck({ root, play }) {
     ];
   }
 
-  function ready(s) {
+  function deckView(s, u) {
     const c = counts(s.words);
     const size = s.size || 'mini';
     const kind = c.kanji >= MIN_WORDS && s.kind === 'kanji' ? 'kanji' : c.kana >= MIN_WORDS ? 'kana' : 'kanji';
@@ -305,7 +357,7 @@ export function mountDeck({ root, play }) {
       type: 'button', role: 'radio', 'aria-checked': String(v === value), disabled,
       onclick: () => { const x = state(); x[name] = v; try { write(x); } catch { /* full */ } render(); },
     }, label)));
-    const left = member ? member.left : 0;
+    const left = u.left || 0;
     const made = (s.made || []).slice().reverse();
     return [
       h('p', { class: 'cw-deck-muted' }, `${s.name} · ${t('words', { n: s.words.length })} · ${t('usable', c)}`),
@@ -320,8 +372,27 @@ export function mountDeck({ root, play }) {
           h('span', {}, `${p.deck.name} · ${t(p.size)} · ${t(p.mode === 'kanji' ? 'kanji' : 'kana')}`),
           h('span', { class: 'cw-deck-muted' }, `${p.made}${solvedIds().has(p.id) ? ` · ${t('solved')} ✓` : ''}`)))))) : null,
       h('div', { class: 'cw-deck-row' },
-        h('button', { type: 'button', class: 'btn-link', onclick: () => { if (confirm(t('confirmReplace'))) { const x = state(); delete x.words; delete x.name; write(x); render(); } } }, t('replace')),
-        h('button', { type: 'button', class: 'btn-link', onclick: () => { setPlusKey(''); member = null; render(); } }, t('removeKey'))),
+        h('button', { type: 'button', class: 'btn-link', onclick: () => { if (confirm(t('confirmReplace'))) { const x = state(); delete x.words; delete x.name; write(x); render(); } } }, t('replace'))),
+    ];
+  }
+
+  function bonusView() {
+    if (!bonus) return [];
+    if (!bonus.length) return [h('h3', { class: 'cw-deck-sub' }, t('bonusTitle')), h('p', { class: 'cw-deck-muted' }, t('bonusNone'))];
+    const done = solvedIds();
+    return [
+      h('h3', { class: 'cw-deck-sub' }, t('bonusTitle')),
+      h('ul', { class: 'cw-deck-list' }, bonus.slice().reverse().map((b) => h('li', {}, h('button', { type: 'button', onclick: async () => {
+        setStatus('');
+        try {
+          const r = await bonusPuzzle(b.id);
+          if (!r.ok) { setStatus(t('bonusLoad'), true); return; }
+          const n = Number(b.id.replace(/\D/g, ''));
+          play({ ...r.puzzle, deck: { name: `Bonus #${n}`, line: `Crossword+ bonus #${n}${b.theme ? ` · ${b.theme}` : ''}` } });
+        } catch { setStatus(t('bonusLoad'), true); }
+      } },
+      h('span', {}, `#${Number(b.id.replace(/\D/g, ''))} · ${b.level}${b.theme ? ` · ${b.theme}` : ''}`),
+      h('span', { class: 'cw-deck-muted' }, done.has(b.id) ? `${t('solved')} ✓` : ''))))),
     ];
   }
 
@@ -346,15 +417,9 @@ export function mountDeck({ root, play }) {
       });
     } catch { busy = false; setStatus(t('buildFail'), true); return; }
     let r;
-    try { r = await api('deck', { key: plusKey(), day: localDate() }); } catch { busy = false; setStatus(t('failed'), true); return; }
+    try { r = await deckTicket(); } catch (e) { busy = false; setStatus(e.message || t('failed'), true); return; }
     busy = false;
-    if (!r.ok) {
-      if (r.error === 'key') { member = null; setPlusKey(''); setStatus(t('badKey'), true); return; }
-      if (member) member.left = 0;
-      setStatus(t('limit'), true);
-      return;
-    }
-    if (member) member.left = r.left;
+    if (!r.ok) { setStatus(r.error === 'limit' ? t('limit') : t('failed'), true); return; }
     const p = toPuzzle(draftPuzzle, { kind, size, name: s.name, seed });
     const x = state();
     x.made = [...(x.made || []), p].slice(-KEEP);
@@ -366,13 +431,19 @@ export function mountDeck({ root, play }) {
   function render() {
     if (!visible) return;
     const s = state();
-    const head = h('h2', {}, t('title'), ' ', h('span', { class: 'cw-plus-mark' }, '＋'),
-      member && member.label ? h('span', { class: 'cw-deck-muted' }, ` · ${t('member', { label: member.label })}`) : null);
+    const u = currentUser();
+    const head = h('h2', {}, t('title'));
     let body;
-    if (!member) body = locked();
-    else if (draft) body = picker();
-    else if (!s.words || !s.words.length) body = importer();
-    else body = ready(s);
+    if (!loaded || !cfg) body = [h('p', { class: 'cw-deck-muted' }, '…')];
+    else if (!u) body = [h('p', {}, t('pitch')), ...plans(), ...signInBox()];
+    else if (!u.member) body = [h('p', {}, t('pitch')), accountLine(u), ...plans()];
+    else {
+      body = [accountLine(u), ...membership(u), h('h3', { class: 'cw-deck-sub' }, t('deckTitle'))];
+      if (draft) body.push(...picker());
+      else if (!s.words || !s.words.length) body.push(...importer());
+      else body.push(...deckView(s, u));
+      body.push(...bonusView());
+    }
     root.replaceChildren(head, ...body.filter(Boolean), h('p', { class: `cw-deck-status${status.error ? ' is-error' : ''}`, role: 'status', 'aria-live': 'polite' }, status.text));
   }
 
@@ -381,8 +452,11 @@ export function mountDeck({ root, play }) {
       visible = on;
       root.hidden = !on;
       if (!on) return;
-      if (!checked && plusKey()) { checked = true; check(plusKey()); }
+      load();
       render();
+    },
+    message(kind, text) {
+      setStatus(kind === 'paid' ? t('welcome') : kind === 'signedIn' ? t('signedInMsg') : kind === 'cancelled' ? t('cancelled') : text || t('failed'), kind === 'error');
     },
     current() { return null; },
     relabel() { render(); },

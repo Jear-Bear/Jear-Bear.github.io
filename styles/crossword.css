@@ -244,3 +244,9 @@ html[data-ui="ja"] [data-ui-only="en"], html:not([data-ui="ja"]) [data-ui-only="
 .cw-deck details { margin: 6px 0; }
 .cw-deck summary { cursor: pointer; font-size: 14px; color: var(--ink-soft); }
 .cw-deck .cw-seg button:disabled { opacity: 0.4; cursor: not-allowed; }
+.cw-deck-member { font-weight: 500; color: var(--ink); }
+.cw-deck-or { margin: 8px 0; font-size: 13px; color: var(--muted); }
+.cw-google { min-height: 44px; margin: 6px 0; }
+.cw-plans .btn { min-height: 46px; }
+.cw-signin { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+.cw-deck input[type="email"] { font: 15px var(--font-gothic); padding: 8px 10px; min-height: 42px; border: 1px solid var(--border-strong); background: var(--paper); color: var(--ink); flex: 1 1 220px; min-width: 0; }

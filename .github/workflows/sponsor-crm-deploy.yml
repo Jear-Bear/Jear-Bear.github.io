@@ -41,6 +41,12 @@ jobs:
       YT_API_KEY: ${{ secrets.YT_API_KEY }}      # optional: the Uploads list
       CRM_INGEST_KEY: ${{ secrets.CRM_INGEST_KEY }}  # optional: daily history from the stats Action
       CF_ANALYTICS_TOKEN: ${{ secrets.CF_ANALYTICS_TOKEN }}  # optional: website traffic (Account Analytics: Read only)
+      # Crossword+ (all optional; see docs/crossword-plus.md)
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}      # payments (sk_test_… to try it, sk_live_… to sell)
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}            # email sign-in links
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID || vars.GOOGLE_CLIENT_ID }}   # Sign in with Google (not secret, but kept with the rest)
+      LOGIN_EMAIL_FROM: ${{ vars.LOGIN_EMAIL_FROM }}           # e.g. Jared’s Crossword <crossword@jareddesu.com>
+      STRIPE_AUTOMATIC_TAX: ${{ vars.STRIPE_AUTOMATIC_TAX }}   # "true" once Stripe Tax is on
     steps:
       - name: Check out
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -93,6 +99,9 @@ jobs:
           printf '%s' "$CRM_SESSION_KEY" | npx wrangler secret put CRM_SESSION_KEY
           if [ -n "$YT_API_KEY" ]; then printf '%s' "$YT_API_KEY" | npx wrangler secret put YT_API_KEY; fi
           if [ -n "$CRM_INGEST_KEY" ]; then printf '%s' "$CRM_INGEST_KEY" | npx wrangler secret put CRM_INGEST_KEY; fi
+          for name in STRIPE_SECRET_KEY RESEND_API_KEY GOOGLE_CLIENT_ID LOGIN_EMAIL_FROM STRIPE_AUTOMATIC_TAX; do
+            if [ -n "${!name}" ]; then printf '%s' "${!name}" | npx wrangler secret put "$name"; fi
+          done
           if [ -n "$CF_ANALYTICS_TOKEN" ]; then
             printf '%s' "$CF_ANALYTICS_TOKEN" | npx wrangler secret put CF_ANALYTICS_TOKEN
             printf '%s' "$CLOUDFLARE_ACCOUNT_ID" | npx wrangler secret put CF_ACCOUNT_ID

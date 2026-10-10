@@ -248,36 +248,51 @@ function waitlistSection(w) {
     h('p', { class: 'crm-method' }, 'Sign-ups are saved the moment someone presses the button. This list reads them live when you open Traffic (or press Refresh), and the desk refreshes itself every 5 minutes. Promised on the page: one email when Crossword+ is ready, no newsletter. Put each person’s leave link (in the CSV) at the bottom of that email; it deletes them from the list.'));
 }
 
-// Crossword+ keys: until payments exist, members get a key from you. It
-// unlocks My deck on the crossword page (2 deck puzzles a day). Only a hash is
-// stored, so a key is shown once, when you make it (workers/sponsor-crm/src/plus.js).
+// Crossword+ accounts and payments (workers/sponsor-crm/src/plus.js, stripe.js).
+// People sign in with Google or an email link; a Stripe subscription, or free
+// access you give here, makes them a member. "Connect Stripe" sets up the
+// prices, the customer portal and the webhook (safe to press again).
 function membersSection(m, reload) {
   if (!m) return null;
-  if (m.error) return section('Crossword+ keys', h('p', { class: 'crm-note is-error' }, `Couldn’t load the keys: ${m.error}`));
-  const label = h('input', { type: 'text', placeholder: 'Name', 'aria-label': 'Name', maxlength: '80' });
-  const email = h('input', { type: 'email', placeholder: 'Email (optional)', 'aria-label': 'Email', maxlength: '254' });
-  const shown = h('div');
-  const make = button('Make a key', async () => {
-    const r = await busy(make, () => request('POST', 'plus', { label: label.value.trim(), email: email.value.trim() }));
-    label.value = ''; email.value = '';
-    const copy = button('Copy key', async () => { try { await navigator.clipboard.writeText(r.key); toast('Copied', { kind: 'ok', ms: 1800 }); } catch { toast('Couldn’t copy', { kind: 'error' }); } }, { kind: 'chip' });
-    shown.replaceChildren(h('div', { class: 'crm-note' }, h('p', {}, `Key for ${r.member.label || r.member.email}: `, h('code', { class: 'crm-code' }, r.key), ' ', copy),
-      h('p', { class: 'crm-muted' }, 'It’s only shown now. They paste it under My deck on the crossword page.')));
+  if (m.error) return section('Crossword+ members', h('p', { class: 'crm-note is-error' }, `Couldn’t load Crossword+: ${m.error}`));
+  const st = m.stripe || {};
+  const connect = button(st.connected ? 'Reconnect Stripe' : 'Connect Stripe', async () => {
+    const r = await busy(connect, () => request('POST', 'plus/stripe-setup'));
+    toast(`Stripe connected (${r.mode} mode)`, { kind: 'ok', ms: 3000 });
     reload(false);
-  }, { kind: 'primary' });
-  const active = m.members.filter((x) => !x.revoked);
-  return section('Crossword+ keys',
+  }, { kind: st.connected ? 'chip' : 'primary', disabled: !st.key });
+  const email = h('input', { type: 'email', placeholder: 'Email', 'aria-label': 'Email', maxlength: '254' });
+  const note = h('input', { type: 'text', placeholder: 'Note (optional)', 'aria-label': 'Note', maxlength: '120' });
+  const give = button('Give free access', async () => {
+    await busy(give, () => request('POST', 'plus', { email: email.value.trim(), note: note.value.trim() }));
+    toast('Done. It works as soon as they sign in with that email.', { kind: 'ok', ms: 3500 });
+    email.value = ''; note.value = '';
+    reload(false);
+  }, { kind: 'chip' });
+  const users = m.users || [];
+  const paid = users.filter((u) => u.member && u.paid);
+  const monthly = paid.filter((u) => u.plan === 'month').length;
+  const yearly = paid.filter((u) => u.plan === 'year').length;
+  const act = (u, label, body) => button(label, async (ev) => { await busy(ev.currentTarget, () => request('PATCH', `plus/${u.id}`, body)); reload(false); }, { kind: 'chip' });
+  const statusOf = (u) => (u.revoked ? 'turned off' : u.paid ? `${u.status}${u.plan ? ` · ${u.plan}ly` : ''}${u.period_end ? ` · ${u.status === 'canceled' ? 'ended' : 'renews'} ${fmtDate(u.period_end.slice(0, 10))}` : ''}` : u.granted ? 'free access' : 'signed up, not a member');
+  return section('Crossword+ members',
     h('div', { class: 'crm-tiles' },
-      tile('Members', num.format(active.length), 'with a working key'),
-      tile('Deck puzzles today', num.format(active.reduce((n, x) => n + x.made_today, 0)), `${m.perDay} a day each`),
-      tile('Deck puzzles, all time', num.format(m.members.reduce((n, x) => n + x.made_total, 0)), 'made from members’ own decks')),
-    h('div', { class: 'crm-traffic-bar' }, label, email, make),
-    shown,
-    m.members.length ? h('ul', { class: 'crm-waitlist' }, m.members.map((x) => h('li', {},
-      h('span', {}, x.label || x.email, x.label && x.email ? h('span', { class: 'crm-muted' }, ` · ${x.email}`) : null),
-      h('span', { class: 'crm-muted' }, ` · ${x.made_today}/${m.perDay} today · ${x.made_total} total${x.last_used ? ` · last used ${fmtDate(x.last_used.slice(0, 10))}` : ''}${x.revoked ? ' · turned off' : ''} `),
-      button(x.revoked ? 'Turn back on' : 'Turn off', async (ev) => { await busy(ev.currentTarget, () => request('PATCH', `plus/${x.id}`, { revoked: !x.revoked })); reload(false); }, { kind: 'chip' })))) : h('p', { class: 'crm-muted' }, 'No keys yet.'),
-    h('p', { class: 'crm-method' }, 'For testers and founding members until Crossword+ has payments. A key works on any device; turning it off stops it right away.'));
+      tile('Paying members', num.format(paid.length), `${monthly} monthly · ${yearly} yearly`),
+      tile('Monthly revenue', `$${(monthly * 2.99 + yearly * 24.99 / 12).toFixed(2)}`, 'before Stripe’s fees (yearly spread over 12)'),
+      tile('Free access', num.format(users.filter((u) => u.member && !u.paid).length), 'given here'),
+      tile('Accounts', num.format(users.length), 'signed in at least once'),
+      tile('Deck puzzles today', num.format(users.reduce((n, u) => n + u.made_today, 0)), `${m.perDay} a day each`)),
+    h('div', { class: 'crm-traffic-bar' },
+      h('span', { class: st.connected ? 'crm-muted' : 'crm-note is-error' }, !st.key ? 'Stripe: add the STRIPE_SECRET_KEY GitHub secret, then run the deploy.' : st.connected ? `Stripe: connected (${st.mode} mode)` : `Stripe: key found (${st.mode} mode), not connected yet`),
+      connect),
+    h('div', { class: 'crm-traffic-bar' }, email, note, give),
+    users.length ? h('ul', { class: 'crm-waitlist' }, users.map((u) => h('li', {},
+      h('span', {}, u.email, u.google ? h('span', { class: 'crm-muted' }, ' · Google') : null),
+      h('span', { class: 'crm-muted' }, ` · ${statusOf(u)} · ${u.made_today}/${m.perDay} today · ${u.made_total} total${u.grant_note ? ` · ${u.grant_note}` : ''} `),
+      u.granted && !u.revoked ? act(u, 'Remove free access', { granted: false }) : null,
+      act(u, u.revoked ? 'Turn back on' : 'Turn off', { revoked: !u.revoked }),
+      act(u, 'Sign out everywhere', { signOut: true })))) : h('p', { class: 'crm-muted' }, 'No accounts yet.'),
+    h('p', { class: 'crm-method' }, 'Turning someone off doesn’t cancel their Stripe subscription; cancel or refund that in Stripe. Founding price for the waitlist: make a promotion code in Stripe (e.g. $1 off forever); Checkout has a box for codes.'));
 }
 
 // --- The Traffic tab --------------------------------------------------------------------------

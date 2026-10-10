@@ -1,111 +1,275 @@
-// plus.js — Crossword+ members and the My deck daily limit.
+// plus.js — Crossword+ accounts, membership and the My deck daily limit.
 //
-// Until payments exist, membership is a key Jared creates in the Sponsor desk
-// (shown once; only its SHA-256 is stored). The crossword page keeps the key
-// in the visitor's browser and asks here before each deck puzzle.
+// An account is an email. People sign in either way (both optional, same account):
+//   - Sign in with Google: the page gets an ID token from Google and sends it
+//     here; it's checked against Google's keys (GOOGLE_CLIENT_ID).
+//   - Email link: a one-time link sent with Resend (RESEND_API_KEY), good for
+//     20 minutes.
+// Signing in returns a session token the page keeps (the site and this Worker
+// are on different domains, so it's sent as a header, not a cookie).
 //
-//   POST /public/plus/check  { key, day }  → { ok, label, left }        (no sign-in)
-//   POST /public/plus/deck   { key, day }  → { ok, left } or { ok: false, error: 'limit' | 'key' }
-//   GET  /api/plus                          members with today's use (signed in)
-//   POST /api/plus           { label, email }  → { member, key } (the key, this once)
-//   PATCH /api/plus/:id      { revoked }
+// Membership is on the account: a Stripe subscription tied to the email
+// (stripe.js), or free access given in the Sponsor desk.
 //
-// day is the visitor's local date, so the limit resets at their midnight. It
-// must be within a day of UTC, so it can't be used to get extra puzzles.
+//   GET  /public/plus/info                           what's set up (sale open, Google, email links, prices)
+//   POST /public/plus/login/google  { credential }   → { token, user }
+//   POST /public/plus/login/email   { email }        → { ok } (sends the link)
+//   POST /public/plus/login/verify  { token }        → { token, user }  (from the link)
+//   POST /public/plus/me            { day }          → { user } (membership, deck puzzles left today)
+//   POST /public/plus/logout        {}               signs this account out everywhere
+//   POST /public/plus/deck          { day }          → { ok, left } or { ok: false, error }
+//   POST /public/plus/bonus         { id }           → a sealed bonus puzzle, opened (members)
+//   GET  /api/plus                                   accounts for the Sponsor desk (signed in)
+//   POST /api/plus                  { email, note }  free access for an email
+//   PATCH /api/plus/:id             { revoked } | { granted }
+//
+// The session token goes in the Authorization header: "Bearer …".
 
 import { HttpError } from './data.js';
 import { isUuid } from '../../../scripts/manage/schema.js';
 import { hmacHex, bump, text } from './public.js';
 
 export const DECK_PER_DAY = 2;
-const KEY = /^CWP(?:-[A-Z2-9]{4}){4}$/;
-const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // no 0/O, 1/I
+const SESSION_DAYS = 90;
+const LOGIN_MINUTES = 20;
+const EMAIL = /^[^\s@<>"]{1,64}@[A-Za-z0-9.-]{1,190}\.[A-Za-z]{2,24}$/;
+const ACTIVE = new Set(['active', 'trialing', 'past_due']);    // past_due: Stripe is still retrying the card
+const SITE = 'https://www.jareddesu.com';
 
-async function sha256(s) {
+export const isMember = (u) => Boolean(u) && !u.revoked && (Boolean(u.granted) || ACTIVE.has(u.status));
+export const siteFor = (origin) => (origin && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) ? origin : SITE);
+
+const b64url = (bytes) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const fromB64url = (s) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (s.length % 4)) % 4)), (c) => c.charCodeAt(0));
+export async function sha256(s) {
   const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
   return [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
+const randomToken = () => b64url(crypto.getRandomValues(new Uint8Array(32)));
 
-function newKey() {
-  const b = crypto.getRandomValues(new Uint8Array(16));
-  const ch = [...b].map((x) => ALPHABET[x % ALPHABET.length]).join('');
-  return `CWP-${ch.slice(0, 4)}-${ch.slice(4, 8)}-${ch.slice(8, 12)}-${ch.slice(12, 16)}`;
+async function readBody(request) {
+  try { return JSON.parse((await request.text()).slice(0, 8000)) || {}; } catch { return {}; }
+}
+
+// Rate limits per (hashed) IP per hour
+async function limit(request, env, name, max) {
+  const now = Math.floor(Date.now() / 1000);
+  const ip = request.headers.get('CF-Connecting-IP') || 'local';
+  await env.DB.prepare('DELETE FROM public_hits WHERE expires_at < ?').bind(now).run();
+  if (!(await bump(env.DB, `${name}:${await hmacHex(env, `${ip}:${Math.floor(now / 3600)}`)}`, max, 3600, now))) throw new HttpError(429, 'Too many tries. Please try again later.');
 }
 
 function dayOf(v) {
   const today = new Date().toISOString().slice(0, 10);
   if (typeof v !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return today;
-  const diff = Math.abs(Date.parse(`${v}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`));
-  return diff <= 86400000 ? v : today;
+  return Math.abs(Date.parse(`${v}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) <= 86400000 ? v : today;
 }
 
-async function readBody(request) {
-  try { return JSON.parse((await request.text()).slice(0, 1000)) || {}; } catch { return {}; }
+// --- sessions -----------------------------------------------------------------------------------
+async function sign(env, data) { return hmacHex(env, `plus-session:${data}`); }
+
+async function issue(env, u) {
+  const exp = Math.floor(Date.now() / 1000) + SESSION_DAYS * 86400;
+  const data = `${u.id}.${exp}.${u.session_ver || 1}`;
+  await env.DB.prepare('UPDATE plus_users SET last_login = ? WHERE id = ?').bind(new Date().toISOString(), u.id).run();
+  return `${data}.${await sign(env, data)}`;
 }
 
-async function member(request, env, body) {
-  const key = text(body.key, 40).toUpperCase();
-  if (!KEY.test(key)) return null;
-  // A few wrong keys per IP per hour, so keys can't be guessed
-  const now = Math.floor(Date.now() / 1000);
-  const ip = request.headers.get('CF-Connecting-IP') || 'local';
-  const m = await env.DB.prepare('SELECT id, label, revoked FROM plus_members WHERE key_hash = ?').bind(await sha256(key)).first();
-  if (!m || m.revoked) {
-    await env.DB.prepare('DELETE FROM public_hits WHERE expires_at < ?').bind(now).run();
-    if (!(await bump(env.DB, `plus-bad:${await hmacHex(env, `${ip}:${Math.floor(now / 3600)}`)}`, 20, 3600, now))) throw new HttpError(429, 'Too many tries. Please try again later.');
-    return null;
+// The signed-in account, or null
+export async function sessionUser(request, env) {
+  const auth = request.headers.get('Authorization') || '';
+  const tok = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
+  const parts = tok.split('.');
+  if (parts.length !== 4 || !isUuid(parts[0])) return null;
+  const [id, exp, ver, sig] = parts;
+  const want = await sign(env, `${id}.${exp}.${ver}`);
+  if (sig.length !== want.length || [...sig].reduce((d, c, i) => d | (c.charCodeAt(0) ^ want.charCodeAt(i)), 0) !== 0) return null;
+  if (Number(exp) < Date.now() / 1000) return null;
+  const u = await env.DB.prepare('SELECT * FROM plus_users WHERE id = ?').bind(id).first();
+  return u && String(u.session_ver) === ver ? u : null;
+}
+
+async function needUser(request, env) {
+  const u = await sessionUser(request, env);
+  if (!u) throw new HttpError(401, 'Please sign in again');
+  return u;
+}
+
+// The account for an email (made on first sign-in)
+async function userFor(db, email, extra = {}) {
+  email = email.toLowerCase();
+  let u = await db.prepare('SELECT * FROM plus_users WHERE email = ?').bind(email).first();
+  if (!u) {
+    u = { id: crypto.randomUUID(), email, name: extra.name || null, google_sub: extra.google_sub || null, session_ver: 1 };
+    await db.prepare('INSERT INTO plus_users (id, email, name, google_sub, created_at) VALUES (?, ?, ?, ?, ?)')
+      .bind(u.id, email, u.name, u.google_sub, new Date().toISOString()).run();
+    return u;
   }
-  return m;
+  if ((extra.google_sub && !u.google_sub) || (extra.name && !u.name)) {
+    await db.prepare('UPDATE plus_users SET google_sub = COALESCE(google_sub, ?), name = COALESCE(name, ?) WHERE id = ?').bind(extra.google_sub || null, extra.name || null, u.id).run();
+    u = { ...u, google_sub: u.google_sub || extra.google_sub, name: u.name || extra.name };
+  }
+  return u;
 }
 
-const usedOn = async (db, id, day) => ((await db.prepare('SELECT made FROM plus_usage WHERE member_id = ? AND day = ?').bind(id, day).first()) || { made: 0 }).made;
-
-export async function plusCheck(request, env) {
-  const body = await readBody(request);
-  const m = await member(request, env, body);
-  if (!m) return { ok: false, error: 'key' };
-  const made = await usedOn(env.DB, m.id, dayOf(body.day));
-  return { ok: true, label: m.label || null, left: Math.max(0, DECK_PER_DAY - made), perDay: DECK_PER_DAY };
+export async function publicUser(db, u, day) {
+  const made = ((await db.prepare('SELECT made FROM plus_usage WHERE user_id = ? AND day = ?').bind(u.id, dayOf(day)).first()) || { made: 0 }).made;
+  return {
+    email: u.email, name: u.name || null, google: Boolean(u.google_sub),
+    member: isMember(u), granted: Boolean(u.granted) && !u.revoked, paid: Boolean(u.stripe_subscription),
+    status: u.status || null, plan: u.plan || null, renews: u.period_end || null,
+    left: Math.max(0, DECK_PER_DAY - made), perDay: DECK_PER_DAY,
+  };
 }
 
-export async function plusDeck(request, env) {
+// --- Google ----------------------------------------------------------------------------------------
+let googleKeys = null;
+async function googleKey(env, kid) {
+  if (!googleKeys || !googleKeys.keys.some((k) => k.kid === kid) || googleKeys.at < Date.now() - 3600000) {
+    const res = await fetch(env.GOOGLE_CERTS_URL || 'https://www.googleapis.com/oauth2/v3/certs', { cf: { cacheTtl: 3600 } });   // override: local tests only
+    if (!res.ok) throw new HttpError(502, 'Couldn’t reach Google');
+    googleKeys = { ...(await res.json()), at: Date.now() };
+  }
+  const jwk = googleKeys.keys.find((k) => k.kid === kid);
+  if (!jwk) throw new HttpError(401, 'Google sign-in didn’t check out');
+  return crypto.subtle.importKey('jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
+}
+
+export async function loginGoogle(request, env) {
+  if (!env.GOOGLE_CLIENT_ID) throw new HttpError(503, 'Google sign-in isn’t set up');
+  await limit(request, env, 'plus-g', 30);
   const body = await readBody(request);
-  const m = await member(request, env, body);
-  if (!m) return { ok: false, error: 'key' };
-  const day = dayOf(body.day);
+  const parts = String(body.credential || '').split('.');
+  if (parts.length !== 3) throw new HttpError(400, 'Bad Google sign-in');
+  let head, claims;
+  try { head = JSON.parse(new TextDecoder().decode(fromB64url(parts[0]))); claims = JSON.parse(new TextDecoder().decode(fromB64url(parts[1]))); } catch { throw new HttpError(400, 'Bad Google sign-in'); }
+  if (head.alg !== 'RS256') throw new HttpError(400, 'Bad Google sign-in');
+  const ok = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', await googleKey(env, head.kid), fromB64url(parts[2]), new TextEncoder().encode(`${parts[0]}.${parts[1]}`));
+  const now = Date.now() / 1000;
+  if (!ok || !['accounts.google.com', 'https://accounts.google.com'].includes(claims.iss) || claims.aud !== env.GOOGLE_CLIENT_ID
+    || !(claims.exp > now) || !claims.email || claims.email_verified !== true) throw new HttpError(401, 'Google sign-in didn’t check out');
+  // The same Google account keeps its account even if its email changes
+  let u = await env.DB.prepare('SELECT * FROM plus_users WHERE google_sub = ?').bind(String(claims.sub)).first();
+  if (!u) u = await userFor(env.DB, claims.email, { google_sub: String(claims.sub), name: claims.given_name || null });
+  return { token: await issue(env, u), user: await publicUser(env.DB, u, body.day) };
+}
+
+// --- email links ------------------------------------------------------------------------------------
+export async function loginEmail(request, env, origin) {
+  if (!env.RESEND_API_KEY) throw new HttpError(503, 'Email sign-in isn’t set up yet. Please use Google for now.');
+  await limit(request, env, 'plus-mail-ip', 6);
+  const body = await readBody(request);
+  const email = text(body.email, 254).toLowerCase();
+  if (!EMAIL.test(email)) throw new HttpError(400, 'That email doesn’t look right');
+  const now = Math.floor(Date.now() / 1000);
+  if (!(await bump(env.DB, `plus-mail:${await sha256(email)}`, 3, 3600, now))) throw new HttpError(429, 'We just sent you a link. Check your inbox (and spam), or try again in an hour.');
+  const token = randomToken();
+  await env.DB.prepare('DELETE FROM plus_logins WHERE expires_at < ?').bind(now).run();
+  await env.DB.prepare('INSERT INTO plus_logins (token_hash, email, expires_at) VALUES (?, ?, ?)').bind(await sha256(token), email, now + LOGIN_MINUTES * 60).run();
+  const link = `${siteFor(origin)}/tools/crossword/?login=${token}`;
+  const ja = body.lang === 'ja';
+  const res = await fetch(`${env.RESEND_API_BASE || 'https://api.resend.com'}/emails`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from: env.LOGIN_EMAIL_FROM || 'Jared’s Crossword <crossword@jareddesu.com>',
+      to: [email],
+      subject: ja ? 'クロスワード＋のログインリンク' : 'Your Crossword+ sign-in link',
+      text: ja
+        ? `下のリンクを開くとログインできます（${LOGIN_MINUTES}分間有効）。\n\n${link}\n\n心当たりがなければ、このメールは無視してください。`
+        : `Open this link to sign in (it works for ${LOGIN_MINUTES} minutes):\n\n${link}\n\nIf you didn’t ask for this, you can ignore this email.`,
+      html: `<p>${ja ? `下のボタンでログインできます（${LOGIN_MINUTES}分間有効）。` : `Sign in to Crossword+ with this button (it works for ${LOGIN_MINUTES} minutes):`}</p>
+<p><a href="${link}" style="display:inline-block;padding:10px 18px;background:#1f1c18;color:#fff;text-decoration:none;border-radius:4px">${ja ? 'ログイン' : 'Sign in'}</a></p>
+<p style="color:#6b6358;font-size:13px">${ja ? '心当たりがなければ、このメールは無視してください。' : 'If you didn’t ask for this, you can ignore this email.'}</p>`,
+    }),
+  });
+  if (!res.ok) { console.error('Resend', res.status, await res.text().catch(() => '')); throw new HttpError(502, 'Couldn’t send the email. Please try again in a bit.'); }
+  return { ok: true };
+}
+
+export async function loginVerify(request, env) {
+  await limit(request, env, 'plus-verify', 30);
+  const body = await readBody(request);
+  const token = text(body.token, 100);
+  if (!/^[A-Za-z0-9_-]{30,60}$/.test(token)) throw new HttpError(400, 'That sign-in link isn’t right');
+  const now = Math.floor(Date.now() / 1000);
+  const row = await env.DB.prepare('DELETE FROM plus_logins WHERE token_hash = ? RETURNING email, expires_at').bind(await sha256(token)).first();
+  if (!row || row.expires_at < now) throw new HttpError(400, 'That sign-in link has expired or was already used. Ask for a new one.');
+  const u = await userFor(env.DB, row.email);
+  return { token: await issue(env, u), user: await publicUser(env.DB, u, body.day) };
+}
+
+// --- the signed-in account ---------------------------------------------------------------------
+export async function me(request, env) {
+  const u = await needUser(request, env);
+  const body = await readBody(request);
+  return { user: await publicUser(env.DB, u, body.day) };
+}
+
+export async function logout(request, env) {
+  const u = await needUser(request, env);
+  await env.DB.prepare('UPDATE plus_users SET session_ver = session_ver + 1 WHERE id = ?').bind(u.id).run();
+  return { ok: true };
+}
+
+export async function deckTicket(request, env) {
+  const u = await needUser(request, env);
+  if (!isMember(u)) return { ok: false, error: 'member' };
+  const body = await readBody(request);
   // Count it only while under the limit (one statement, so two tabs can't both get the last one)
-  const r = await env.DB.prepare(`INSERT INTO plus_usage (member_id, day, made) VALUES (?, ?, 1)
-    ON CONFLICT (member_id, day) DO UPDATE SET made = made + 1 WHERE made < ? RETURNING made`).bind(m.id, day, DECK_PER_DAY).first();
+  const r = await env.DB.prepare(`INSERT INTO plus_usage (user_id, day, made) VALUES (?, ?, 1)
+    ON CONFLICT (user_id, day) DO UPDATE SET made = made + 1 WHERE made < ? RETURNING made`).bind(u.id, dayOf(body.day), DECK_PER_DAY).first();
   if (!r) return { ok: false, error: 'limit', left: 0 };
-  await env.DB.prepare('UPDATE plus_members SET last_used = ? WHERE id = ?').bind(new Date().toISOString(), m.id).run();
   return { ok: true, left: Math.max(0, DECK_PER_DAY - r.made) };
 }
 
-// --- Sponsor desk -----------------------------------------------------------------------------
-export async function listPlus(db) {
-  const today = new Date().toISOString().slice(0, 10);
-  const { results } = await db.prepare(`SELECT m.id, m.label, m.email, m.created_at, m.revoked, m.last_used,
-    COALESCE((SELECT SUM(made) FROM plus_usage u WHERE u.member_id = m.id), 0) AS made_total,
-    COALESCE((SELECT made FROM plus_usage u WHERE u.member_id = m.id AND u.day = ?), 0) AS made_today
-    FROM plus_members m ORDER BY m.created_at DESC`).bind(today).all();
-  return { perDay: DECK_PER_DAY, members: results.map((r) => ({ ...r, revoked: Boolean(r.revoked) })) };
+// A sealed bonus puzzle (data/crossword/bonus/ID.json), opened for a member
+export async function bonusPuzzle(request, env, openSealed, site) {
+  const u = await needUser(request, env);
+  if (!isMember(u)) return { ok: false, error: 'member' };
+  const body = await readBody(request);
+  const id = text(body.id, 20);
+  if (!/^bonus-\d{3,}$/.test(id)) throw new HttpError(400, 'Bad puzzle ID');
+  const res = await fetch(`${site}/data/crossword/bonus/${id}.json`, { cf: { cacheTtl: 300 } });
+  if (!res.ok) throw new HttpError(404, 'No such puzzle');
+  return { ok: true, puzzle: await openSealed(env.DB, await res.json()) };
 }
 
-export async function createPlus(db, body) {
-  const label = text(body && body.label, 80) || null;
-  const email = text(body && body.email, 254).toLowerCase() || null;
-  if (!label && !email) throw new HttpError(400, 'Add a name or an email so you know whose key it is');
-  const key = newKey();
-  const m = { id: crypto.randomUUID(), label, email, created_at: new Date().toISOString(), revoked: false, last_used: null };
-  await db.prepare('INSERT INTO plus_members (id, key_hash, label, email, created_at) VALUES (?, ?, ?, ?, ?)')
-    .bind(m.id, await sha256(key), m.label, m.email, m.created_at).run();
-  return { member: m, key };
+// --- Sponsor desk -------------------------------------------------------------------------------
+export async function listPlus(db) {
+  const today = new Date().toISOString().slice(0, 10);
+  const { results } = await db.prepare(`SELECT u.*,
+    COALESCE((SELECT SUM(made) FROM plus_usage x WHERE x.user_id = u.id), 0) AS made_total,
+    COALESCE((SELECT made FROM plus_usage x WHERE x.user_id = u.id AND x.day = ?), 0) AS made_today
+    FROM plus_users u ORDER BY u.created_at DESC`).bind(today).all();
+  return {
+    perDay: DECK_PER_DAY,
+    users: results.map((r) => ({
+      id: r.id, email: r.email, name: r.name, google: Boolean(r.google_sub), created_at: r.created_at, last_login: r.last_login,
+      granted: Boolean(r.granted), grant_note: r.grant_note, revoked: Boolean(r.revoked), paid: Boolean(r.stripe_subscription),
+      status: r.status, plan: r.plan, period_end: r.period_end, member: isMember(r), made_today: r.made_today, made_total: r.made_total,
+    })),
+  };
+}
+
+// Free access for an email (testers, friends): works as soon as they sign in with it
+export async function grantPlus(db, body) {
+  const email = text(body && body.email, 254).toLowerCase();
+  if (!EMAIL.test(email)) throw new HttpError(400, 'That email doesn’t look right');
+  const u = await userFor(db, email);
+  await db.prepare('UPDATE plus_users SET granted = 1, revoked = 0, grant_note = ? WHERE id = ?').bind(text(body.note, 120) || null, u.id).run();
+  return { ok: true, id: u.id };
 }
 
 export async function updatePlus(db, id, body) {
-  if (!isUuid(id)) throw new HttpError(400, 'Bad member ID');
-  const revoked = body && body.revoked ? 1 : 0;
-  const r = await db.prepare('UPDATE plus_members SET revoked = ? WHERE id = ? RETURNING id').bind(revoked, id).first();
-  if (!r) throw new HttpError(404, 'No such member');
-  return { ok: true, revoked: Boolean(revoked) };
+  if (!isUuid(id)) throw new HttpError(400, 'Bad account ID');
+  const sets = [];
+  const vals = [];
+  if (body && 'revoked' in body) { sets.push('revoked = ?'); vals.push(body.revoked ? 1 : 0); }
+  if (body && 'granted' in body) { sets.push('granted = ?'); vals.push(body.granted ? 1 : 0); }
+  if (body && body.signOut) sets.push('session_ver = session_ver + 1');
+  if (!sets.length) throw new HttpError(400, 'Nothing to change');
+  const r = await db.prepare(`UPDATE plus_users SET ${sets.join(', ')} WHERE id = ? RETURNING id`).bind(...vals, id).first();
+  if (!r) throw new HttpError(404, 'No such account');
+  return { ok: true };
 }
