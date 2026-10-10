@@ -8,14 +8,16 @@
 //     (hidden for 30 days);
 //   - it never covers the grid or interrupts a puzzle;
 //   - the page section (always there, below How to play) never pops up.
+// Once sales open, the same places link to the Crossword+ panel instead.
 // Emails go to the sponsor Worker's private database (waitlist.js), never the repo.
 
 import { lang } from '../games/i18n.js?v=1';
-import { info, isMember } from './account.js?v=2';
+import { info, isMember, onAccount } from './account.js?v=2';
 
 const API = 'https://sponsor-crm.jared-65b.workers.dev';
 const KEY = 'jareddesu.crossword.plus';
 const SUPPORT_URL = 'https://www.youtube.com/@jareddesu/join';
+export const SUPPORT_EMAIL = 'support@jareddesu.com';
 const WANTS = ['archive', 'deck', 'bonus', 'sync', 'print'];
 const HIDE_DAYS = 30;
 
@@ -36,6 +38,17 @@ const T = {
     openShort: 'Every past puzzle, unlimited crosswords from your Anki deck and weekly bonus puzzles, for {price} a month. Today’s puzzles stay free.',
     openBody: 'Every past puzzle, as many crosswords from your own Anki deck as you like, and a few bonus puzzles every week, for {month} a month or {year} a year. Today’s puzzles stay free, and you can cancel anytime.',
     openCta: 'See Crossword+',
+    badge: 'Crossword+',
+    sectionTitle: 'Want more puzzles?',
+    'perk.archive': '<b>Every past puzzle</b>, kana and kanji',
+    'perk.deck': '<b>Unlimited crosswords from your Anki deck</b> (free: 1 a day)',
+    'perk.bonus': '<b>Bonus puzzles</b> every week',
+    price: '<b>{month}/month</b> or {year}/year · cancel anytime',
+    free: 'Today’s puzzles are always free, no account needed.',
+    member: 'You’re a Crossword+ member. Thank you!',
+    memberCta: 'Open My deck',
+    help: 'Questions or problems? {email}',
+    thanksYT: 'Just want to say thanks? {link} helps too.', thanksYTLink: 'Joining the channel on YouTube',
   },
   ja: {
     title: 'もっと解きたい？',
@@ -53,9 +66,44 @@ const T = {
     openShort: '過去のパズル全部、Ankiデッキのクロスワード作り放題、毎週のボーナスパズルが月{price}で。今日のパズルはずっと無料です。',
     openBody: '過去のパズル全部、Ankiデッキのクロスワード作り放題、毎週のボーナスパズルが、月{month}または年{year}で遊べます。今日のパズルはずっと無料で、いつでも解約できます。',
     openCta: 'クロスワード＋を見る',
+    badge: 'クロスワード＋',
+    sectionTitle: 'もっと解きたい？',
+    'perk.archive': '<b>過去のパズル全部</b>（かな・漢字）',
+    'perk.deck': '<b>Ankiデッキのクロスワード作り放題</b>（無料は1日1つ）',
+    'perk.bonus': '<b>毎週のボーナスパズル</b>',
+    price: '<b>月{month}</b>または年{year}・いつでも解約OK',
+    free: '今日のパズルはいつでも無料。登録も不要です。',
+    member: 'クロスワード＋のメンバーです。いつもありがとう！',
+    memberCta: 'マイデッキを開く',
+    help: 'ご質問・不具合は {email} へ',
+    thanksYT: '応援したい方は、{link}も励みになります。', thanksYTLink: 'YouTubeのメンバーシップ',
   },
 };
 const t = (k, vars = {}) => String((T[lang()] || T.en)[k] || T.en[k]).replace(/\{(\w+)\}/g, (_, x) => vars[x] ?? '');
+
+// A string with a few <b> marks and {slots} filled by nodes (no innerHTML)
+function rich(k, nodes = {}, vars = {}) {
+  const out = [];
+  t(k, { ...vars, ...Object.fromEntries(Object.keys(nodes).map((x) => [x, `{${x}}`])) }).split(/(<b>.*?<\/b>|\{\w+\})/).forEach((part) => {
+    if (!part) return;
+    const b = part.match(/^<b>(.*)<\/b>$/);
+    const slot = part.match(/^\{(\w+)\}$/);
+    if (b) out.push(h('strong', {}, b[1]));
+    else if (slot && nodes[slot[1]]) out.push(nodes[slot[1]]);
+    else out.push(part);
+  });
+  return out;
+}
+
+// The selling points, shared by the page section, the solved screen and My deck
+export function plusPerks() {
+  return h('ul', { class: 'cw-perks' }, ['archive', 'deck', 'bonus'].map((k) => h('li', {}, rich(`perk.${k}`))));
+}
+export function plusPrice(prices) { return h('p', { class: 'cw-plus-price' }, rich('price', {}, prices)); }
+export function plusBadge() { return h('span', { class: 'cw-plus-badge' }, t('badge')); }
+export function supportLine() {
+  return h('p', { class: 'cw-plus-help' }, rich('help', { email: h('a', { href: `mailto:${SUPPORT_EMAIL}` }, SUPPORT_EMAIL) }));
+}
 
 function read() { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; } }
 function write(v) { try { localStorage.setItem(KEY, JSON.stringify({ ...read(), ...v })); } catch { /* private mode */ } }
@@ -139,10 +187,12 @@ export function plusForm({ compact = false } = {}) {
 // For the solved screen: the short form, or "you’re on the list" once signed up
 export function plusCard() {
   if (open && open.open) {
-    const box = h('div', { class: 'cw-plus is-compact' },
-      h('p', { class: 'cw-plus-title' }, t('openTitle')),
-      h('p', { class: 'cw-plus-body' }, t('openShort', { price: open.prices.month })),
-      h('p', { class: 'cw-plus-fine' }, h('button', { type: 'button', class: 'btn cw-plus-submit', onclick: openPanel }, t('openCta')), ' ',
+    const box = h('div', { class: 'cw-plus is-compact is-open' },
+      plusBadge(),
+      h('p', { class: 'cw-plus-title' }, t('sectionTitle')),
+      plusPerks(),
+      plusPrice(open.prices),
+      h('p', { class: 'cw-plus-fine' }, h('button', { type: 'button', class: 'btn btn-plus', onclick: openPanel }, t('openCta')), ' ',
         h('button', { type: 'button', class: 'btn-link cw-plus-not', onclick: () => { write({ hideUntil: Date.now() + HIDE_DAYS * 86400000 }); box.replaceChildren(h('p', { class: 'cw-plus-thanks' }, t('hidden'))); } }, t('not'))));
     return box;
   }
@@ -150,18 +200,32 @@ export function plusCard() {
   return plusForm({ compact: true });
 }
 
-// The page section's form and support link (see tools/crossword/index.html)
+// The page section (#plus-sec): the Crossword+ card, or the waitlist before it opens
 export function mountPlusSection() {
   const slot = document.getElementById('plus-form');
+  const thanks = () => h('p', { class: 'cw-plus-fine' }, rich('thanksYT', { link: h('a', { href: SUPPORT_URL, target: '_blank', rel: 'noopener' }, t('thanksYTLink')) }));
   const fill = () => {
     if (!slot) return;
-    if (open && open.open) slot.replaceChildren(h('div', { class: 'cw-plus' },
-      h('p', { class: 'cw-plus-title' }, t('openTitle')),
-      h('p', { class: 'cw-plus-body' }, t('openBody', { month: open.prices.month, year: open.prices.year })),
-      h('button', { type: 'button', class: 'btn cw-plus-submit', onclick: () => { openPanel(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }, t('openCta'))));
-    else slot.replaceChildren(plusForm());
+    let kids;
+    if (isMember()) {
+      kids = [plusBadge(), h('p', { class: 'cw-plus-title' }, t('member')),
+        h('p', {}, h('button', { type: 'button', class: 'btn btn-plus', onclick: () => { openPanel(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }, t('memberCta')))];
+    } else if (open && open.open) {
+      kids = [plusBadge(), h('p', { class: 'cw-plus-title' }, t('sectionTitle')), plusPerks(), plusPrice(open.prices),
+        h('p', {}, h('button', { type: 'button', class: 'btn btn-plus', onclick: () => { openPanel(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }, t('openCta'))),
+        h('p', { class: 'cw-plus-fine' }, t('free'))];
+    } else {
+      const form = plusForm();
+      form.prepend(plusBadge());
+      kids = [form];
+    }
+    slot.replaceChildren(h('div', { class: 'cw-plus is-section' }, ...kids, supportLine(), isMember() ? null : thanks()));
   };
   fill();
   info().then((i) => { open = i; fill(); });
-  document.querySelectorAll('[data-support-link]').forEach((a) => { a.href = SUPPORT_URL; });
+  // Called again when the language changes; one account listener is enough
+  refill = fill;
+  if (!listening) { listening = true; onAccount(() => refill()); }
 }
+let refill = () => {};
+let listening = false;

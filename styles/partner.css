@@ -37,3 +37,33 @@
 }
 .pt-line-cta { color: var(--ink); font-weight: 500; border-bottom: 1px solid var(--ink); white-space: nowrap; }
 .pt-line-cta:hover { color: var(--page-ink); border-color: var(--page-ink); }
+
+/* Page-section version: reads as an ad, not as part of the puzzle. A coloured
+   banner on top, a warm tint, rounded corners. Still easy to see. */
+.pt-section { margin-top: clamp(40px, 7vh, 72px); }
+.pt-card.is-ad {
+  --pt-tint: #fbefe2;
+  --pt-line: #ecc9a3;
+  max-width: none;
+  padding: 0 20px 16px;
+  border: 1px solid var(--pt-line);
+  border-radius: 10px;
+  background: var(--pt-tint);
+  overflow: hidden;
+}
+.pt-card.is-ad::after { display: none; }
+.pt-card.is-ad .pt-kicker {
+  margin: 0 -20px 14px;
+  padding: 7px 20px;
+  background: var(--pt-color);
+  color: #fff;
+  font-weight: 600;
+}
+.pt-card.is-ad .pt-kicker::before { content: "AD · "; }
+.pt-card.is-ad:lang(ja) .pt-kicker::before { content: "広告 · "; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .pt-card.is-ad { --pt-tint: #2a2118; --pt-line: #5a4127; }
+  :root:not([data-theme="light"]) .pt-card.is-ad .pt-kicker { color: #1a140e; }
+}
+:root[data-theme="dark"] .pt-card.is-ad { --pt-tint: #2a2118; --pt-line: #5a4127; }
+:root[data-theme="dark"] .pt-card.is-ad .pt-kicker { color: #1a140e; }

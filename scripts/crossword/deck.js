@@ -14,6 +14,7 @@
 import { lang } from '../games/i18n.js?v=1';
 import { gridKana, toHira } from './kana.js?v=1';
 import { info, refresh, currentUser, onAccount, signedIn, sendEmailLink, googleButton, logout, checkout, portal, bonusPuzzle } from './account.js?v=2';
+import { plusPerks, plusBadge, supportLine } from './plus.js?v=9';
 
 const STORE = 'jareddesu.crossword.deck';
 const KEEP = 12;                 // puzzles kept to replay
@@ -25,7 +26,7 @@ const T = {
     title: 'My deck',
     intro: 'Turn your own Anki deck into crosswords: your words, with your meanings as the clues. One a day is free.',
     plusTitle: 'Crossword+',
-    pitch: 'Today’s puzzles are always free. Crossword+ adds every past puzzle, as many deck crosswords as you like, and a few bonus puzzles every week.',
+    pitch: 'Today’s puzzles are always free. Crossword+ unlocks:',
     freeLeft: '1 free puzzle today', freeUsed: 'You’ve made today’s free deck puzzle. With Crossword+ you can make as many as you like.', unlimited: 'Unlimited with Crossword+',
     bonusLocked: 'Bonus puzzles are part of Crossword+.',
     perMonth: '{price} / month', perYear: '{price} / year', yearNote: 'about 30% off',
@@ -60,7 +61,7 @@ const T = {
     title: 'マイデッキ',
     intro: '自分のAnkiデッキがクロスワードに。答えは自分の単語、カギは自分で書いた意味です。1日1つは無料。',
     plusTitle: 'クロスワード＋',
-    pitch: '今日のパズルはずっと無料。クロスワード＋では、過去のパズル全部、デッキのクロスワード作り放題、毎週のボーナスパズルが遊べます。',
+    pitch: '今日のパズルはずっと無料。クロスワード＋なら：',
     freeLeft: '今日の無料パズル：あと1つ', freeUsed: '今日の無料デッキパズルを作りました。クロスワード＋なら何個でも作れます。', unlimited: 'クロスワード＋で作り放題',
     bonusLocked: 'ボーナスパズルはクロスワード＋の特典です。',
     perMonth: '月{price}', perYear: '年{price}', yearNote: '約30%お得',
@@ -340,7 +341,7 @@ export function mountDeck({ root, play }) {
     };
     return [
       h('div', { class: 'cw-deck-row cw-plans' },
-        h('button', { type: 'button', class: 'btn btn-primary', disabled: busy, onclick: go('month') }, t('perMonth', { price: cfg.prices.month })),
+        h('button', { type: 'button', class: 'btn btn-plus', disabled: busy, onclick: go('month') }, t('perMonth', { price: cfg.prices.month })),
         h('button', { type: 'button', class: 'btn', disabled: busy, onclick: go('year') }, t('perYear', { price: cfg.prices.year }), h('span', { class: 'cw-seg-sub' }, ` · ${t('yearNote')}`))),
       h('p', { class: 'cw-deck-muted' }, t('secure'), cfg.test ? ` ${t('test')}` : ''),
     ];
@@ -548,11 +549,13 @@ export function mountDeck({ root, play }) {
   // Crossword+ for people who aren't members yet: what it is, plans, sign in
   function plusBlock(u) {
     return h('div', { class: 'cw-plusblock', id: 'cw-plusblock' },
-      h('h3', { class: 'cw-deck-sub' }, t('plusTitle')),
+      plusBadge(),
       h('p', {}, t('pitch')),
+      plusPerks(),
       u ? accountLine(u) : null,
       ...plans(),
-      ...(u ? [] : signInBox()));
+      ...(u ? [] : signInBox()),
+      supportLine());
   }
   function showPlus() { const el = document.getElementById('cw-plusblock'); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
 
@@ -569,7 +572,7 @@ export function mountDeck({ root, play }) {
       else if (!s.words || !s.words.length) body.push(...importer());
       else body.push(...deckView(s, u));
       body.push(...bonusView());
-      if (!(u && u.member)) body.push(plusBlock(u));
+      body.push(u && u.member ? supportLine() : plusBlock(u));
     }
     root.replaceChildren(head, ...body.filter(Boolean), h('p', { class: `cw-deck-status${status.error ? ' is-error' : ''}`, role: 'status', 'aria-live': 'polite' }, status.text));
   }

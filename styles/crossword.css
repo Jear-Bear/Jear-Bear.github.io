@@ -253,3 +253,55 @@ html[data-ui="ja"] [data-ui-only="en"], html:not([data-ui="ja"]) [data-ui-only="
 .cw-empty .cw-locked { display: block; margin-bottom: 12px; }
 .cw-locked-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .cw-plusblock { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
+
+/* ---------------------------------------------------------------- Crossword+: its own colour (紫), so the paid
+   parts read as paid, apart from the free puzzle (群青) and the sponsor ad (orange) */
+:root { --plus: #7a4bb5; --plus-ink: #6a3fa3; --plus-tint: #f5effc; --plus-line: #d9c6f0; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --plus: #b392e8; --plus-ink: #c7adf0; --plus-tint: #231b31; --plus-line: #4a3866; }
+}
+:root[data-theme="dark"] { --plus: #b392e8; --plus-ink: #c7adf0; --plus-tint: #231b31; --plus-line: #4a3866; }
+
+.cw-plus-badge {
+  display: inline-block;
+  margin: 0 0 8px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--plus);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+:root[data-theme="dark"] .cw-plus-badge { color: #1a1324; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cw-plus-badge { color: #1a1324; } }
+.cw-perks { margin: 4px 0 10px; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 14px; line-height: 1.6; color: var(--ink-soft); }
+.cw-perks li { position: relative; padding-left: 22px; }
+.cw-perks li::before { content: "＋"; position: absolute; left: 0; top: 0; color: var(--plus); font-weight: 700; }
+.cw-perks strong { color: var(--ink); }
+.cw-plus-price { margin: 0 0 12px; font-size: 14px; color: var(--ink-soft); }
+.cw-plus-price strong { color: var(--plus-ink); font-size: 15px; }
+.cw-plus-help { margin: 10px 0 0; font-size: 12px; color: var(--muted); }
+.cw-plus-help a { color: inherit; }
+.btn.btn-plus { background: var(--plus); border-color: var(--plus); color: #fff; font-weight: 600; }
+.btn.btn-plus:hover { background: var(--plus-ink); border-color: var(--plus-ink); color: #fff; }
+:root[data-theme="dark"] .btn.btn-plus, :root[data-theme="dark"] .btn.btn-plus:hover { color: #1a1324; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.btn-plus, :root:not([data-theme="light"]) .btn.btn-plus:hover { color: #1a1324; } }
+
+/* The boxes: page section, solved screen, My deck block, past-day lock */
+.cw-plus.is-section, .cw-plus.is-open, .cw-plusblock {
+  border: 1px solid var(--plus-line);
+  border-left: 4px solid var(--plus);
+  border-radius: 8px;
+  background: var(--plus-tint);
+}
+.cw-plus.is-section { padding: 18px 20px; }
+.cw-plus.is-section .cw-plus-title { font-family: var(--font-mincho); font-size: 1.2rem; margin-bottom: 6px; }
+.cw-plus.is-section .cw-plus-body { color: var(--ink-soft); }
+.cw-plusblock { padding: 14px 16px; }
+.cw-plusblock > p { margin-bottom: 4px; }
+.cw-modes .cw-plus-mark { display: inline-block; min-width: 1.4em; padding: 0 4px; border-radius: 999px; background: var(--plus); color: #fff; font-weight: 700; line-height: 1.5; }
+.cw-modes button[aria-checked="true"] .cw-plus-mark { color: #fff; }
+.cw-locked { padding: 14px 16px; border: 1px solid var(--plus-line); border-left: 4px solid var(--plus); border-radius: 8px; background: var(--plus-tint); text-align: left; }
+.cw-locked-msg { display: block; line-height: 1.7; }
+.cw-plus.is-section .cw-plus-submit { background: var(--plus); border-color: var(--plus); color: #fff; }

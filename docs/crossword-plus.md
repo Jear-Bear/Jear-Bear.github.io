@@ -32,15 +32,25 @@ These are on the crossword page in English and Japanese. Don't break them:
 
 ## How the asking works
 
-- **Page section** "Free, and staying free" (無料) below How to play: says what's
-  free, what Crossword+ might add, links YouTube channel memberships as a way to
-  say thanks, and has the signup form. It never pops up.
+Crossword+ has its own colour (purple, with a **Crossword+** badge and ＋
+bullets) so the paid parts never look like the free puzzle (blue) or the
+sponsor ad (orange, labelled **AD**).
+
+- **Intro** at the top says **today's puzzles are always free**, no account.
+- **Page section** below How to play: the Crossword+ card (badge, the three
+  selling points in bold, the price, **See Crossword+**, a YouTube-membership
+  "say thanks" link and the support email). Before sales open it's the
+  waitlist form instead; for members it's a thank-you. It never pops up.
+- **My deck** panel: the same perks, the plans and sign-in.
+- **Past day** (🔒): the same purple box with **See Crossword+**.
 - **Solved screen (お見事):** a short version above the Copy result / Keep
-  looking buttons, on every solve. Once someone signs up it becomes a
-  one-line "You're on the Crossword+ list"; "Not for me" hides it for 30
-  days. It never covers the grid or interrupts a puzzle.
-- Code: `scripts/crossword/plus.js`. The support link (`SUPPORT_URL`) points to
-  the channel's YouTube memberships page; swap it for Ko-fi or Patreon there.
+  looking buttons, on every solve. "Not for me" hides it for 30 days. It
+  never covers the grid or interrupts a puzzle.
+- Code: `scripts/crossword/plus.js` (`plusPerks`, `supportLine`). The support
+  link (`SUPPORT_URL`) points to the channel's YouTube memberships page.
+
+**Support:** `support@jareddesu.com` is on the page (How to play credits),
+in the Crossword+ boxes, and is the reply-to on every email the Worker sends.
 
 ## Where the emails go
 
@@ -234,6 +244,14 @@ for codes, so put the code in the launch email.
 **Tax:** with Stripe you're the seller, so sales tax and VAT are yours to
 handle. Stripe Tax (0.5% per sale) can work it out: turn it on in Stripe and
 set the GitHub variable `STRIPE_AUTOMATIC_TAX` to `true`.
+
+**Welcome email.** Once per account, the Worker sends one short thank-you
+from Jared when a subscription first becomes active (or "You've got
+Crossword+" when you give free access in the desk). It says it's the only
+email they'll get and points to support@jareddesu.com. Sent with Resend, so it
+needs `RESEND_API_KEY`; `welcomed_at` (migration 0015) keeps it to one, even
+when Stripe sends several events. Stripe's own receipts are separate: set the
+support email in Stripe → Settings → Business → Public details.
 
 **Not yet:** the desk can't refund (do it in Stripe), and turning an account
 off doesn't cancel its subscription (also in Stripe).

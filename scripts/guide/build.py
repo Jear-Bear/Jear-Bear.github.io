@@ -292,7 +292,7 @@ def page(*, title, description, canonical, root, body, body_attrs=""):
 
   <link rel="stylesheet" href="{root}styles/base.css?v=4">
   <link rel="stylesheet" href="{root}styles/guide.css?v=4">
-  <link rel="stylesheet" href="{root}styles/partner.css?v=1">
+  <link rel="stylesheet" href="{root}styles/partner.css?v=2">
 {fix(beacon)}
 </head>
 <body data-page="guide"{body_attrs}>
@@ -305,7 +305,7 @@ def page(*, title, description, canonical, root, body, body_attrs=""):
 
   <script src="{root}scripts/site.js?v=3"></script>
   <script type="module" src="{root}scripts/guide/guide.js?v=2"></script>
-  <script src="{root}scripts/partner.js?v=2"></script>
+  <script src="{root}scripts/partner.js?v=3"></script>
 </body>
 </html>
 """

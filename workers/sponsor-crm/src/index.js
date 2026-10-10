@@ -182,7 +182,7 @@ async function route(request, env, url) {
   if (a === 'waitlist' && !b && m === 'GET') return listWaitlist(db);
   if (a === 'plus' && !b && m === 'GET') return { ...(await listPlus(db)), stripe: await stripeStatus(env, db) };
   if (a === 'plus' && b === 'stripe-setup' && !c && m === 'POST') return stripeSetup(env, db, url.origin);
-  if (a === 'plus' && !b && m === 'POST') return grantPlus(db, await readJson(request));
+  if (a === 'plus' && !b && m === 'POST') return grantPlus(env, db, await readJson(request));
   if (a === 'plus' && b && !c && m === 'PATCH') return updatePlus(db, b, await readJson(request));
   if (a === 'crossword-bonus' && !b && m === 'GET') return bonusBacklog(db, env.CROSSWORD_SITE || undefined);
   if (a === 'stats' && b === 'refresh' && !c && m === 'POST') return pullPublicStats(db);

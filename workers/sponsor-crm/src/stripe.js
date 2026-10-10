@@ -19,7 +19,7 @@
 
 import { HttpError } from './data.js';
 import { text } from './public.js';
-import { sessionUser, publicUser, siteFor } from './plus.js';
+import { sessionUser, publicUser, siteFor, sendWelcome } from './plus.js';
 
 const API_VERSION = '2024-06-20';                 // pinned: subscription.current_period_end lives on the subscription
 export const PLANS = {
@@ -134,7 +134,7 @@ export async function plusInfo(env) {
 const iso = (unix) => (unix ? new Date(unix * 1000).toISOString() : null);
 const planOf = (sub) => { const it = sub && sub.items && sub.items.data && sub.items.data[0]; return it && it.price && it.price.recurring ? it.price.recurring.interval : null; };
 
-async function applySubscription(db, sub) {
+async function applySubscription(env, db, sub) {
   if (!sub || typeof sub !== 'object' || !sub.customer) return;
   const customer = typeof sub.customer === 'string' ? sub.customer : sub.customer.id;
   const u = await db.prepare('SELECT id, stripe_subscription, status FROM plus_users WHERE stripe_customer = ?').bind(customer).first();
@@ -144,6 +144,8 @@ async function applySubscription(db, sub) {
   if (u.stripe_subscription && u.stripe_subscription !== sub.id && !live && ['active', 'trialing', 'past_due'].includes(u.status)) return;
   await db.prepare('UPDATE plus_users SET stripe_subscription = ?, status = ?, plan = ?, period_end = ? WHERE id = ?')
     .bind(sub.id, sub.status, planOf(sub), iso(sub.current_period_end), u.id).run();
+  // A new member: the one welcome email (sendWelcome makes sure it's only once)
+  if (['active', 'trialing'].includes(sub.status)) await sendWelcome(env, db, u.id, 'paid');
 }
 
 async function customerFor(env, u) {
@@ -192,7 +194,7 @@ export async function plusSync(request, env) {
   if (/^cs_[A-Za-z0-9_]{8,250}$/.test(id)) {
     const s = await stripe(env, 'GET', `checkout/sessions/${id}`, { expand: ['subscription'] });
     const customer = typeof s.customer === 'string' ? s.customer : s.customer && s.customer.id;
-    if (customer && customer === u.stripe_customer && s.status === 'complete') await applySubscription(env.DB, s.subscription);
+    if (customer && customer === u.stripe_customer && s.status === 'complete') await applySubscription(env, env.DB, s.subscription);
   }
   const fresh = await env.DB.prepare('SELECT * FROM plus_users WHERE id = ?').bind(u.id).first();
   return { user: await publicUser(env.DB, fresh, body.day) };
@@ -229,9 +231,9 @@ export async function stripeWebhook(request, env) {
   if (!ok) return new Response('Bad signature', { status: 400 });
   const ev = JSON.parse(payload);
   const o = ev.data && ev.data.object;
-  if (o && ev.type && ev.type.startsWith('customer.subscription.') && o.metadata && o.metadata.product === PRODUCT_TAG) await applySubscription(env.DB, o);
+  if (o && ev.type && ev.type.startsWith('customer.subscription.') && o.metadata && o.metadata.product === PRODUCT_TAG) await applySubscription(env, env.DB, o);
   else if (o && ev.type === 'checkout.session.completed' && o.metadata && o.metadata.product === PRODUCT_TAG && o.subscription) {
-    await applySubscription(env.DB, typeof o.subscription === 'string' ? await stripe(env, 'GET', `subscriptions/${o.subscription}`) : o.subscription);
+    await applySubscription(env, env.DB, typeof o.subscription === 'string' ? await stripe(env, 'GET', `subscriptions/${o.subscription}`) : o.subscription);
   }
   return new Response(JSON.stringify({ received: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 }

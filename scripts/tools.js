@@ -8,6 +8,18 @@
 
 const TOOLS = [
   {
+    slug: 'crossword',
+    title: 'Japanese Crossword',
+    description:
+      'A daily Japanese crossword in kana (English clues, hiragana answers) ' +
+      'or kanji (write each word in kanji). A mini and a daily at beginner, ' +
+      'intermediate or advanced level, or make one from your own Anki deck.',
+    tags: ['daily', 'kana', 'kanji', 'JLPT'],
+    glyph: '十',
+    accent: '#4c6cb3',
+    thumb: 'thumb.svg',
+  },
+  {
     slug: 'kana',
     title: 'Kana Trainer',
     description:
@@ -40,18 +52,6 @@ const TOOLS = [
     tags: ['kanji', 'readings', '漢字でGO!'],
     glyph: '難',
     accent: '#165e83',
-    thumb: 'thumb.svg',
-  },
-  {
-    slug: 'crossword',
-    title: 'Japanese Crossword',
-    description:
-      'A daily Japanese crossword in kana (English clues, hiragana answers) ' +
-      'or kanji (write each word in kanji). A mini and a daily at beginner, ' +
-      'intermediate or advanced level, or make one from your own Anki deck.',
-    tags: ['daily', 'kana', 'kanji', 'JLPT'],
-    glyph: '十',
-    accent: '#4c6cb3',
     thumb: 'thumb.svg',
   },
   {
