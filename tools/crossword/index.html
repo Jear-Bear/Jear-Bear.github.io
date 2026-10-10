@@ -17,7 +17,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Klee+One:wght@600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="../../styles/base.css?v=4">
-  <link rel="stylesheet" href="../../styles/crossword.css?v=11">
+  <link rel="stylesheet" href="../../styles/crossword.css?v=12">
   <link rel="stylesheet" href="../../styles/partner.css?v=3">
   <!-- Cloudflare Web Analytics (cookieless) -->
   <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
@@ -69,18 +69,24 @@
       <header class="page-head">
         <div class="page-head-copy">
           <h1 class="page-title"><span data-ui-only="en">Japanese <em>Crossword</em>.</span><span data-ui-only="ja" lang="ja">日本語<em>クロスワード</em>。</span></h1>
-          <p class="page-intro" data-ui-only="en">
-            A new mini and a new daily puzzle every day, at three levels, plus a Mixed puzzle with Japanese clues.
-            <strong>Kana</strong>: English clues, hiragana answers, small kana written full size (ゃ→や, っ→つ) like in a Japanese newspaper.
-            <strong>Kanji</strong>: write each word in kanji, one per square, from its meaning (turn on readings in ⚙ for an easier puzzle).
-            <strong>Today’s puzzles are always free</strong>, no account needed.
-          </p>
-          <p class="page-intro" data-ui-only="ja" lang="ja">
-            毎日ミニとデイリーが3つのレベルで登場。日本語のカギで解く「一般」もあります。
-            <strong>かな</strong>：英語のカギにひらがなで答えます。新聞のクロスワードと同じく、小さいかなは大きく書きます（ゃ→や、っ→つ）。
-            <strong>漢字</strong>：意味から、言葉を漢字で1マスずつ書きます（⚙で読みを表示するとやさしくなります）。
-            <strong>今日のパズルはいつでも無料</strong>、登録も不要です。
-          </p>
+          <div class="page-intro cw-intro" data-ui-only="en">
+            <p>A new mini and a new daily puzzle every day, at three levels, plus a Mixed puzzle with Japanese clues.</p>
+            <ul class="cw-intro-modes">
+              <li><strong>Kana</strong>: English clues, hiragana answers, small kana written full size (ゃ→や, っ→つ) like in a Japanese newspaper.</li>
+              <li><strong>Kanji</strong>: write each word in kanji, one per square, from its meaning (turn on readings in ⚙ for an easier puzzle).</li>
+            </ul>
+            <p><strong>Today’s puzzles are always free</strong>, no account needed.</p>
+            <p><a class="btn cw-howto-btn" href="#howto">How to play ↓</a></p>
+          </div>
+          <div class="page-intro cw-intro" data-ui-only="ja" lang="ja">
+            <p>毎日ミニとデイリーが3つのレベルで登場。日本語のカギで解く「一般」もあります。</p>
+            <ul class="cw-intro-modes">
+              <li><strong>かな</strong>：英語のカギにひらがなで答えます。新聞のクロスワードと同じく、小さいかなは大きく書きます（ゃ→や、っ→つ）。</li>
+              <li><strong>漢字</strong>：意味から、言葉を漢字で1マスずつ書きます（⚙で読みを表示するとやさしくなります）。</li>
+            </ul>
+            <p><strong>今日のパズルはいつでも無料</strong>、登録も不要です。</p>
+            <p><a class="btn cw-howto-btn" href="#howto">遊び方 ↓</a></p>
+          </div>
         </div>
         <p class="page-v"><span class="page-v-ja" lang="ja">十字</span><span class="page-v-en">Crossword</span></p>
       </header>
@@ -107,7 +113,7 @@
         </label>
         <div class="cw-date" id="date-nav">
           <button type="button" class="cw-icon" id="date-prev" aria-label="Previous puzzle" data-t-aria="prev">‹</button>
-          <button type="button" class="cw-date-btn" id="date-label" aria-haspopup="dialog">Today</button>
+          <button type="button" class="cw-date-btn" id="date-label" aria-haspopup="dialog" title="Past puzzles: calendar or list">Today</button>
           <button type="button" class="cw-icon" id="date-next" aria-label="Next puzzle" data-t-aria="next">›</button>
         </div>
         <button type="button" class="cw-icon cw-gear" id="btn-settings" aria-label="Settings" data-t-aria="settings" aria-haspopup="dialog">⚙</button>
@@ -140,7 +146,6 @@
             <button type="button" class="cw-icon" id="clue-next" aria-label="Next clue" data-t-aria="nextClue">›</button>
           </div>
           <div class="cw-keys" id="keys" aria-label="Kana keyboard" data-t-aria="keys"></div>
-          <div class="cw-keyword" id="keyword"></div>
           <input class="cw-ime" id="ime" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Type answers (romaji or kana)" data-t-aria="ime">
         </div>
         <div class="cw-clues" id="clues">
@@ -157,15 +162,15 @@
 
       <section class="sec cw-section" data-partner="section" data-via="crossword" hidden></section>
 
-      <section class="sec cw-section">
+      <section class="sec cw-section" id="howto">
         <p class="sec-mark"><span class="sec-num" lang="ja">遊</span><span class="sec-label">How to play / <span lang="ja"><ruby>遊<rt>あそ</rt></ruby>び<ruby>方<rt>かた</rt></ruby></span></span></p>
         <ul class="cw-howto" data-ui-only="en">
           <li><strong>Type romaji</strong> (ka → か, kya → きや) or kana with a Japanese keyboard. On a phone, use the kana keys under the grid; <span lang="ja">゛゜</span> turns か into が, は into ば or ぱ.</li>
           <li><strong>Using a Japanese IME?</strong> Type the word in hiragana and press Enter to fill the squares. Don't convert it to kanji. With the IME off, romaji fills each square as you type.</li>
           <li><strong>Small kana are full size.</strong> きゃ is written きや, がっこう is がつこう. The long-vowel mark ー gets its own square.</li>
           <li><strong>Tap a square twice</strong> (or press space) to switch between across and down. Tab moves to the next clue.</li>
-          <li><strong>Double-boxed squares</strong> (<span lang="ja">二重マス</span>) spell a bonus keyword, read in order A, B, C….</li>
-          <li><strong>Settings</strong> (⚙) switch the page to Japanese, add romaji to the keys, hide Check and Reveal, or keep the answer list hidden after you solve.</li>
+          <li><strong>Double-boxed squares</strong> (<span lang="ja">二重マス</span>) spell a bonus keyword, read in order A, B, C…. You’ll see it when you solve.</li>
+          <li><strong>Settings</strong> (⚙) switch the page to Japanese, add romaji to the keys, hide Check and Reveal, keep the answer list hidden after you solve, or change how typing moves (arrow keys, spacebar, backspace, skipping filled squares).</li>
           <li>Beginner uses JLPT N5–N4 words, intermediate N3–N2, advanced N1 plus slang and idioms. <strong>Mixed</strong> uses words from every level with clues in Japanese, like a newspaper crossword. Each puzzle mixes in food, pop culture and other fun words.</li>
         </ul>
         <ul class="cw-howto" data-ui-only="ja" lang="ja">
@@ -173,8 +178,8 @@
           <li><strong>日本語入力（IME）を使うときは</strong>、ひらがなのままEnterで確定するとマスに入ります。漢字には変換しないでください。IMEをオフにすると、ローマ字が1マスずつ入ります。</li>
           <li><strong>小さいかなは大きく書きます。</strong>きゃ は きや、がっこう は がつこう。長音の「ー」も1マスです。</li>
           <li><strong>同じマスを2回タップ</strong>（またはスペース）でヨコとタテを切り替え。Tabで次のカギへ進みます。</li>
-          <li><strong>二重マス</strong>の文字をA、B、C…の順に読むと、キーワードになります。</li>
-          <li><strong>設定</strong>（⚙）で、英語表示への切り替え、かなキーのローマ字、チェックと答え表示の非表示、解いた後の単語リストの表示を変えられます。</li>
+          <li><strong>二重マス</strong>の文字をA、B、C…の順に読むと、キーワードになります。解いたときに表示されます。</li>
+          <li><strong>設定</strong>（⚙）で、英語表示への切り替え、かなキーのローマ字、チェックと答え表示の非表示、解いた後の単語リストの表示、入力の動き（矢印キー、スペース、バックスペース、入力済みマスの飛ばし）を変えられます。</li>
           <li>初級はJLPT N5–N4、中級はN3–N2、上級はN1の単語にスラングや慣用句も。<strong>一般</strong>は全レベルの単語に日本語のカギで、新聞のクロスワードのように解けます。どのパズルにも食べ物やポップカルチャーなど、楽しい言葉が入っています。</li>
         </ul>
         <p class="cw-stats" id="stats"></p>
@@ -215,6 +220,22 @@
       <label class="cw-toggle"><input type="checkbox" id="opt-noassist"> <span><strong data-t="set.assist">Hide Check and Reveal</strong> <span data-t="set.assist.d">for a solve with no help.</span></span></label>
       <label class="cw-toggle"><input type="checkbox" id="opt-words"> <span><strong data-t="set.words">Show answers and meanings</strong> <span data-t="set.words.d">under the puzzle after you solve it.</span></span></label>
       <label class="cw-toggle"><input type="checkbox" id="opt-readings"> <span><strong data-t="set.readings">Show readings in kanji clues</strong> <span data-t="set.readings.d">an easier kanji puzzle (Mixed always shows them).</span></span></label>
+      <h3 class="cw-set-head" data-t="set.typing">Typing</h3>
+      <fieldset class="cw-set-radio">
+        <legend data-t="set.arrows">After an arrow key changes direction</legend>
+        <label><input type="radio" name="opt-arrowMove" value="0"> <span data-t="set.arrows.stay">Stay in the same square</span></label>
+        <label><input type="radio" name="opt-arrowMove" value="1"> <span data-t="set.arrows.move">Move in the arrow’s direction</span></label>
+      </fieldset>
+      <fieldset class="cw-set-radio">
+        <legend data-t="set.space">The spacebar should</legend>
+        <label><input type="radio" name="opt-spaceClear" value="0"> <span data-t="set.space.toggle">Switch between Across and Down</span></label>
+        <label><input type="radio" name="opt-spaceClear" value="1"> <span data-t="set.space.clear">Clear the square and move on</span></label>
+      </fieldset>
+      <label class="cw-toggle"><input type="checkbox" id="opt-backInto"> <span><strong data-t="set.backInto">Backspace into the previous word</strong> <span data-t="set.backInto.d">from the first square of a word.</span></span></label>
+      <label class="cw-toggle"><input type="checkbox" id="opt-skipFilled"> <span><strong data-t="set.skip">Skip over filled squares</strong> <span data-t="set.skip.d">inside a word.</span></span></label>
+      <label class="cw-toggle"><input type="checkbox" id="opt-jumpBack"> <span><strong data-t="set.jumpBack">At the end of a word, jump back</strong> <span data-t="set.jumpBack.d">to its first empty square.</span></span></label>
+      <label class="cw-toggle"><input type="checkbox" id="opt-nextClue"> <span><strong data-t="set.nextClue">At the end of a word, go to the next clue</strong> <span data-t="set.nextClue.d">(when not jumping back).</span></span></label>
+      <label class="cw-toggle"><input type="checkbox" id="opt-showTimer"> <span><strong data-t="set.timer">Show the timer</strong> <span data-t="set.timer.d">(it keeps counting either way).</span></span></label>
       <div class="cw-sheet-actions"><button type="button" class="btn-link" id="settings-close" data-t="close">Close</button></div>
     </div>
   </div>
@@ -248,7 +269,7 @@
   </footer>
 
   <script src="../../scripts/site.js?v=3"></script>
-  <script type="module" src="../../scripts/crossword/app.js?v=17"></script>
+  <script type="module" src="../../scripts/crossword/app.js?v=18"></script>
   <script src="../../scripts/partner.js?v=4"></script>
 </body>
 </html>

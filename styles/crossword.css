@@ -282,7 +282,17 @@ html[data-ui="ja"] [data-ui-only="en"], html:not([data-ui="ja"]) [data-ui-only="
 .cw-plus-price { margin: 0 0 12px; font-size: 14px; color: var(--ink-soft); }
 .cw-plus-price strong { color: var(--plus-ink); font-size: 15px; }
 .cw-plus-help { margin: 10px 0 0; font-size: 12px; color: var(--muted); }
-.cw-plus-help a { color: inherit; }
+/* Links in the Crossword+ boxes (support email, YouTube) should look like links */
+.cw-plus a, .cw-plusblock a, .cw-paywall a {
+  color: var(--plus-ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+.cw-plus a:hover, .cw-plusblock a:hover, .cw-paywall a:hover { color: var(--plus); }
+.cw-credit a { color: var(--page-ink); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.cw-plus-help { font-size: 13px; color: var(--ink-soft); }
 .btn.btn-plus { background: var(--plus); border-color: var(--plus); color: #fff; font-weight: 600; }
 .btn.btn-plus:hover { background: var(--plus-ink); border-color: var(--plus-ink); color: #fff; }
 :root[data-theme="dark"] .btn.btn-plus, :root[data-theme="dark"] .btn.btn-plus:hover { color: #1a1324; }
@@ -337,3 +347,20 @@ button.cw-cal-day.is-picked { outline: 2px solid var(--plus); outline-offset: 1p
 .cw-browse-list { max-height: 55vh; overflow-y: auto; }
 .cw-browse-month { margin: 12px 0 2px; font-size: 14px; font-weight: 600; }
 .cw-browse .cw-date-list { max-height: none; }
+
+/* Intro: the two modes on their own lines, then How to play */
+.cw-intro p { margin: 0 0 10px; }
+.cw-intro-modes { margin: 0 0 10px; padding: 0; list-style: none; display: grid; gap: 6px; }
+.cw-intro-modes li { padding-left: 14px; border-left: 3px solid var(--page-color); }
+.cw-howto-btn { display: inline-flex; align-items: center; min-height: 40px; margin-top: 2px; }
+#howto { scroll-margin-top: 16px; }
+
+/* Settings: typing */
+.cw-set-head { margin: 14px 0 0; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.cw-set-radio { margin: 0; padding: 10px 0; border: 0; border-bottom: 1px solid var(--border); display: grid; gap: 6px; font-size: 14px; color: var(--ink-soft); }
+.cw-set-radio legend { padding: 0 0 6px; font-weight: 600; color: var(--ink); }
+.cw-set-radio label { display: flex; gap: 10px; align-items: center; cursor: pointer; }
+.cw-set-radio input { accent-color: var(--page-color); width: 18px; height: 18px; margin: 0; }
+.cw-timer.is-hidden { visibility: hidden; }
+.cw-date-btn { display: inline-flex; align-items: center; gap: 6px; }
+.cw-cal-icon { width: 18px; height: 18px; flex-shrink: 0; color: var(--page-ink); }
