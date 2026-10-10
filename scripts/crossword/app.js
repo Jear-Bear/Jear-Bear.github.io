@@ -54,8 +54,6 @@ const t = translator({
     'empty.fail': 'Couldn’t load this puzzle. Try again in a moment.',
     'toast.newDay': 'A new day, a new puzzle.',
     'toast.out': 'Today’s puzzle is out. Use › to go to it.',
-    'toast.wrong': ({ n }) => `${n} square${n === 1 ? '' : 's'} to fix.`,
-    'toast.ok': 'Nothing wrong so far.',
     'toast.off': 'Not quite. Something’s off — try Check.',
     'confirm.clear': 'Clear this puzzle and start over? Your time resets too.',
     copied: 'Copied.',
@@ -71,6 +69,13 @@ const t = translator({
     'set.romaji': 'Show romaji', 'set.romaji.d': 'under the kana keys.',
     'set.assist': 'Hide Check and Reveal', 'set.assist.d': 'for a solve with no help.',
     'set.words': 'Show answers and meanings', 'set.words.d': 'under the puzzle after you solve it.',
+    'set.typing': 'Typing', 'set.arrows': 'After an arrow key changes direction', 'set.arrows.stay': 'Stay in the same square', 'set.arrows.move': 'Move in the arrow’s direction',
+    'set.space': 'The spacebar should', 'set.space.toggle': 'Switch between Across and Down', 'set.space.clear': 'Clear the square and move on',
+    'set.backInto': 'Backspace into the previous word', 'set.backInto.d': 'from the first square of a word.',
+    'set.skip': 'Skip over filled squares', 'set.skip.d': 'inside a word.',
+    'set.jumpBack': 'At the end of a word, jump back', 'set.jumpBack.d': 'to its first empty square.',
+    'set.nextClue': 'At the end of a word, go to the next clue', 'set.nextClue.d': '(when not jumping back).',
+    'set.timer': 'Show the timer', 'set.timer.d': '(it keeps counting either way).',
     'set.readings': 'Show readings in kanji clues', 'set.readings.d': 'an easier kanji puzzle (Mixed always shows them).',
   },
   ja: {
@@ -98,8 +103,6 @@ const t = translator({
     'empty.fail': 'パズルを読み込めませんでした。少し待ってから試してください。',
     'toast.newDay': '日付が変わりました。新しいパズルです。',
     'toast.out': '今日のパズルが出ました。› で移動できます。',
-    'toast.wrong': ({ n }) => `${n}マス間違っています。`,
-    'toast.ok': '今のところ間違いはありません。',
     'toast.off': '惜しい！どこかが違います。チェックを使ってみて。',
     'confirm.clear': 'このパズルを最初からやり直しますか？タイムもリセットされます。',
     copied: 'コピーしました。',
@@ -115,6 +118,13 @@ const t = translator({
     'set.romaji': 'ローマ字を表示', 'set.romaji.d': '（かなキーの下に）',
     'set.assist': 'チェックと答えを隠す', 'set.assist.d': '（ヒントなしで解きたい人に）',
     'set.words': '答えと意味を表示', 'set.words.d': '（解いた後、パズルの下に）',
+    'set.typing': '入力', 'set.arrows': '矢印キーで向きが変わったとき', 'set.arrows.stay': '同じマスにとどまる', 'set.arrows.move': '矢印の方向へ進む',
+    'set.space': 'スペースキーで', 'set.space.toggle': 'ヨコとタテを切り替え', 'set.space.clear': 'マスを消して次へ',
+    'set.backInto': 'バックスペースで前の言葉に戻る', 'set.backInto.d': '（言葉の最初のマスから）',
+    'set.skip': '入力済みのマスを飛ばす', 'set.skip.d': '（言葉の中で）',
+    'set.jumpBack': '言葉の最後で、空いているマスに戻る', 'set.jumpBack.d': '（最初の空きマスへ）',
+    'set.nextClue': '言葉の最後で、次のカギへ', 'set.nextClue.d': '（戻らないとき）',
+    'set.timer': 'タイマーを表示', 'set.timer.d': '（非表示でも計測は続きます）',
     'set.readings': '漢字のカギに読みを表示', 'set.readings.d': '（やさしくなります。一般はいつも表示）',
   },
 });
@@ -181,6 +191,9 @@ const MODES = ['kana', 'kanji', 'deck'];
 const SIZE_SUB = { kana: { mini: '5×5', daily: '9×9' }, kanji: { mini: '5×5', daily: '8×8' } };
 let deck = null;              // deck.js controller (My deck)
 if (settings.words == null) settings.words = true;
+// Typing options (like the NYT's). Defaults keep how the page has always behaved.
+const TYPING_DEFAULTS = { arrowMove: false, spaceClear: false, backInto: false, skipFilled: true, jumpBack: true, nextClue: true, showTimer: true };
+Object.entries(TYPING_DEFAULTS).forEach(([k, v]) => { if (settings[k] == null) settings[k] = v; });
 
 async function init() {
   try { dates = (await getJson('index.json')).dates || []; } catch { dates = []; }
@@ -324,7 +337,6 @@ function openPuzzle(deckPuzzle = null) {
   buildKeys();
   renderGrid();
   renderClues();
-  renderKeyword();
   renderWords();
   renderStats();
   select(cur.r, cur.c, cur.dir);
@@ -354,7 +366,7 @@ function renderBar() {
   if (deckMode) { $('theme').hidden = true; return; }
   $('level').value = settings.level;
   const today = localDate();
-  $('date-label').textContent = date ? (date === today ? t('today', { date: fmtDate(date, false) }) : fmtDate(date)) : '';
+  fill($('date-label'), CAL_ICON(), h('span', {}, date ? (date === today ? t('today', { date: fmtDate(date, false) }) : fmtDate(date)) : ''));
   // The day's loose theme (days before Oct 6, 2026 don't have one)
   const th = day && day.date === date ? day.theme : null;
   $('theme').hidden = !th;
@@ -392,7 +404,7 @@ function wireControls() {
   document.querySelectorAll('[data-check]').forEach((b) => b.addEventListener('click', () => { check(b.dataset.check); b.closest('details').open = false; }));
   document.querySelectorAll('[data-reveal]').forEach((b) => b.addEventListener('click', () => { reveal(b.dataset.reveal); b.closest('details').open = false; }));
   $('autocheck').checked = Boolean(settings.autocheck);
-  $('autocheck').addEventListener('change', (e) => { settings.autocheck = e.target.checked; save(); if (settings.autocheck) check('puzzle', { quiet: true }); });
+  $('autocheck').addEventListener('change', (e) => { settings.autocheck = e.target.checked; save(); if (settings.autocheck) check('puzzle'); });
   document.addEventListener('click', (e) => document.querySelectorAll('.cw-menu[open]').forEach((d) => { if (!d.contains(e.target)) d.open = false; }));
   $('done-close').addEventListener('click', () => { $('done').hidden = true; });
   $('done-share').addEventListener('click', share);
@@ -433,18 +445,26 @@ function wireSettings() {
   sheet.addEventListener('click', (e) => { if (e.target === sheet) close(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !sheet.hidden) close(); });
   sheet.querySelectorAll('[data-lang-seg] button').forEach((b) => b.addEventListener('click', () => { setLang(b.dataset.lang); relabel(); }));
-  [['opt-romaji', 'romaji'], ['opt-noassist', 'noassist'], ['opt-words', 'words'], ['opt-readings', 'readings']].forEach(([id, k]) => {
+  [['opt-romaji', 'romaji'], ['opt-noassist', 'noassist'], ['opt-words', 'words'], ['opt-readings', 'readings'], ['opt-backInto', 'backInto'], ['opt-skipFilled', 'skipFilled'], ['opt-jumpBack', 'jumpBack'], ['opt-nextClue', 'nextClue'], ['opt-showTimer', 'showTimer']].forEach(([id, k]) => {
     $(id).checked = Boolean(settings[k]);
     $(id).addEventListener('change', (e) => {
       settings[k] = e.target.checked;
       save();
       if (k === 'romaji') $('keys').classList.toggle('show-romaji', settings.romaji);
       if (k === 'noassist') applyAssist();
-      if (k === 'words' && pz) { renderWords(); renderKeyword(); }
-      if (k === 'readings' && pz) { renderClues(); renderKeyword(); if (cur) select(cur.r, cur.c, cur.dir); }
+      if (k === 'words' && pz) { renderWords(); }
+      if (k === 'showTimer') applyTimer();
+      if (k === 'readings' && pz) { renderClues(); if (cur) select(cur.r, cur.c, cur.dir); }
+    });
+  });
+  ['arrowMove', 'spaceClear'].forEach((k) => {
+    document.querySelectorAll(`input[name="opt-${k}"]`).forEach((r) => {
+      r.checked = r.value === (settings[k] ? '1' : '0');
+      r.addEventListener('change', () => { settings[k] = r.value === '1'; save(); });
     });
   });
   applyAssist();
+  applyTimer();
 }
 function applyAssist() { $('play').classList.toggle('no-assist', Boolean(settings.noassist)); }
 
@@ -458,11 +478,18 @@ function relabel() {
   renderBar();
   renderGrid();
   renderClues();
-  renderKeyword();
   renderWords();
   renderStats();
   select(cur.r, cur.c, cur.dir);
 }
+
+// A small calendar so it's clear the date opens the calendar/list of past puzzles
+const CAL_ICON = () => {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('class', 'cw-cal-icon'); svg.setAttribute('aria-hidden', 'true');
+  svg.innerHTML = '<rect x="3.5" y="5" width="17" height="15.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="7" y="13" width="3" height="3" rx=".5" fill="currentColor"/>';
+  return svg;
+};
 
 function openDates(go) {
   const today = localDate();
@@ -587,16 +614,6 @@ function shownClue(c) {
   return String(c).replace(READING_TAIL, '');
 }
 
-// ---------------------------------------------------------------- keyword
-function renderKeyword() {
-  const k = pz.keyword;
-  $('keyword').hidden = !k;
-  if (!k) { $('keyword').replaceChildren(); return; }
-  fill($('keyword'), 
-    h('p', { class: 'cw-kw-clue' }, h('strong', {}, t('keyword')), h('span', { lang: 'ja' }, '（二重マス）'), ' ', h('span', { lang: clueLang() }, shownClue(k.clue))),
-    h('div', { class: 'cw-kw-boxes' }, k.cells.map(([r, c], i) => h('span', { class: 'cw-kw-box' }, h('span', { class: 'cw-kw-label' }, LETTERS[i]), h('span', { lang: 'ja' }, val(r, c))))),
-    st.done ? h('p', { class: 'cw-kw-answer' }, h('span', { lang: 'ja' }, pz.key.keyword.word), ` (${pz.key.keyword.reading})`, settings.words ? h('span', { lang: 'en' }, ` · ${pz.key.keyword.meaning}`) : null) : null);
-}
 
 // ---------------------------------------------------------------- typing
 function onKey(e) {
@@ -608,12 +625,12 @@ function onKey(e) {
   if (move) {
     e.preventDefault();
     const dir = move[0] ? 'down' : 'across';
-    if (cur.dir !== dir && cell(cur.r, cur.c)[dir]) { select(cur.r, cur.c, dir); return; }
+    if (cur.dir !== dir && cell(cur.r, cur.c)[dir]) { select(cur.r, cur.c, dir); if (!settings.arrowMove) return; }
     step(move[0], move[1]);
     return;
   }
   if (k === 'Tab' || k === 'Enter') { e.preventDefault(); nextEntry(e.shiftKey ? -1 : 1); return; }
-  if (k === ' ') { e.preventDefault(); toggleDir(); return; }
+  if (k === ' ') { e.preventDefault(); if (settings.spaceClear) { romajiTail = ''; if (!st.done) { setCell(cur.r, cur.c, ''); nextSquare(); } } else toggleDir(); return; }
   if (k === 'Backspace') { e.preventDefault(); if (romajiTail) { romajiTail = romajiTail.slice(0, -1); showTail(); } else backspace(); return; }
   if (k === 'Delete') { e.preventDefault(); setCell(cur.r, cur.c, ''); return; }
   if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -694,7 +711,6 @@ function setCell(r, c, ch) {
   paintCell(cell(r, c));
   if (settings.autocheck && ch && ch !== cell(r, c).answer) { st.wrong[k] = 1; paintCell(cell(r, c)); }
   markFilledClues();
-  renderKeyword();
   save();
   checkSolved();
 }
@@ -702,15 +718,26 @@ function setCell(r, c, ch) {
 function advance() {
   const e = entryAt(cur.r, cur.c, cur.dir);
   const i = e.cells.findIndex(([r, c]) => r === cur.r && c === cur.c);
-  // Next empty square in this word, else the next square, else the next clue
   const rest = e.cells.slice(i + 1);
-  const nextEmpty = rest.find(([r, c]) => !val(r, c));
-  if (nextEmpty) { moveTo(nextEmpty[0], nextEmpty[1]); return; }
-  if (rest.length) { moveTo(rest[0][0], rest[0][1]); return; }
-  // End of the word: back to an empty square in it, else on to the next clue
-  const earlier = e.cells.find(([r, c]) => !val(r, c));
-  if (earlier) moveTo(earlier[0], earlier[1]);
-  else if (!st.done) nextEntry(1);
+  const empty = ([r, c]) => !val(r, c);
+  if (rest.length) {
+    if (!settings.skipFilled) { moveTo(rest[0][0], rest[0][1]); return; }
+    const nextEmpty = rest.find(empty);
+    if (nextEmpty) { moveTo(nextEmpty[0], nextEmpty[1]); return; }
+  }
+  // End of the word (or nothing empty after this square)
+  const earlier = settings.jumpBack && e.cells.find(empty);
+  if (earlier) { moveTo(earlier[0], earlier[1]); return; }
+  if (settings.nextClue && !st.done && !rest.length) { nextEntry(1); return; }
+  if (rest.length) moveTo(rest[0][0], rest[0][1]);
+}
+
+// One square on in the word, whatever is in it (spacebar "clear and move on")
+function nextSquare() {
+  const e = entryAt(cur.r, cur.c, cur.dir);
+  const i = e.cells.findIndex(([r, c]) => r === cur.r && c === cur.c);
+  const n = e.cells[i + 1];
+  if (n) moveTo(n[0], n[1]);
 }
 
 function moveTo(r, c) {
@@ -730,8 +757,16 @@ function backspace() {
   if (val(cur.r, cur.c)) { setCell(cur.r, cur.c, ''); return; }
   const e = entryAt(cur.r, cur.c, cur.dir);
   const i = e.cells.findIndex(([r, c]) => r === cur.r && c === cur.c);
-  if (i > 0) { const [r, c] = e.cells[i - 1]; moveTo(r, c); setCell(r, c, ''); }
+  if (i > 0) { const [r, c] = e.cells[i - 1]; moveTo(r, c); setCell(r, c, ''); return; }
+  if (!settings.backInto) return;
+  // From the first square: the end of the previous word, in clue order
+  const list = [...pz.entries.filter((x) => x.dir === 'across'), ...pz.entries.filter((x) => x.dir === 'down')];
+  const prev = list[(list.indexOf(e) - 1 + list.length) % list.length];
+  const [r, c] = prev.cells[prev.cells.length - 1];
+  select(r, c, prev.dir);
+  setCell(r, c, '');
 }
+
 
 // Dakuten key: changes this square, or the one just typed
 function dakuten() {
@@ -810,7 +845,8 @@ function scope(what) {
   return pz.cells.filter((x) => !x.black).map((x) => [x.r, x.c]);
 }
 
-function check(what, { quiet = false } = {}) {
+// Wrong squares turn red; no message (like the NYT)
+function check(what) {
   let wrong = 0;
   scope(what).forEach(([r, c]) => {
     const v = val(r, c);
@@ -820,7 +856,6 @@ function check(what, { quiet = false } = {}) {
   });
   st.checked = true;
   save();
-  if (!quiet) toast(wrong ? t('toast.wrong', { n: wrong }) : t('toast.ok'));
 }
 
 function reveal(what) {
@@ -838,7 +873,6 @@ function reveal(what) {
     paintCell(cell(r, c));
   });
   markFilledClues();
-  renderKeyword();
   save();
   checkSolved();
 }
@@ -855,11 +889,12 @@ function checkSolved() {
   recordStats(assisted);
   save(true);
   pz.cells.forEach((x) => { if (!x.black) paintCell(x); });
-  renderKeyword();
   renderWords();
   renderStats();
   celebrate(assisted);
 }
+
+function applyTimer() { $('timer').classList.toggle('is-hidden', !settings.showTimer); }
 
 // ---------------------------------------------------------------- clock
 let clock = null;
