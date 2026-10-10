@@ -15,16 +15,16 @@ import { lang } from '../games/i18n.js?v=1';
 const API = 'https://sponsor-crm.jared-65b.workers.dev';
 const KEY = 'jareddesu.crossword.plus';
 const SUPPORT_URL = 'https://www.youtube.com/@jareddesu/join';
-const WANTS = ['archive', 'bonus', 'sync', 'print'];
+const WANTS = ['archive', 'bonus', 'deck', 'sync', 'print'];
 const HIDE_DAYS = 30;
 
 const T = {
   en: {
     title: 'Want more puzzles?',
-    body: 'The daily puzzles are free, and they’ll stay that way. I’m thinking about an optional Crossword+ for people who want more: every past puzzle, plus a few bonus ones each week. Would you use it?',
-    short: 'The daily puzzles will always be free. Would you use an optional Crossword+ with every past puzzle and a few bonus ones each week?',
+    body: 'The daily puzzles are free, and they’ll stay that way. I’m working on an optional Crossword+ for people who want more: every past puzzle, a few bonus ones each week, and crosswords made from your own Anki deck. Would you use it?',
+    short: 'The daily puzzles will always be free. Would you use an optional Crossword+ with every past puzzle, weekly bonus puzzles and crosswords from your own Anki deck?',
     wantsLabel: 'What sounds good? (optional)',
-    'want.archive': 'Every past puzzle', 'want.bonus': 'Bonus puzzles', 'want.sync': 'Streaks on all my devices', 'want.print': 'Printable puzzles',
+    'want.archive': 'Every past puzzle', 'want.bonus': 'Bonus puzzles', 'want.deck': 'Crosswords from my Anki deck', 'want.sync': 'Streaks on all my devices', 'want.print': 'Printable puzzles',
     email: 'Your email', submit: 'Tell me when it’s ready', not: 'Not for me',
     fine: 'One email when it launches. No newsletter, and you can remove yourself anytime.',
     thanks: 'Thanks! I’ll write once, when it’s ready.', sending: 'Sending…',
@@ -34,10 +34,10 @@ const T = {
   },
   ja: {
     title: 'もっと解きたい？',
-    body: '毎日のパズルは無料で、これからもずっと無料です。もっと解きたい人向けに、過去のパズル全部と毎週のボーナスパズルが遊べる「クロスワード＋」（任意の有料プラン）を考えています。使ってみたいですか？',
-    short: '毎日のパズルはずっと無料です。過去のパズル全部と毎週のボーナスパズルが遊べる任意の「クロスワード＋」、使ってみたいですか？',
+    body: '毎日のパズルは無料で、これからもずっと無料です。もっと解きたい人向けに、過去のパズル全部、毎週のボーナスパズル、自分のAnkiデッキから作るクロスワードが遊べる「クロスワード＋」（任意の有料プラン）を準備しています。使ってみたいですか？',
+    short: '毎日のパズルはずっと無料です。過去のパズル全部、毎週のボーナスパズル、自分のAnkiデッキのクロスワードが遊べる任意の「クロスワード＋」、使ってみたいですか？',
     wantsLabel: '気になるもの（任意）',
-    'want.archive': '過去のパズル全部', 'want.bonus': 'ボーナスパズル', 'want.sync': '記録をどの端末でも', 'want.print': '印刷できるパズル',
+    'want.archive': '過去のパズル全部', 'want.bonus': 'ボーナスパズル', 'want.deck': 'Ankiデッキでクロスワード', 'want.sync': '記録をどの端末でも', 'want.print': '印刷できるパズル',
     email: 'メールアドレス', submit: '始まったら教えて', not: '興味なし',
     fine: '始まったときにメールを1通だけ送ります。メルマガはなく、いつでも削除できます。',
     thanks: 'ありがとう！準備ができたら1回だけお知らせします。', sending: '送信中…',
@@ -63,9 +63,19 @@ function h(tag, attrs, ...kids) {
   return n;
 }
 
+// Crossword+ key (until logins exist, members get a key from Jared; see
+// workers/sponsor-crm/src/plus.js). Kept in this browser only.
+export const plusKey = () => read().key || '';
+export function setPlusKey(key) {
+  const s = read();
+  if (key) s.key = key; else delete s.key;
+  try { localStorage.setItem(KEY, JSON.stringify(s)); } catch { /* private mode */ }
+}
+
 // Should the solved screen mention it? solves = puzzles this browser has solved
 export function plusEligible() {
   const s = read();
+  if (s.key) return false;                       // already a member
   return s.joined || !(s.hideUntil && Date.now() < s.hideUntil);
 }
 

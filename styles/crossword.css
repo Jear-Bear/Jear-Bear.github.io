@@ -200,3 +200,47 @@ html[data-ui="ja"] [data-ui-only="en"], html:not([data-ui="ja"]) [data-ui-only="
 .cw-plus .cw-plus-submit:hover { background: var(--ink); color: var(--paper); }
 .cw-plus-onlist { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
 .cw-plus.is-compact { margin-top: 6px; padding: 12px 14px; }
+
+/* ---------------------------------------------------------------- modes: かな · 漢字 · My deck */
+.cw-modes { margin: 0 0 12px; }
+.cw-modes button { min-width: 5.5em; }
+.cw-plus-mark { font-size: 12px; color: var(--page-ink); margin-left: 1px; }
+.cw-modes button[aria-checked="true"] .cw-plus-mark { color: inherit; }
+
+/* Freeform grids (kanji and deck puzzles): words cross where they share a
+   character, so the empty squares are just paper, not black squares */
+.cw-grid.is-free { background: transparent; border-color: transparent; gap: 2px; }
+.cw-grid.is-free .cw-cell.is-black { background: transparent; }
+.cw-grid.is-free .cw-cell:not(.is-black) { box-shadow: 0 0 0 1px var(--cw-line); }
+.cw-grid.is-free .cw-cell.is-kw { box-shadow: 0 0 0 1px var(--cw-line), inset 0 0 0 3px var(--cw-cell), inset 0 0 0 4px var(--ink); }
+.cw-grid.is-kanji .cw-letter { font-family: 'Noto Sans JP', sans-serif; font-size: clamp(14px, 62cqi, 44px); }
+
+/* Kanji tiles under the grid (every device: a mouse can tap them too) */
+.cw-keys.is-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(clamp(40px, 11vw, 52px), 1fr)); }
+.cw-tile { font-size: clamp(20px, 6vw, 26px); height: clamp(44px, 12vw, 52px); }
+
+/* ---------------------------------------------------------------- My deck (deck.js) */
+.cw-deck { margin: 0 0 22px; padding: 18px 20px; border: 1px solid var(--border-strong); background: var(--surface); }
+.cw-deck h2 { margin: 0 0 6px; font-family: var(--font-mincho); font-weight: 600; font-size: 1.25rem; }
+.cw-deck p { margin: 0 0 10px; font-size: 14px; line-height: 1.75; color: var(--ink-soft); }
+.cw-deck .cw-deck-muted { font-size: 13px; color: var(--muted); }
+.cw-deck-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0; }
+.cw-deck input[type="text"], .cw-deck select, .cw-deck textarea { font: 15px var(--font-gothic); padding: 8px 10px; min-height: 42px; border: 1px solid var(--border-strong); background: var(--paper); color: var(--ink); max-width: 100%; }
+.cw-deck input[type="text"] { flex: 1 1 220px; min-width: 0; }
+.cw-deck textarea { width: 100%; min-height: 110px; font-size: 13px; box-sizing: border-box; }
+.cw-deck .btn { min-height: 42px; }
+.cw-deck-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 12px 0; }
+.cw-deck-fields label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.cw-deck-preview { width: 100%; overflow-x: auto; margin: 8px 0 4px; }
+.cw-deck-preview table { border-collapse: collapse; font-size: 13px; min-width: 100%; }
+.cw-deck-preview th, .cw-deck-preview td { border: 1px solid var(--border); padding: 4px 8px; text-align: left; max-width: 16em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cw-deck-preview th { background: var(--paper-deep); font-weight: 500; }
+.cw-deck-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+.cw-deck-list button { width: 100%; text-align: left; font: 14px var(--font-gothic); padding: 8px 10px; border: 1px solid var(--border); background: var(--paper); color: var(--ink); cursor: pointer; display: flex; justify-content: space-between; gap: 8px; }
+.cw-deck-list button:hover { border-color: var(--ink); }
+.cw-deck-status { min-height: 1.4em; font-size: 13px; color: var(--muted); }
+.cw-deck-status.is-error { color: var(--cw-wrong); }
+.cw-deck-sub { margin: 14px 0 6px; font-size: 15px; font-weight: 600; }
+.cw-deck details { margin: 6px 0; }
+.cw-deck summary { cursor: pointer; font-size: 14px; color: var(--ink-soft); }
+.cw-deck .cw-seg button:disabled { opacity: 0.4; cursor: not-allowed; }

@@ -33,6 +33,7 @@
 //   GET  /public/availability       open sponsor slots by month (public, counts only)
 //   POST /public/inquiry            the sponsor-page form → Review (public, rate-limited)
 //   POST /public/click              a click on a sponsor card on the site (counts only)
+//   POST /public/plus/check|deck    Crossword+ key check and the My deck daily limit (plus.js)
 //
 // A daily cron refreshes the uploads (capturing 30-day views) and the history.
 //
@@ -61,6 +62,7 @@ import { handleGo, recordClick, createInvoice } from './growth.js';
 import { listDrafts, requestDraft, closeDraft } from './drafts.js';
 import { availability, inquiry } from './public.js';
 import { joinWaitlist, leaveWaitlist, listWaitlist } from './waitlist.js';
+import { plusCheck, plusDeck, listPlus, createPlus, updatePlus } from './plus.js';
 import { publicKey, bonusBacklog } from './sealed.js';
 import { pullTraffic, loadTraffic, trafficConfigured } from './traffic.js';
 
@@ -176,6 +178,9 @@ async function route(request, env, url) {
   if (a === 'drafts' && b && c === 'cancel' && !d && m === 'POST') return closeDraft(db, b, { status: 'cancelled' });
   if (a === 'insights' && !b && m === 'GET') return loadInsights(db);
   if (a === 'waitlist' && !b && m === 'GET') return listWaitlist(db);
+  if (a === 'plus' && !b && m === 'GET') return listPlus(db);
+  if (a === 'plus' && !b && m === 'POST') return createPlus(db, await readJson(request));
+  if (a === 'plus' && b && !c && m === 'PATCH') return updatePlus(db, b, await readJson(request));
   if (a === 'crossword-bonus' && !b && m === 'GET') return bonusBacklog(db, env.CROSSWORD_SITE || undefined);
   if (a === 'stats' && b === 'refresh' && !c && m === 'POST') return pullPublicStats(db);
   if (a === 'income' && !b && m === 'PUT') return putIncome(db, await readJson(request));
@@ -285,6 +290,15 @@ const app = {
     if (url.pathname === '/public/crossword-leave' && request.method === 'GET') {
       if (!configured(env)) return new Response('Not configured', { status: 503 });
       return leaveWaitlist(env, url);
+    }
+    if ((url.pathname === '/public/plus/check' || url.pathname === '/public/plus/deck') && request.method === 'POST') {
+      if (!origin) return json({ error: 'Origin not allowed' }, 403);
+      if (!configured(env)) return json({ error: 'Not configured' }, 503, origin);
+      try { return json(await (url.pathname.endsWith('/check') ? plusCheck : plusDeck)(request, env), 200, origin); } catch (err) {
+        if (err instanceof HttpError) return json({ error: err.message }, err.status, origin);
+        console.error(err);
+        return json({ error: 'Something went wrong' }, 500, origin);
+      }
     }
     if (url.pathname === '/public/click' && request.method === 'POST') {
       if (!origin) return json({ error: 'Origin not allowed' }, 403);

@@ -1,7 +1,15 @@
-# Kana Crossword
+# Japanese Crossword
 
-`/tools/crossword/` is a daily Japanese crossword with English clues and
-hiragana answers. It follows the conventions of Japanese newspaper puzzles
+`/tools/crossword/` is a daily Japanese crossword with three modes, picked at
+the top of the page:
+
+- **かな (Kana)**: English clues, hiragana answers (most of this doc).
+- **漢字 (Kanji)**: write each word in kanji, one per square (see "Kanji mode").
+- **My deck**: crosswords from the player's own Anki deck, for Crossword+
+  members (see docs/crossword-plus.md).
+
+It was called Kana Crossword until the kanji mode arrived (Oct 2026); the
+address didn't change. The kana puzzles follow the conventions of Japanese newspaper puzzles
 (Yomiuri, Nikkei, the House of Representatives' quiz sheets):
 
 - **One kana per square.** Small kana are written full size (きゃ → きや,
@@ -38,6 +46,27 @@ would run it dry. Two-kana answers may repeat: N1 has only ~150 of them and a
 Beginner and Advanced 9×9s keep entries to 5 kana (Intermediate and Mixed go
 up to 7). Each level has only ~10–45 words of seven kana, and long slots were
 the main reason those grids failed to fill.
+
+## Kanji mode
+
+Answers are words written entirely in kanji (2–4 characters) from the same
+JLPT lists, one kanji per square. Nearly every one is two characters, which
+newspaper-style grids can't fill, so these are **freeform** grids
+(`scripts/crossword/freeform.mjs`): each word is placed where it crosses a
+word already in the grid, and words only touch where they cross. The empty
+squares show as paper, not black squares. Mini fits in 5×5, Daily in 8×8.
+
+- **Clues** come straight from the word list: the meaning and the reading
+  (`student · がくせい`), or just the reading for Mixed (a 漢字の書き取り
+  test). No clue-writing step, so `publish` adds the day's 8 kanji puzzles
+  by itself and the nightly task needs no change.
+- **Typing:** a Japanese IME (convert to kanji, then Enter), or the **tiles**
+  under the grid: the current word's kanji mixed with others from the puzzle.
+- **Left out:** する on readings, words in `blocklist.json`, and meanings
+  about death, illness, war, bodily functions and the like.
+- Answers aren't reused at the same level for 7 days when the list allows
+  (Beginner's is small, about 400 words, so it sometimes can't).
+- The keyword is a word hidden in the grid; a few small grids have none.
 
 ## Unchecked squares
 
@@ -112,6 +141,8 @@ node scripts/crossword/cli.mjs draft DATE      # build DATE's 8 puzzles (and pic
                                                # (for a day that's already published: only the levels it's missing)
 node scripts/crossword/cli.mjs publish DATE    # check the clues, write data/crossword/puzzles/DATE.json
 node scripts/crossword/cli.mjs check           # re-check every published day
+node scripts/crossword/cli.mjs kanji DATE      # add the kanji puzzles to a published day (publish does this itself)
+node scripts/crossword/cli.mjs kanji all       # add them to every published day that has none
 ```
 
 A daily 9×9 can take a minute or two to build. Drafts have the answers in

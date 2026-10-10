@@ -5,6 +5,10 @@ crossword: every past puzzle and a few bonus puzzles each week. Right now
 it's a waitlist plus a growing backlog of bonus puzzles, to see whether
 enough people want it before building payments.
 
+**What's in it:** every past puzzle, a few bonus puzzles a week, and
+crosswords from your own Anki deck (**My deck**, below). The daily kana and
+kanji puzzles stay free.
+
 **Price:** $2.99/month or $24.99/year (about $2.08/month, roughly 30% off).
 Waitlist members get a founding price of $1.99/month, locked in for as long
 as they stay subscribed. Ending in .99 is the standard for small
@@ -74,6 +78,29 @@ Add this to the nightly crossword task (after publishing the dailies):
 ```
 7. Bonus puzzles: if the newest entry in data/crossword/bonus/index.json was made 7 or more days ago (or the file doesn't exist), run: node scripts/crossword/cli.mjs bonus-draft 2. For each draft (data/crossword/drafts/bonus-NNN.json), apply the same safety check as step 2 and write clues the same way as step 3 (its level is in the draft; mixed gets Japanese clues), then run: node scripts/crossword/cli.mjs bonus-publish bonus-NNN. Commit data/crossword/bonus/ together with the dailies.
 ```
+
+## My deck (live for members)
+
+The first Crossword+ feature: crosswords made from the member's own Anki
+deck, on the crossword page under **My deck**.
+
+- **Import:** Anki → File → Export → "Notes in Plain Text (.txt)" (a CSV or a
+  paste works too). Every deck's fields differ, so the member picks which
+  field is the **word**, the **meaning** (the clue) and, optionally, the
+  **reading**. The page guesses first. Without a reading field it uses
+  furigana like 漢字[かんじ], or the crossword's own dictionary.
+- **Puzzles:** Mini or Daily, kana or kanji answers, built in the browser
+  (freeform grids, only the deck's words). The deck and the puzzles stay in
+  that browser; nothing from the deck is sent anywhere.
+- **Limit: 2 a day** per member, reset at their midnight. The Worker counts
+  them (`POST /public/plus/deck`), so a new browser doesn't reset it. Made
+  puzzles can be replayed any time.
+- **Membership, for now:** you make a **key** in the Sponsor desk → Traffic
+  → **Crossword+ keys** (name, optional email) and send it to them. The key
+  is shown once (only its hash is stored) and works on any device; **Turn
+  off** stops it at once. When payments arrive, the key gets replaced by a
+  login (see "Building it" below); the Worker code is in
+  `workers/sponsor-crm/src/plus.js`.
 
 ## Keeping every puzzle
 

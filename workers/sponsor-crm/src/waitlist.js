@@ -1,5 +1,6 @@
 // waitlist.js — the Crossword+ waitlist: people who'd like one email when
-// optional extras (full archive, bonus puzzles) launch. The daily puzzles stay
+// optional extras (full archive, bonus puzzles, crosswords from your own
+// Anki deck) launch. The daily puzzles stay
 // free either way.
 //
 //   POST /public/crossword-interest   { email, wants: [...], lang }  (no sign-in)
@@ -12,7 +13,7 @@
 import { HttpError } from './data.js';
 import { hmacHex, bump, text } from './public.js';
 
-export const WANTS = ['archive', 'bonus', 'sync', 'print'];
+export const WANTS = ['archive', 'bonus', 'deck', 'sync', 'print'];
 const PER_IP_HOUR = 5;
 const PER_DAY = 300;
 const EMAIL = /^[^\s@<>"]{1,64}@[A-Za-z0-9.-]{1,190}\.[A-Za-z]{2,24}$/;

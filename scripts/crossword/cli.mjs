@@ -9,6 +9,8 @@
 //                                                   (publish then adds them to the day).
 //   node scripts/crossword/cli.mjs publish DATE     check the clues and write data/crossword/puzzles/DATE.json
 //   node scripts/crossword/cli.mjs check            re-check every published puzzle
+//   node scripts/crossword/cli.mjs kanji [DATE|all] add the kanji puzzles to a published day (publish does this
+//                                                   too); "all" fills in every published day that has none
 //
 // Drafts hold the answers in plain text, so data/crossword/drafts/ is git-ignored.
 // Published files keep the answers lightly encoded (no spoilers in view-source).
@@ -17,7 +19,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gridKana, romaji, toHira } from './kana.js';
-import { build, rng, SIZES, SHAPES, LEVELS, WORD_LEVELS, JAPANESE_CLUES } from './construct.mjs';
+import { build, rng, themeMatcher, SIZES, SHAPES, LEVELS, WORD_LEVELS, JAPANESE_CLUES } from './construct.mjs';
+import { buildFree } from './freeform.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const DIR = path.join(ROOT, 'data/crossword');
@@ -98,7 +101,7 @@ function recentAnswers(date, level) {
     const d = addDays(date, -i);
     const p = readJson(path.join(PUZZLES, `${d}.json`), null);
     const add = (e) => { if (e.answer.length >= 3) used.add(e.answer); };
-    if (p) p.puzzles.filter((z) => z.level === level).forEach((z) => decode(z.key).entries.forEach(add));
+    if (p) p.puzzles.filter((z) => z.level === level && !z.mode).forEach((z) => decode(z.key).entries.forEach(add));
     const dr = readJson(path.join(DRAFTS, `${d}.json`), null);          // unpublished drafts count too
     if (dr) dr.puzzles.filter((z) => z.level === level).forEach((z) => z.entries.forEach(add));
   }
@@ -134,7 +137,7 @@ export function shapeFor(date, size) {
 function draft(date) {
   if (!isDate(date)) die('Usage: draft YYYY-MM-DD');
   const published = readJson(path.join(PUZZLES, `${date}.json`), null);
-  const have = new Set(published ? published.puzzles.map((p) => p.level) : []);
+  const have = new Set(published ? published.puzzles.filter((p) => !p.mode).map((p) => p.level) : []);
   const levels = LEVELS.filter((l) => !have.has(l));
   if (!levels.length) die(`${date} is already published with every level`);
   const out = path.join(DRAFTS, `${date}.json`);
@@ -201,14 +204,14 @@ export function clueProblems(p) {
 // A draft puzzle as the player loads it (answers lightly encoded)
 function toPublished(p, id) {
   return {
-    id, size: p.size, level: p.level, width: p.width, height: p.height, ...(p.shape ? { shape: p.shape } : {}),
+    id, ...(p.mode ? { mode: p.mode } : {}), size: p.size, level: p.level, width: p.width, height: p.height, ...(p.shape ? { shape: p.shape } : {}), ...(p.free ? { free: true } : {}),
     grid: p.rows.map((r) => r.replace(/[^#]/g, '.')),
     clues: p.entries.map((e) => ({ num: e.num, dir: e.dir, row: e.row, col: e.col, len: e.len, clue: e.clue.trim() })),
-    keyword: { cells: p.keyword.cells, clue: p.keyword.clue.trim() },
+    keyword: p.keyword ? { cells: p.keyword.cells, clue: p.keyword.clue.trim() } : null,
     key: encode({
       rows: p.rows,
       entries: p.entries.map((e) => ({ num: e.num, dir: e.dir, answer: e.answer, word: e.word, reading: e.reading, meaning: e.meaning })),
-      keyword: { answer: p.keyword.answer, word: p.keyword.word, reading: p.keyword.reading, meaning: p.keyword.meaning },
+      keyword: p.keyword ? { answer: p.keyword.answer, word: p.keyword.word, reading: p.keyword.reading, meaning: p.keyword.meaning } : null,
     }),
   };
 }
@@ -235,6 +238,88 @@ function publish(date) {
   writeJson(INDEX, index);
   fs.rmSync(src);
   console.log(`Published ${date} (${puzzles.length} puzzles)`);
+  addKanji(date);
+}
+
+// --- kanji puzzles --------------------------------------------------------------------------
+// The 漢字 mode: answers written in kanji, one per square. Nearly every kanji
+// word is two characters, so these are freeform grids (freeform.mjs), and the
+// clues come straight from the word list: the meaning and the reading (just
+// the reading for Mixed, like a 漢字の書き取り test). No clue-writing step, so
+// publish adds them to the day by itself.
+const KANJI_POOLS = { beginner: ['n5', 'n4'], intermediate: ['n3', 'n2'], advanced: ['n1'], mixed: ['n5', 'n4', 'n3', 'n2', 'n1'] };
+const KANJI_WORD = /^[\u4e00-\u9fff々]{2,4}$/;
+// Meanings that don't belong in a fun puzzle (on top of blocklist.json)
+const KANJI_SKIP = /\b(urine|urinat|feces|excrement|faeces|toilet|sexual|sex|death|dead|die|dying|kill|murder|suicide|corpse|funeral|war|cancer|disease|blood|bomb|weapon|rape|prostitut|slave)\b/i;
+const KANJI_RECENT_DAYS = 7;
+
+function kanjiWords() {
+  const blocked = new Set(readJson(path.join(DIR, 'blocklist.json'), { words: [] }).words);
+  return readJson(WORDS, { words: [] }).words
+    .filter((w) => !w.extra && KANJI_WORD.test(w.w) && !blocked.has(w.w) && w.m && !/[\u3040-\u30ff\u4e00-\u9fff]/.test(w.m) && !KANJI_SKIP.test(w.m))
+    // The list gives する verbs with する on the reading (運転: うんてんする); the answer is just the kanji
+    .map((w) => ({ a: w.w, w: w.w, r: w.r.replace(/する$/, ''), m: w.m, l: w.l }));
+}
+
+// "electric train; tram" -> "electric train" (the first sense or two, kept short)
+const shortMeaning = (m) => {
+  const parts = String(m).replace(/\s*\([^)]*\)\s*/g, ' ').split(/[,;]/).map((x) => x.trim()).filter(Boolean);
+  let out = parts[0] || String(m);
+  if (parts[1] && (out + ', ' + parts[1]).length <= 40) out += `, ${parts[1]}`;
+  return out.slice(0, 60);
+};
+const kanjiClue = (level, e) => (level === 'mixed' ? e.reading : `${shortMeaning(e.meaning)} · ${e.reading}`);
+
+function kanjiRecent(date, level) {
+  const used = new Set();
+  for (let i = 1; i <= KANJI_RECENT_DAYS; i++) {
+    const p = readJson(path.join(PUZZLES, `${addDays(date, -i)}.json`), null);
+    if (p) p.puzzles.filter((z) => z.mode === 'kanji' && z.level === level).forEach((z) => decode(z.key).entries.forEach((e) => used.add(e.answer)));
+  }
+  return used;
+}
+
+export function kanjiPuzzles(date, theme) {
+  const all = kanjiWords();
+  const fits = themeMatcher(theme);
+  const out = [];
+  for (const level of LEVELS) {
+    const words = all.filter((w) => KANJI_POOLS[level].includes(w.l)).map((w) => ({ ...w, pref: fits(w) ? 1 : 0 }));
+    const exclude = kanjiRecent(date, level);
+    const today = new Set();
+    for (const size of Object.keys(SIZES)) {
+      let p = null;
+      // Fresh answers if the list allows (Beginner's is small: about 400 words), else just none from today
+      const make = (k) => {
+        try { return buildFree({ size, level, kind: 'kanji', words, seed: `kanji:${date}:${level}:${size}:${k}`, exclude: new Set([...exclude, ...today]) }); } catch {
+          return buildFree({ size, level, kind: 'kanji', words, seed: `kanji:${date}:${level}:${size}:${k}`, exclude: today });
+        }
+      };
+      for (let k = 0; k < 6 && !(p && p.keyword); k++) { const q = make(k); if (!p || q.keyword) p = q; }
+      // Small grids sometimes have no word hidden in them; then there's no keyword
+      p.entries.forEach((e) => { today.add(e.answer); e.clue = kanjiClue(level, e); });
+      if (p.keyword) p.keyword.clue = kanjiClue(level, p.keyword);
+      out.push(toPublished({ ...p, mode: 'kanji' }, `${date}-kanji-${level}-${size}`));
+    }
+  }
+  return out;
+}
+
+function addKanji(date, { quiet = false } = {}) {
+  const file = path.join(PUZZLES, `${date}.json`);
+  const f = readJson(file, null);
+  if (!f) die(`${date} isn't published`);
+  if (f.puzzles.some((p) => p.mode === 'kanji')) { if (!quiet) console.log(`${date} already has kanji puzzles`); return false; }
+  f.puzzles.push(...kanjiPuzzles(date, f.theme ? readJson(THEMES, { themes: [] }).themes.find((t) => t.id === f.theme.id) : null));
+  writeJson(file, f, false);
+  console.log(`Added kanji puzzles to ${date}`);
+  return true;
+}
+
+function kanji(arg) {
+  if (arg === 'all') { readJson(INDEX, { dates: [] }).dates.forEach((d) => addKanji(d, { quiet: true })); return; }
+  if (!isDate(arg)) die('Usage: kanji YYYY-MM-DD | all');
+  addKanji(arg);
 }
 
 // --- check / status ---------------------------------------------------------------------------
@@ -251,7 +336,7 @@ function checkAll() {
         const c = p.clues.find((x) => x.num === e.num && x.dir === e.dir);
         return c && [...e.answer].every((ch, i) => k.rows[c.dir === 'across' ? c.row : c.row + i][c.dir === 'across' ? c.col + i : c.col] === ch);
       });
-      const kw = p.keyword.cells.map(([r, c]) => k.rows[r][c]).join('') === k.keyword.answer;
+      const kw = !p.keyword || p.keyword.cells.map(([r, c]) => [...k.rows[r]][c]).join('') === k.keyword.answer;
       if (!ok || !answersFit || !kw) { console.error(`${p.id}: ${!ok ? 'grid mismatch ' : ''}${!answersFit ? 'answers don’t fit ' : ''}${!kw ? 'keyword mismatch' : ''}`); bad++; }
     }
   }
@@ -267,7 +352,7 @@ function status(days = 3) {
     const d = addDays(today, i);
     const f = readJson(path.join(PUZZLES, `${d}.json`), null);
     // Not published, or published without every level (draft then builds just those)
-    if (!f || LEVELS.some((l) => !f.puzzles.some((p) => p.level === l))) missing.push(d);
+    if (!f || LEVELS.some((l) => !f.puzzles.some((p) => p.level === l && !p.mode))) missing.push(d);
   }
   console.log(JSON.stringify({ today, missing, drafts: fs.existsSync(DRAFTS) ? fs.readdirSync(DRAFTS) : [] }));
 }
@@ -355,8 +440,9 @@ if (cmd === 'words') await words();
 else if (cmd === 'draft') draft(arg);
 else if (cmd === 'publish') publish(arg);
 else if (cmd === 'check') checkAll();
+else if (cmd === 'kanji') kanji(arg);
 else if (cmd === 'status') status(Number(arg) || 3);
 else if (cmd === 'bonus-key') await bonusKey();
 else if (cmd === 'bonus-draft') bonusDraft(Number(arg) || 1);
 else if (cmd === 'bonus-publish') await bonusPublish(arg);
-else die('Commands: words | status [days] | draft DATE | publish DATE | check | bonus-key | bonus-draft [n] | bonus-publish ID');
+else die('Commands: words | status [days] | draft DATE | publish DATE | check | kanji DATE|all | bonus-key | bonus-draft [n] | bonus-publish ID');

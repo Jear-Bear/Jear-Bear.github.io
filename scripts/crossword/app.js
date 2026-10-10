@@ -1,14 +1,22 @@
-// app.js — Kana Crossword player.
+// app.js — Japanese Crossword player.
 //
-// Puzzles come from data/crossword/puzzles/DATE.json (built by cli.mjs).
-// Answers are hiragana, small kana full size, ー allowed. Type romaji or kana,
-// or use the on-screen kana keys. Progress, times and streaks stay in this
-// browser (localStorage). Everything from data is inserted as text.
+// Three modes:
+//   かな   puzzles from data/crossword/puzzles/DATE.json (built by cli.mjs).
+//          Answers are hiragana, small kana full size, ー allowed. Type romaji
+//          or kana, or use the on-screen kana keys.
+//   漢字   the same files (mode: "kanji"): answers in kanji, one per square,
+//          typed with a Japanese IME or picked from tiles under the grid.
+//   My deck (Crossword+) puzzles made from the player's own Anki deck, in
+//          this browser (deck.js).
+// Progress, times and streaks stay in this browser (localStorage).
+// Everything from data is inserted as text.
 
 import { toHiragana } from '../kanji/romaji.js?v=1';
 import { gridKana, cycleDakuten, romaji } from './kana.js?v=1';
 import { translator, lang, setLang, dateLocale } from '../games/i18n.js?v=1';
-import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=4';
+import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=5';
+import { mountDeck } from './deck.js?v=1';
+import { rng } from './construct.mjs?v=1';
 
 const $ = (id) => document.getElementById(id);
 // replaceChildren() would print null/false as text
@@ -24,6 +32,10 @@ const t = translator({
     'opt.beginner': 'Beginner · N5–N4', 'opt.intermediate': 'Intermediate · N3–N2', 'opt.advanced': 'Advanced · N1+', 'opt.mixed': 'Mixed · all levels, Japanese clues',
     'empty.level': 'There’s no {level} puzzle for this day yet. Try another level or day.',
     'ime.kanji': 'Only kana fit in the squares. Press Enter instead of converting to kanji.',
+    'ime.convert': 'Convert to kanji before pressing Enter, or tap a tile.',
+    'kanji.type': 'Type with a Japanese keyboard (IME) and convert to kanji, or tap the tiles under the grid.',
+    modeGroup: 'Mode', 'mode.kana': 'Kana', 'mode.kanji': 'Kanji', 'mode.deck': 'My deck',
+    tiles: 'Kanji tiles', 'empty.deck': '',
     level: 'Level', bar: 'Puzzle options', sizeGroup: 'Size', prev: 'Previous puzzle', next: 'Next puzzle', settings: 'Settings',
     today: 'Today · {date}',
     themeToday: 'Today’s theme', themeDay: 'Theme',
@@ -49,7 +61,8 @@ const t = translator({
     nextIn: 'Next puzzle in {time} (your midnight)',
     solved: 'solved', share: 'Copy result', doneClose: 'Keep looking', pastTitle: 'Past puzzles', close: 'Close',
     'th.word': 'Word', 'th.reading': 'Reading', 'th.meaning': 'Meaning', 'th.clue': 'Clue',
-    shareText: ({ size, level, date, time, reveals }) => `Kana Crossword · ${size} · ${level} · ${date}\nSolved in ${time}${reveals ? ' (with reveals)' : ''} ✅`,
+    shareText: ({ mode, size, level, date, time, reveals }) => `Japanese Crossword · ${mode ? `${mode} · ` : ''}${size} · ${level} · ${date}\nSolved in ${time}${reveals ? ' (with reveals)' : ''} ✅`,
+    deckLine: ({ name }) => `From your deck: ${name}`,
     'set.title': 'Settings', 'set.lang': 'Language',
     'set.romaji': 'Show romaji', 'set.romaji.d': 'under the kana keys.',
     'set.assist': 'Hide Check and Reveal', 'set.assist.d': 'for a solve with no help.',
@@ -61,6 +74,10 @@ const t = translator({
     'opt.beginner': '初級 · N5–N4', 'opt.intermediate': '中級 · N3–N2', 'opt.advanced': '上級 · N1+', 'opt.mixed': '一般 · 全レベル・日本語のカギ',
     'empty.level': 'この日の{level}パズルはまだありません。別のレベルか日付を選んでください。',
     'ime.kanji': 'マスに入るのはかなだけです。漢字に変換せず、そのまま確定してください。',
+    'ime.convert': '漢字に変換してから確定するか、タイルをタップしてください。',
+    'kanji.type': '日本語入力（IME）で漢字に変換して入力するか、盤面の下のタイルをタップしてください。',
+    modeGroup: 'モード', 'mode.kana': 'かな', 'mode.kanji': '漢字', 'mode.deck': 'マイデッキ',
+    tiles: '漢字タイル', 'empty.deck': '',
     level: 'レベル', bar: 'パズルの設定', sizeGroup: 'サイズ', prev: '前のパズル', next: '次のパズル', settings: '設定',
     today: '今日 · {date}',
     themeToday: '今日のテーマ', themeDay: 'テーマ',
@@ -86,7 +103,8 @@ const t = translator({
     nextIn: '次のパズルまで {time}（あなたの時間で0時）',
     solved: 'クリア', share: '結果をコピー', doneClose: '閉じる', pastTitle: '過去のパズル', close: '閉じる',
     'th.word': '単語', 'th.reading': '読み', 'th.meaning': '意味', 'th.clue': 'カギ',
-    shareText: ({ size, level, date, time, reveals }) => `かなクロスワード · ${size} · ${level} · ${date}\n${time}でクリア${reveals ? '（答えを見て）' : ''} ✅`,
+    shareText: ({ mode, size, level, date, time, reveals }) => `日本語クロスワード · ${mode ? `${mode} · ` : ''}${size} · ${level} · ${date}\n${time}でクリア${reveals ? '（答えを見て）' : ''} ✅`,
+    deckLine: ({ name }) => `マイデッキ：${name}`,
     'set.title': '設定', 'set.lang': '表示言語',
     'set.romaji': 'ローマ字を表示', 'set.romaji.d': '（かなキーの下に）',
     'set.assist': 'チェックと答えを隠す', 'set.assist.d': '（ヒントなしで解きたい人に）',
@@ -151,6 +169,10 @@ async function getJson(path) {
 const settings = store.settings;
 settings.size = settings.size || 'mini';
 settings.level = settings.level || 'beginner';
+settings.mode = ['kana', 'kanji', 'deck'].includes(settings.mode) ? settings.mode : 'kana';
+const MODES = ['kana', 'kanji', 'deck'];
+const SIZE_SUB = { kana: { mini: '5×5', daily: '9×9' }, kanji: { mini: '5×5', daily: '8×8' } };
+let deck = null;              // deck.js controller (My deck)
 if (settings.words == null) settings.words = true;
 
 async function init() {
@@ -161,6 +183,7 @@ async function init() {
   // Future puzzles are published early (so every time zone gets one at its midnight) but stay hidden
   date = asked && pastOrToday.includes(asked) ? asked : (pastOrToday[pastOrToday.length - 1] || null);
   t.apply();
+  deck = mountDeck({ root: $('deck'), play: (p) => { settings.mode = 'deck'; save(); openPuzzle(p); } });
   wireControls();
   wireSettings();
   buildKeys();
@@ -195,6 +218,7 @@ const untilMidnight = () => {
 };
 
 async function openDay() {
+  if (settings.mode === 'deck') { openPuzzle(); return; }
   if (!date) { showEmpty(t('empty.soon')); return; }
   try { day = await getJson(`puzzles/${date}.json`); } catch { showEmpty(t('empty.fail')); return; }
   openPuzzle();
@@ -206,12 +230,23 @@ function showEmpty(msg) {
   $('empty').textContent = msg;
 }
 
-function openPuzzle() {
+// Show the puzzle for the current mode, size, level and date. A deck puzzle
+// (from deck.js) is passed in; deck mode with none shows just the deck panel.
+function openPuzzle(deckPuzzle = null) {
   stopClock();
-  const p = day.puzzles.find((x) => x.size === settings.size && x.level === settings.level);
-  if (!p) { renderBar(); showEmpty(t('empty.level', { level: LEVEL_NAME(settings.level) })); return; }
-  const key = decodeKey(p.key);
-  pz = { ...p, key, cells: [] };
+  document.body.dataset.mode = settings.mode;
+  deck.show(settings.mode === 'deck');
+  let p;
+  if (settings.mode === 'deck') {
+    p = deckPuzzle || deck.current();
+    if (!p) { renderBar(); pz = null; $('play').hidden = true; $('empty').hidden = true; $('words-sec').hidden = true; $('stats').textContent = ''; return; }
+  } else {
+    if (!day) { renderBar(); if (date) openDay(); else showEmpty(t('empty.soon')); return; }
+    p = day.puzzles.find((x) => x.size === settings.size && x.level === settings.level && (x.mode || 'kana') === settings.mode);
+    if (!p) { renderBar(); showEmpty(t('empty.level', { level: LEVEL_NAME(settings.level) })); return; }
+  }
+  const key = p.keyObj || decodeKey(p.key);
+  pz = { ...p, key, cells: [], mode: p.mode || 'kana' };
   // Cells: answer letter, number, the entries through it, keyword label
   for (let r = 0; r < p.height; r++) {
     for (let c = 0; c < p.width; c++) pz.cells.push({ r, c, black: p.grid[r][c] === '#', answer: key.rows[r][c], num: null, across: null, down: null, kw: null });
@@ -225,7 +260,8 @@ function openPuzzle() {
     cell(e.row, e.col).num = e.num;
     e.cells.forEach(([r, c]) => { cell(r, c)[e.dir] = e; });
   });
-  p.keyword.cells.forEach(([r, c], i) => { cell(r, c).kw = LETTERS[i]; });
+  if (p.keyword) p.keyword.cells.forEach(([r, c], i) => { cell(r, c).kw = LETTERS[i]; });
+  pz.tilePool = tilePool();
 
   st = store.progress[p.id] = store.progress[p.id] || { cells: {}, wrong: {}, revealed: {}, time: 0, done: false };
   st.cells = st.cells || {}; st.wrong = st.wrong || {}; st.revealed = st.revealed || {};
@@ -238,6 +274,7 @@ function openPuzzle() {
   document.body.dataset.size = p.size;
   document.body.dataset.level = p.level;
   renderBar();
+  buildKeys();
   renderGrid();
   renderClues();
   renderKeyword();
@@ -252,10 +289,22 @@ function openPuzzle() {
 const cell = (r, c) => pz.cells[r * pz.width + c];
 const clueLang = () => (pz.level === 'mixed' ? 'ja' : 'en');
 const val = (r, c) => st.cells[`${r},${c}`] || '';
+const kanjiMode = () => Boolean(pz && pz.mode === 'kanji');
+const isKanji = (ch) => /[\u3400-\u9fff\uf900-\ufaff々]/.test(ch);
+// What a typed character becomes in a square (null: it doesn't go in one)
+const toCell = (ch) => (kanjiMode() ? (isKanji(ch) ? ch : null) : ch === 'ー' ? 'ー' : gridKana(ch));
+const statsKey = () => `${pz.mode === 'kanji' ? 'kanji-' : ''}${pz.level}-${pz.size}`;
 
 // ---------------------------------------------------------------- top bar
 function renderBar() {
-  document.querySelectorAll('#size-seg button').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.size === settings.size)));
+  const deckMode = settings.mode === 'deck';
+  document.querySelectorAll('#mode-seg button').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.mode === settings.mode)));
+  document.querySelectorAll('#size-seg button').forEach((b) => {
+    b.setAttribute('aria-checked', String(b.dataset.size === settings.size));
+    b.querySelector('.cw-seg-sub').textContent = (SIZE_SUB[settings.mode] || SIZE_SUB.kana)[b.dataset.size];
+  });
+  ['size-seg', 'level-wrap', 'date-nav'].forEach((id) => { $(id).hidden = deckMode; });
+  if (deckMode) { $('theme').hidden = true; return; }
   $('level').value = settings.level;
   const today = localDate();
   $('date-label').textContent = date ? (date === today ? t('today', { date: fmtDate(date, false) }) : fmtDate(date)) : '';
@@ -277,6 +326,12 @@ function renderBar() {
 
 function wireControls() {
   document.querySelectorAll('#size-seg button').forEach((b) => b.addEventListener('click', () => { settings.size = b.dataset.size; save(); openPuzzle(); }));
+  document.querySelectorAll('#mode-seg button').forEach((b) => b.addEventListener('click', () => {
+    if (settings.mode === b.dataset.mode) return;
+    settings.mode = b.dataset.mode;
+    save();
+    if (settings.mode !== 'deck' && !day && date) openDay(); else openPuzzle();
+  }));
   $('level').addEventListener('change', (e) => { settings.level = e.target.value; save(); openPuzzle(); });
   const go = (d) => { date = d; history.replaceState(null, '', d === localDate() ? location.pathname : `?date=${d}`); openDay(); };
   $('date-prev').addEventListener('click', () => { const i = dates.indexOf(date); if (i > 0) go(dates[i - 1]); });
@@ -307,7 +362,7 @@ function wireControls() {
     showComposition('');
     composedAt = Date.now();
     const text = e.data || '';
-    if (/[^ぁ-ゖァ-ヺー・\s]/.test(text) && !/^[a-z']+$/i.test(text)) toast(t('ime.kanji'));
+    if (kanjiMode()) { if (text && ![...text].some(isKanji)) toast(t('ime.convert')); } else if (/[^ぁ-ゖァ-ヺー・\s]/.test(text) && !/^[a-z']+$/i.test(text)) toast(t('ime.kanji'));
     typeText(text);
     ime.value = '';
   });
@@ -352,6 +407,7 @@ function relabel() {
   t.apply();
   buildKeys();
   mountPlusSection();
+  deck.relabel();
   if (!pz) { if (date) renderBar(); return; }
   renderBar();
   renderGrid();
@@ -366,7 +422,7 @@ function openDates(go) {
   const today = localDate();
   const list = $('date-list');
   list.replaceChildren(...dates.filter((d) => d <= today).reverse().map((d) => {
-    const done = ['mini', 'daily'].filter((s) => (store.progress[`${d}-${settings.level}-${s}`] || {}).done);
+    const done = ['mini', 'daily'].filter((s) => (store.progress[`${d}${settings.mode === 'kanji' ? '-kanji' : ''}-${settings.level}-${s}`] || {}).done);
     return h('li', {}, h('button', { type: 'button', class: d === date ? 'is-on' : '', onclick: () => { $('dates').hidden = true; go(d); } },
       h('span', {}, fmtDate(d)), h('span', { class: 'cw-date-done' }, done.map((s) => `${SIZE_NAME(s)} ✓`).join(' · '))));
   }));
@@ -377,6 +433,8 @@ function openDates(go) {
 function renderGrid() {
   const g = $('grid');
   g.style.setProperty('--n', pz.width);
+  g.classList.toggle('is-free', Boolean(pz.free));
+  g.classList.toggle('is-kanji', kanjiMode());
   g.replaceChildren(...pz.cells.map((x) => {
     if (x.black) return h('div', { class: 'cw-cell is-black', 'aria-hidden': 'true' });
     const el = h('div', {
@@ -423,6 +481,7 @@ function select(r, c, dir) {
     y.el.querySelector('.cw-letter').dataset.tail = '';
   });
   placeIme();
+  if (kanjiMode()) buildTiles(e);
   // Clue bar and list
   $('clue-text').replaceChildren(h('strong', {}, t('clueId', e)), ' ', h('span', { lang: clueLang() }, e.clue), h('span', { class: 'cw-len' }, ` (${e.len})`));
   document.querySelectorAll('.cw-clue-list li').forEach((li) => {
@@ -474,6 +533,8 @@ function nextEntry(step) {
 // ---------------------------------------------------------------- keyword
 function renderKeyword() {
   const k = pz.keyword;
+  $('keyword').hidden = !k;
+  if (!k) { $('keyword').replaceChildren(); return; }
   fill($('keyword'), 
     h('p', { class: 'cw-kw-clue' }, h('strong', {}, t('keyword')), h('span', { lang: 'ja' }, '（二重マス）'), ' ', h('span', { lang: clueLang() }, k.clue)),
     h('div', { class: 'cw-kw-boxes' }, k.cells.map(([r, c], i) => h('span', { class: 'cw-kw-box' }, h('span', { class: 'cw-kw-label' }, LETTERS[i]), h('span', { lang: 'ja' }, val(r, c))))),
@@ -499,6 +560,12 @@ function onKey(e) {
   if (k === 'Backspace') { e.preventDefault(); if (romajiTail) { romajiTail = romajiTail.slice(0, -1); showTail(); } else backspace(); return; }
   if (k === 'Delete') { e.preventDefault(); setCell(cur.r, cur.c, ''); return; }
   if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (kanjiMode()) {
+    // Kanji come from the IME (compositionend) or the tiles; plain letters can't make them
+    if (/^[a-z'\-]$/i.test(k)) { e.preventDefault(); if (!pz.typeHint) { pz.typeHint = true; toast(t('kanji.type')); } }
+    else if (k.length === 1 && isKanji(k)) { e.preventDefault(); typeText(k); }
+    return;
+  }
   if (k === '-' || k === 'ー') { e.preventDefault(); romajiTail = ''; put('ー'); return; }
   if (/^[a-z']$/i.test(k)) {
     e.preventDefault();
@@ -528,7 +595,7 @@ function showComposition(text) {
   if (!text || !pz || st.done) { showTail(); return; }
   // Kana so far (each in its own square from the cursor on), then any romaji still being typed
   const m = text.match(/^([^a-z']*)([a-z']*)$/i) || ['', text, ''];
-  const kana = [...m[1]].map((ch) => (ch === 'ー' ? 'ー' : gridKana(ch))).filter(Boolean);
+  const kana = [...m[1]].map((ch) => (kanjiMode() ? ch : ch === 'ー' ? 'ー' : gridKana(ch))).filter(Boolean);
   const e = entryAt(cur.r, cur.c, cur.dir);
   const i = e.cells.findIndex(([r, c]) => r === cur.r && c === cur.c);
   const cells = e.cells.slice(i).map(([r, c]) => cell(r, c));
@@ -550,7 +617,7 @@ function showTail() {
 function typeText(text, { keepTail = false } = {}) {
   if (!keepTail) romajiTail = '';
   for (const ch of text) {
-    const g = ch === 'ー' ? 'ー' : gridKana(ch);
+    const g = toCell(ch);
     if (g) put(g);
   }
   showTail();
@@ -633,6 +700,9 @@ const KEY_ROWS = [
 ];
 function buildKeys() {
   const keys = $('keys');
+  keys.classList.remove('is-tiles');
+  keys.setAttribute('aria-label', t('keys'));
+  if (kanjiMode()) { if (pz.entries) buildTiles(entryAt(cur.r, cur.c, cur.dir)); return; }
   keys.replaceChildren(...KEY_ROWS.flatMap((row) => [...row].map((k) => h('button', {
     type: 'button', class: `cw-key${'゛⌫↵'.includes(k) ? ' is-fn' : ''}`, lang: 'ja',
     'aria-label': { '゛': t('key.daku'), '⌫': t('key.del'), '↵': t('key.next') }[k] || k,
@@ -646,6 +716,34 @@ function buildKeys() {
     },
   }, k === '゛' ? '゛゜' : k, '゛⌫↵ー'.includes(k) ? null : h('span', { class: 'cw-key-r' }, romaji(k))))));
   keys.classList.toggle('show-romaji', Boolean(settings.romaji));
+}
+
+// Kanji tiles: the current word's kanji mixed with a few others from the
+// puzzle (and the day's other kanji puzzles), so a phone needs no IME
+function tilePool() {
+  const pool = new Set();
+  const add = (s) => [...String(s)].forEach((ch) => { if (isKanji(ch)) pool.add(ch); });
+  pz.key.entries.forEach((e) => add(e.answer));
+  if (pz.mode === 'kanji' && day && !pz.deck) day.puzzles.filter((x) => x.mode === 'kanji' && x.id !== pz.id).forEach((x) => { try { decodeKey(x.key).entries.forEach((e) => add(e.answer)); } catch { /* skip */ } });
+  return [...pool];
+}
+
+function buildTiles(e) {
+  const keys = $('keys');
+  if (!e) return;
+  const rand = rng(`${pz.id}:${e.id}`);
+  const answer = [...new Set(e.answer || pz.key.entries.find((x) => x.num === e.num && x.dir === e.dir).answer)];
+  const others = pz.tilePool.filter((ch) => !answer.includes(ch));
+  const want = Math.max(8, answer.length + 5) - answer.length;
+  const picks = [];
+  while (picks.length < want && others.length) picks.push(others.splice(Math.floor(rand() * others.length), 1)[0]);
+  const tiles = [...answer, ...picks].map((ch) => ({ ch, k: rand() })).sort((a, b) => a.k - b.k).map((x) => x.ch);
+  keys.classList.add('is-tiles');
+  keys.setAttribute('aria-label', t('tiles'));
+  keys.replaceChildren(
+    ...tiles.map((ch) => h('button', { type: 'button', class: 'cw-key cw-tile', lang: 'ja', onpointerdown: (ev) => ev.preventDefault(), onclick: () => { if (pz && !st.done) put(ch); } }, ch)),
+    h('button', { type: 'button', class: 'cw-key is-fn', 'aria-label': t('key.del'), onpointerdown: (ev) => ev.preventDefault(), onclick: () => { if (pz && !st.done) backspace(); } }, '⌫'),
+    h('button', { type: 'button', class: 'cw-key is-fn', 'aria-label': t('key.next'), onpointerdown: (ev) => ev.preventDefault(), onclick: () => { if (pz) nextEntry(1); } }, '↵'));
 }
 
 // ---------------------------------------------------------------- check / reveal
@@ -742,7 +840,8 @@ function resume() {
 
 // ---------------------------------------------------------------- results
 function recordStats(assisted) {
-  const k = `${pz.level}-${pz.size}`;
+  if (pz.deck) return;                       // deck puzzles aren't dated, so no streaks
+  const k = statsKey();
   const s = store.stats[k] = store.stats[k] || { solved: 0, clean: 0, best: null, streak: 0, longest: 0, last: null };
   s.solved++;
   if (!assisted) {
@@ -757,7 +856,7 @@ function recordStats(assisted) {
 }
 
 function renderStats() {
-  const s = store.stats[`${pz.level}-${pz.size}`];
+  const s = pz.deck ? null : store.stats[statsKey()];
   $('stats').textContent = s
     ? t('stats', { level: LEVEL_NAME(pz.level), size: SIZE_NAME(pz.size), solved: s.solved, best: s.best != null ? fmtTime(s.best) : '—', streak: s.streak, longest: s.longest })
     : '';
@@ -768,10 +867,11 @@ function celebrate(assisted) {
   const kw = pz.key.keyword;
   fill($('done-body'), 
     h('p', { class: 'cw-done-time' }, fmtTime(st.time), assisted ? h('span', { class: 'cw-muted' }, t('withReveals')) : null),
-    h('p', {}, `${LEVEL_NAME(pz.level)} ${SIZE_NAME(pz.size)} · ${fmtDate(date)}`),
-    h('p', { class: 'cw-done-kw' }, t('kwLine'), h('strong', { lang: 'ja' }, kw.word), ` (${kw.reading})`, settings.words ? h('span', { lang: 'en' }, ` · ${kw.meaning}`) : null),
+    pz.deck ? h('p', {}, `${t('deckLine', { name: pz.deck.name })} · ${SIZE_NAME(pz.size)}`)
+      : h('p', {}, `${pz.mode === 'kanji' ? `${t('mode.kanji')} · ` : ''}${LEVEL_NAME(pz.level)} ${SIZE_NAME(pz.size)} · ${fmtDate(date)}`),
+    kw ? h('p', { class: 'cw-done-kw' }, t('kwLine'), h('strong', { lang: 'ja' }, kw.word), ` (${kw.reading})`, settings.words ? h('span', { lang: 'en' }, ` · ${kw.meaning}`) : null) : null,
     settings.words ? h('p', { class: 'cw-muted' }, t('listed')) : null,
-    date === localDate() ? h('p', { class: 'cw-next', id: 'cw-next' }, t('nextIn', { time: untilMidnight() })) : null);
+    !pz.deck && date === localDate() ? h('p', { class: 'cw-next', id: 'cw-next' }, t('nextIn', { time: untilMidnight() })) : null);
   // The Crossword+ question (or "you're on the list"); see plus.js for when it shows
   fill($('done-plus'), plusEligible() ? plusCard() : null);
   clearInterval(nextTimer);
@@ -781,7 +881,7 @@ function celebrate(assisted) {
 }
 
 function share() {
-  const text = `${t('shareText', { size: SIZE_NAME(pz.size), level: LEVEL_NAME(pz.level), date: fmtDate(date), time: fmtTime(st.time), reveals: Object.keys(st.revealed).length > 0 })}\nhttps://www.jareddesu.com/tools/crossword/`;
+  const text = `${t('shareText', { mode: pz.deck ? t('mode.deck') : pz.mode === 'kanji' ? '漢字' : '', size: SIZE_NAME(pz.size), level: pz.deck ? pz.deck.name : LEVEL_NAME(pz.level), date: pz.deck ? fmtDate(localDate()) : fmtDate(date), time: fmtTime(st.time), reveals: Object.keys(st.revealed).length > 0 })}\nhttps://www.jareddesu.com/tools/crossword/`;
   (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => toast(t('copied')), () => toast(text));
 }
 

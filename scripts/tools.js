@@ -44,12 +44,12 @@ const TOOLS = [
   },
   {
     slug: 'crossword',
-    title: 'Kana Crossword',
+    title: 'Japanese Crossword',
     description:
-      'A daily Japanese crossword: English clues, hiragana answers. ' +
-      'A 5×5 mini and a 9×9 daily at beginner, intermediate or advanced ' +
-      'level, with a hidden keyword in the double-boxed squares.',
-    tags: ['daily', 'vocabulary', 'JLPT'],
+      'A daily Japanese crossword in kana (English clues, hiragana answers) ' +
+      'or kanji (write each word in kanji). A mini and a daily at beginner, ' +
+      'intermediate or advanced level, or make one from your own Anki deck.',
+    tags: ['daily', 'kana', 'kanji', 'JLPT'],
     glyph: '十',
     accent: '#4c6cb3',
     thumb: 'thumb.svg',
