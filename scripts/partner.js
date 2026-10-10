@@ -108,7 +108,7 @@
       slot.classList.remove('sec');
       slot.classList.add('pt-section');
       var c = card(t, via);
-      c.classList.add('is-ad');
+      c.classList.add('is-boxed');
       slot.replaceChildren(c);
     },
     entry: function (slot, t, via) {   // matches the tools list (styles/tools.css)
