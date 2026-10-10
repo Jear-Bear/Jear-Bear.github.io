@@ -1,7 +1,7 @@
 // plus.js — the low-key Crossword+ waitlist.
 //
 // The daily puzzles stay free. This only asks regular solvers whether they'd
-// like optional extras (every past puzzle, bonus puzzles), and if so, takes an
+// like optional extras (past puzzles, unlimited deck puzzles, bonus puzzles), and if so, takes an
 // email for one note when it's ready. To keep it from being pushy:
 //   - the solved screen (お見事) shows a short version on every solve, until you
 //     sign up (then just a one-line "you're on the list") or tap "Not for me"
@@ -11,42 +11,51 @@
 // Emails go to the sponsor Worker's private database (waitlist.js), never the repo.
 
 import { lang } from '../games/i18n.js?v=1';
+import { info, isMember } from './account.js?v=2';
 
 const API = 'https://sponsor-crm.jared-65b.workers.dev';
 const KEY = 'jareddesu.crossword.plus';
 const SUPPORT_URL = 'https://www.youtube.com/@jareddesu/join';
-const WANTS = ['archive', 'bonus', 'sync', 'print'];
+const WANTS = ['archive', 'deck', 'bonus', 'sync', 'print'];
 const HIDE_DAYS = 30;
 
 const T = {
   en: {
     title: 'Want more puzzles?',
-    body: 'The daily puzzles are free, and they’ll stay that way. I’m thinking about an optional Crossword+ for people who want more: every past puzzle, plus a few bonus ones each week. Would you use it?',
-    short: 'The daily puzzles will always be free. Would you use an optional Crossword+ with every past puzzle and a few bonus ones each week?',
+    body: 'The daily puzzles are free, and they’ll stay that way. I’m working on an optional Crossword+ for people who want more: every past puzzle, unlimited crosswords from your own Anki deck, and a few bonus puzzles each week. Would you use it?',
+    short: 'The daily puzzles will always be free. Would you use an optional Crossword+ with every past puzzle, unlimited crosswords from your Anki deck and weekly bonus puzzles?',
     wantsLabel: 'What sounds good? (optional)',
-    'want.archive': 'Every past puzzle', 'want.bonus': 'Bonus puzzles', 'want.sync': 'Streaks on all my devices', 'want.print': 'Printable puzzles',
+    'want.archive': 'Every past puzzle', 'want.bonus': 'Bonus puzzles', 'want.deck': 'Crosswords from my Anki deck', 'want.sync': 'Streaks on all my devices', 'want.print': 'Printable puzzles',
     email: 'Your email', submit: 'Tell me when it’s ready', not: 'Not for me',
     fine: 'One email when it launches. No newsletter, and you can remove yourself anytime.',
     thanks: 'Thanks! I’ll write once, when it’s ready.', sending: 'Sending…',
     badEmail: 'That email doesn’t look quite right.', failed: 'Couldn’t send that. Please try again in a bit.',
     hidden: 'Got it. I won’t ask for a while.',
     onList: 'You’re on the Crossword+ list. I’ll email once when it’s ready.',
+    openTitle: 'Crossword+ is here',
+    openShort: 'Every past puzzle, unlimited crosswords from your Anki deck and weekly bonus puzzles, for {price} a month. Today’s puzzles stay free.',
+    openBody: 'Every past puzzle, as many crosswords from your own Anki deck as you like, and a few bonus puzzles every week, for {month} a month or {year} a year. Today’s puzzles stay free, and you can cancel anytime.',
+    openCta: 'See Crossword+',
   },
   ja: {
     title: 'もっと解きたい？',
-    body: '毎日のパズルは無料で、これからもずっと無料です。もっと解きたい人向けに、過去のパズル全部と毎週のボーナスパズルが遊べる「クロスワード＋」（任意の有料プラン）を考えています。使ってみたいですか？',
-    short: '毎日のパズルはずっと無料です。過去のパズル全部と毎週のボーナスパズルが遊べる任意の「クロスワード＋」、使ってみたいですか？',
+    body: '毎日のパズルは無料で、これからもずっと無料です。もっと解きたい人向けに、過去のパズル全部、Ankiデッキのクロスワード作り放題、毎週のボーナスパズルが遊べる「クロスワード＋」（任意の有料プラン）を準備しています。使ってみたいですか？',
+    short: '毎日のパズルはずっと無料です。過去のパズル全部、Ankiデッキのクロスワード作り放題、毎週のボーナスパズルが遊べる任意の「クロスワード＋」、使ってみたいですか？',
     wantsLabel: '気になるもの（任意）',
-    'want.archive': '過去のパズル全部', 'want.bonus': 'ボーナスパズル', 'want.sync': '記録をどの端末でも', 'want.print': '印刷できるパズル',
+    'want.archive': '過去のパズル全部', 'want.bonus': 'ボーナスパズル', 'want.deck': 'Ankiデッキでクロスワード', 'want.sync': '記録をどの端末でも', 'want.print': '印刷できるパズル',
     email: 'メールアドレス', submit: '始まったら教えて', not: '興味なし',
     fine: '始まったときにメールを1通だけ送ります。メルマガはなく、いつでも削除できます。',
     thanks: 'ありがとう！準備ができたら1回だけお知らせします。', sending: '送信中…',
     badEmail: 'メールアドレスを確認してください。', failed: '送信できませんでした。少ししてからもう一度お試しください。',
     hidden: 'わかりました。しばらく聞きません。',
     onList: 'クロスワード＋のリストに登録済みです。準備ができたら1回だけお知らせします。',
+    openTitle: 'クロスワード＋が始まりました',
+    openShort: '過去のパズル全部、Ankiデッキのクロスワード作り放題、毎週のボーナスパズルが月{price}で。今日のパズルはずっと無料です。',
+    openBody: '過去のパズル全部、Ankiデッキのクロスワード作り放題、毎週のボーナスパズルが、月{month}または年{year}で遊べます。今日のパズルはずっと無料で、いつでも解約できます。',
+    openCta: 'クロスワード＋を見る',
   },
 };
-const t = (k) => (T[lang()] || T.en)[k] || T.en[k];
+const t = (k, vars = {}) => String((T[lang()] || T.en)[k] || T.en[k]).replace(/\{(\w+)\}/g, (_, x) => vars[x] ?? '');
 
 function read() { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; } }
 function write(v) { try { localStorage.setItem(KEY, JSON.stringify({ ...read(), ...v })); } catch { /* private mode */ } }
@@ -63,9 +72,17 @@ function h(tag, attrs, ...kids) {
   return n;
 }
 
+// Once Crossword+ is for sale (Stripe connected), the asks become a link to
+// the Crossword+ panel instead of the waitlist. The page opens the panel on
+// this event (app.js).
+let open = null;
+info().then((i) => { open = i; });
+const openPanel = () => document.dispatchEvent(new CustomEvent('crossword:plus'));
+
 // Should the solved screen mention it? solves = puzzles this browser has solved
 export function plusEligible() {
   const s = read();
+  if (isMember()) return false;                  // already a member
   return s.joined || !(s.hideUntil && Date.now() < s.hideUntil);
 }
 
@@ -121,6 +138,14 @@ export function plusForm({ compact = false } = {}) {
 
 // For the solved screen: the short form, or "you’re on the list" once signed up
 export function plusCard() {
+  if (open && open.open) {
+    const box = h('div', { class: 'cw-plus is-compact' },
+      h('p', { class: 'cw-plus-title' }, t('openTitle')),
+      h('p', { class: 'cw-plus-body' }, t('openShort', { price: open.prices.month })),
+      h('p', { class: 'cw-plus-fine' }, h('button', { type: 'button', class: 'btn cw-plus-submit', onclick: openPanel }, t('openCta')), ' ',
+        h('button', { type: 'button', class: 'btn-link cw-plus-not', onclick: () => { write({ hideUntil: Date.now() + HIDE_DAYS * 86400000 }); box.replaceChildren(h('p', { class: 'cw-plus-thanks' }, t('hidden'))); } }, t('not'))));
+    return box;
+  }
   if (read().joined) return h('p', { class: 'cw-plus-onlist' }, t('onList'));
   return plusForm({ compact: true });
 }
@@ -128,6 +153,15 @@ export function plusCard() {
 // The page section's form and support link (see tools/crossword/index.html)
 export function mountPlusSection() {
   const slot = document.getElementById('plus-form');
-  if (slot) slot.replaceChildren(plusForm());
+  const fill = () => {
+    if (!slot) return;
+    if (open && open.open) slot.replaceChildren(h('div', { class: 'cw-plus' },
+      h('p', { class: 'cw-plus-title' }, t('openTitle')),
+      h('p', { class: 'cw-plus-body' }, t('openBody', { month: open.prices.month, year: open.prices.year })),
+      h('button', { type: 'button', class: 'btn cw-plus-submit', onclick: () => { openPanel(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }, t('openCta'))));
+    else slot.replaceChildren(plusForm());
+  };
+  fill();
+  info().then((i) => { open = i; fill(); });
   document.querySelectorAll('[data-support-link]').forEach((a) => { a.href = SUPPORT_URL; });
 }

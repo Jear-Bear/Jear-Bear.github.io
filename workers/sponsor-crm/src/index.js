@@ -33,6 +33,8 @@
 //   GET  /public/availability       open sponsor slots by month (public, counts only)
 //   POST /public/inquiry            the sponsor-page form → Review (public, rate-limited)
 //   POST /public/click              a click on a sponsor card on the site (counts only)
+//   /public/plus/…                  Crossword+ accounts (sign in with Google or an email link), past days, bonus puzzles (plus.js)
+//   /public/plus/checkout|sync|portal, POST /public/stripe/webhook    payments (stripe.js)
 //
 // A daily cron refreshes the uploads (capturing 30-day views) and the history.
 //
@@ -61,7 +63,9 @@ import { handleGo, recordClick, createInvoice } from './growth.js';
 import { listDrafts, requestDraft, closeDraft } from './drafts.js';
 import { availability, inquiry } from './public.js';
 import { joinWaitlist, leaveWaitlist, listWaitlist } from './waitlist.js';
-import { publicKey, bonusBacklog } from './sealed.js';
+import { loginGoogle, loginEmail, loginVerify, me as plusMe, logout as plusLogout, dayArchive, bonusPuzzle, listPlus, grantPlus, updatePlus } from './plus.js';
+import { plusInfo, plusCheckout, plusSync, plusPortal, stripeWebhook, stripeSetup, stripeStatus } from './stripe.js';
+import { publicKey, bonusBacklog, openSealed } from './sealed.js';
 import { pullTraffic, loadTraffic, trafficConfigured } from './traffic.js';
 
 const TYPES = {
@@ -176,6 +180,10 @@ async function route(request, env, url) {
   if (a === 'drafts' && b && c === 'cancel' && !d && m === 'POST') return closeDraft(db, b, { status: 'cancelled' });
   if (a === 'insights' && !b && m === 'GET') return loadInsights(db);
   if (a === 'waitlist' && !b && m === 'GET') return listWaitlist(db);
+  if (a === 'plus' && !b && m === 'GET') return { ...(await listPlus(db)), stripe: await stripeStatus(env, db) };
+  if (a === 'plus' && b === 'stripe-setup' && !c && m === 'POST') return stripeSetup(env, db, url.origin);
+  if (a === 'plus' && !b && m === 'POST') return grantPlus(db, await readJson(request));
+  if (a === 'plus' && b && !c && m === 'PATCH') return updatePlus(db, b, await readJson(request));
   if (a === 'crossword-bonus' && !b && m === 'GET') return bonusBacklog(db, env.CROSSWORD_SITE || undefined);
   if (a === 'stats' && b === 'refresh' && !c && m === 'POST') return pullPublicStats(db);
   if (a === 'income' && !b && m === 'PUT') return putIncome(db, await readJson(request));
@@ -251,6 +259,10 @@ const app = {
       try { slug = decodeURIComponent(slug); } catch { /* keep raw */ }
       return handleGo(request, env, ctx, slug);
     }
+    if (url.pathname === '/public/stripe/webhook' && request.method === 'POST') {
+      if (!configured(env)) return new Response('Not configured', { status: 503 });
+      return stripeWebhook(request, env);
+    }
     if (url.pathname === '/authorize') {
       if (!configured(env)) return new Response('Not configured', { status: 503 });
       return handleAuthorize(request, env);
@@ -285,6 +297,34 @@ const app = {
     if (url.pathname === '/public/crossword-leave' && request.method === 'GET') {
       if (!configured(env)) return new Response('Not configured', { status: 503 });
       return leaveWaitlist(env, url);
+    }
+    if (url.pathname.startsWith('/public/plus/')) {
+      if (!origin) return json({ error: 'Origin not allowed' }, 403);
+      if (!configured(env)) return json({ error: 'Not configured' }, 503, origin);
+      const what = url.pathname.slice('/public/plus/'.length);
+      const m = request.method;
+      try {
+        if (what === 'info' && m === 'GET') return json(await plusInfo(env), 200, origin, { 'Cache-Control': 'public, max-age=300' });
+        if (m !== 'POST') return json({ error: 'Not found' }, 404, origin);
+        const routes = {
+          'login/google': () => loginGoogle(request, env),
+          'login/email': () => loginEmail(request, env, origin),
+          'login/verify': () => loginVerify(request, env),
+          me: () => plusMe(request, env),
+          logout: () => plusLogout(request, env),
+          day: () => dayArchive(request, env, openSealed, env.CROSSWORD_SITE || 'https://www.jareddesu.com'),
+          bonus: () => bonusPuzzle(request, env, openSealed, env.CROSSWORD_SITE || 'https://www.jareddesu.com'),
+          checkout: () => plusCheckout(request, env, origin),
+          sync: () => plusSync(request, env),
+          portal: () => plusPortal(request, env, origin),
+        };
+        if (!routes[what]) return json({ error: 'Not found' }, 404, origin);
+        return json(await routes[what](), 200, origin);
+      } catch (err) {
+        if (err instanceof HttpError) return json({ error: err.message }, err.status, origin);
+        console.error(err);
+        return json({ error: 'Something went wrong' }, 500, origin);
+      }
     }
     if (url.pathname === '/public/click' && request.method === 'POST') {
       if (!origin) return json({ error: 'Origin not allowed' }, 403);

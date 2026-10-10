@@ -155,7 +155,7 @@ function setupNote(data) {
 // Emails people left on the crossword page for one note when Crossword+
 // launches (workers/sponsor-crm/src/waitlist.js). Shown only here, never stored
 // in the repo. Each person's leave link goes at the bottom of that one email.
-const WANT_LABELS = { archive: 'Every past puzzle', bonus: 'Bonus puzzles', sync: 'Streaks on all devices', print: 'Printable puzzles' };
+const WANT_LABELS = { archive: 'Every past puzzle', bonus: 'Bonus puzzles', deck: 'Crosswords from their Anki deck', sync: 'Streaks on all devices', print: 'Printable puzzles' };
 const leaveUrl = (token) => `https://sponsor-crm.jared-65b.workers.dev/public/crossword-leave?t=${token}`;
 
 // Sign-ups per day (bars) and the running total (line), from the first
@@ -241,11 +241,57 @@ function waitlistSection(w) {
       tile('In Japanese', num.format(w.rows.filter((r) => r.lang === 'ja').length), 'signed up with the Japanese page'),
       bonusTile(w.bonus)),
     w.count ? signupChart(w.rows) : null,
-    w.count ? h('div', {}, h('h3', { class: 'crm-subhead' }, 'What they’d want'), barList(wants, { limit: 4 })) : h('p', { class: 'crm-muted' }, 'No sign-ups yet. The crossword asks regulars after their 3rd solve, at most once a day, and the page has a short “Free, and staying free” section.'),
+    w.count ? h('div', {}, h('h3', { class: 'crm-subhead' }, 'What they’d want'), barList(wants, { limit: 5 })) : h('p', { class: 'crm-muted' }, 'No sign-ups yet. The crossword asks regulars after their 3rd solve, at most once a day, and the page has a short “Free, and staying free” section.'),
     w.count ? h('details', { class: 'crm-details' }, h('summary', {}, `Show ${num.format(w.count)} email${w.count === 1 ? '' : 's'}`),
       h('ul', { class: 'crm-waitlist' }, w.rows.map((r) => h('li', {}, r.email, h('span', { class: 'crm-muted' }, ` · ${r.lang} · ${fmtDate(r.created_at.slice(0, 10))}`))))) : null,
     h('div', { class: 'crm-traffic-bar' }, copy, csv),
     h('p', { class: 'crm-method' }, 'Sign-ups are saved the moment someone presses the button. This list reads them live when you open Traffic (or press Refresh), and the desk refreshes itself every 5 minutes. Promised on the page: one email when Crossword+ is ready, no newsletter. Put each person’s leave link (in the CSV) at the bottom of that email; it deletes them from the list.'));
+}
+
+// Crossword+ accounts and payments (workers/sponsor-crm/src/plus.js, stripe.js).
+// People sign in with Google or an email link; a Stripe subscription, or free
+// access you give here, makes them a member. "Connect Stripe" sets up the
+// prices, the customer portal and the webhook (safe to press again).
+function membersSection(m, reload) {
+  if (!m) return null;
+  if (m.error) return section('Crossword+ members', h('p', { class: 'crm-note is-error' }, `Couldn’t load Crossword+: ${m.error}`));
+  const st = m.stripe || {};
+  const connect = button(st.connected ? 'Reconnect Stripe' : 'Connect Stripe', async () => {
+    const r = await busy(connect, () => request('POST', 'plus/stripe-setup'));
+    toast(`Stripe connected (${r.mode} mode)`, { kind: 'ok', ms: 3000 });
+    reload(false);
+  }, { kind: st.connected ? 'chip' : 'primary', disabled: !st.key });
+  const email = h('input', { type: 'email', placeholder: 'Email', 'aria-label': 'Email', maxlength: '254' });
+  const note = h('input', { type: 'text', placeholder: 'Note (optional)', 'aria-label': 'Note', maxlength: '120' });
+  const give = button('Give free access', async () => {
+    await busy(give, () => request('POST', 'plus', { email: email.value.trim(), note: note.value.trim() }));
+    toast('Done. It works as soon as they sign in with that email.', { kind: 'ok', ms: 3500 });
+    email.value = ''; note.value = '';
+    reload(false);
+  }, { kind: 'chip' });
+  const users = m.users || [];
+  const paid = users.filter((u) => u.member && u.paid);
+  const monthly = paid.filter((u) => u.plan === 'month').length;
+  const yearly = paid.filter((u) => u.plan === 'year').length;
+  const act = (u, label, body) => button(label, async (ev) => { await busy(ev.currentTarget, () => request('PATCH', `plus/${u.id}`, body)); reload(false); }, { kind: 'chip' });
+  const statusOf = (u) => (u.revoked ? 'turned off' : u.paid ? `${u.status}${u.plan ? ` · ${u.plan}ly` : ''}${u.period_end ? ` · ${u.status === 'canceled' ? 'ended' : 'renews'} ${fmtDate(u.period_end.slice(0, 10))}` : ''}` : u.granted ? 'free access' : 'signed up, not a member');
+  return section('Crossword+ members',
+    h('div', { class: 'crm-tiles' },
+      tile('Paying members', num.format(paid.length), `${monthly} monthly · ${yearly} yearly`),
+      tile('Monthly revenue', `$${(monthly * 2.99 + yearly * 24.99 / 12).toFixed(2)}`, 'before Stripe’s fees (yearly spread over 12)'),
+      tile('Free access', num.format(users.filter((u) => u.member && !u.paid).length), 'given here'),
+      tile('Accounts', num.format(users.length), 'signed in at least once')),
+    h('div', { class: 'crm-traffic-bar' },
+      h('span', { class: st.connected ? 'crm-muted' : 'crm-note is-error' }, !st.key ? 'Stripe: add the STRIPE_SECRET_KEY GitHub secret, then run the deploy.' : st.connected ? `Stripe: connected (${st.mode} mode)` : `Stripe: key found (${st.mode} mode), not connected yet`),
+      connect),
+    h('div', { class: 'crm-traffic-bar' }, email, note, give),
+    users.length ? h('ul', { class: 'crm-waitlist' }, users.map((u) => h('li', {},
+      h('span', {}, u.email, u.google ? h('span', { class: 'crm-muted' }, ' · Google') : null),
+      h('span', { class: 'crm-muted' }, ` · ${statusOf(u)}${u.last_login ? ` · last in ${fmtDate(u.last_login.slice(0, 10))}` : ''}${u.grant_note ? ` · ${u.grant_note}` : ''} `),
+      u.granted && !u.revoked ? act(u, 'Remove free access', { granted: false }) : null,
+      act(u, u.revoked ? 'Turn back on' : 'Turn off', { revoked: !u.revoked }),
+      act(u, 'Sign out everywhere', { signOut: true })))) : h('p', { class: 'crm-muted' }, 'No accounts yet.'),
+    h('p', { class: 'crm-method' }, 'Turning someone off doesn’t cancel their Stripe subscription; cancel or refund that in Stripe. Founding price for the waitlist: make a promotion code in Stripe (e.g. $1 off forever); Checkout has a box for codes.'));
 }
 
 // --- The Traffic tab --------------------------------------------------------------------------
@@ -253,10 +299,15 @@ export function trafficView(root) {
   let data = null;
   let insights = [];
   let waitlist = null;
+  let members = null;
   let error = null;
+  const loadMembers = async (all = true) => {
+    members = await request('GET', 'plus').catch((err) => ({ error: err.message }));
+    if (!all) render();
+  };
   const load = async () => {
     try {
-      const [d, ins, wl] = await Promise.all([request('GET', `traffic?days=${range}`), insightData().catch(() => ({ insights: [] })), request('GET', 'waitlist').catch((err) => ({ error: err.message }))]);
+      const [d, ins, wl] = await Promise.all([request('GET', `traffic?days=${range}`), insightData().catch(() => ({ insights: [] })), request('GET', 'waitlist').catch((err) => ({ error: err.message })), loadMembers()]);
       data = d; insights = ins.insights || []; waitlist = wl; error = null;
       if (wl && !wl.error) wl.bonus = await request('GET', 'crossword-bonus').catch((err) => ({ error: err.message }));
     } catch (err) { error = err; }
@@ -320,6 +371,7 @@ export function trafficView(root) {
           h('h3', { class: 'crm-subhead' }, DIM_LABELS.browser), barList(x.browser, { limit: 5 }),
           h('h3', { class: 'crm-subhead' }, DIM_LABELS.os), barList(x.os, { limit: 5 }))),
       waitlistSection(waitlist),
+      membersSection(members, loadMembers),
       h('p', { class: 'crm-method' }, 'From Cloudflare Web Analytics: no cookies and no individual visitors, only totals. Cloudflare samples busy periods, so small numbers can be estimates. A visit is someone arriving from another site or typing the address; page views count every page they open. The private Sponsor desk isn’t tracked.'),
     ].filter(Boolean));
   };
