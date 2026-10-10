@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free 1-on-1 Japanese lesson · Jared P.</title>
+  <meta name="robots" content="noindex">
+  <meta name="color-scheme" content="light dark">
+  <!-- jareddesu.com/lesson: the short link to say in videos. Counts the visit
+       (under the "ohanasi" tracked link, place "lesson" or ?via=…) and goes
+       straight to Ohanasi. See scripts/partner.js for the sponsor details. -->
+  <meta property="og:title" content="Your first 1-on-1 Japanese lesson is free">
+  <meta property="og:description" content="A free online lesson with a Japanese teacher from Ohanasi, any level, even starting from zero. (Ohanasi sponsors my channel.)">
+  <meta property="og:site_name" content="Jared P.">
+  <link rel="icon" href="/images/logo.png">
+  <script>
+    (function () {
+      var TARGET = 'https://ohanasi.co/jared';
+      var q = new URLSearchParams(location.search);
+      var via = (q.get('via') || 'lesson').toLowerCase();
+      if (!/^[a-z0-9](?:[a-z0-9-]{0,22}[a-z0-9])?$/.test(via)) via = 'lesson';
+      var body = JSON.stringify({ slug: 'ohanasi', via: via });
+      var url = 'https://sponsor-crm.jared-65b.workers.dev/public/click';
+      var sent = false;
+      if (!/bot|crawl|spider|preview|facebookexternalhit|discord|slack|whatsapp|telegram/i.test(navigator.userAgent)) {
+        try { sent = navigator.sendBeacon && navigator.sendBeacon(url, new Blob([body], { type: 'text/plain' })); } catch (e) { /* ignore */ }
+        if (!sent) try { fetch(url, { method: 'POST', body: body, keepalive: true, credentials: 'omit', headers: { 'Content-Type': 'text/plain' } }).catch(function () {}); } catch (e) { /* ignore */ }
+      }
+      location.replace(TARGET);
+    })();
+  </script>
+  <noscript><meta http-equiv="refresh" content="0; url=https://ohanasi.co/jared"></noscript>
+  <style>
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; box-sizing: border-box;
+      font: 15px/1.7 system-ui, sans-serif; background: #f4efe4; color: #1f1c18; text-align: center; }
+    a { color: inherit; }
+    small { color: #6b6358; }
+    @media (prefers-color-scheme: dark) { body { background: #171512; color: #ece5d8; } small { color: #9a9184; } }
+  </style>
+</head>
+<body>
+  <p>Taking you to Ohanasi’s free 1-on-1 Japanese lesson…<br>
+  <a href="https://ohanasi.co/jared">Continue</a><br>
+  <small>Ohanasi sponsors my channel.</small></p>
+</body>
+</html>
