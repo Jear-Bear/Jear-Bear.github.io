@@ -1,0 +1,39 @@
+/* The sponsor card (scripts/partner.js). Quiet, clearly labelled, never over
+   a puzzle. The sponsor's colour only shows as a small seal. */
+.pt-card {
+  --pt-color: #d9822b;
+  position: relative;
+  max-width: 36rem;
+  padding: 18px 20px 16px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+}
+.pt-card::after {               /* seal, like the tools list */
+  content: "";
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 9px;
+  height: 9px;
+  background: var(--pt-color);
+}
+.pt-kicker { margin: 0 0 6px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.pt-card:lang(ja) .pt-kicker { text-transform: none; letter-spacing: .02em; }
+.pt-title { margin: 0 0 6px; font-family: var(--font-mincho); font-weight: 600; font-size: 1.2rem; line-height: 1.45; color: var(--ink); }
+.pt-body { margin: 0 0 14px; font-size: 14px; line-height: 1.8; color: var(--ink-soft); }
+.pt-cta { display: inline-flex; align-items: center; min-height: 44px; }
+.pt-fine { margin: 10px 0 0; font-size: 12px; color: var(--muted); }
+
+/* One line on a result screen */
+.pt-line { margin: 14px 0 0; font-size: 13px; line-height: 1.7; color: var(--ink-soft); text-align: left; }
+.pt-tag {
+  display: inline-block;
+  padding: 0 6px;
+  border: 1px solid var(--border-strong);
+  font-size: 11px;
+  letter-spacing: .04em;
+  color: var(--muted);
+  vertical-align: 1px;
+}
+.pt-line-cta { color: var(--ink); font-weight: 500; border-bottom: 1px solid var(--ink); white-space: nowrap; }
+.pt-line-cta:hover { color: var(--page-ink); border-color: var(--page-ink); }

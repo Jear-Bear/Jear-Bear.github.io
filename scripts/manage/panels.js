@@ -9,7 +9,7 @@ import {
   store, reload, live, company, companyName, deal, dealTitle, video, today, followUp, priceCheck, videoStatus, dash,
 } from './store.js';
 import { openPanel, closePanel, toast, toastError, button, busy } from './ui.js';
-import { openInvoice, printInvoice, linkRow, linksFor, slugify, linkUrl, copyText } from './growth.js';
+import { openInvoice, printInvoice, linkRow, linksFor, slugify, linkUrl, copyText, clicksByPlace } from './growth.js';
 import { openPitch, openRecap, askClaude, draftStatus } from './pitch-view.js';
 
 const API_TYPE = { companies: 'companies', contacts: 'contacts', deals: 'deals', payments: 'payments', videos: 'videos', rate_card: 'rate-card', activities: 'activities', links: 'links' };
@@ -211,9 +211,13 @@ function dealLinks(d) {
 
 // --- Tracked link -------------------------------------------------------------------------
 export function openLink(l, { preset, returnTo } = {}) {
-  const before = l ? h('div', { class: 'crm-row-actions' },
+  const places = l ? clicksByPlace(l.slug) : [];
+  const before = l ? [h('div', { class: 'crm-row-actions' },
     h('code', { class: 'crm-code' }, linkUrl(l.slug)),
-    button('Copy', () => copyText(linkUrl(l.slug), 'Link copied'), { kind: 'chip' })) : null;
+    button('Copy', () => copyText(linkUrl(l.slug), 'Link copied'), { kind: 'chip' })),
+  places.length ? h('div', {}, h('h3', { class: 'crm-subhead' }, 'Clicks by place, last 30 days'),
+    h('ul', { class: 'crm-mini-list' }, places.map((p) => h('li', { class: 'crm-link-row' }, h('span', {}, p.via), h('span', { class: 'crm-muted crm-num' }, String(p.clicks))))),
+    h('p', { class: 'crm-note is-muted' }, 'Add ?via=<place> to the link to tell places apart, e.g. /go/' + l.slug + '?via=yt-shorts.')) : null] : null;
   editor({
     type: 'links', record: l, preset, sections: [{ fields: ['slug', 'target', 'deal_id', 'company_id', 'notes'] }],
     options: {

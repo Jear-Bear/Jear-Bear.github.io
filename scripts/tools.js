@@ -124,5 +124,7 @@ const TOOLS = [
           <span class="tool-open">Open <span aria-hidden="true">→</span></span>
         </a>
       </li>`;
-  }).join('');
+  }).join('') +
+  // The current sponsor, filled in by partner.js (hidden if there isn't one)
+  '<li data-partner="entry" data-via="tools" hidden></li>';
 })();

@@ -10,6 +10,15 @@ import { isUuid, isIsoDate } from '../../../scripts/manage/schema.js';
 
 const BOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|embedly|discord|slack|whatsapp|telegram|curl|wget|python|headless|monitor|scan/i;
 const SLUG = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
+const VIA = /^[a-z0-9](?:[a-z0-9-]{0,22}[a-z0-9])?$/;   // where the click came from, e.g. tools, guide, yt-shorts
+
+// One more click for the link today, and for the place it came from if known
+function countClick(env, ctx, slug, via) {
+  const day = new Date().toISOString().slice(0, 10);
+  const q = [env.DB.prepare('INSERT INTO link_clicks (slug, day, clicks) VALUES (?, ?, 1) ON CONFLICT (slug, day) DO UPDATE SET clicks = clicks + 1').bind(slug, day)];
+  if (via && VIA.test(via)) q.push(env.DB.prepare('INSERT INTO link_click_via (slug, via, day, clicks) VALUES (?, ?, ?, 1) ON CONFLICT (slug, via, day) DO UPDATE SET clicks = clicks + 1').bind(slug, via, day));
+  ctx.waitUntil(env.DB.batch(q).catch(() => {}));
+}
 
 function page(status, title, text) {
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -29,12 +38,26 @@ export async function handleGo(request, env, ctx, slugRaw) {
   // Pass campaign parameters through (e.g. ?utm_source=youtube)
   new URL(request.url).searchParams.forEach((v, k) => { if (/^utm_[a-z]{1,20}$/.test(k) && !target.searchParams.has(k)) target.searchParams.set(k, v.slice(0, 100)); });
   const ua = request.headers.get('User-Agent') || '';
-  if (request.method === 'GET' && ua && !BOT.test(ua)) {
-    const day = new Date().toISOString().slice(0, 10);
-    ctx.waitUntil(env.DB.prepare('INSERT INTO link_clicks (slug, day, clicks) VALUES (?, ?, 1) ON CONFLICT (slug, day) DO UPDATE SET clicks = clicks + 1')
-      .bind(slug, day).run().catch(() => {}));
-  }
+  if (request.method === 'GET' && ua && !BOT.test(ua)) countClick(env, ctx, slug, (new URL(request.url).searchParams.get('via') || '').toLowerCase());
   return new Response(null, { status: 302, headers: { Location: target.href, 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer-when-downgrade', 'X-Robots-Tag': 'noindex' } });
+}
+
+// A click on a sponsor card on the site (scripts/partner.js). The card links
+// straight to the sponsor, so it's fast and works without this; the page sends
+// a beacon here so the click is counted with the place it came from.
+// Body (text/plain, so no preflight): {"slug":"ohanasi","via":"tools"}
+export async function recordClick(request, env, ctx) {
+  const ua = request.headers.get('User-Agent') || '';
+  if (!ua || BOT.test(ua)) return { ok: true };
+  let body = {};
+  try { body = JSON.parse((await request.text()).slice(0, 500)); } catch { /* ignore */ }
+  const slug = String(body.slug || '').toLowerCase();
+  const via = String(body.via || '').toLowerCase();
+  if (!SLUG.test(slug) || !VIA.test(via)) return { ok: false };
+  const link = await env.DB.prepare('SELECT 1 FROM links WHERE slug = ? AND archived = 0').bind(slug).first();
+  if (!link) return { ok: false };
+  countClick(env, ctx, slug, via);
+  return { ok: true };
 }
 
 // --- Invoices ---------------------------------------------------------------------------------

@@ -18,6 +18,7 @@
 
   <link rel="stylesheet" href="../../styles/base.css?v=4">
   <link rel="stylesheet" href="../../styles/wordle.css?v=6">
+  <link rel="stylesheet" href="../../styles/partner.css?v=1">
   <!-- Cloudflare Web Analytics (cookieless) -->
   <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
 </head>
@@ -112,6 +113,8 @@
         <input class="wd-ime" id="ime" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Type your guess (romaji or kana)" data-t-aria="ime">
       </div>
 
+      <section class="sec wd-section" data-partner="section" data-via="wordle" hidden></section>
+
       <section class="sec wd-section">
         <p class="sec-mark"><span class="sec-num" lang="ja">遊</span><span class="sec-label">How to play / <span lang="ja"><ruby>遊<rt>あそ</rt></ruby>び<ruby>方<rt>かた</rt></ruby></span></span></p>
         <ul class="wd-howto" data-ui-only="en">
@@ -144,6 +147,7 @@
       <p class="eyebrow" id="result-eyebrow"></p>
       <h2 class="wd-sheet-title" id="result-title"></h2>
       <div id="result-body"></div>
+      <p data-partner="line" data-via="wordle-solved" hidden></p>
       <div class="wd-sheet-actions" id="result-actions"></div>
     </div>
   </div>
@@ -197,5 +201,6 @@
 
   <script src="../../scripts/site.js?v=3"></script>
   <script type="module" src="../../scripts/wordle/app.js?v=6"></script>
+  <script src="../../scripts/partner.js?v=2"></script>
 </body>
 </html>

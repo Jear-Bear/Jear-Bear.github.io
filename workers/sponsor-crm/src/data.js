@@ -174,6 +174,7 @@ export async function loadState(db) {
     db.prepare('SELECT domain, company_id FROM company_domains'),
     db.prepare('SELECT company_id, deal_id, COUNT(*) AS n, MAX(occurred_at) AS last FROM activities WHERE archived = 0 GROUP BY company_id, deal_id'),
     db.prepare("SELECT slug, day, clicks FROM link_clicks WHERE day >= date('now', '-400 days') ORDER BY day"),
+    db.prepare("SELECT slug, via, day, clicks FROM link_click_via WHERE day >= date('now', '-400 days') ORDER BY day"),
   ]);
   const state = {};
   TABLES.forEach((t, i) => { state[STATE_KEY[t] || t] = results[i].results.map(fromRow); });
@@ -182,6 +183,7 @@ export async function loadState(db) {
   state.companies.forEach((c) => { c.domains = (domains.get(c.id) || []).sort(); });
   state.activitySummary = results[TABLES.length + 1].results;
   state.linkClicks = results[TABLES.length + 2].results;
+  state.linkClickVia = results[TABLES.length + 3].results;
   state.settings = await settingsFor(db);
   return state;
 }

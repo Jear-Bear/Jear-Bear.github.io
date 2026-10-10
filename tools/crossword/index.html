@@ -18,6 +18,7 @@
 
   <link rel="stylesheet" href="../../styles/base.css?v=4">
   <link rel="stylesheet" href="../../styles/crossword.css?v=8">
+  <link rel="stylesheet" href="../../styles/partner.css?v=1">
   <!-- Cloudflare Web Analytics (cookieless) -->
   <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
 </head>
@@ -144,6 +145,8 @@
         <div id="words"></div>
       </section>
 
+      <section class="sec cw-section" data-partner="section" data-via="crossword" hidden></section>
+
       <section class="sec cw-section">
         <p class="sec-mark"><span class="sec-num" lang="ja">遊</span><span class="sec-label">How to play / <span lang="ja"><ruby>遊<rt>あそ</rt></ruby>び<ruby>方<rt>かた</rt></ruby></span></span></p>
         <ul class="cw-howto" data-ui-only="en">
@@ -192,6 +195,7 @@
       <h2 class="cw-sheet-title" id="done-title" lang="ja">お見事！</h2>
       <div id="done-body"></div>
       <div id="done-plus"></div>
+      <p data-partner="line" data-via="crossword-solved" hidden></p>
       <div class="cw-sheet-actions">
         <button type="button" class="btn btn-primary" id="done-share" data-t="share">Copy result</button>
         <button type="button" class="btn-link" id="done-close" data-t="doneClose">Keep looking</button>
@@ -252,5 +256,6 @@
 
   <script src="../../scripts/site.js?v=3"></script>
   <script type="module" src="../../scripts/crossword/app.js?v=9"></script>
+  <script src="../../scripts/partner.js?v=2"></script>
 </body>
 </html>

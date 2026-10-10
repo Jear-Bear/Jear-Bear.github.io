@@ -31,6 +31,19 @@ export function clickStats(slug, { from, to } = {}) {
   };
 }
 
+// Clicks per place (?via= on the link, or the site's sponsor cards), most first.
+// Clicks with no place (a plain /go/ link, e.g. in a video description) are "Other links".
+export function clicksByPlace(slug, { days = 30 } = {}) {
+  const since = addDays(today(), -days);
+  const by = new Map();
+  (store.state.linkClickVia || []).filter((r) => r.slug === slug && r.day > since).forEach((r) => by.set(r.via, (by.get(r.via) || 0) + r.clicks));
+  const total = (store.state.linkClicks || []).filter((r) => r.slug === slug && r.day > since).reduce((n, r) => n + r.clicks, 0);
+  const placed = [...by.values()].reduce((a, b) => a + b, 0);
+  const rows = [...by].map(([via, clicks]) => ({ via, clicks })).sort((a, b) => b.clicks - a.clicks);
+  if (total > placed) rows.push({ via: 'Other links', clicks: total - placed });
+  return rows;
+}
+
 export async function copyText(text, label = 'Copied') {
   try { await navigator.clipboard.writeText(text); toast(label, { kind: 'ok', ms: 1800 }); return true; } catch { return false; }
 }
