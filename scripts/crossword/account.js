@@ -73,12 +73,8 @@ export async function portal() {
   const r = await call('portal');
   location.href = r.url;
 }
-export async function deckTicket() {
-  const r = await call('deck');
-  if (user && r.left != null) { user = { ...user, left: r.left }; emit(); }
-  return r;
-}
 export const bonusPuzzle = (id) => call('bonus', { id });
+export const archiveDay = (date) => call('day', { date });
 
 // "Sign in with Google": Google's own button, from Google's script
 let gis = null;

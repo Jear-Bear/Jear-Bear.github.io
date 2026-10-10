@@ -33,7 +33,7 @@
 //   GET  /public/availability       open sponsor slots by month (public, counts only)
 //   POST /public/inquiry            the sponsor-page form → Review (public, rate-limited)
 //   POST /public/click              a click on a sponsor card on the site (counts only)
-//   /public/plus/…                  Crossword+ accounts (sign in with Google or an email link), My deck, bonus puzzles (plus.js)
+//   /public/plus/…                  Crossword+ accounts (sign in with Google or an email link), past days, bonus puzzles (plus.js)
 //   /public/plus/checkout|sync|portal, POST /public/stripe/webhook    payments (stripe.js)
 //
 // A daily cron refreshes the uploads (capturing 30-day views) and the history.
@@ -63,9 +63,9 @@ import { handleGo, recordClick, createInvoice } from './growth.js';
 import { listDrafts, requestDraft, closeDraft } from './drafts.js';
 import { availability, inquiry } from './public.js';
 import { joinWaitlist, leaveWaitlist, listWaitlist } from './waitlist.js';
-import { loginGoogle, loginEmail, loginVerify, me as plusMe, logout as plusLogout, deckTicket, bonusPuzzle, listPlus, grantPlus, updatePlus } from './plus.js';
+import { loginGoogle, loginEmail, loginVerify, me as plusMe, logout as plusLogout, dayArchive, bonusPuzzle, listPlus, grantPlus, updatePlus } from './plus.js';
 import { plusInfo, plusCheckout, plusSync, plusPortal, stripeWebhook, stripeSetup, stripeStatus } from './stripe.js';
-import { publicKey, bonusBacklog } from './sealed.js';
+import { publicKey, bonusBacklog, openSealed } from './sealed.js';
 import { pullTraffic, loadTraffic, trafficConfigured } from './traffic.js';
 
 const TYPES = {
@@ -312,7 +312,7 @@ const app = {
           'login/verify': () => loginVerify(request, env),
           me: () => plusMe(request, env),
           logout: () => plusLogout(request, env),
-          deck: () => deckTicket(request, env),
+          day: () => dayArchive(request, env, openSealed, env.CROSSWORD_SITE || 'https://www.jareddesu.com'),
           bonus: () => bonusPuzzle(request, env, openSealed, env.CROSSWORD_SITE || 'https://www.jareddesu.com'),
           checkout: () => plusCheckout(request, env, origin),
           sync: () => plusSync(request, env),

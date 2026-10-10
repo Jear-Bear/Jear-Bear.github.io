@@ -9,15 +9,17 @@
 // are on different domains, so it's sent as a header, not a cookie).
 //
 // Membership is on the account: a Stripe subscription tied to the email
-// (stripe.js), or free access given in the Sponsor desk.
+// (stripe.js), or free access given in the Sponsor desk. Members get past
+// days (sealed in the repo, opened here), bonus puzzles, and unlimited deck
+// puzzles (everyone gets 1 a day; that's counted in the browser).
 //
 //   GET  /public/plus/info                           what's set up (sale open, Google, email links, prices)
 //   POST /public/plus/login/google  { credential }   → { token, user }
 //   POST /public/plus/login/email   { email }        → { ok } (sends the link)
 //   POST /public/plus/login/verify  { token }        → { token, user }  (from the link)
-//   POST /public/plus/me            { day }          → { user } (membership, deck puzzles left today)
+//   POST /public/plus/me            {}               → { user } (membership)
 //   POST /public/plus/logout        {}               signs this account out everywhere
-//   POST /public/plus/deck          { day }          → { ok, left } or { ok: false, error }
+//   POST /public/plus/day           { date }         → a past day's puzzles, opened (members)
 //   POST /public/plus/bonus         { id }           → a sealed bonus puzzle, opened (members)
 //   GET  /api/plus                                   accounts for the Sponsor desk (signed in)
 //   POST /api/plus                  { email, note }  free access for an email
@@ -29,7 +31,6 @@ import { HttpError } from './data.js';
 import { isUuid } from '../../../scripts/manage/schema.js';
 import { hmacHex, bump, text } from './public.js';
 
-export const DECK_PER_DAY = 2;
 const SESSION_DAYS = 90;
 const LOGIN_MINUTES = 20;
 const EMAIL = /^[^\s@<>"]{1,64}@[A-Za-z0-9.-]{1,190}\.[A-Za-z]{2,24}$/;
@@ -57,12 +58,6 @@ async function limit(request, env, name, max) {
   const ip = request.headers.get('CF-Connecting-IP') || 'local';
   await env.DB.prepare('DELETE FROM public_hits WHERE expires_at < ?').bind(now).run();
   if (!(await bump(env.DB, `${name}:${await hmacHex(env, `${ip}:${Math.floor(now / 3600)}`)}`, max, 3600, now))) throw new HttpError(429, 'Too many tries. Please try again later.');
-}
-
-function dayOf(v) {
-  const today = new Date().toISOString().slice(0, 10);
-  if (typeof v !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return today;
-  return Math.abs(Date.parse(`${v}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) <= 86400000 ? v : today;
 }
 
 // --- sessions -----------------------------------------------------------------------------------
@@ -112,13 +107,11 @@ async function userFor(db, email, extra = {}) {
   return u;
 }
 
-export async function publicUser(db, u, day) {
-  const made = ((await db.prepare('SELECT made FROM plus_usage WHERE user_id = ? AND day = ?').bind(u.id, dayOf(day)).first()) || { made: 0 }).made;
+export async function publicUser(db, u) {
   return {
     email: u.email, name: u.name || null, google: Boolean(u.google_sub),
     member: isMember(u), granted: Boolean(u.granted) && !u.revoked, paid: Boolean(u.stripe_subscription),
     status: u.status || null, plan: u.plan || null, renews: u.period_end || null,
-    left: Math.max(0, DECK_PER_DAY - made), perDay: DECK_PER_DAY,
   };
 }
 
@@ -212,15 +205,17 @@ export async function logout(request, env) {
   return { ok: true };
 }
 
-export async function deckTicket(request, env) {
+// A past day (data/crossword/puzzles/DATE.json, sealed once it's in the past everywhere), opened for a member
+export async function dayArchive(request, env, openSealed, site) {
   const u = await needUser(request, env);
   if (!isMember(u)) return { ok: false, error: 'member' };
   const body = await readBody(request);
-  // Count it only while under the limit (one statement, so two tabs can't both get the last one)
-  const r = await env.DB.prepare(`INSERT INTO plus_usage (user_id, day, made) VALUES (?, ?, 1)
-    ON CONFLICT (user_id, day) DO UPDATE SET made = made + 1 WHERE made < ? RETURNING made`).bind(u.id, dayOf(body.day), DECK_PER_DAY).first();
-  if (!r) return { ok: false, error: 'limit', left: 0 };
-  return { ok: true, left: Math.max(0, DECK_PER_DAY - r.made) };
+  const date = text(body.date, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new HttpError(400, 'Bad date');
+  const res = await fetch(`${site}/data/crossword/puzzles/${date}.json`, { cf: { cacheTtl: 300 } });
+  if (!res.ok) throw new HttpError(404, 'No puzzles for that day');
+  const f = await res.json();
+  return { ok: true, day: f.ct ? await openSealed(env.DB, f) : f };
 }
 
 // A sealed bonus puzzle (data/crossword/bonus/ID.json), opened for a member
@@ -237,17 +232,12 @@ export async function bonusPuzzle(request, env, openSealed, site) {
 
 // --- Sponsor desk -------------------------------------------------------------------------------
 export async function listPlus(db) {
-  const today = new Date().toISOString().slice(0, 10);
-  const { results } = await db.prepare(`SELECT u.*,
-    COALESCE((SELECT SUM(made) FROM plus_usage x WHERE x.user_id = u.id), 0) AS made_total,
-    COALESCE((SELECT made FROM plus_usage x WHERE x.user_id = u.id AND x.day = ?), 0) AS made_today
-    FROM plus_users u ORDER BY u.created_at DESC`).bind(today).all();
+  const { results } = await db.prepare('SELECT * FROM plus_users ORDER BY created_at DESC').all();
   return {
-    perDay: DECK_PER_DAY,
     users: results.map((r) => ({
       id: r.id, email: r.email, name: r.name, google: Boolean(r.google_sub), created_at: r.created_at, last_login: r.last_login,
       granted: Boolean(r.granted), grant_note: r.grant_note, revoked: Boolean(r.revoked), paid: Boolean(r.stripe_subscription),
-      status: r.status, plan: r.plan, period_end: r.period_end, member: isMember(r), made_today: r.made_today, made_total: r.made_total,
+      status: r.status, plan: r.plan, period_end: r.period_end, member: isMember(r),
     })),
   };
 }

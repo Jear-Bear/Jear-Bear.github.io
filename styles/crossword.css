@@ -250,3 +250,6 @@ html[data-ui="ja"] [data-ui-only="en"], html:not([data-ui="ja"]) [data-ui-only="
 .cw-plans .btn { min-height: 46px; }
 .cw-signin { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
 .cw-deck input[type="email"] { font: 15px var(--font-gothic); padding: 8px 10px; min-height: 42px; border: 1px solid var(--border-strong); background: var(--paper); color: var(--ink); flex: 1 1 220px; min-width: 0; }
+.cw-empty .cw-locked { display: block; margin-bottom: 12px; }
+.cw-locked-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.cw-plusblock { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }

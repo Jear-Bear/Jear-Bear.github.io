@@ -1,7 +1,7 @@
 // plus.js — the low-key Crossword+ waitlist.
 //
 // The daily puzzles stay free. This only asks regular solvers whether they'd
-// like optional extras (crosswords from their Anki deck, bonus puzzles), and if so, takes an
+// like optional extras (past puzzles, unlimited deck puzzles, bonus puzzles), and if so, takes an
 // email for one note when it's ready. To keep it from being pushy:
 //   - the solved screen (お見事) shows a short version on every solve, until you
 //     sign up (then just a one-line "you're on the list") or tap "Not for me"
@@ -11,19 +11,19 @@
 // Emails go to the sponsor Worker's private database (waitlist.js), never the repo.
 
 import { lang } from '../games/i18n.js?v=1';
-import { info, isMember } from './account.js?v=1';
+import { info, isMember } from './account.js?v=2';
 
 const API = 'https://sponsor-crm.jared-65b.workers.dev';
 const KEY = 'jareddesu.crossword.plus';
 const SUPPORT_URL = 'https://www.youtube.com/@jareddesu/join';
-const WANTS = ['deck', 'bonus', 'sync', 'print'];      // (past puzzles stay free, so no 'archive')
+const WANTS = ['archive', 'deck', 'bonus', 'sync', 'print'];
 const HIDE_DAYS = 30;
 
 const T = {
   en: {
     title: 'Want more puzzles?',
-    body: 'The daily puzzles are free, and they’ll stay that way. I’m working on an optional Crossword+ for people who want more: crosswords made from your own Anki deck and a few bonus puzzles each week. Would you use it?',
-    short: 'The daily puzzles will always be free. Would you use an optional Crossword+ with crosswords from your own Anki deck and weekly bonus puzzles?',
+    body: 'The daily puzzles are free, and they’ll stay that way. I’m working on an optional Crossword+ for people who want more: every past puzzle, unlimited crosswords from your own Anki deck, and a few bonus puzzles each week. Would you use it?',
+    short: 'The daily puzzles will always be free. Would you use an optional Crossword+ with every past puzzle, unlimited crosswords from your Anki deck and weekly bonus puzzles?',
     wantsLabel: 'What sounds good? (optional)',
     'want.archive': 'Every past puzzle', 'want.bonus': 'Bonus puzzles', 'want.deck': 'Crosswords from my Anki deck', 'want.sync': 'Streaks on all my devices', 'want.print': 'Printable puzzles',
     email: 'Your email', submit: 'Tell me when it’s ready', not: 'Not for me',
@@ -33,14 +33,14 @@ const T = {
     hidden: 'Got it. I won’t ask for a while.',
     onList: 'You’re on the Crossword+ list. I’ll email once when it’s ready.',
     openTitle: 'Crossword+ is here',
-    openShort: 'Crosswords from your own Anki deck and weekly bonus puzzles, for {price} a month. The daily puzzles stay free.',
-    openBody: 'Crosswords made from your own Anki deck (2 a day) and a few bonus puzzles every week, for {month} a month or {year} a year. The daily puzzles stay free, and you can cancel anytime.',
+    openShort: 'Every past puzzle, unlimited crosswords from your Anki deck and weekly bonus puzzles, for {price} a month. Today’s puzzles stay free.',
+    openBody: 'Every past puzzle, as many crosswords from your own Anki deck as you like, and a few bonus puzzles every week, for {month} a month or {year} a year. Today’s puzzles stay free, and you can cancel anytime.',
     openCta: 'See Crossword+',
   },
   ja: {
     title: 'もっと解きたい？',
-    body: '毎日のパズルは無料で、これからもずっと無料です。もっと解きたい人向けに、自分のAnkiデッキから作るクロスワードと毎週のボーナスパズルが遊べる「クロスワード＋」（任意の有料プラン）を準備しています。使ってみたいですか？',
-    short: '毎日のパズルはずっと無料です。自分のAnkiデッキのクロスワードと毎週のボーナスパズルが遊べる任意の「クロスワード＋」、使ってみたいですか？',
+    body: '毎日のパズルは無料で、これからもずっと無料です。もっと解きたい人向けに、過去のパズル全部、Ankiデッキのクロスワード作り放題、毎週のボーナスパズルが遊べる「クロスワード＋」（任意の有料プラン）を準備しています。使ってみたいですか？',
+    short: '毎日のパズルはずっと無料です。過去のパズル全部、Ankiデッキのクロスワード作り放題、毎週のボーナスパズルが遊べる任意の「クロスワード＋」、使ってみたいですか？',
     wantsLabel: '気になるもの（任意）',
     'want.archive': '過去のパズル全部', 'want.bonus': 'ボーナスパズル', 'want.deck': 'Ankiデッキでクロスワード', 'want.sync': '記録をどの端末でも', 'want.print': '印刷できるパズル',
     email: 'メールアドレス', submit: '始まったら教えて', not: '興味なし',
@@ -50,8 +50,8 @@ const T = {
     hidden: 'わかりました。しばらく聞きません。',
     onList: 'クロスワード＋のリストに登録済みです。準備ができたら1回だけお知らせします。',
     openTitle: 'クロスワード＋が始まりました',
-    openShort: '自分のAnkiデッキで作るクロスワードと毎週のボーナスパズルが月{price}で。毎日のパズルはずっと無料です。',
-    openBody: '自分のAnkiデッキで作るクロスワード（1日2つ）と毎週のボーナスパズルが、月{month}または年{year}で遊べます。毎日のパズルはずっと無料で、いつでも解約できます。',
+    openShort: '過去のパズル全部、Ankiデッキのクロスワード作り放題、毎週のボーナスパズルが月{price}で。今日のパズルはずっと無料です。',
+    openBody: '過去のパズル全部、Ankiデッキのクロスワード作り放題、毎週のボーナスパズルが、月{month}または年{year}で遊べます。今日のパズルはずっと無料で、いつでも解約できます。',
     openCta: 'クロスワード＋を見る',
   },
 };

@@ -1,13 +1,14 @@
-# Crossword+ (waitlist stage)
+# Crossword+
 
-Crossword+ is an idea for optional extras on top of the free daily
-crossword: every past puzzle and a few bonus puzzles each week. Right now
-it's a waitlist plus a growing backlog of bonus puzzles, to see whether
-enough people want it before building payments.
+Optional extras on top of the free daily crossword. Built and ready to sell
+once Stripe is connected (see "Accounts and payments"); until then the page
+shows the waitlist.
 
-**What's in it:** crosswords from your own Anki deck (**My deck**, 2 a day)
-and a few bonus puzzles a week. The daily kana and kanji puzzles stay free,
-and so do all past puzzles (that's one of the promises below).
+**What's free:** today's puzzles, kana and kanji, every level and size, plus
+one My deck puzzle a day.
+
+**What's in Crossword+:** every past puzzle, unlimited My deck puzzles, and
+a few bonus puzzles a week.
 
 **Price:** $2.99/month or $24.99/year (about $2.08/month, roughly 30% off).
 Waitlist members get a founding price of $1.99/month, locked in for as long
@@ -21,9 +22,12 @@ subscriptions, and keeping it under $3 makes it feel like a tip, not a bill.
 
 These are on the crossword page in English and Japanese. Don't break them:
 
-- **Every daily puzzle stays free:** all four levels, both sizes, every check
-  and reveal. Nothing that's free now moves behind Crossword+.
-- **No ads, no account, nothing to install.**
+- **Today's puzzles stay free:** kana and kanji, all four levels, both sizes,
+  every check and reveal.
+- **No ads, no account, nothing to install** for the dailies (an account is
+  only for Crossword+).
+- (Changed Oct 2026: past puzzles moved into Crossword+. The page used to
+  say every daily stays free; it now says today's.)
 - **One email at launch.** No newsletter. Everyone can remove themselves anytime.
 
 ## How the asking works
@@ -79,10 +83,11 @@ Add this to the nightly crossword task (after publishing the dailies):
 7. Bonus puzzles: if the newest entry in data/crossword/bonus/index.json was made 7 or more days ago (or the file doesn't exist), run: node scripts/crossword/cli.mjs bonus-draft 2. For each draft (data/crossword/drafts/bonus-NNN.json), apply the same safety check as step 2 and write clues the same way as step 3 (its level is in the draft; mixed gets Japanese clues), then run: node scripts/crossword/cli.mjs bonus-publish bonus-NNN. Commit data/crossword/bonus/ together with the dailies.
 ```
 
-## My deck (live for members)
+## My deck
 
-The first Crossword+ feature: crosswords made from the member's own Anki
-deck, on the crossword page under **My deck**.
+Crosswords made from your own Anki deck, on the crossword page under
+**My deck**. **One a day is free** for everyone (no account; counted in the
+browser), and members can make as many as they like.
 
 - **Import:** Anki → File → Export → "Notes in Plain Text (.txt)" (a CSV or a
   paste works too). Every deck's fields differ, so the member picks which
@@ -92,19 +97,27 @@ deck, on the crossword page under **My deck**.
 - **Puzzles:** Mini or Daily, kana or kanji answers, built in the browser
   (freeform grids, only the deck's words). The deck and the puzzles stay in
   that browser; nothing from the deck is sent anywhere.
-- **Limit: 2 a day** per member, reset at their midnight. The Worker counts
-  them (`POST /public/plus/deck`), so a new browser doesn't reset it. Made
-  puzzles can be replayed any time.
-- Members only: see "Accounts and payments" below.
+- After the free one, **Make a puzzle** points to Crossword+. Made puzzles can
+  be replayed any time.
 
-## Keeping every puzzle
+## Past puzzles (the archive)
 
-Every daily ever published stays in `data/crossword/puzzles/` (one file per
-day, all eight puzzles, about 50 KB) and is listed in `index.json`. That's
-about 18 MB a year, so the repo stays far under GitHub's 1 GB guideline for
-decades. Sealed bonus files are about 15 KB each. If the archive ever moves
-behind Crossword+, the Worker's D1 (5 GB free) can hold it just as easily,
-and git history keeps every version regardless.
+Every day ever published stays in `data/crossword/puzzles/` (one file per
+day, kana and kanji, about 100 KB) and is listed in `index.json`: about
+40 MB a year, far under GitHub's 1 GB guideline for decades.
+
+- On the page, any day before your own today is for members (🔒 in the date
+  list; "Past puzzles are part of Crossword+" with a link).
+- Once a day is in the past in **every** time zone, `publish` seals its file
+  (encrypted for the sponsor Worker, like the bonus puzzles), so it can't be
+  read from the repo either. The Worker opens it for members
+  (`POST /public/plus/day`). `node scripts/crossword/cli.mjs seal-archive`
+  does it by hand.
+- So new puzzles can still avoid repeating recent answers, sealed days keep
+  their answers as salted hashes in `sealed-answers.json` (no clues, no
+  grids).
+- Days from before this change are still readable in the repo's git history.
+  That's fine for a soft paywall; nobody's going to solve from commit diffs.
 
 ## Telling people (without being pushy)
 

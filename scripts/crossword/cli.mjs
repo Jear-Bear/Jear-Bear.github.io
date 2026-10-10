@@ -11,6 +11,7 @@
 //   node scripts/crossword/cli.mjs check            re-check every published puzzle
 //   node scripts/crossword/cli.mjs kanji [DATE|all] add the kanji puzzles to a published day (publish does this
 //                                                   too); "all" fills in every published day that has none
+//   node scripts/crossword/cli.mjs seal-archive     seal (encrypt) days that are in the past everywhere (publish does this too)
 //
 // Drafts hold the answers in plain text, so data/crossword/drafts/ is git-ignored.
 // Published files keep the answers lightly encoded (no spoilers in view-source).
@@ -21,6 +22,7 @@ import { fileURLToPath } from 'node:url';
 import { gridKana, romaji, toHira } from './kana.js';
 import { build, rng, themeMatcher, SIZES, SHAPES, LEVELS, WORD_LEVELS, JAPANESE_CLUES } from './construct.mjs';
 import { buildFree } from './freeform.mjs';
+import { createHash } from 'node:crypto';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const DIR = path.join(ROOT, 'data/crossword');
@@ -101,7 +103,8 @@ function recentAnswers(date, level) {
     const d = addDays(date, -i);
     const p = readJson(path.join(PUZZLES, `${d}.json`), null);
     const add = (e) => { if (e.answer.length >= 3) used.add(e.answer); };
-    if (p) p.puzzles.filter((z) => z.level === level && !z.mode).forEach((z) => decode(z.key).entries.forEach(add));
+    if (isSealed(p)) sealedAnswers(d, level).forEach((a) => add({ answer: a }));
+    else if (p) p.puzzles.filter((z) => z.level === level && !z.mode).forEach((z) => decode(z.key).entries.forEach(add));
     const dr = readJson(path.join(DRAFTS, `${d}.json`), null);          // unpublished drafts count too
     if (dr) dr.puzzles.filter((z) => z.level === level).forEach((z) => z.entries.forEach(add));
   }
@@ -216,7 +219,7 @@ function toPublished(p, id) {
   };
 }
 
-function publish(date) {
+async function publish(date) {
   if (!isDate(date)) die('Usage: publish YYYY-MM-DD');
   const src = path.join(DRAFTS, `${date}.json`);
   const d = readJson(src, null);
@@ -239,6 +242,49 @@ function publish(date) {
   fs.rmSync(src);
   console.log(`Published ${date} (${puzzles.length} puzzles)`);
   addKanji(date);
+  await sealArchive();
+}
+
+// --- the archive (Crossword+) ----------------------------------------------------------------
+// Today's puzzles are free; past ones are for Crossword+ members. A day is
+// sealed (encrypted for the sponsor Worker, like the bonus puzzles) once it's
+// in the past in every time zone, so its file can't be read from the repo.
+// The Worker opens it for members (POST /public/plus/day). To keep avoiding
+// repeats, the answers of sealed days are kept as salted hashes in
+// sealed-answers.json (no clues, no grids).
+const SEALED_ANSWERS = path.join(DIR, 'sealed-answers.json');
+const isSealed = (f) => Boolean(f && f.ct && f.ek);
+const answerHash = (a) => createHash('sha256').update(`jareddesu-crossword:${a}`).digest('hex').slice(0, 20);
+let answerLookup = null;
+function sealedAnswers(date, group) {
+  const rec = readJson(SEALED_ANSWERS, { days: {} }).days[date];
+  if (!rec || !rec[group]) return [];
+  if (!answerLookup) {
+    answerLookup = new Map();
+    readJson(WORDS, { words: [] }).words.forEach((w) => { answerLookup.set(answerHash(w.a), w.a); answerLookup.set(answerHash(w.w), w.w); });
+  }
+  return rec[group].map((h) => answerLookup.get(h)).filter(Boolean);
+}
+
+async function sealArchive() {
+  const cutoff = addDays(todayEarliest(), -2);             // the oldest "today" anywhere (UTC-12)
+  const rec = readJson(SEALED_ANSWERS, { about: 'Answers of sealed (Crossword+) days, hashed, so new puzzles can avoid repeats. No clues or grids.', days: {} });
+  let n = 0;
+  for (const date of readJson(INDEX, { dates: [] }).dates) {
+    if (date >= cutoff) continue;
+    const file = path.join(PUZZLES, `${date}.json`);
+    const f = readJson(file, null);
+    if (!f || isSealed(f)) continue;
+    const groups = {};
+    f.puzzles.forEach((z) => {
+      const g = `${z.mode === 'kanji' ? 'kanji:' : ''}${z.level}`;
+      groups[g] = [...new Set([...(groups[g] || []), ...decode(z.key).entries.map((e) => answerHash(e.answer))])];
+    });
+    rec.days[date] = groups;
+    writeJson(file, { date, sealed: true, ...(await seal(f)) }, false);
+    n++;
+  }
+  if (n) { writeJson(SEALED_ANSWERS, rec, false); console.log(`Sealed ${n} past day${n === 1 ? '' : 's'} for Crossword+`); }
 }
 
 // --- kanji puzzles --------------------------------------------------------------------------
@@ -273,8 +319,10 @@ const kanjiClue = (level, e) => (level === 'mixed' ? e.reading : `${shortMeaning
 function kanjiRecent(date, level) {
   const used = new Set();
   for (let i = 1; i <= KANJI_RECENT_DAYS; i++) {
-    const p = readJson(path.join(PUZZLES, `${addDays(date, -i)}.json`), null);
-    if (p) p.puzzles.filter((z) => z.mode === 'kanji' && z.level === level).forEach((z) => decode(z.key).entries.forEach((e) => used.add(e.answer)));
+    const d = addDays(date, -i);
+    const p = readJson(path.join(PUZZLES, `${d}.json`), null);
+    if (isSealed(p)) sealedAnswers(d, `kanji:${level}`).forEach((a) => used.add(a));
+    else if (p) p.puzzles.filter((z) => z.mode === 'kanji' && z.level === level).forEach((z) => decode(z.key).entries.forEach((e) => used.add(e.answer)));
   }
   return used;
 }
@@ -309,6 +357,7 @@ function addKanji(date, { quiet = false } = {}) {
   const file = path.join(PUZZLES, `${date}.json`);
   const f = readJson(file, null);
   if (!f) die(`${date} isn't published`);
+  if (isSealed(f)) return false;
   if (f.puzzles.some((p) => p.mode === 'kanji')) { if (!quiet) console.log(`${date} already has kanji puzzles`); return false; }
   f.puzzles.push(...kanjiPuzzles(date, f.theme ? readJson(THEMES, { themes: [] }).themes.find((t) => t.id === f.theme.id) : null));
   writeJson(file, f, false);
@@ -329,6 +378,7 @@ function checkAll() {
   for (const date of index.dates) {
     const f = readJson(path.join(PUZZLES, `${date}.json`), null);
     if (!f) { console.error(`${date}: listed in index.json but missing`); bad++; continue; }
+    if (isSealed(f)) { if (!f.kid) { console.error(`${date}: sealed without a key ID`); bad++; } continue; }   // the Worker checks these when it opens them
     for (const p of f.puzzles) {
       const k = decode(p.key);
       const ok = k.rows.length === p.height && k.rows.every((r, i) => [...r].length === p.width && [...r].every((ch, j) => (ch === '#') === (p.grid[i][j] === '#')));
@@ -438,11 +488,12 @@ async function bonusPublish(id) {
 const [cmd, arg] = process.argv.slice(2);
 if (cmd === 'words') await words();
 else if (cmd === 'draft') draft(arg);
-else if (cmd === 'publish') publish(arg);
+else if (cmd === 'publish') await publish(arg);
+else if (cmd === 'seal-archive') await sealArchive();
 else if (cmd === 'check') checkAll();
 else if (cmd === 'kanji') kanji(arg);
 else if (cmd === 'status') status(Number(arg) || 3);
 else if (cmd === 'bonus-key') await bonusKey();
 else if (cmd === 'bonus-draft') bonusDraft(Number(arg) || 1);
 else if (cmd === 'bonus-publish') await bonusPublish(arg);
-else die('Commands: words | status [days] | draft DATE | publish DATE | check | kanji DATE|all | bonus-key | bonus-draft [n] | bonus-publish ID');
+else die('Commands: words | status [days] | draft DATE | publish DATE | check | kanji DATE|all | seal-archive | bonus-key | bonus-draft [n] | bonus-publish ID');

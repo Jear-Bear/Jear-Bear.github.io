@@ -15,9 +15,9 @@
 import { toHiragana } from '../kanji/romaji.js?v=1';
 import { gridKana, cycleDakuten, romaji } from './kana.js?v=1';
 import { translator, lang, setLang, dateLocale } from '../games/i18n.js?v=1';
-import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=7';
-import { mountDeck } from './deck.js?v=3';
-import { handleReturn, refresh } from './account.js?v=1';
+import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=8';
+import { mountDeck } from './deck.js?v=4';
+import { handleReturn, refresh, isMember, onAccount, archiveDay } from './account.js?v=2';
 import { rng } from './construct.mjs?v=1';
 
 const $ = (id) => document.getElementById(id);
@@ -36,7 +36,8 @@ const t = translator({
     'ime.kanji': 'Only kana fit in the squares. Press Enter instead of converting to kanji.',
     'ime.convert': 'Convert to kanji before pressing Enter, or tap a tile.',
     'kanji.type': 'Type with a Japanese keyboard (IME) and convert to kanji, or tap the tiles under the grid.',
-    modeGroup: 'Mode', 'mode.kana': 'Kana', 'mode.kanji': 'Kanji', 'mode.deck': 'Crossword+',
+    modeGroup: 'Mode', 'mode.kana': 'Kana', 'mode.kanji': 'Kanji', 'mode.deck': 'My deck',
+    locked: 'Past puzzles are part of Crossword+. Today’s puzzles are always free.', toToday: 'Go to today’s puzzle', seePlus: 'See Crossword+',
     tiles: 'Kanji tiles', 'empty.deck': '',
     level: 'Level', bar: 'Puzzle options', sizeGroup: 'Size', prev: 'Previous puzzle', next: 'Next puzzle', settings: 'Settings',
     today: 'Today · {date}',
@@ -78,7 +79,8 @@ const t = translator({
     'ime.kanji': 'マスに入るのはかなだけです。漢字に変換せず、そのまま確定してください。',
     'ime.convert': '漢字に変換してから確定するか、タイルをタップしてください。',
     'kanji.type': '日本語入力（IME）で漢字に変換して入力するか、盤面の下のタイルをタップしてください。',
-    modeGroup: 'モード', 'mode.kana': 'かな', 'mode.kanji': '漢字', 'mode.deck': 'クロスワード＋',
+    modeGroup: 'モード', 'mode.kana': 'かな', 'mode.kanji': '漢字', 'mode.deck': 'マイデッキ',
+    locked: '過去のパズルはクロスワード＋の特典です。今日のパズルはいつでも無料です。', toToday: '今日のパズルへ', seePlus: 'クロスワード＋を見る',
     tiles: '漢字タイル', 'empty.deck': '',
     level: 'レベル', bar: 'パズルの設定', sizeGroup: 'サイズ', prev: '前のパズル', next: '次のパズル', settings: '設定',
     today: '今日 · {date}',
@@ -188,14 +190,17 @@ async function init() {
   deck = mountDeck({ root: $('deck'), play: (p) => { settings.mode = 'deck'; save(); openPuzzle(p); $('play').scrollIntoView({ block: 'start', behavior: 'smooth' }); } });
   // Back from an email sign-in link or from Stripe: open the Crossword+ panel and say what happened
   const back = await handleReturn();
-  if (back) { settings.mode = 'deck'; save(); } else refresh();
+  if (back) { settings.mode = 'deck'; save(); } else await refresh();
   document.addEventListener('crossword:plus', () => {
     $('done').hidden = true;
     settings.mode = 'deck';
     save();
     openPuzzle();
-    $('mode-seg').scrollIntoView({ block: 'start', behavior: 'smooth' });
+    setTimeout(() => deck.showPlus(), 150);
   });
+  // Becoming a member (or signing out) while on a past day: show it, or lock it
+  let wasMember = isMember();
+  onAccount(() => { if (isMember() !== wasMember) { wasMember = isMember(); if (settings.mode !== 'deck' && date && date < localDate()) openDay(); } });
   wireControls();
   wireSettings();
   buildKeys();
@@ -233,11 +238,34 @@ const untilMidnight = () => {
 async function openDay() {
   if (settings.mode === 'deck') { openPuzzle(); return; }
   if (!date) { showEmpty(t('empty.soon')); return; }
-  try { day = await getJson(`puzzles/${date}.json`); } catch { showEmpty(t('empty.fail')); return; }
+  // Past days are for Crossword+ members (today's are free)
+  if (date < localDate() && !isMember()) { day = null; showLocked(); return; }
+  const want = date;
+  day = null;
+  let d;
+  try {
+    d = await getJson(`puzzles/${want}.json`);
+    // Older days are sealed in the repo; the sponsor Worker opens them for members
+    if (d.ct) { const r = await archiveDay(want); if (!r.ok) { if (date === want) showLocked(); return; } d = r.day; }
+  } catch { if (date === want) showEmpty(t('empty.fail')); return; }
+  if (date !== want) return;                 // they moved to another day meanwhile
+  day = d;
   openPuzzle();
 }
 
+function showLocked() {
+  stopClock();
+  renderBar();
+  $('play').hidden = true;
+  $('words-sec').hidden = true;
+  $('empty').hidden = false;
+  fill($('empty'), h('span', { class: 'cw-locked' }, '🔒 ', t('locked')), h('span', { class: 'cw-locked-actions' },
+    h('button', { type: 'button', class: 'btn', onclick: () => { const today = dates.filter((d) => d <= localDate()).pop(); if (today) { date = today; history.replaceState(null, '', location.pathname); openDay(); } } }, t('toToday')),
+    h('button', { type: 'button', class: 'btn btn-primary', onclick: () => document.dispatchEvent(new CustomEvent('crossword:plus')) }, t('seePlus'))));
+}
+
 function showEmpty(msg) {
+  stopClock();
   $('play').hidden = true;
   $('empty').hidden = false;
   $('empty').textContent = msg;
@@ -254,7 +282,7 @@ function openPuzzle(deckPuzzle = null) {
     p = deckPuzzle || deck.current();
     if (!p) { renderBar(); pz = null; $('play').hidden = true; $('empty').hidden = true; $('words-sec').hidden = true; $('stats').textContent = ''; return; }
   } else {
-    if (!day) { renderBar(); if (date) openDay(); else showEmpty(t('empty.soon')); return; }
+    if (!day || !day.puzzles) { renderBar(); if (date) openDay(); else showEmpty(t('empty.soon')); return; }
     p = day.puzzles.find((x) => x.size === settings.size && x.level === settings.level && (x.mode || 'kana') === settings.mode);
     if (!p) { renderBar(); showEmpty(t('empty.level', { level: LEVEL_NAME(settings.level) })); return; }
   }
@@ -436,8 +464,9 @@ function openDates(go) {
   const list = $('date-list');
   list.replaceChildren(...dates.filter((d) => d <= today).reverse().map((d) => {
     const done = ['mini', 'daily'].filter((s) => (store.progress[`${d}${settings.mode === 'kanji' ? '-kanji' : ''}-${settings.level}-${s}`] || {}).done);
+    const locked = d < today && !isMember();
     return h('li', {}, h('button', { type: 'button', class: d === date ? 'is-on' : '', onclick: () => { $('dates').hidden = true; go(d); } },
-      h('span', {}, fmtDate(d)), h('span', { class: 'cw-date-done' }, done.map((s) => `${SIZE_NAME(s)} ✓`).join(' · '))));
+      h('span', {}, fmtDate(d)), h('span', { class: 'cw-date-done' }, locked ? '🔒' : done.map((s) => `${SIZE_NAME(s)} ✓`).join(' · '))));
   }));
   $('dates').hidden = false;
 }

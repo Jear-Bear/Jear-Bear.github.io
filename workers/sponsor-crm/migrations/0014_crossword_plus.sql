@@ -26,14 +26,6 @@ CREATE TABLE plus_logins (
   expires_at INTEGER NOT NULL
 );
 
--- Deck puzzles made per member per day (the limit is 2)
-CREATE TABLE plus_usage (
-  user_id TEXT NOT NULL,
-  day TEXT NOT NULL,
-  made INTEGER NOT NULL DEFAULT 0,
-  PRIMARY KEY (user_id, day)
-);
-
 -- What the Sponsor desk's "Connect Stripe" set up, per mode (test or live):
 -- price IDs, the portal configuration and the webhook's signing secret.
 -- Kept out of the settings table so it never shows up in a desk export.
