@@ -15,8 +15,9 @@
 import { toHiragana } from '../kanji/romaji.js?v=1';
 import { gridKana, cycleDakuten, romaji } from './kana.js?v=1';
 import { translator, lang, setLang, dateLocale } from '../games/i18n.js?v=1';
-import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=9';
-import { mountDeck } from './deck.js?v=6';
+import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=10';
+import { mountDeck } from './deck.js?v=7';
+import { openBrowse } from './browse.js?v=1';
 import { handleReturn, refresh, isMember, onAccount, archiveDay } from './account.js?v=2';
 import { rng } from './construct.mjs?v=1';
 
@@ -383,8 +384,6 @@ function wireControls() {
   $('date-prev').addEventListener('click', () => { const i = dates.indexOf(date); if (i > 0) go(dates[i - 1]); });
   $('date-next').addEventListener('click', () => { const i = dates.indexOf(date); if (i < dates.length - 1) go(dates[i + 1]); });
   $('date-label').addEventListener('click', () => openDates(go));
-  $('dates-close').addEventListener('click', () => { $('dates').hidden = true; });
-  $('dates').addEventListener('click', (e) => { if (e.target === e.currentTarget) $('dates').hidden = true; });
   $('timer').addEventListener('click', () => { if (st && !st.done) pause(); });
   $('resume').addEventListener('click', resume);
   $('clue-prev').addEventListener('click', () => nextEntry(-1));
@@ -419,7 +418,7 @@ function wireControls() {
   });
   document.addEventListener('keydown', (e) => {
     if (e.target === ime || e.target.closest('input, select, textarea, details, button') || !pz || $('play').hidden) return;
-    if (!$('done').hidden || !$('dates').hidden || !$('settings').hidden) return;
+    if (!$('done').hidden || document.querySelector('.cw-browse') || !$('settings').hidden) return;
     onKey(e);
   });
   document.addEventListener('visibilitychange', () => { if (document.hidden) stopClock(); else if (pz && !st.done && $('paused').hidden) startClock(); });
@@ -467,14 +466,15 @@ function relabel() {
 
 function openDates(go) {
   const today = localDate();
-  const list = $('date-list');
-  list.replaceChildren(...dates.filter((d) => d <= today).reverse().map((d) => {
-    const done = ['mini', 'daily'].filter((s) => (store.progress[`${d}${settings.mode === 'kanji' ? '-kanji' : ''}-${settings.level}-${s}`] || {}).done);
-    const locked = d < today && !isMember();
-    return h('li', {}, h('button', { type: 'button', class: d === date ? 'is-on' : '', onclick: () => { $('dates').hidden = true; go(d); } },
-      h('span', {}, fmtDate(d)), h('span', { class: 'cw-date-done' }, locked ? '🔒' : done.map((s) => `${SIZE_NAME(s)} ✓`).join(' · '))));
-  }));
-  $('dates').hidden = false;
+  openBrowse({
+    title: t('pastTitle'),
+    start: date,
+    items: dates.filter((d) => d <= today).map((d) => {
+      const done = ['mini', 'daily'].filter((s) => (store.progress[`${d}${settings.mode === 'kanji' ? '-kanji' : ''}-${settings.level}-${s}`] || {}).done);
+      return { date: d, label: fmtDate(d), sub: done.map((s) => `${SIZE_NAME(s)} ✓`).join(' · '), done: done.length === 2, some: done.length > 0, locked: d < today && !isMember(), current: d === date };
+    }),
+    onPick: (x) => go(x.date),
+  });
 }
 
 // ---------------------------------------------------------------- grid

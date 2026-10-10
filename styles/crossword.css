@@ -305,3 +305,35 @@ html[data-ui="ja"] [data-ui-only="en"], html:not([data-ui="ja"]) [data-ui-only="
 .cw-locked { padding: 14px 16px; border: 1px solid var(--plus-line); border-left: 4px solid var(--plus); border-radius: 8px; background: var(--plus-tint); text-align: left; }
 .cw-locked-msg { display: block; line-height: 1.7; }
 .cw-plus.is-section .cw-plus-submit { background: var(--plus); border-color: var(--plus); color: #fff; }
+
+/* A free player hit a limit (plus.js paywall) */
+.cw-paywall { margin: 12px 0; padding: 14px 16px; border: 1px solid var(--plus-line); border-left: 4px solid var(--plus); border-radius: 8px; background: var(--plus-tint); }
+.cw-deck .cw-paywall .cw-paywall-msg, .cw-paywall-msg { margin: 0 0 6px; font-size: 15px; font-weight: 700; line-height: 1.6; color: var(--ink); }
+.cw-paywall .cw-plus-price { margin-bottom: 10px; }
+.cw-paywall.is-nudge { animation: cw-nudge .7s ease 2; }
+@keyframes cw-nudge { 50% { box-shadow: 0 0 0 4px var(--plus-line); transform: translateX(3px); } }
+@media (prefers-reduced-motion: reduce) { .cw-paywall.is-nudge { animation: none; outline: 3px solid var(--plus); } }
+.cw-see-all { margin-top: 8px; font-size: 14px; }
+
+/* Puzzle history: calendar or list (browse.js) */
+.cw-browse-sheet { max-width: 460px; }
+.cw-browse-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.cw-browse-filter { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--ink-soft); cursor: pointer; }
+.cw-cal-head { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+.cw-cal-head strong { font-size: 15px; }
+.cw-cal-head .cw-icon:disabled { opacity: .3; cursor: default; }
+.cw-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cw-cal-wd { text-align: center; font-size: 11px; color: var(--muted); padding: 2px 0; }
+.cw-cal-day { position: relative; aspect-ratio: 1; display: grid; place-items: center; font: 14px var(--font-gothic); border-radius: 6px; color: var(--muted); }
+.cw-cal-day.is-empty { opacity: .45; }
+button.cw-cal-day { border: 1px solid var(--border-strong); background: var(--paper); color: var(--ink); cursor: pointer; }
+button.cw-cal-day:hover { border-color: var(--ink); }
+button.cw-cal-day.is-some { background: var(--page-color-soft); }
+button.cw-cal-day.is-done { background: var(--page-color); border-color: var(--page-color); color: #fff; }
+button.cw-cal-day.is-locked { color: var(--muted); background: transparent; border-style: dashed; }
+button.cw-cal-day.is-on { box-shadow: 0 0 0 2px var(--ink); }
+button.cw-cal-day.is-picked { outline: 2px solid var(--plus); outline-offset: 1px; }
+.cw-cal-n { position: absolute; top: 2px; right: 4px; font-size: 10px; line-height: 1; color: inherit; opacity: .8; }
+.cw-browse-list { max-height: 55vh; overflow-y: auto; }
+.cw-browse-month { margin: 12px 0 2px; font-size: 14px; font-weight: 600; }
+.cw-browse .cw-date-list { max-height: none; }
