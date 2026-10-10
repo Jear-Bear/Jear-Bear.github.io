@@ -18,7 +18,7 @@
 
   <link rel="stylesheet" href="../../styles/base.css?v=4">
   <link rel="stylesheet" href="../../styles/crossword.css?v=10">
-  <link rel="stylesheet" href="../../styles/partner.css?v=2">
+  <link rel="stylesheet" href="../../styles/partner.css?v=3">
   <!-- Cloudflare Web Analytics (cookieless) -->
   <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
 </head>
@@ -72,13 +72,13 @@
           <p class="page-intro" data-ui-only="en">
             A new mini and a new daily puzzle every day, at three levels, plus a Mixed puzzle with Japanese clues.
             <strong>Kana</strong>: English clues, hiragana answers, small kana written full size (ゃ→や, っ→つ) like in a Japanese newspaper.
-            <strong>Kanji</strong>: write each word in kanji, one per square, from its meaning and reading.
+            <strong>Kanji</strong>: write each word in kanji, one per square, from its meaning (turn on readings in ⚙ for an easier puzzle).
             <strong>Today’s puzzles are always free</strong>, no account needed.
           </p>
           <p class="page-intro" data-ui-only="ja" lang="ja">
             毎日ミニとデイリーが3つのレベルで登場。日本語のカギで解く「一般」もあります。
             <strong>かな</strong>：英語のカギにひらがなで答えます。新聞のクロスワードと同じく、小さいかなは大きく書きます（ゃ→や、っ→つ）。
-            <strong>漢字</strong>：意味と読みから、言葉を漢字で1マスずつ書きます。
+            <strong>漢字</strong>：意味から、言葉を漢字で1マスずつ書きます（⚙で読みを表示するとやさしくなります）。
             <strong>今日のパズルはいつでも無料</strong>、登録も不要です。
           </p>
         </div>
@@ -221,6 +221,7 @@
       <label class="cw-toggle"><input type="checkbox" id="opt-romaji"> <span><strong data-t="set.romaji">Show romaji</strong> <span data-t="set.romaji.d">under the kana keys.</span></span></label>
       <label class="cw-toggle"><input type="checkbox" id="opt-noassist"> <span><strong data-t="set.assist">Hide Check and Reveal</strong> <span data-t="set.assist.d">for a solve with no help.</span></span></label>
       <label class="cw-toggle"><input type="checkbox" id="opt-words"> <span><strong data-t="set.words">Show answers and meanings</strong> <span data-t="set.words.d">under the puzzle after you solve it.</span></span></label>
+      <label class="cw-toggle"><input type="checkbox" id="opt-readings"> <span><strong data-t="set.readings">Show readings in kanji clues</strong> <span data-t="set.readings.d">an easier kanji puzzle (Mixed always shows them).</span></span></label>
       <div class="cw-sheet-actions"><button type="button" class="btn-link" id="settings-close" data-t="close">Close</button></div>
     </div>
   </div>
@@ -254,7 +255,7 @@
   </footer>
 
   <script src="../../scripts/site.js?v=3"></script>
-  <script type="module" src="../../scripts/crossword/app.js?v=15"></script>
-  <script src="../../scripts/partner.js?v=3"></script>
+  <script type="module" src="../../scripts/crossword/app.js?v=16"></script>
+  <script src="../../scripts/partner.js?v=4"></script>
 </body>
 </html>

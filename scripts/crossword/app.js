@@ -70,6 +70,7 @@ const t = translator({
     'set.romaji': 'Show romaji', 'set.romaji.d': 'under the kana keys.',
     'set.assist': 'Hide Check and Reveal', 'set.assist.d': 'for a solve with no help.',
     'set.words': 'Show answers and meanings', 'set.words.d': 'under the puzzle after you solve it.',
+    'set.readings': 'Show readings in kanji clues', 'set.readings.d': 'an easier kanji puzzle (Mixed always shows them).',
   },
   ja: {
     'size.mini': 'ミニ', 'size.daily': 'デイリー',
@@ -113,6 +114,7 @@ const t = translator({
     'set.romaji': 'ローマ字を表示', 'set.romaji.d': '（かなキーの下に）',
     'set.assist': 'チェックと答えを隠す', 'set.assist.d': '（ヒントなしで解きたい人に）',
     'set.words': '答えと意味を表示', 'set.words.d': '（解いた後、パズルの下に）',
+    'set.readings': '漢字のカギに読みを表示', 'set.readings.d': '（やさしくなります。一般はいつも表示）',
   },
 });
 const LEVEL_NAME = (l) => t(`level.${l}`);
@@ -432,7 +434,7 @@ function wireSettings() {
   sheet.addEventListener('click', (e) => { if (e.target === sheet) close(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !sheet.hidden) close(); });
   sheet.querySelectorAll('[data-lang-seg] button').forEach((b) => b.addEventListener('click', () => { setLang(b.dataset.lang); relabel(); }));
-  [['opt-romaji', 'romaji'], ['opt-noassist', 'noassist'], ['opt-words', 'words']].forEach(([id, k]) => {
+  [['opt-romaji', 'romaji'], ['opt-noassist', 'noassist'], ['opt-words', 'words'], ['opt-readings', 'readings']].forEach(([id, k]) => {
     $(id).checked = Boolean(settings[k]);
     $(id).addEventListener('change', (e) => {
       settings[k] = e.target.checked;
@@ -440,6 +442,7 @@ function wireSettings() {
       if (k === 'romaji') $('keys').classList.toggle('show-romaji', settings.romaji);
       if (k === 'noassist') applyAssist();
       if (k === 'words' && pz) { renderWords(); renderKeyword(); }
+      if (k === 'readings' && pz) { renderClues(); renderKeyword(); if (cur) select(cur.r, cur.c, cur.dir); }
     });
   });
   applyAssist();
@@ -528,7 +531,7 @@ function select(r, c, dir) {
   placeIme();
   if (kanjiMode()) buildTiles(e);
   // Clue bar and list
-  $('clue-text').replaceChildren(h('strong', {}, t('clueId', e)), ' ', h('span', { lang: clueLang() }, e.clue), h('span', { class: 'cw-len' }, ` (${e.len})`));
+  $('clue-text').replaceChildren(h('strong', {}, t('clueId', e)), ' ', h('span', { lang: clueLang() }, shownClue(e.clue)), h('span', { class: 'cw-len' }, ` (${e.len})`));
   document.querySelectorAll('.cw-clue-list li').forEach((li) => {
     li.classList.toggle('is-cur', li.dataset.id === e.id);
     li.classList.toggle('is-cross', Boolean(cross) && li.dataset.id === cross.id);
@@ -548,7 +551,7 @@ function renderClues() {
   for (const dir of ['across', 'down']) {
     $(`clues-${dir}`).replaceChildren(...pz.entries.filter((e) => e.dir === dir).map((e) => h('li', {
       'data-id': e.id, onclick: () => { const [r, c] = firstEmpty(e); select(r, c, dir); if (!coarse) $('ime').focus({ preventScroll: true }); },
-    }, h('span', { class: 'cw-clue-num' }, e.num), h('span', { class: 'cw-clue-body', lang: clueLang() }, e.clue, h('span', { class: 'cw-len' }, ` (${e.len})`)))));
+    }, h('span', { class: 'cw-clue-num' }, e.num), h('span', { class: 'cw-clue-body', lang: clueLang() }, shownClue(e.clue), h('span', { class: 'cw-len' }, ` (${e.len})`)))));
   }
   markFilledClues();
 }
@@ -575,13 +578,22 @@ function nextEntry(step) {
   select(r, c, t.dir);
 }
 
+// Kanji clues are "meaning · reading", and the reading gives most of the answer away,
+// so it's hidden unless the player turns it on in Settings. Mixed is the exception:
+// there the reading is the whole clue (write it in kanji, like a 書き取り test).
+const READING_TAIL = / · [\u3040-\u30ffー・]+$/;
+function shownClue(c) {
+  if (!pz || pz.mode !== 'kanji' || pz.level === 'mixed' || settings.readings) return c;
+  return String(c).replace(READING_TAIL, '');
+}
+
 // ---------------------------------------------------------------- keyword
 function renderKeyword() {
   const k = pz.keyword;
   $('keyword').hidden = !k;
   if (!k) { $('keyword').replaceChildren(); return; }
   fill($('keyword'), 
-    h('p', { class: 'cw-kw-clue' }, h('strong', {}, t('keyword')), h('span', { lang: 'ja' }, '（二重マス）'), ' ', h('span', { lang: clueLang() }, k.clue)),
+    h('p', { class: 'cw-kw-clue' }, h('strong', {}, t('keyword')), h('span', { lang: 'ja' }, '（二重マス）'), ' ', h('span', { lang: clueLang() }, shownClue(k.clue))),
     h('div', { class: 'cw-kw-boxes' }, k.cells.map(([r, c], i) => h('span', { class: 'cw-kw-box' }, h('span', { class: 'cw-kw-label' }, LETTERS[i]), h('span', { lang: 'ja' }, val(r, c))))),
     st.done ? h('p', { class: 'cw-kw-answer' }, h('span', { lang: 'ja' }, pz.key.keyword.word), ` (${pz.key.keyword.reading})`, settings.words ? h('span', { lang: 'en' }, ` · ${pz.key.keyword.meaning}`) : null) : null);
 }

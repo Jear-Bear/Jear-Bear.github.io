@@ -41,7 +41,7 @@
 /* Page-section version: reads as an ad, not as part of the puzzle. A coloured
    banner on top, a warm tint, rounded corners. Still easy to see. */
 .pt-section { margin-top: clamp(40px, 7vh, 72px); }
-.pt-card.is-ad {
+.pt-card.is-boxed {
   --pt-tint: #fbefe2;
   --pt-line: #ecc9a3;
   max-width: none;
@@ -51,19 +51,19 @@
   background: var(--pt-tint);
   overflow: hidden;
 }
-.pt-card.is-ad::after { display: none; }
-.pt-card.is-ad .pt-kicker {
+.pt-card.is-boxed::after { display: none; }
+.pt-card.is-boxed .pt-kicker {
   margin: 0 -20px 14px;
   padding: 7px 20px;
   background: var(--pt-color);
   color: #fff;
   font-weight: 600;
 }
-.pt-card.is-ad .pt-kicker::before { content: "AD · "; }
-.pt-card.is-ad:lang(ja) .pt-kicker::before { content: "広告 · "; }
+.pt-card.is-boxed .pt-kicker::before { content: "AD · "; }
+.pt-card.is-boxed:lang(ja) .pt-kicker::before { content: "広告 · "; }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .pt-card.is-ad { --pt-tint: #2a2118; --pt-line: #5a4127; }
-  :root:not([data-theme="light"]) .pt-card.is-ad .pt-kicker { color: #1a140e; }
+  :root:not([data-theme="light"]) .pt-card.is-boxed { --pt-tint: #2a2118; --pt-line: #5a4127; }
+  :root:not([data-theme="light"]) .pt-card.is-boxed .pt-kicker { color: #1a140e; }
 }
-:root[data-theme="dark"] .pt-card.is-ad { --pt-tint: #2a2118; --pt-line: #5a4127; }
-:root[data-theme="dark"] .pt-card.is-ad .pt-kicker { color: #1a140e; }
+:root[data-theme="dark"] .pt-card.is-boxed { --pt-tint: #2a2118; --pt-line: #5a4127; }
+:root[data-theme="dark"] .pt-card.is-boxed .pt-kicker { color: #1a140e; }
