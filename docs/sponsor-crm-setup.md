@@ -202,6 +202,10 @@ is skipped. To stop it, delete the secret.
   That tracked link must exist in the Sponsor desk (same short name), or the
   clicks aren't counted. To change sponsors, edit `SPONSOR` in partner.js;
   set it to `null` to hide every slot.
+- **jareddesu.com/lesson** (`lesson/index.html`): the short link to say in
+  Shorts. It counts the visit under `ohanasi` with place `lesson` (or
+  `?via=…`, e.g. `jareddesu.com/lesson?via=yt-tried-it`) and goes straight to
+  Ohanasi. Capitalized versions (/Lesson) are sent there by `scripts/go.js`.
 
 ## Pitching, recaps and the public sponsor page
 
