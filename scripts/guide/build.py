@@ -305,7 +305,7 @@ def page(*, title, description, canonical, root, body, body_attrs=""):
 
   <script src="{root}scripts/site.js?v=3"></script>
   <script type="module" src="{root}scripts/guide/guide.js?v=2"></script>
-  <script src="{root}scripts/partner.js?v=1"></script>
+  <script src="{root}scripts/partner.js?v=2"></script>
 </body>
 </html>
 """

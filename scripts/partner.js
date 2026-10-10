@@ -1,4 +1,4 @@
-/* partner.js — the current sponsor's card on the site (Ohanasi Kagawa VIP).
+/* partner.js — the current sponsor's card on the site (Ohanasi).
  *
  * Put a slot where the card should go; this fills it:
  *   <section data-partner="section" data-via="crossword"></section>   a page section with a card
@@ -12,6 +12,9 @@
  * Worker, which adds one to that day's count for the place it came from
  * (no cookies, IPs or user agents are kept). See docs/sponsor-crm-setup.md.
  *
+ * Keep the copy matched to what the link lands on (now: a free 1-on-1 lesson),
+ * so people find what the card promised.
+ *
  * Swapping or ending a sponsorship: change SPONSOR below, or set it to null
  * to hide every slot.
  */
@@ -21,29 +24,29 @@
     href: 'https://ohanasi.co/jared',
     glyph: '話',
     en: {
-      kicker: 'Sponsor · Ohanasi Kagawa VIP',
-      title: 'Make a Japanese friend who’s into what you’re into',
-      body: 'Ohanasi Kagawa VIP matches you one-on-one with a Japanese language partner who shares your interests, in a safe, verified community. It’s run by the same people behind the free weekend exchanges I’ve joined.',
-      cta: 'Try your first month free',
+      kicker: 'Sponsor · Ohanasi',
+      title: 'Your first 1-on-1 Japanese lesson is free',
+      body: 'Ohanasi gives you a free online lesson with a Japanese teacher (normally ¥3,850). Any level is welcome, even starting from zero. It’s run by the same people behind the free weekend exchanges I’ve joined. They only take 5 a day.',
+      cta: 'Book your free lesson',
       fine: 'Ohanasi sponsors my channel.',
       section: 'Practice speaking',
-      line: 'Want to use these words out loud? Ohanasi Kagawa VIP pairs you with a Japanese language partner who shares your interests.',
-      lineCta: 'First month free',
+      line: 'Want to use these words out loud? Ohanasi gives you a free 1-on-1 online lesson with a Japanese teacher, at any level.',
+      lineCta: 'Book it free',
       tag: 'Sponsor',
-      entryTitle: 'Ohanasi Kagawa VIP',
-      entryDesc: 'The tools here get you reading. To speak, you need people: Ohanasi matches you one-on-one with a Japanese language partner who shares your interests. First month free.',
-      entryTags: ['sponsor', 'speaking', 'language partners'],
-      entryOpen: 'Try it free',
+      entryTitle: 'Ohanasi',
+      entryDesc: 'The tools here get you reading. To speak, you need people: Ohanasi gives you a free 1-on-1 online lesson with a Japanese teacher (normally ¥3,850), at any level.',
+      entryTags: ['sponsor', 'speaking', 'free lesson'],
+      entryOpen: 'Book a free lesson',
     },
     ja: {
-      kicker: 'スポンサー · Ohanasi Kagawa VIP',
-      title: '趣味の合う日本人の友だちと話そう',
-      body: 'Ohanasi Kagawa VIPは、同じ趣味を持つ日本人の言語パートナーと1対1でつないでくれるサービスです。本人確認のある安心なコミュニティで、僕も参加したことがある無料の週末交流会と同じ運営です。',
-      cta: '最初の1か月を無料で試す',
+      kicker: 'スポンサー · Ohanasi',
+      title: '1対1の日本語レッスンが初回無料',
+      body: 'Ohanasiでは、日本人講師とのオンライン1対1レッスンを無料で受けられます（通常3,850円）。ゼロからの初心者も、どのレベルでも大丈夫。僕も参加したことがある無料の週末交流会と同じ運営です。1日5枠限定。',
+      cta: '無料レッスンを予約する',
       fine: 'Ohanasiは僕のチャンネルのスポンサーです。',
       section: '話す練習',
-      line: '覚えた言葉を使ってみたい？Ohanasi Kagawa VIPなら、趣味の合う日本人の言語パートナーと話せます。',
-      lineCta: '最初の1か月無料',
+      line: '覚えた言葉を使ってみたい？Ohanasiなら、日本人講師との1対1オンラインレッスンが無料で受けられます。',
+      lineCta: '無料で予約',
       tag: 'スポンサー',
     },
   };
@@ -106,7 +109,7 @@
       slot.replaceChildren(
         el('p', { class: 'sec-mark' }, [
           el('span', { class: 'sec-num', lang: 'ja' }, [SPONSOR.glyph]),
-          el('span', { class: 'sec-label' }, [t.section, ' / ', el('span', { lang: 'ja' }, ['話す'])]),
+          el('span', { class: 'sec-label' }, t.lang ? [t.section] : [t.section, ' / ', el('span', { lang: 'ja' }, ['話す'])]),
         ]),
         card(t, via));
     },
