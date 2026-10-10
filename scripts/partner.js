@@ -104,14 +104,12 @@
 
   var RENDER = {
     card: function (slot, t, via) { slot.replaceChildren(card(t, via)); },
-    section: function (slot, t, via) {
+    section: function (slot, t, via) {   // set apart from the page's own sections: a labelled, tinted ad block
+      slot.classList.remove('sec');
       slot.classList.add('pt-section');
-      slot.replaceChildren(
-        el('p', { class: 'sec-mark' }, [
-          el('span', { class: 'sec-num', lang: 'ja' }, [SPONSOR.glyph]),
-          el('span', { class: 'sec-label' }, t.lang ? [t.section] : [t.section, ' / ', el('span', { lang: 'ja' }, ['話す'])]),
-        ]),
-        card(t, via));
+      var c = card(t, via);
+      c.classList.add('is-ad');
+      slot.replaceChildren(c);
     },
     entry: function (slot, t, via) {   // matches the tools list (styles/tools.css)
       slot.className = 'tool-entry is-partner';

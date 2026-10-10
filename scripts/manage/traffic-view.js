@@ -264,8 +264,8 @@ function membersSection(m, reload) {
   const email = h('input', { type: 'email', placeholder: 'Email', 'aria-label': 'Email', maxlength: '254' });
   const note = h('input', { type: 'text', placeholder: 'Note (optional)', 'aria-label': 'Note', maxlength: '120' });
   const give = button('Give free access', async () => {
-    await busy(give, () => request('POST', 'plus', { email: email.value.trim(), note: note.value.trim() }));
-    toast('Done. It works as soon as they sign in with that email.', { kind: 'ok', ms: 3500 });
+    const r = await busy(give, () => request('POST', 'plus', { email: email.value.trim(), note: note.value.trim() }));
+    toast(r.emailed ? 'Done, and they’ve been emailed. It works as soon as they sign in with that email.' : 'Done. It works as soon as they sign in with that email.', { kind: 'ok', ms: 4000 });
     email.value = ''; note.value = '';
     reload(false);
   }, { kind: 'chip' });

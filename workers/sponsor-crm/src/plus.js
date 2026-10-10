@@ -147,6 +147,52 @@ export async function loginGoogle(request, env) {
   return { token: await issue(env, u), user: await publicUser(env.DB, u, body.day) };
 }
 
+// --- email ------------------------------------------------------------------------------------------
+export const supportEmail = (env) => env.SUPPORT_EMAIL || 'support@jareddesu.com';
+const fromEmail = (env) => env.LOGIN_EMAIL_FROM || 'Jared’s Crossword <crossword@jareddesu.com>';
+
+async function sendEmail(env, { to, subject, text: body, html }) {
+  const res = await fetch(`${env.RESEND_API_BASE || 'https://api.resend.com'}/emails`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: fromEmail(env), reply_to: supportEmail(env), to: [to], subject, text: body, html }),
+  });
+  if (!res.ok) { console.error('Resend', res.status, await res.text().catch(() => '')); return false; }
+  return true;
+}
+
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// The one welcome email: for a new paying member (stripe.js), or for free
+// access given in the Sponsor desk. Claimed in the database first, so two
+// webhooks arriving together can't both send it.
+export async function sendWelcome(env, db, userId, kind = 'paid') {
+  if (!env.RESEND_API_KEY) return false;
+  const u = await db.prepare('UPDATE plus_users SET welcomed_at = ? WHERE id = ? AND welcomed_at IS NULL RETURNING email, name').bind(new Date().toISOString(), userId).first();
+  if (!u) return false;
+  const site = `${SITE}/tools/crossword/`;
+  const first = String(u.name || '').trim().split(/\s+/)[0];
+  const hi = first ? `Hi ${first},` : 'Hi there,';
+  const support = supportEmail(env);
+  const gift = kind === 'granted';
+  // Short and personal, in Jared's words. Login links are the only other mail they'll get (and Stripe's receipts).
+  const paras = [
+    gift
+      ? 'You’ve been given Crossword+! Sign in on the crossword page with this email (Google or an email link) and every past puzzle, unlimited My deck crosswords and the weekly bonus puzzles are all yours.'
+      : 'Thank you so much for joining Crossword+! Every past puzzle, unlimited My deck crosswords and the weekly bonus puzzles are all unlocked now.',
+    `This is the only email you’ll get from me, but if you need help with anything, feel free to reach out to ${support}.`,
+  ];
+  const text = `${hi}\n\n${paras[0]}\n${site}\n\n${paras[1]}\n\nBest,\nJared`;
+  const html = `<div style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1f1c18;max-width:520px">
+<p>${esc(hi)}</p>
+<p>${esc(paras[0])} <a href="${site}">Open the crossword</a></p>
+<p>${esc(paras[1]).replace(esc(support), `<a href="mailto:${support}">${esc(support)}</a>`)}</p>
+<p>Best,<br>Jared</p></div>`;
+  const ok = await sendEmail(env, { to: u.email, subject: gift ? 'You’ve got Crossword+' : 'Thank you for joining Crossword+', text, html });
+  if (!ok) await db.prepare('UPDATE plus_users SET welcomed_at = NULL WHERE id = ?').bind(userId).run();   // try again on the next event
+  return ok;
+}
+
 // --- email links ------------------------------------------------------------------------------------
 export async function loginEmail(request, env, origin) {
   if (!env.RESEND_API_KEY) throw new HttpError(503, 'Email sign-in isn’t set up yet. Please use Google for now.');
@@ -161,22 +207,17 @@ export async function loginEmail(request, env, origin) {
   await env.DB.prepare('INSERT INTO plus_logins (token_hash, email, expires_at) VALUES (?, ?, ?)').bind(await sha256(token), email, now + LOGIN_MINUTES * 60).run();
   const link = `${siteFor(origin)}/tools/crossword/?login=${token}`;
   const ja = body.lang === 'ja';
-  const res = await fetch(`${env.RESEND_API_BASE || 'https://api.resend.com'}/emails`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      from: env.LOGIN_EMAIL_FROM || 'Jared’s Crossword <crossword@jareddesu.com>',
-      to: [email],
-      subject: ja ? 'クロスワード＋のログインリンク' : 'Your Crossword+ sign-in link',
-      text: ja
-        ? `下のリンクを開くとログインできます（${LOGIN_MINUTES}分間有効）。\n\n${link}\n\n心当たりがなければ、このメールは無視してください。`
-        : `Open this link to sign in (it works for ${LOGIN_MINUTES} minutes):\n\n${link}\n\nIf you didn’t ask for this, you can ignore this email.`,
-      html: `<p>${ja ? `下のボタンでログインできます（${LOGIN_MINUTES}分間有効）。` : `Sign in to Crossword+ with this button (it works for ${LOGIN_MINUTES} minutes):`}</p>
+  const sent = await sendEmail(env, {
+    to: email,
+    subject: ja ? 'クロスワード＋のログインリンク' : 'Your Crossword+ sign-in link',
+    text: ja
+      ? `下のリンクを開くとログインできます（${LOGIN_MINUTES}分間有効）。\n\n${link}\n\n心当たりがなければ、このメールは無視してください。`
+      : `Open this link to sign in (it works for ${LOGIN_MINUTES} minutes):\n\n${link}\n\nIf you didn’t ask for this, you can ignore this email.`,
+    html: `<p>${ja ? `下のボタンでログインできます（${LOGIN_MINUTES}分間有効）。` : `Sign in to Crossword+ with this button (it works for ${LOGIN_MINUTES} minutes):`}</p>
 <p><a href="${link}" style="display:inline-block;padding:10px 18px;background:#1f1c18;color:#fff;text-decoration:none;border-radius:4px">${ja ? 'ログイン' : 'Sign in'}</a></p>
 <p style="color:#6b6358;font-size:13px">${ja ? '心当たりがなければ、このメールは無視してください。' : 'If you didn’t ask for this, you can ignore this email.'}</p>`,
-    }),
   });
-  if (!res.ok) { console.error('Resend', res.status, await res.text().catch(() => '')); throw new HttpError(502, 'Couldn’t send the email. Please try again in a bit.'); }
+  if (!sent) throw new HttpError(502, 'Couldn’t send the email. Please try again in a bit.');
   return { ok: true };
 }
 
@@ -243,12 +284,14 @@ export async function listPlus(db) {
 }
 
 // Free access for an email (testers, friends): works as soon as they sign in with it
-export async function grantPlus(db, body) {
+export async function grantPlus(env, db, body) {
   const email = text(body && body.email, 254).toLowerCase();
   if (!EMAIL.test(email)) throw new HttpError(400, 'That email doesn’t look right');
   const u = await userFor(db, email);
   await db.prepare('UPDATE plus_users SET granted = 1, revoked = 0, grant_note = ? WHERE id = ?').bind(text(body.note, 120) || null, u.id).run();
-  return { ok: true, id: u.id };
+  // A paying member already got their welcome; anyone else gets the "you've got Crossword+" one
+  const emailed = await sendWelcome(env, db, u.id, 'granted');
+  return { ok: true, id: u.id, emailed };
 }
 
 export async function updatePlus(db, id, body) {

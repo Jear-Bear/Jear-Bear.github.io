@@ -15,8 +15,8 @@
 import { toHiragana } from '../kanji/romaji.js?v=1';
 import { gridKana, cycleDakuten, romaji } from './kana.js?v=1';
 import { translator, lang, setLang, dateLocale } from '../games/i18n.js?v=1';
-import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=8';
-import { mountDeck } from './deck.js?v=4';
+import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=9';
+import { mountDeck } from './deck.js?v=6';
 import { handleReturn, refresh, isMember, onAccount, archiveDay } from './account.js?v=2';
 import { rng } from './construct.mjs?v=1';
 
@@ -37,7 +37,7 @@ const t = translator({
     'ime.convert': 'Convert to kanji before pressing Enter, or tap a tile.',
     'kanji.type': 'Type with a Japanese keyboard (IME) and convert to kanji, or tap the tiles under the grid.',
     modeGroup: 'Mode', 'mode.kana': 'Kana', 'mode.kanji': 'Kanji', 'mode.deck': 'My deck',
-    locked: 'Past puzzles are part of Crossword+. Today’s puzzles are always free.', toToday: 'Go to today’s puzzle', seePlus: 'See Crossword+',
+    locked: '<b>Past puzzles are part of Crossword+</b>, along with unlimited My deck crosswords and weekly bonus puzzles. Today’s puzzles are always free.', plusName: 'Crossword+', toToday: 'Go to today’s puzzle', seePlus: 'See Crossword+',
     tiles: 'Kanji tiles', 'empty.deck': '',
     level: 'Level', bar: 'Puzzle options', sizeGroup: 'Size', prev: 'Previous puzzle', next: 'Next puzzle', settings: 'Settings',
     today: 'Today · {date}',
@@ -80,7 +80,7 @@ const t = translator({
     'ime.convert': '漢字に変換してから確定するか、タイルをタップしてください。',
     'kanji.type': '日本語入力（IME）で漢字に変換して入力するか、盤面の下のタイルをタップしてください。',
     modeGroup: 'モード', 'mode.kana': 'かな', 'mode.kanji': '漢字', 'mode.deck': 'マイデッキ',
-    locked: '過去のパズルはクロスワード＋の特典です。今日のパズルはいつでも無料です。', toToday: '今日のパズルへ', seePlus: 'クロスワード＋を見る',
+    locked: '<b>過去のパズルはクロスワード＋の特典です</b>。デッキのクロスワード作り放題、毎週のボーナスパズルも。今日のパズルはいつでも無料です。', plusName: 'クロスワード＋', toToday: '今日のパズルへ', seePlus: 'クロスワード＋を見る',
     tiles: '漢字タイル', 'empty.deck': '',
     level: 'レベル', bar: 'パズルの設定', sizeGroup: 'サイズ', prev: '前のパズル', next: '次のパズル', settings: '設定',
     today: '今日 · {date}',
@@ -253,15 +253,18 @@ async function openDay() {
   openPuzzle();
 }
 
+// "<b>bold</b> rest" → nodes
+const rich = (s) => String(s).split(/(<b>.*?<\/b>)/).filter(Boolean).map((x) => { const m = x.match(/^<b>(.*)<\/b>$/); return m ? h('strong', {}, m[1]) : x; });
+
 function showLocked() {
   stopClock();
   renderBar();
   $('play').hidden = true;
   $('words-sec').hidden = true;
   $('empty').hidden = false;
-  fill($('empty'), h('span', { class: 'cw-locked' }, '🔒 ', t('locked')), h('span', { class: 'cw-locked-actions' },
+  fill($('empty'), h('span', { class: 'cw-locked' }, h('span', { class: 'cw-plus-badge' }, '🔒 ', t('plusName')), h('span', { class: 'cw-locked-msg' }, rich(t('locked')))), h('span', { class: 'cw-locked-actions' },
     h('button', { type: 'button', class: 'btn', onclick: () => { const today = dates.filter((d) => d <= localDate()).pop(); if (today) { date = today; history.replaceState(null, '', location.pathname); openDay(); } } }, t('toToday')),
-    h('button', { type: 'button', class: 'btn btn-primary', onclick: () => document.dispatchEvent(new CustomEvent('crossword:plus')) }, t('seePlus'))));
+    h('button', { type: 'button', class: 'btn btn-plus', onclick: () => document.dispatchEvent(new CustomEvent('crossword:plus')) }, t('seePlus'))));
 }
 
 function showEmpty(msg) {
