@@ -15,7 +15,7 @@ import { lang } from '../games/i18n.js?v=1';
 import { gridKana, toHira } from './kana.js?v=1';
 import { info, refresh, currentUser, onAccount, signedIn, sendEmailLink, googleButton, checkout, portal, bonusPuzzle, deckUse, deckKey } from './account.js?v=4';
 import { schedulePush } from './sync.js?v=2';
-import { plusPerks, plusPrice, plusBadge, supportLine, nudge } from './plus.js?v=14';
+import { plusPerks, plusPrice, plusBadge, supportLine, nudge } from './plus.js?v=15';
 import { openBrowse } from './browse.js?v=2';
 
 const PENDING = 'jareddesu.crossword.pendingPlan';   // a plan picked before signing in
@@ -29,7 +29,8 @@ const T = {
     title: 'Crossword+',
     intro: 'Turn your own Anki deck into crosswords: your words, with your meanings as the clues.',
     signInTitle: 'Sign in', getPlus: 'Get Crossword+', close: 'Close',
-    popStep1: 'Sign in, so Crossword+ works on all your devices', popStep2: 'Pay: {price}',
+    popStep1: 'Sign in, so Crossword+ works on all your devices', popStep2: 'Pay: {price}', popStep2t: 'Start your {days}-day free trial (then {price})',
+    trialLine: 'Try it free for {days} days. Cancel before it ends and you won’t be charged.', trialEnds: 'Free trial until {date}', planTrial: 'Free trial, then {price}',
     sentPlan: 'Check your inbox for a sign-in link (it works for 20 minutes; check spam too). Open it on this device and you’ll go straight to paying.',
     toPay: 'You’re signed in. Opening the payment form…',
     freeTag: 'Free', freeHead: '1 deck puzzle a day',
@@ -74,7 +75,8 @@ const T = {
     title: 'クロスワード＋',
     intro: '自分のAnkiデッキがクロスワードに。答えは自分の単語、カギは自分で書いた意味です。',
     signInTitle: 'ログイン', getPlus: 'クロスワード＋に登録', close: '閉じる',
-    popStep1: 'ログイン（どの端末でも使えるように）', popStep2: 'お支払い：{price}',
+    popStep1: 'ログイン（どの端末でも使えるように）', popStep2: 'お支払い：{price}', popStep2t: '{days}日間の無料体験を始める（その後{price}）',
+    trialLine: '{days}日間無料でお試しいただけます。期間内に解約すれば料金はかかりません。', trialEnds: '{date}まで無料体験', planTrial: '無料体験、その後{price}',
     sentPlan: 'ログインリンクを送りました（20分間有効。迷惑メールも確認してください）。この端末で開くと、そのままお支払いに進みます。',
     toPay: 'ログインしました。お支払い画面を開いています…',
     freeTag: '無料', freeHead: '1日1つデッキパズル',
@@ -363,6 +365,8 @@ export function mountDeck({ root, play }) {
 
   const state = () => read();
   const member = () => Boolean(currentUser() && currentUser().member);
+  // The free trial's length, or 0 when there isn't one or this account has had it
+  const trialDays = () => (cfg && cfg.trialDays && !(currentUser() && currentUser().trialOk === false) ? cfg.trialDays : 0);
   // One free deck puzzle a day per account, counted by the Worker (so a private window
   // doesn't reset it); signing in is free. Members make as many as they like.
   let free = { day: null, left: null };
@@ -386,6 +390,7 @@ export function mountDeck({ root, play }) {
     const say = (text, error = false) => { msg.textContent = text; msg.classList.toggle('is-error', error); };
     const form = signInForm(say, plan);
     const price = plan && cfg.prices ? t(plan === 'year' ? 'perYear' : 'perMonth', { price: cfg.prices[plan] }) : '';
+    const days = trialDays();
     const overlay = h('div', { class: 'cw-overlay cw-signin-pop' });
     const close = () => { overlay.remove(); signInPop = null; document.removeEventListener('keydown', esc); };
     const esc = (e) => { if (e.key === 'Escape') close(); };
@@ -393,7 +398,7 @@ export function mountDeck({ root, play }) {
       h('button', { type: 'button', class: 'cw-pop-x', 'aria-label': t('close'), onclick: close }, '×'),
       plan ? h('div', {}, plusBadge()) : null,
       h('h2', { class: 'cw-sheet-title', id: 'cw-signin-title' }, t(plan ? 'getPlus' : 'signInTitle')),
-      plan ? h('ol', { class: 'cw-pop-steps' }, h('li', { class: 'is-now' }, t('popStep1')), h('li', {}, t('popStep2', { price }))) : null,
+      plan ? h('ol', { class: 'cw-pop-steps' }, h('li', { class: 'is-now' }, t('popStep1')), h('li', {}, days ? t('popStep2t', { days, price }) : t('popStep2', { price }))) : null,
       form.nodes, msg));
     overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
     document.addEventListener('keydown', esc);
@@ -434,10 +439,13 @@ export function mountDeck({ root, play }) {
   function plans() {
     if (!cfg || !cfg.open) return [h('p', { class: 'cw-deck-muted' }, t('notOpen'), ' ', h('a', { href: '#plus-sec' }, t('joinList')))];
     const go = (plan) => () => (signedIn() ? startCheckout(plan) : openSignIn({ plan }));
+    const days = trialDays();
+    const label = (price) => (days ? t('planTrial', { price }) : price);
     return [
+      days ? h('p', { class: 'cw-trial-line' }, t('trialLine', { days })) : null,
       h('div', { class: 'cw-deck-row cw-plans' },
-        h('button', { type: 'button', class: 'btn btn-plus', disabled: busy, onclick: go('month') }, t('perMonth', { price: cfg.prices.month })),
-        h('button', { type: 'button', class: 'btn', disabled: busy, onclick: go('year') }, t('perYear', { price: cfg.prices.year }), h('span', { class: 'cw-seg-sub' }, ` · ${t('yearNote')}`))),
+        h('button', { type: 'button', class: 'btn btn-plus', disabled: busy, onclick: go('month') }, label(t('perMonth', { price: cfg.prices.month }))),
+        h('button', { type: 'button', class: 'btn', disabled: busy, onclick: go('year') }, label(t('perYear', { price: cfg.prices.year })), h('span', { class: 'cw-seg-sub' }, ` · ${t('yearNote')}`))),
       h('p', { class: 'cw-deck-muted' }, t('secure'), cfg.test ? ` ${t('test')}` : ''),
       legalLine('agreePay'),
     ];
@@ -480,7 +488,7 @@ export function mountDeck({ root, play }) {
 
   // Members: their status and Manage subscription, top right of the box
   function membership(u) {
-    const when = !(u.granted && !u.paid) && u.renews ? t(u.status === 'canceled' ? 'ends' : 'renews', { date: fmtDay(u.renews) }) : '';
+    const when = !(u.granted && !u.paid) && u.renews ? t(u.status === 'trialing' ? 'trialEnds' : u.status === 'canceled' ? 'ends' : 'renews', { date: fmtDay(u.renews) }) : '';
     return h('div', { class: 'cw-deck-acct' },
       h('span', { class: 'cw-deck-member' }, '✓ ', t(u.granted && !u.paid ? 'memberFree' : 'member')),
       h('span', { class: 'cw-deck-muted' }, when,
@@ -720,7 +728,7 @@ export function mountDeck({ root, play }) {
   // Crossword+ for everyone else, in one card: the three perks, the price, the plans
   function plusBlock() {
     return h('div', { class: 'cw-plusblock', id: 'cw-plusblock' },
-      h('div', { class: 'cw-plusblock-head' }, plusBadge(), cfg && cfg.open ? plusPrice(cfg.prices) : null),
+      h('div', { class: 'cw-plusblock-head' }, plusBadge(), cfg && cfg.open ? plusPrice(cfg.prices, cfg.trialDays) : null),
       plusPerks({ order: ['deck', 'archive', 'bonus'], bonusN: bonus ? bonus.length : 0 }),
       ...plans(),
       supportLine());

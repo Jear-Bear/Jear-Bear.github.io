@@ -522,3 +522,6 @@ html.cw-lock, html.cw-lock body { overflow: hidden; }
 
 /* The page ends with the Crossword+ box; the footer follows closer than on the essay pages */
 .colophon { margin-top: clamp(40px, 7vh, 72px); }
+
+/* The free trial, above the plan buttons */
+.cw-deck .cw-trial-line { margin: 12px 0 0; font-size: 14px; font-weight: 600; color: var(--plus-ink); }

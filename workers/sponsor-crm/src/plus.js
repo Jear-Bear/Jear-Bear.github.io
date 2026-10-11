@@ -115,6 +115,7 @@ export async function publicUser(db, u) {
     email: u.email, name: u.name || null, google: Boolean(u.google_sub),
     member: isMember(u), granted: Boolean(u.granted) && !u.revoked, paid: Boolean(u.stripe_subscription),
     status: u.status || null, plan: u.plan || null, renews: u.period_end || null,
+    trialOk: !u.stripe_subscription,              // a free trial is still open to them (stripe.js)
   };
 }
 
@@ -178,12 +179,17 @@ export async function sendWelcome(env, db, userId, kind = 'paid') {
   const hi = first ? `Hi ${first},` : 'Hi there,';
   const support = supportEmail(env);
   const gift = kind === 'granted';
+  const trial = kind === 'trial';
   // Short and personal, in Jared's words. Login links are the only other mail they'll get (and Stripe's receipts).
   const paras = [
     gift
       ? 'You’ve been given Crossword+! Sign in on the crossword page with this email (Google or an email link) and every past puzzle, unlimited My deck crosswords and the weekly bonus puzzles are all yours.'
-      : 'Thank you so much for joining Crossword+! Every past puzzle, unlimited My deck crosswords and the weekly bonus puzzles are all unlocked now.',
-    `This is the only email you’ll get from me, but if you need help with anything, feel free to reach out to ${support}.`,
+      : trial
+        ? 'Your free Crossword+ trial has started! Every past puzzle, unlimited deck crosswords and the weekly bonus puzzles are all unlocked now.'
+        : 'Thank you so much for joining Crossword+! Every past puzzle, unlimited deck crosswords and the weekly bonus puzzles are all unlocked now.',
+    trial
+      ? `I’ll send you one reminder a few days before the trial ends, so there are no surprises. If you need help with anything, feel free to reach out to ${support}.`
+      : `This is the only email you’ll get from me, but if you need help with anything, feel free to reach out to ${support}.`,
   ];
   const text = `${hi}\n\n${paras[0]}\n${site}\n\n${paras[1]}\n\nBest,\nJared`;
   const html = `<div style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1f1c18;max-width:520px">
@@ -191,8 +197,38 @@ export async function sendWelcome(env, db, userId, kind = 'paid') {
 <p>${esc(paras[0])} <a href="${site}">Open the crossword</a></p>
 <p>${esc(paras[1]).replace(esc(support), `<a href="mailto:${support}">${esc(support)}</a>`)}</p>
 <p>Best,<br>Jared</p></div>`;
-  const ok = await sendEmail(env, { to: u.email, subject: gift ? 'You’ve got Crossword+' : 'Thank you for joining Crossword+', text, html });
+  const ok = await sendEmail(env, { to: u.email, subject: gift ? 'You’ve got Crossword+' : trial ? 'Your Crossword+ free trial has started' : 'Thank you for joining Crossword+', text, html });
   if (!ok) await db.prepare('UPDATE plus_users SET welcomed_at = NULL WHERE id = ?').bind(userId).run();   // try again on the next event
+  return ok;
+}
+
+// A free trial ends in 3 days (Stripe's trial_will_end): what happens next and how to cancel.
+// Once per account. The card networks expect a reminder like this before a trial turns into a charge.
+export async function sendTrialReminder(env, db, customer, { ends, plan, price }) {
+  if (!env.RESEND_API_KEY || !customer) return false;
+  const u = await db.prepare('UPDATE plus_users SET trial_reminded_at = ? WHERE stripe_customer = ? AND trial_reminded_at IS NULL RETURNING id, email, name').bind(new Date().toISOString(), customer).first();
+  if (!u) return false;
+  const site = `${SITE}/tools/crossword/`;
+  const first = String(u.name || '').trim().split(/\s+/)[0];
+  const hi = first ? `Hi ${first},` : 'Hi there,';
+  const support = supportEmail(env);
+  const day = ends ? new Date(ends).toLocaleDateString('en-US', { month: 'long', day: 'numeric', timeZone: 'UTC' }) : 'in a few days';
+  const paras = [
+    `Just a heads-up: your free Crossword+ trial ends on ${day}. After that, your ${plan === 'year' ? 'yearly' : 'monthly'} plan starts at ${price} a ${plan === 'year' ? 'year' : 'month'} and renews until you cancel.`,
+    'Enjoying it? There’s nothing you need to do.',
+    `Not for you? Cancel before ${day} from “Manage subscription” on the crossword page (the Crossword+ tab) and you won’t be charged.`,
+    `Questions? Just reply or write to ${support}.`,
+  ];
+  const text = `${hi}\n\n${paras[0]}\n\n${paras[1]}\n\n${paras[2]}\n${site}\n\n${paras[3]}\n\nBest,\nJared`;
+  const html = `<div style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1f1c18;max-width:520px">
+<p>${esc(hi)}</p>
+<p>${esc(paras[0])}</p>
+<p>${esc(paras[1])}</p>
+<p>${esc(paras[2])} <a href="${site}">Open the crossword</a></p>
+<p>${esc(paras[3]).replace(esc(support), `<a href="mailto:${support}">${esc(support)}</a>`)}</p>
+<p>Best,<br>Jared</p></div>`;
+  const ok = await sendEmail(env, { to: u.email, subject: `Your Crossword+ free trial ends ${day}`, text, html });
+  if (!ok) await db.prepare('UPDATE plus_users SET trial_reminded_at = NULL WHERE id = ?').bind(u.id).run();   // Stripe retries the webhook
   return ok;
 }
 

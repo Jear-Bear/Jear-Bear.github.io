@@ -16,17 +16,22 @@
 // safe to run again), the portal settings and the webhook, and keeps the
 // webhook's signing secret in D1 (stripe_config), never in the repo.
 // Card details never touch this Worker: Stripe's own pages take them.
+//
+// Free trial: an account that has never had a subscription gets TRIAL_DAYS free (the
+// STRIPE_TRIAL_DAYS variable, 0 turns it off). Stripe still takes the card at the start
+// and charges it when the trial ends, unless they cancel first.
 
 import { HttpError } from './data.js';
 import { text } from './public.js';
-import { sessionUser, publicUser, siteFor, sendWelcome } from './plus.js';
+import { sessionUser, publicUser, siteFor, sendWelcome, sendTrialReminder } from './plus.js';
 
 const API_VERSION = '2024-06-20';                 // pinned: subscription.current_period_end lives on the subscription
 export const PLANS = {
   month: { amount: 299, interval: 'month', lookup: 'crossword_plus_month', label: '$2.99' },
   year: { amount: 2499, interval: 'year', lookup: 'crossword_plus_year', label: '$24.99' },
 };
-const EVENTS = ['checkout.session.completed', 'customer.subscription.created', 'customer.subscription.updated', 'customer.subscription.deleted'];
+// trial_will_end: Stripe sends it 3 days before a free trial ends; the Worker emails a reminder
+const EVENTS = ['checkout.session.completed', 'customer.subscription.created', 'customer.subscription.updated', 'customer.subscription.deleted', 'customer.subscription.trial_will_end'];
 const PRODUCT_TAG = 'crossword_plus';
 const SITE = 'https://www.jareddesu.com';
 
@@ -112,6 +117,9 @@ export async function stripeSetup(env, db, workerOrigin) {
     for (const w of list.data || []) if (w.url === url) await stripe(env, 'DELETE', `webhook_endpoints/${w.id}`);
     const w = await stripe(env, 'POST', 'webhook_endpoints', { url, enabled_events: EVENTS, api_version: API_VERSION, description: 'Crossword+ (jareddesu.com sponsor Worker)' });
     cfg.webhook_id = w.id; cfg.webhook_secret = w.secret; cfg.webhook_url = url;
+  } else if (cfg.webhook_id) {
+    // Pressing Connect Stripe again keeps the webhook's events current (same secret)
+    await stripe(env, 'POST', `webhook_endpoints/${cfg.webhook_id}`, { enabled_events: EVENTS });
   }
   await saveConfig(db, mode, cfg);
   // Going live: test-mode payments were never real, so those accounts start fresh
@@ -131,6 +139,10 @@ export async function stripeStatus(env, db) {
   return { connected: Boolean(cfg && cfg.webhook_secret && cfg.prices && cfg.prices.month), key: true, mode };
 }
 
+export const trialDays = (env) => { const n = Number(env.STRIPE_TRIAL_DAYS ?? 7); return Number.isFinite(n) && n > 0 ? Math.min(30, Math.round(n)) : 0; };
+// Only once per account: never for one that has had a subscription
+export const trialOk = (u) => Boolean(u) && !u.stripe_subscription;
+
 // What the page needs to know before showing sign-in and the plans
 export async function plusInfo(env) {
   const st = await stripeStatus(env, env.DB);
@@ -138,6 +150,7 @@ export async function plusInfo(env) {
     open: st.connected, test: st.connected && st.mode === 'test',
     google: env.GOOGLE_CLIENT_ID || null, email: Boolean(env.RESEND_API_KEY), embedded: Boolean(env.STRIPE_PUBLISHABLE_KEY),
     prices: Object.fromEntries(Object.entries(PLANS).map(([k, p]) => [k, p.label])),
+    trialDays: trialDays(env),
   };
 }
 
@@ -156,7 +169,7 @@ async function applySubscription(env, db, sub) {
   await db.prepare('UPDATE plus_users SET stripe_subscription = ?, status = ?, plan = ?, period_end = ? WHERE id = ?')
     .bind(sub.id, sub.status, planOf(sub), iso(sub.current_period_end), u.id).run();
   // A new member: the one welcome email (sendWelcome makes sure it's only once)
-  if (['active', 'trialing'].includes(sub.status)) await sendWelcome(env, db, u.id, 'paid');
+  if (['active', 'trialing'].includes(sub.status)) await sendWelcome(env, db, u.id, sub.status === 'trialing' ? 'trial' : 'paid');
 }
 
 // One Stripe customer per account and mode: a test-mode customer doesn't exist in live mode
@@ -186,6 +199,8 @@ export async function plusCheckout(request, env, origin) {
   // Embedded Checkout (Stripe's form on our page) needs the publishable key; otherwise Stripe's own page
   const embedded = Boolean(body.embedded && env.STRIPE_PUBLISHABLE_KEY);
   const back = `${site}/tools/crossword/?plus=success&session_id={CHECKOUT_SESSION_ID}`;
+  const trial = trialOk(u) ? trialDays(env) : 0;
+  const policies = `By subscribing you agree to the [Terms](${SITE}/terms/), [Refund policy](${SITE}/refunds/) and [Privacy policy](${SITE}/privacy/).`;
   const s = await stripe(env, 'POST', 'checkout/sessions', {
     mode: 'subscription',
     ...(embedded ? { ui_mode: 'embedded', return_url: back } : { success_url: back, cancel_url: `${site}/tools/crossword/?plus=cancel` }),
@@ -194,9 +209,11 @@ export async function plusCheckout(request, env, origin) {
     line_items: [{ price: cfg.prices[plan], quantity: 1 }],
     allow_promotion_codes: 'true',
     metadata: { product: PRODUCT_TAG, account: u.id },
-    subscription_data: { metadata: { product: PRODUCT_TAG, account: u.id } },
+    subscription_data: { metadata: { product: PRODUCT_TAG, account: u.id }, ...(trial ? { trial_period_days: trial } : {}) },
     // Under the Pay button (Stripe shows links written like this as links)
-    custom_text: { submit: { message: `Renews automatically until you cancel; cancel anytime. By subscribing you agree to the [Terms](${SITE}/terms/), [Refund policy](${SITE}/refunds/) and [Privacy policy](${SITE}/privacy/).` } },
+    custom_text: { submit: { message: trial
+      ? `Free for ${trial} days, then it renews automatically until you cancel. Cancel before the trial ends and you won’t be charged. ${policies}`
+      : `Renews automatically until you cancel; cancel anytime. ${policies}` } },
     ...(env.STRIPE_AUTOMATIC_TAX === 'true' ? { automatic_tax: { enabled: 'true' }, customer_update: { address: 'auto' } } : {}),
   });
   return embedded ? { clientSecret: s.client_secret, publishableKey: env.STRIPE_PUBLISHABLE_KEY } : { url: s.url };
@@ -249,7 +266,15 @@ export async function stripeWebhook(request, env) {
   if (!ok) return new Response('Bad signature', { status: 400 });
   const ev = JSON.parse(payload);
   const o = ev.data && ev.data.object;
-  if (o && ev.type && ev.type.startsWith('customer.subscription.') && o.metadata && o.metadata.product === PRODUCT_TAG) await applySubscription(env, env.DB, o);
+  if (o && ev.type && ev.type.startsWith('customer.subscription.') && o.metadata && o.metadata.product === PRODUCT_TAG) {
+    await applySubscription(env, env.DB, o);
+    // A free trial ends in 3 days: a heads-up email, unless they've already cancelled
+    if (ev.type === 'customer.subscription.trial_will_end' && o.status === 'trialing' && !o.cancel_at_period_end && !o.cancel_at) {
+      const customer = typeof o.customer === 'string' ? o.customer : o.customer && o.customer.id;
+      const plan = PLANS[planOf(o)] ? planOf(o) : 'month';
+      await sendTrialReminder(env, env.DB, customer, { ends: iso(o.trial_end || o.current_period_end), plan, price: PLANS[plan].label });
+    }
+  }
   else if (o && ev.type === 'checkout.session.completed' && o.metadata && o.metadata.product === PRODUCT_TAG && o.subscription) {
     await applySubscription(env, env.DB, typeof o.subscription === 'string' ? await stripe(env, 'GET', `subscriptions/${o.subscription}`) : o.subscription);
   }
