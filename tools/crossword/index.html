@@ -17,7 +17,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Klee+One:wght@600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="../../styles/base.css?v=4">
-  <link rel="stylesheet" href="../../styles/crossword.css?v=12">
+  <link rel="stylesheet" href="../../styles/crossword.css?v=13">
   <link rel="stylesheet" href="../../styles/partner.css?v=3">
   <!-- Cloudflare Web Analytics (cookieless) -->
   <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
@@ -96,6 +96,7 @@
         <button type="button" role="radio" data-mode="kanji"><span lang="ja">漢字</span> <span class="cw-seg-sub" data-ui-only="en">Kanji</span></button>
         <button type="button" role="radio" data-mode="deck"><span data-t="mode.deck">My deck</span> <span class="cw-plus-mark" aria-hidden="true">＋</span></button>
       </div>
+      <p class="cw-account" id="account-bar" hidden></p>
 
       <div class="cw-bar" role="toolbar" aria-label="Puzzle options" data-t-aria="bar">
         <div class="cw-seg" role="radiogroup" aria-label="Size" data-t-aria="sizeGroup" id="size-seg">
@@ -207,36 +208,56 @@
     </div>
   </div>
   <div class="cw-overlay" id="settings" hidden>
-    <div class="cw-sheet" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-      <h2 class="cw-sheet-title" id="settings-title" data-t="set.title">Settings</h2>
-      <div class="cw-set-row">
-        <span class="cw-label" data-t="set.lang">Language</span>
+    <div class="cw-sheet cw-settings" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <div class="cw-set-top">
+        <h2 class="cw-sheet-title" id="settings-title" data-t="set.title">Settings</h2>
         <div class="cw-seg" role="radiogroup" aria-label="Language" data-t-aria="set.lang" data-lang-seg>
           <button type="button" role="radio" data-lang="en">English</button>
           <button type="button" role="radio" data-lang="ja" lang="ja">日本語</button>
         </div>
+        <button type="button" class="cw-set-x" id="settings-close" aria-label="Close" data-t-aria="close">×</button>
       </div>
-      <label class="cw-toggle"><input type="checkbox" id="opt-romaji"> <span><strong data-t="set.romaji">Show romaji</strong> <span data-t="set.romaji.d">under the kana keys.</span></span></label>
-      <label class="cw-toggle"><input type="checkbox" id="opt-noassist"> <span><strong data-t="set.assist">Hide Check and Reveal</strong> <span data-t="set.assist.d">for a solve with no help.</span></span></label>
-      <label class="cw-toggle"><input type="checkbox" id="opt-words"> <span><strong data-t="set.words">Show answers and meanings</strong> <span data-t="set.words.d">under the puzzle after you solve it.</span></span></label>
-      <label class="cw-toggle"><input type="checkbox" id="opt-readings"> <span><strong data-t="set.readings">Show readings in kanji clues</strong> <span data-t="set.readings.d">an easier kanji puzzle (Mixed always shows them).</span></span></label>
-      <h3 class="cw-set-head" data-t="set.typing">Typing</h3>
-      <fieldset class="cw-set-radio">
+      <div class="cw-set-grid">
+        <section class="cw-set-col">
+          <h3 class="cw-set-head" data-t="set.display">Display</h3>
+          <label class="cw-toggle"><input type="checkbox" id="opt-romaji"> <span><strong data-t="set.romaji">Show romaji</strong> <span data-t="set.romaji.d">under the kana keys.</span></span></label>
+          <label class="cw-toggle"><input type="checkbox" id="opt-noassist"> <span><strong data-t="set.assist">Hide Check and Reveal</strong> <span data-t="set.assist.d">for a solve with no help.</span></span></label>
+          <label class="cw-toggle"><input type="checkbox" id="opt-words"> <span><strong data-t="set.words">Show answers and meanings</strong> <span data-t="set.words.d">under the puzzle after you solve it.</span></span></label>
+          <label class="cw-toggle"><input type="checkbox" id="opt-showTimer"> <span><strong data-t="set.timer">Show the timer</strong> <span data-t="set.timer.d">(it keeps counting either way).</span></span></label>
+        </section>
+        <section class="cw-set-col">
+          <h3 class="cw-set-head" data-t="set.clues">Clues</h3>
+          <fieldset class="cw-set-radio">
+        <legend data-t="set.clueLang">Clue language</legend>
+        <label><input type="radio" name="opt-clueLang" value="auto"> <span data-t="set.clueLang.auto">Auto (English; Japanese for Mixed)</span></label>
+        <label><input type="radio" name="opt-clueLang" value="en"> <span data-t="set.clueLang.en">English</span></label>
+        <label><input type="radio" name="opt-clueLang" value="ja"> <span data-t="set.clueLang.ja">Japanese</span></label>
+      </fieldset>
+          <fieldset class="cw-set-radio">
+        <legend data-t="set.clueStyle">Clue style</legend>
+        <label><input type="radio" name="opt-clueStyle" value="fun"> <span data-t="set.clueStyle.fun">Fun hints, like a real crossword</span></label>
+        <label><input type="radio" name="opt-clueStyle" value="def"> <span data-t="set.clueStyle.def">Plain definitions</span></label>
+      </fieldset>
+          <label class="cw-toggle"><input type="checkbox" id="opt-readings"> <span><strong data-t="set.readings">Show readings in kanji clues</strong> <span data-t="set.readings.d">an easier kanji puzzle (Mixed always shows them).</span></span></label>
+        </section>
+        <section class="cw-set-col">
+          <h3 class="cw-set-head" data-t="set.typing">Typing</h3>
+          <fieldset class="cw-set-radio">
         <legend data-t="set.arrows">After an arrow key changes direction</legend>
         <label><input type="radio" name="opt-arrowMove" value="0"> <span data-t="set.arrows.stay">Stay in the same square</span></label>
         <label><input type="radio" name="opt-arrowMove" value="1"> <span data-t="set.arrows.move">Move in the arrow’s direction</span></label>
       </fieldset>
-      <fieldset class="cw-set-radio">
+          <fieldset class="cw-set-radio">
         <legend data-t="set.space">The spacebar should</legend>
         <label><input type="radio" name="opt-spaceClear" value="0"> <span data-t="set.space.toggle">Switch between Across and Down</span></label>
         <label><input type="radio" name="opt-spaceClear" value="1"> <span data-t="set.space.clear">Clear the square and move on</span></label>
       </fieldset>
-      <label class="cw-toggle"><input type="checkbox" id="opt-backInto"> <span><strong data-t="set.backInto">Backspace into the previous word</strong> <span data-t="set.backInto.d">from the first square of a word.</span></span></label>
-      <label class="cw-toggle"><input type="checkbox" id="opt-skipFilled"> <span><strong data-t="set.skip">Skip over filled squares</strong> <span data-t="set.skip.d">inside a word.</span></span></label>
-      <label class="cw-toggle"><input type="checkbox" id="opt-jumpBack"> <span><strong data-t="set.jumpBack">At the end of a word, jump back</strong> <span data-t="set.jumpBack.d">to its first empty square.</span></span></label>
-      <label class="cw-toggle"><input type="checkbox" id="opt-nextClue"> <span><strong data-t="set.nextClue">At the end of a word, go to the next clue</strong> <span data-t="set.nextClue.d">(when not jumping back).</span></span></label>
-      <label class="cw-toggle"><input type="checkbox" id="opt-showTimer"> <span><strong data-t="set.timer">Show the timer</strong> <span data-t="set.timer.d">(it keeps counting either way).</span></span></label>
-      <div class="cw-sheet-actions"><button type="button" class="btn-link" id="settings-close" data-t="close">Close</button></div>
+          <label class="cw-toggle"><input type="checkbox" id="opt-backInto"> <span><strong data-t="set.backInto">Backspace into the previous word</strong> <span data-t="set.backInto.d">from the first square of a word.</span></span></label>
+          <label class="cw-toggle"><input type="checkbox" id="opt-skipFilled"> <span><strong data-t="set.skip">Skip over filled squares</strong> <span data-t="set.skip.d">inside a word.</span></span></label>
+          <label class="cw-toggle"><input type="checkbox" id="opt-jumpBack"> <span><strong data-t="set.jumpBack">At the end of a word, jump back</strong> <span data-t="set.jumpBack.d">to its first empty square.</span></span></label>
+          <label class="cw-toggle"><input type="checkbox" id="opt-nextClue"> <span><strong data-t="set.nextClue">At the end of a word, go to the next clue</strong> <span data-t="set.nextClue.d">(when not jumping back).</span></span></label>
+        </section>
+      </div>
     </div>
   </div>
   <div class="cw-toast" id="toast" role="status" aria-live="polite" hidden></div>
@@ -269,7 +290,7 @@
   </footer>
 
   <script src="../../scripts/site.js?v=3"></script>
-  <script type="module" src="../../scripts/crossword/app.js?v=18"></script>
+  <script type="module" src="../../scripts/crossword/app.js?v=19"></script>
   <script src="../../scripts/partner.js?v=4"></script>
 </body>
 </html>

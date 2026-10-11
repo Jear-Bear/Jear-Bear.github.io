@@ -65,15 +65,63 @@ export async function logout() {
   emit();
 }
 
+// Paying: Stripe's form in a window on this page (Embedded Checkout) when the Worker has
+// the publishable key, else Stripe's own checkout page. Either way Stripe brings the
+// person back to ?plus=success, which handleReturn picks up.
 export async function checkout(plan) {
-  const r = await call('checkout', { plan });
+  const i = await info();
+  const r = await call('checkout', { plan, embedded: Boolean(i.embedded) });
+  if (r.clientSecret) return openEmbedded(r);
   location.href = r.url;
+  return null;
+}
+
+let stripeJs = null;
+const loadStripe = () => stripeJs || (stripeJs = new Promise((ok, no) => {
+  const s = document.createElement('script');
+  s.src = 'https://js.stripe.com/v3/';
+  s.onload = () => ok(window.Stripe);
+  s.onerror = () => { stripeJs = null; no(new Error('Couldn’t load Stripe. Please try again.')); };
+  document.head.append(s);
+}));
+let embedded = null;
+async function openEmbedded({ clientSecret, publishableKey }) {
+  const Stripe = await loadStripe();
+  if (embedded) { embedded.destroy(); embedded = null; }
+  document.querySelector('.cw-pay')?.remove();
+  const mount = document.createElement('div');
+  mount.className = 'cw-pay-mount';
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.className = 'cw-pay-close';
+  close.setAttribute('aria-label', 'Close');
+  close.textContent = '×';
+  const sheet = document.createElement('div');
+  sheet.className = 'cw-pay-sheet';
+  sheet.setAttribute('role', 'dialog');
+  sheet.setAttribute('aria-modal', 'true');
+  sheet.setAttribute('aria-label', 'Crossword+');
+  sheet.append(close, mount);
+  const overlay = document.createElement('div');
+  overlay.className = 'cw-overlay cw-pay';
+  overlay.append(sheet);
+  const shut = () => { if (embedded) { embedded.destroy(); embedded = null; } overlay.remove(); };
+  close.addEventListener('click', shut);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) shut(); });
+  (document.querySelector('.cw') || document.body).append(overlay);
+  embedded = await Stripe(publishableKey).initEmbeddedCheckout({ fetchClientSecret: async () => clientSecret });
+  embedded.mount(mount);
+  return shut;
 }
 export async function portal() {
   const r = await call('portal');
   location.href = r.url;
 }
 export const bonusPuzzle = (id) => call('bonus', { id });
+// My deck's free puzzle (one per account per day) and progress synced between devices
+export const deckUse = (day, peek = false) => call('deck-use', { day, peek });
+export const loadSave = () => call('load');
+export const putSave = (data) => call('save', { data });
 export const archiveDay = (date) => call('day', { date });
 
 // "Sign in with Google": Google's own button, from Google's script

@@ -110,7 +110,14 @@ export async function stripeSetup(env, db, workerOrigin) {
     cfg.webhook_id = w.id; cfg.webhook_secret = w.secret; cfg.webhook_url = url;
   }
   await saveConfig(db, mode, cfg);
-  return { mode, prices: cfg.prices, product: cfg.product, portal: cfg.portal, webhook: cfg.webhook_url };
+  // Going live: test-mode payments were never real, so those accounts start fresh
+  // (free access given in the desk stays). Their test welcome doesn't count either.
+  let cleared = 0;
+  if (mode === 'live') {
+    const r = await db.prepare("UPDATE plus_users SET stripe_customer = NULL, stripe_subscription = NULL, status = NULL, plan = NULL, period_end = NULL, stripe_mode = NULL, welcomed_at = CASE WHEN granted = 1 THEN welcomed_at ELSE NULL END WHERE COALESCE(stripe_mode, 'test') <> 'live' AND (stripe_customer IS NOT NULL OR stripe_subscription IS NOT NULL OR status IS NOT NULL)").run();
+    cleared = (r.meta && r.meta.changes) || 0;
+  }
+  return { mode, prices: cfg.prices, product: cfg.product, portal: cfg.portal, webhook: cfg.webhook_url, cleared_test_accounts: cleared };
 }
 
 export async function stripeStatus(env, db) {
@@ -125,7 +132,7 @@ export async function plusInfo(env) {
   const st = await stripeStatus(env, env.DB);
   return {
     open: st.connected, test: st.connected && st.mode === 'test',
-    google: env.GOOGLE_CLIENT_ID || null, email: Boolean(env.RESEND_API_KEY),
+    google: env.GOOGLE_CLIENT_ID || null, email: Boolean(env.RESEND_API_KEY), embedded: Boolean(env.STRIPE_PUBLISHABLE_KEY),
     prices: Object.fromEntries(Object.entries(PLANS).map(([k, p]) => [k, p.label])),
   };
 }
@@ -148,11 +155,14 @@ async function applySubscription(env, db, sub) {
   if (['active', 'trialing'].includes(sub.status)) await sendWelcome(env, db, u.id, 'paid');
 }
 
+// One Stripe customer per account and mode: a test-mode customer doesn't exist in live mode
 async function customerFor(env, u) {
-  if (u.stripe_customer) return u.stripe_customer;
+  const mode = stripeMode(env);
+  if (u.stripe_customer && (u.stripe_mode || 'test') === mode) return u.stripe_customer;
   const c = await stripe(env, 'POST', 'customers', { email: u.email, name: u.name || undefined, metadata: { product: PRODUCT_TAG, account: u.id } });
   // Two tabs at once: keep whichever was saved first
-  await env.DB.prepare('UPDATE plus_users SET stripe_customer = COALESCE(stripe_customer, ?) WHERE id = ?').bind(c.id, u.id).run();
+  await env.DB.prepare("UPDATE plus_users SET stripe_customer = ?, stripe_mode = ? WHERE id = ? AND (stripe_customer IS NULL OR COALESCE(stripe_mode, 'test') <> ?)")
+    .bind(c.id, mode, u.id, mode).run();
   return (await env.DB.prepare('SELECT stripe_customer FROM plus_users WHERE id = ?').bind(u.id).first()).stripe_customer;
 }
 
@@ -169,19 +179,21 @@ export async function plusCheckout(request, env, origin) {
   if (!env.STRIPE_SECRET_KEY || !cfg || !cfg.prices) throw new HttpError(503, 'Crossword+ isn’t open yet');
   if (['active', 'trialing', 'past_due'].includes(u.status)) throw new HttpError(409, 'You’re already a member. Use “Manage subscription” to change plans.');
   const site = siteFor(origin);
+  // Embedded Checkout (Stripe's form on our page) needs the publishable key; otherwise Stripe's own page
+  const embedded = Boolean(body.embedded && env.STRIPE_PUBLISHABLE_KEY);
+  const back = `${site}/tools/crossword/?plus=success&session_id={CHECKOUT_SESSION_ID}`;
   const s = await stripe(env, 'POST', 'checkout/sessions', {
     mode: 'subscription',
+    ...(embedded ? { ui_mode: 'embedded', return_url: back } : { success_url: back, cancel_url: `${site}/tools/crossword/?plus=cancel` }),
     customer: await customerFor(env, u),
     client_reference_id: u.id,
     line_items: [{ price: cfg.prices[plan], quantity: 1 }],
     allow_promotion_codes: 'true',
-    success_url: `${site}/tools/crossword/?plus=success&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${site}/tools/crossword/?plus=cancel`,
     metadata: { product: PRODUCT_TAG, account: u.id },
     subscription_data: { metadata: { product: PRODUCT_TAG, account: u.id } },
     ...(env.STRIPE_AUTOMATIC_TAX === 'true' ? { automatic_tax: { enabled: 'true' }, customer_update: { address: 'auto' } } : {}),
   });
-  return { url: s.url };
+  return embedded ? { clientSecret: s.client_secret, publishableKey: env.STRIPE_PUBLISHABLE_KEY } : { url: s.url };
 }
 
 // Back from Checkout: read the session from Stripe so the account is a member

@@ -9,16 +9,18 @@
 //   Crossword+  members only (sign in and Stripe: account.js): puzzles made
 //          from the player's own Anki deck, in this browser, and bonus
 //          puzzles (deck.js).
-// Progress, times and streaks stay in this browser (localStorage).
+// Progress, times and streaks are kept in this browser (localStorage), and for a
+// signed-in person also on their account, so they follow them between devices (sync.js).
 // Everything from data is inserted as text.
 
 import { toHiragana } from '../kanji/romaji.js?v=1';
 import { gridKana, cycleDakuten, romaji } from './kana.js?v=1';
 import { translator, lang, setLang, dateLocale } from '../games/i18n.js?v=1';
-import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=10';
-import { mountDeck } from './deck.js?v=7';
-import { openBrowse } from './browse.js?v=1';
-import { handleReturn, refresh, isMember, onAccount, archiveDay } from './account.js?v=2';
+import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=11';
+import { mountDeck } from './deck.js?v=8';
+import { openBrowse } from './browse.js?v=2';
+import { initSync, schedulePush } from './sync.js?v=1';
+import { handleReturn, refresh, isMember, onAccount, archiveDay, currentUser, logout, info as plusInfo } from './account.js?v=3';
 import { rng } from './construct.mjs?v=1';
 
 const $ = (id) => document.getElementById(id);
@@ -38,6 +40,7 @@ const t = translator({
     'ime.convert': 'Convert to kanji before pressing Enter, or tap a tile.',
     'kanji.type': 'Type with a Japanese keyboard (IME) and convert to kanji, or tap the tiles under the grid.',
     modeGroup: 'Mode', 'mode.kana': 'Kana', 'mode.kanji': 'Kanji', 'mode.deck': 'My deck',
+    'acct.signIn': 'Sign in to Crossword+', 'acct.as': 'Signed in as {email}', 'acct.out': 'Sign out',
     locked: '<b>Past puzzles are part of Crossword+</b>, along with unlimited My deck crosswords and weekly bonus puzzles. Today’s puzzles are always free.', plusName: 'Crossword+', toToday: 'Go to today’s puzzle', seePlus: 'See Crossword+',
     tiles: 'Kanji tiles', 'empty.deck': '',
     level: 'Level', bar: 'Puzzle options', sizeGroup: 'Size', prev: 'Previous puzzle', next: 'Next puzzle', settings: 'Settings',
@@ -69,6 +72,8 @@ const t = translator({
     'set.romaji': 'Show romaji', 'set.romaji.d': 'under the kana keys.',
     'set.assist': 'Hide Check and Reveal', 'set.assist.d': 'for a solve with no help.',
     'set.words': 'Show answers and meanings', 'set.words.d': 'under the puzzle after you solve it.',
+    'set.display': 'Display', 'set.clues': 'Clues', 'set.clueLang': 'Clue language', 'set.clueLang.auto': 'Auto (English; Japanese for Mixed)', 'set.clueLang.en': 'English', 'set.clueLang.ja': 'Japanese',
+    'set.clueStyle': 'Clue style', 'set.clueStyle.fun': 'Fun hints, like a real crossword', 'set.clueStyle.def': 'Plain definitions',
     'set.typing': 'Typing', 'set.arrows': 'After an arrow key changes direction', 'set.arrows.stay': 'Stay in the same square', 'set.arrows.move': 'Move in the arrow’s direction',
     'set.space': 'The spacebar should', 'set.space.toggle': 'Switch between Across and Down', 'set.space.clear': 'Clear the square and move on',
     'set.backInto': 'Backspace into the previous word', 'set.backInto.d': 'from the first square of a word.',
@@ -87,6 +92,7 @@ const t = translator({
     'ime.convert': '漢字に変換してから確定するか、タイルをタップしてください。',
     'kanji.type': '日本語入力（IME）で漢字に変換して入力するか、盤面の下のタイルをタップしてください。',
     modeGroup: 'モード', 'mode.kana': 'かな', 'mode.kanji': '漢字', 'mode.deck': 'マイデッキ',
+    'acct.signIn': 'クロスワード＋にログイン', 'acct.as': '{email} でログイン中', 'acct.out': 'ログアウト',
     locked: '<b>過去のパズルはクロスワード＋の特典です</b>。デッキのクロスワード作り放題、毎週のボーナスパズルも。今日のパズルはいつでも無料です。', plusName: 'クロスワード＋', toToday: '今日のパズルへ', seePlus: 'クロスワード＋を見る',
     tiles: '漢字タイル', 'empty.deck': '',
     level: 'レベル', bar: 'パズルの設定', sizeGroup: 'サイズ', prev: '前のパズル', next: '次のパズル', settings: '設定',
@@ -118,6 +124,8 @@ const t = translator({
     'set.romaji': 'ローマ字を表示', 'set.romaji.d': '（かなキーの下に）',
     'set.assist': 'チェックと答えを隠す', 'set.assist.d': '（ヒントなしで解きたい人に）',
     'set.words': '答えと意味を表示', 'set.words.d': '（解いた後、パズルの下に）',
+    'set.display': '表示', 'set.clues': 'カギ', 'set.clueLang': 'カギの言語', 'set.clueLang.auto': '自動（英語。一般は日本語）', 'set.clueLang.en': '英語', 'set.clueLang.ja': '日本語',
+    'set.clueStyle': 'カギのスタイル', 'set.clueStyle.fun': 'クロスワードらしい遊び心のあるヒント', 'set.clueStyle.def': 'ふつうの意味（定義）',
     'set.typing': '入力', 'set.arrows': '矢印キーで向きが変わったとき', 'set.arrows.stay': '同じマスにとどまる', 'set.arrows.move': '矢印の方向へ進む',
     'set.space': 'スペースキーで', 'set.space.toggle': 'ヨコとタテを切り替え', 'set.space.clear': 'マスを消して次へ',
     'set.backInto': 'バックスペースで前の言葉に戻る', 'set.backInto.d': '（言葉の最初のマスから）',
@@ -143,6 +151,7 @@ function save(now = false) {
   const write = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch { /* private mode */ } };
   clearTimeout(saveTimer);
   if (now) write(); else saveTimer = setTimeout(write, 400);
+  schedulePush();
 }
 window.addEventListener('pagehide', () => { stopClock(); save(true); });
 
@@ -192,7 +201,7 @@ const SIZE_SUB = { kana: { mini: '5×5', daily: '9×9' }, kanji: { mini: '5×5',
 let deck = null;              // deck.js controller (My deck)
 if (settings.words == null) settings.words = true;
 // Typing options (like the NYT's). Defaults keep how the page has always behaved.
-const TYPING_DEFAULTS = { arrowMove: false, spaceClear: false, backInto: false, skipFilled: true, jumpBack: true, nextClue: true, showTimer: true };
+const TYPING_DEFAULTS = { clueLang: 'auto', clueStyle: 'fun', arrowMove: false, spaceClear: false, backInto: false, skipFilled: true, jumpBack: true, nextClue: true, showTimer: true };
 Object.entries(TYPING_DEFAULTS).forEach(([k, v]) => { if (settings[k] == null) settings[k] = v; });
 
 async function init() {
@@ -204,6 +213,18 @@ async function init() {
   date = asked && pastOrToday.includes(asked) ? asked : (pastOrToday[pastOrToday.length - 1] || null);
   t.apply();
   deck = mountDeck({ root: $('deck'), play: (p) => { settings.mode = 'deck'; save(); openPuzzle(p); $('play').scrollIntoView({ block: 'start', behavior: 'smooth' }); } });
+  // Signed in: progress, stats and deck puzzles follow the account between devices (sync.js)
+  initSync({
+    get: () => ({ progress: store.progress, stats: store.stats }),
+    set: ({ progress, stats }) => {
+      const before = pz && store.progress[pz.id];
+      store.progress = progress;
+      store.stats = stats;
+      save(true);
+      if (pz && !pz.deck && progress[pz.id] !== before) openPuzzle(); else if (pz) renderStats();
+      deck.relabel();
+    },
+  });
   // Back from an email sign-in link or from Stripe: open the Crossword+ panel and say what happened
   const back = await handleReturn();
   if (back) { settings.mode = 'deck'; save(); } else await refresh();
@@ -216,6 +237,8 @@ async function init() {
   });
   // Becoming a member (or signing out) while on a past day: show it, or lock it
   let wasMember = isMember();
+  onAccount(renderAccount);
+  renderAccount();
   onAccount(() => { if (isMember() !== wasMember) { wasMember = isMember(); if (settings.mode !== 'deck' && date && date < localDate()) openDay(); } });
   wireControls();
   wireSettings();
@@ -296,6 +319,8 @@ function openPuzzle(deckPuzzle = null) {
   stopClock();
   document.body.dataset.mode = settings.mode;
   deck.show(settings.mode === 'deck');
+  // My deck has its own Crossword+ box, so the page one would just repeat it
+  $('plus-sec').hidden = settings.mode === 'deck';
   let p;
   if (settings.mode === 'deck') {
     p = deckPuzzle || deck.current();
@@ -346,7 +371,11 @@ function openPuzzle(deckPuzzle = null) {
 }
 
 const cell = (r, c) => pz.cells[r * pz.width + c];
-const clueLang = () => (pz.level === 'mixed' ? 'ja' : 'en');
+// Clues: Settings pick the language (auto = the level's own: Japanese for Mixed) and the
+// style (fun hint or plain definition). Clues without versions (older days, deck puzzles) show as written.
+const levelLang = () => (pz.level === 'mixed' ? 'ja' : 'en');
+const pickLang = () => (settings.clueLang === 'en' || settings.clueLang === 'ja' ? settings.clueLang : levelLang());
+const clueLang = (e) => (e && e.alt ? pickLang() : levelLang());
 const val = (r, c) => st.cells[`${r},${c}`] || '';
 const kanjiMode = () => Boolean(pz && pz.mode === 'kanji');
 const isKanji = (ch) => /[\u3400-\u9fff\uf900-\ufaff々]/.test(ch);
@@ -457,10 +486,15 @@ function wireSettings() {
       if (k === 'readings' && pz) { renderClues(); if (cur) select(cur.r, cur.c, cur.dir); }
     });
   });
-  ['arrowMove', 'spaceClear'].forEach((k) => {
+  ['arrowMove', 'spaceClear', 'clueLang', 'clueStyle'].forEach((k) => {
+    const bool = typeof TYPING_DEFAULTS[k] === 'boolean';
     document.querySelectorAll(`input[name="opt-${k}"]`).forEach((r) => {
-      r.checked = r.value === (settings[k] ? '1' : '0');
-      r.addEventListener('change', () => { settings[k] = r.value === '1'; save(); });
+      r.checked = r.value === (bool ? (settings[k] ? '1' : '0') : settings[k]);
+      r.addEventListener('change', () => {
+        settings[k] = bool ? r.value === '1' : r.value;
+        save();
+        if ((k === 'clueLang' || k === 'clueStyle') && pz) { renderClues(); renderWords(); if (cur) select(cur.r, cur.c, cur.dir); }
+      });
     });
   });
   applyAssist();
@@ -471,6 +505,7 @@ function applyAssist() { $('play').classList.toggle('no-assist', Boolean(setting
 // Language switch: redraw everything that has text in it (progress is untouched)
 function relabel() {
   t.apply();
+  renderAccount();
   buildKeys();
   mountPlusSection();
   deck.relabel();
@@ -481,6 +516,23 @@ function relabel() {
   renderWords();
   renderStats();
   select(cur.r, cur.c, cur.dir);
+}
+
+// Who's signed in, on every tab, with Sign out (or a way to sign in)
+let canSignIn = false;
+plusInfo().then((i) => { canSignIn = Boolean(i && (i.google || i.email)); renderAccount(); }).catch(() => {});
+function renderAccount() {
+  const bar = $('account-bar');
+  const u = currentUser();
+  if (!u && !canSignIn) { bar.hidden = true; return; }
+  bar.hidden = false;
+  if (!u) {
+    fill(bar, h('button', { type: 'button', class: 'btn-link', onclick: () => document.dispatchEvent(new CustomEvent('crossword:plus')) }, t('acct.signIn')));
+    return;
+  }
+  fill(bar, h('span', {}, t('acct.as', { email: u.email })),
+    u.member ? h('span', { class: 'cw-plus-badge cw-acct-badge' }, '✓ ', t('plusName')) : null,
+    h('button', { type: 'button', class: 'btn-link', onclick: async () => { await logout(); renderAccount(); } }, t('acct.out')));
 }
 
 // A small calendar so it's clear the date opens the calendar/list of past puzzles
@@ -558,7 +610,7 @@ function select(r, c, dir) {
   placeIme();
   if (kanjiMode()) buildTiles(e);
   // Clue bar and list
-  $('clue-text').replaceChildren(h('strong', {}, t('clueId', e)), ' ', h('span', { lang: clueLang() }, shownClue(e.clue)), h('span', { class: 'cw-len' }, ` (${e.len})`));
+  $('clue-text').replaceChildren(h('strong', {}, t('clueId', e)), ' ', h('span', { lang: clueLang(e) }, clueFor(e)), h('span', { class: 'cw-len' }, ` (${e.len})`));
   document.querySelectorAll('.cw-clue-list li').forEach((li) => {
     li.classList.toggle('is-cur', li.dataset.id === e.id);
     li.classList.toggle('is-cross', Boolean(cross) && li.dataset.id === cross.id);
@@ -578,7 +630,7 @@ function renderClues() {
   for (const dir of ['across', 'down']) {
     $(`clues-${dir}`).replaceChildren(...pz.entries.filter((e) => e.dir === dir).map((e) => h('li', {
       'data-id': e.id, onclick: () => { const [r, c] = firstEmpty(e); select(r, c, dir); if (!coarse) $('ime').focus({ preventScroll: true }); },
-    }, h('span', { class: 'cw-clue-num' }, e.num), h('span', { class: 'cw-clue-body', lang: clueLang() }, shownClue(e.clue), h('span', { class: 'cw-len' }, ` (${e.len})`)))));
+    }, h('span', { class: 'cw-clue-num' }, e.num), h('span', { class: 'cw-clue-body', lang: clueLang(e) }, clueFor(e), h('span', { class: 'cw-len' }, ` (${e.len})`)))));
   }
   markFilledClues();
 }
@@ -612,6 +664,13 @@ const READING_TAIL = / · [\u3040-\u30ffー・]+$/;
 function shownClue(c) {
   if (!pz || pz.mode !== 'kanji' || pz.level === 'mixed' || settings.readings) return c;
   return String(c).replace(READING_TAIL, '');
+}
+function clueFor(e) {
+  const a = e.alt && e.alt[pickLang()];
+  const text = a && (a[settings.clueStyle === 'def' ? 'def' : 'fun'] || a.fun || a.def);
+  if (!text) return shownClue(e.clue);
+  // Kanji: the reading only when asked for (Mixed always has it: there it's the main hint)
+  return pz.mode === 'kanji' && e.reading && (settings.readings || pz.level === 'mixed') ? `${text} · ${e.reading}` : text;
 }
 
 
@@ -989,7 +1048,7 @@ function renderWords() {
       h('td', { lang: 'ja', class: 'cw-word' }, e.word),
       h('td', { lang: 'ja' }, e.reading),
       h('td', { lang: 'en' }, e.meaning),
-      h('td', { class: 'cw-muted', lang: clueLang() }, e.clue))))));
+      h('td', { class: 'cw-muted', lang: clueLang(e) }, clueFor(e)))))));
 }
 
 // ---------------------------------------------------------------- toast
