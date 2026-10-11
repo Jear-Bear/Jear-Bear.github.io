@@ -446,7 +446,12 @@ html.cw-lock, html.cw-lock body { overflow: hidden; }
 @media (max-width: 899px) { .cw .page-head-copy { margin-left: 0; } }
 
 /* My deck in four steps (deck.js steps()): a numbered list; done steps fold into one line */
-.cw-steps { list-style: none; margin: 4px 0 8px; padding: 0; display: grid; gap: 0; }
+.cw-steps { list-style: none; margin: 4px 0 8px; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }
+/* A deck with lots of fields scrolls sideways inside step 2 instead of widening the box */
+.cw-step, .cw-step-body { min-width: 0; }
+.cw-step-body .cw-deck-preview { max-width: 100%; }
+.cw-deck-fields > label { min-width: 0; }
+.cw-deck-fields select { width: 100%; }
 .cw-step { padding: 10px 0; border-top: 1px solid var(--border); }
 .cw-step:first-child { border-top: 0; }
 .cw-step-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
