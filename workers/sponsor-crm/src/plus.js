@@ -24,6 +24,7 @@
 //   GET  /api/plus                                   accounts for the Sponsor desk (signed in)
 //   POST /api/plus                  { email, note }  free access for an email
 //   PATCH /api/plus/:id             { revoked } | { granted }
+//   DELETE /api/plus/:id                             delete an account and everything saved for it
 //
 // The session token goes in the Authorization header: "Bearer …".
 
@@ -306,5 +307,22 @@ export async function updatePlus(db, id, body) {
   if (!sets.length) throw new HttpError(400, 'Nothing to change');
   const r = await db.prepare(`UPDATE plus_users SET ${sets.join(', ')} WHERE id = ? RETURNING id`).bind(...vals, id).first();
   if (!r) throw new HttpError(404, 'No such account');
+  return { ok: true };
+}
+
+// Deleting an account: it, its saved progress, its free-puzzle count and any open sign-in
+// links. Not while it has a live Stripe subscription (cancel that in Stripe first, or it
+// would keep charging an account that's gone).
+export async function deletePlus(db, id) {
+  if (!isUuid(id)) throw new HttpError(400, 'Bad account ID');
+  const u = await db.prepare('SELECT id, email, status, stripe_subscription FROM plus_users WHERE id = ?').bind(id).first();
+  if (!u) throw new HttpError(404, 'No such account');
+  if (u.stripe_subscription && ACTIVE.has(u.status)) throw new HttpError(409, 'This account has a live subscription. Cancel it in Stripe first, then delete the account.');
+  await db.batch([
+    db.prepare('DELETE FROM plus_saves WHERE user_id = ?').bind(id),
+    db.prepare('DELETE FROM plus_deck_uses WHERE user_id = ?').bind(id),
+    db.prepare('DELETE FROM plus_logins WHERE email = ?').bind(u.email),
+    db.prepare('DELETE FROM plus_users WHERE id = ?').bind(id),
+  ]);
   return { ok: true };
 }

@@ -290,8 +290,12 @@ function membersSection(m, reload) {
       h('span', { class: 'crm-muted' }, ` · ${statusOf(u)}${u.last_login ? ` · last in ${fmtDate(u.last_login.slice(0, 10))}` : ''}${u.grant_note ? ` · ${u.grant_note}` : ''} `),
       u.granted && !u.revoked ? act(u, 'Remove free access', { granted: false }) : null,
       act(u, u.revoked ? 'Turn back on' : 'Turn off', { revoked: !u.revoked }),
-      act(u, 'Sign out everywhere', { signOut: true })))) : h('p', { class: 'crm-muted' }, 'No accounts yet.'),
-    h('p', { class: 'crm-method' }, 'Turning someone off doesn’t cancel their Stripe subscription; cancel or refund that in Stripe. Founding price for the waitlist: make a promotion code in Stripe (e.g. $1 off forever); Checkout has a box for codes.'));
+      act(u, 'Sign out everywhere', { signOut: true }),
+      button('Delete', async (ev) => {
+        if (!window.confirm(`Delete ${u.email}? Their account and saved progress go for good. (They can still sign in again later as a new account.)`)) return;
+        try { await busy(ev.currentTarget, () => request('DELETE', `plus/${u.id}`)); toast('Deleted', { kind: 'ok', ms: 2000 }); reload(false); } catch { /* busy() showed the error */ }
+      }, { kind: 'chip' })))) : h('p', { class: 'crm-muted' }, 'No accounts yet.'),
+    h('p', { class: 'crm-method' }, 'Turning someone off doesn’t cancel their Stripe subscription; cancel or refund that in Stripe. Delete removes an account and its saved progress (for test or leftover accounts); one with a live subscription has to be cancelled in Stripe first.'));
 }
 
 // --- The Traffic tab --------------------------------------------------------------------------

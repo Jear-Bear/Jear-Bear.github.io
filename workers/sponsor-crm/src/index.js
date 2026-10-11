@@ -64,7 +64,7 @@ import { handleGo, recordClick, createInvoice } from './growth.js';
 import { listDrafts, requestDraft, closeDraft } from './drafts.js';
 import { availability, inquiry } from './public.js';
 import { joinWaitlist, leaveWaitlist, listWaitlist } from './waitlist.js';
-import { loginGoogle, loginEmail, loginVerify, me as plusMe, logout as plusLogout, dayArchive, bonusPuzzle, listPlus, grantPlus, updatePlus } from './plus.js';
+import { loginGoogle, loginEmail, loginVerify, me as plusMe, logout as plusLogout, dayArchive, bonusPuzzle, listPlus, grantPlus, updatePlus, deletePlus } from './plus.js';
 import { deckUse, loadSave, putSave } from './plussync.js';
 import { plusInfo, plusCheckout, plusSync, plusPortal, stripeWebhook, stripeSetup, stripeStatus } from './stripe.js';
 import { publicKey, bonusBacklog, openSealed } from './sealed.js';
@@ -186,6 +186,7 @@ async function route(request, env, url) {
   if (a === 'plus' && b === 'stripe-setup' && !c && m === 'POST') return stripeSetup(env, db, url.origin);
   if (a === 'plus' && !b && m === 'POST') return grantPlus(env, db, await readJson(request));
   if (a === 'plus' && b && !c && m === 'PATCH') return updatePlus(db, b, await readJson(request));
+  if (a === 'plus' && b && !c && m === 'DELETE') return deletePlus(db, b);
   if (a === 'crossword-bonus' && !b && m === 'GET') return bonusBacklog(db, env.CROSSWORD_SITE || undefined);
   if (a === 'stats' && b === 'refresh' && !c && m === 'POST') return pullPublicStats(db);
   if (a === 'income' && !b && m === 'PUT') return putIncome(db, await readJson(request));
