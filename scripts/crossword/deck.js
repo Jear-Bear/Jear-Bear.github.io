@@ -42,6 +42,7 @@ const T = {
     emailLabel: 'Your email', sendLink: 'Email me a sign-in link', sending: 'Sending…', sent: 'Check your inbox for a sign-in link (it works for 20 minutes). It can take a minute; check spam too.',
     or: 'or', noSignIn: 'Sign-in isn’t set up yet.',
     signedInAs: 'Signed in as {email}', signOut: 'Sign out', notOpen: 'Crossword+ isn’t open yet.', joinList: 'Join the list for one email when it is.',
+    agreePay: 'By subscribing you agree to the', agreeSignIn: 'Signing in means you agree to the', lTerms: 'Terms', lPrivacy: 'Privacy policy', lRefunds: 'Refunds',
     choose: 'Choose a plan', paying: 'Opening Stripe…', test: 'Test mode: no real charges.', secure: 'Payment by Stripe. Cancel anytime from “Manage subscription”.',
     member: 'You’re a Crossword+ member', memberFree: 'You have Crossword+ (on the house)', renews: 'Renews {date}', ends: 'Ends {date}', pastDue: 'Your last payment didn’t go through; Stripe will try again. Update your card in “Manage subscription”.',
     manage: 'Manage subscription', welcome: 'Welcome to Crossword+! Thanks for supporting the crossword.', signedInMsg: 'You’re signed in.', cancelled: 'No charge was made.',
@@ -83,6 +84,7 @@ const T = {
     emailLabel: 'メールアドレス', sendLink: 'ログインリンクをメールで送る', sending: '送信中…', sent: 'ログインリンクを送りました（20分間有効）。届くまで少しかかることがあります。迷惑メールも確認してください。',
     or: 'または', noSignIn: 'ログインはまだ準備中です。',
     signedInAs: '{email} でログイン中', signOut: 'ログアウト', notOpen: 'クロスワード＋はまだ準備中です。', joinList: 'リストに登録すると、始まったときにメールを1通だけ送ります。',
+    agreePay: 'ご登録により、次に同意したものとみなされます：', agreeSignIn: 'ログインにより、次に同意したものとみなされます：', lTerms: '利用規約', lPrivacy: 'プライバシーポリシー', lRefunds: '返金について',
     choose: 'プランを選ぶ', paying: 'Stripeを開いています…', test: 'テストモード：実際の請求はありません。', secure: 'お支払いはStripeで。「プランの管理」からいつでも解約できます。',
     member: 'クロスワード＋のメンバーです', memberFree: 'クロスワード＋をご利用いただけます（招待）', renews: '{date}に更新', ends: '{date}に終了', pastDue: '前回のお支払いができませんでした。Stripeが再度試みます。「プランの管理」でカードを更新してください。',
     manage: 'プランの管理', welcome: 'クロスワード＋へようこそ！応援ありがとうございます。', signedInMsg: 'ログインしました。', cancelled: '請求はされていません。',
@@ -355,8 +357,13 @@ export function mountDeck({ root, play }) {
         h('button', { type: 'button', class: 'btn btn-plus', disabled: busy, onclick: go('month') }, t('perMonth', { price: cfg.prices.month })),
         h('button', { type: 'button', class: 'btn', disabled: busy, onclick: go('year') }, t('perYear', { price: cfg.prices.year }), h('span', { class: 'cw-seg-sub' }, ` · ${t('yearNote')}`))),
       h('p', { class: 'cw-deck-muted' }, t('secure'), cfg.test ? ` ${t('test')}` : ''),
+      legalLine('agreePay'),
     ];
   }
+
+  // "By subscribing you agree to the Terms…" with the three policy pages
+  const legalLine = (k) => h('p', { class: 'cw-deck-muted cw-legal' }, t(k), ' ',
+    h('a', { href: '../../terms/' }, t('lTerms')), ' · ', h('a', { href: '../../privacy/' }, t('lPrivacy')), ' · ', h('a', { href: '../../refunds/' }, t('lRefunds')));
 
   function signInBox() {
     const useGoogle = cfg && cfg.google && googleOk;
@@ -378,7 +385,8 @@ export function mountDeck({ root, play }) {
         h('p', { class: 'cw-deck-muted' }, t('signInWhy')),
         useGoogle ? g : null,
         useGoogle && cfg.email ? h('p', { class: 'cw-deck-or' }, t('or')) : null,
-        cfg.email ? h('div', { class: 'cw-deck-row' }, email, send) : null),
+        cfg.email ? h('div', { class: 'cw-deck-row' }, email, send) : null,
+        legalLine('agreeSignIn')),
     ];
   }
 

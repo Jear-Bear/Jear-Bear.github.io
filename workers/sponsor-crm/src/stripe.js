@@ -88,9 +88,13 @@ export async function stripeSetup(env, db, workerOrigin) {
     cfg.product = typeof price.product === 'string' ? price.product : price.product.id;
   }
   // The Customer Portal: cancel (at the end of the period), switch month/year, update the card, invoices
-  if (!cfg.portal) {
+  const profile = { headline: 'Crossword+ on jareddesu.com', privacy_policy_url: `${SITE}/privacy/`, terms_of_service_url: `${SITE}/terms/` };
+  if (cfg.portal) {
+    // Pressing Connect Stripe again keeps the portal's links current
+    await stripe(env, 'POST', `billing_portal/configurations/${cfg.portal}`, { business_profile: profile });
+  } else {
     const pc = await stripe(env, 'POST', 'billing_portal/configurations', {
-      business_profile: { headline: 'Crossword+ on jareddesu.com' },
+      business_profile: profile,
       default_return_url: `${SITE}/tools/crossword/`,
       features: {
         invoice_history: { enabled: 'true' },
@@ -191,6 +195,8 @@ export async function plusCheckout(request, env, origin) {
     allow_promotion_codes: 'true',
     metadata: { product: PRODUCT_TAG, account: u.id },
     subscription_data: { metadata: { product: PRODUCT_TAG, account: u.id } },
+    // Under the Pay button (Stripe shows links written like this as links)
+    custom_text: { submit: { message: `Renews automatically until you cancel; cancel anytime. By subscribing you agree to the [Terms](${SITE}/terms/), [Refund policy](${SITE}/refunds/) and [Privacy policy](${SITE}/privacy/).` } },
     ...(env.STRIPE_AUTOMATIC_TAX === 'true' ? { automatic_tax: { enabled: 'true' }, customer_update: { address: 'auto' } } : {}),
   });
   return embedded ? { clientSecret: s.client_secret, publishableKey: env.STRIPE_PUBLISHABLE_KEY } : { url: s.url };

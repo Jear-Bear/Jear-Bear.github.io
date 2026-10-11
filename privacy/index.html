@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script>/* theme: set before paint (auto follows the system) */(function(){var d=document.documentElement,k='jareddesu.theme',m=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)');function p(){try{return localStorage.getItem(k)||'auto'}catch(e){return'auto'}}function a(){var t=p();d.dataset.theme=t==='light'||t==='dark'?t:(m&&m.matches?'dark':'light');d.dataset.themePref=t}a();if(m&&m.addEventListener)m.addEventListener('change',a);window.jdTheme={get:p,set:function(t){try{t==='auto'?localStorage.removeItem(k):localStorage.setItem(k,t)}catch(e){}a()}}})();</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy · Jared P.</title>
+  <meta name="description" content="What jareddesu.com collects, why, who it shares it with, and how to get it deleted." />
+
+  <link rel="icon" href="../images/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../styles/base.css?v=4">
+  <link rel="stylesheet" href="../styles/legal.css?v=1">
+  <!-- Cloudflare Web Analytics (cookieless) -->
+  <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
+</head>
+<body data-page="privacy">
+
+  <!-- Drifting background blob — the page's motion accent -->
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="masthead">
+    <a href="../" class="mark" aria-label="まだまだJared, home">
+      <span class="mark-ja" lang="ja">まだまだ</span>
+      <span class="mark-en">Jared</span>
+    </a>
+    <nav class="masthead-nav" aria-label="Site">
+      <ul>
+        <li><a href="../about/">About</a></li>
+        <li><a href="../projects/">Projects</a></li>
+        <li><a href="../tools/">Tools</a></li>
+        <li><a href="../guide/">Guide</a></li>
+        <li><a href="../sponsorships/">Sponsorships</a></li>
+        <li><a href="../contact/">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Menu</button>
+  </header>
+
+  <div class="menu-sheet" id="site-menu" hidden>
+    <div class="menu-sheet-head">
+      <a href="../" class="mark" aria-label="まだまだJared, home">
+        <span class="mark-ja" lang="ja">まだまだ</span>
+        <span class="mark-en">Jared</span>
+      </a>
+      <button class="menu-toggle menu-close" type="button">Close</button>
+    </div>
+    <nav aria-label="Site">
+      <ul>
+        <li><a href="../about/">About <span lang="ja">自己紹介</span></a></li>
+        <li><a href="../projects/">Projects <span lang="ja">制作</span></a></li>
+        <li><a href="../tools/">Tools <span lang="ja">ツール</span></a></li>
+        <li><a href="../guide/">Guide <span lang="ja">ガイド</span></a></li>
+        <li><a href="../sponsorships/">Sponsorships <span lang="ja">スポンサー</span></a></li>
+        <li><a href="../contact/">Contact <span lang="ja">お問い合わせ</span></a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <main id="main">
+    <div class="container legal">
+      <header class="page-head">
+        <div class="page-head-copy">
+          <h1 class="page-title">Privacy<em>.</em></h1>
+          <p class="page-intro">What the site collects, why, and how to see it or have it deleted. Short answer: as little as possible, never sold.</p>
+        </div>
+        <p class="page-v"><span class="page-v-ja" lang="ja">個人情報</span><span class="page-v-en">Privacy</span></p>
+      </header>
+      <p class="legal-meta">Last updated October 11, 2026</p>
+      <div class="legal-tldr">
+        <p>The short version</p>
+        <ul>
+          <li>No ads trackers, no cookies for tracking, and I never sell your data.</li>
+          <li>If you use Crossword+, I keep your email, your membership status and your crossword progress, so it works on all your devices.</li>
+          <li>Payments go through Stripe; I never see your card number.</li>
+          <li>Email <a class="inline-link" href="mailto:support@jareddesu.com">support@jareddesu.com</a> to see or delete your data.</li>
+        </ul>
+      </div>
+
+      <h2>1. Who’s responsible</h2>
+      <p>jareddesu.com is run by me, Jared Perlmutter (“Jared”, “I”, “me”). I’m responsible for the personal data described here. Contact: <a class="inline-link" href="mailto:support@jareddesu.com">support@jareddesu.com</a>.</p>
+
+      <h2>2. What I collect, and why</h2>
+      <table>
+        <thead><tr><th>What</th><th>Why</th><th>Kept</th></tr></thead>
+        <tbody>
+          <tr><td>Your email, and your name and Google account ID if you sign in with Google</td><td>Your Crossword+ account: signing in, linking your payment, the one welcome email</td><td>Until you ask me to delete your account</td></tr>
+          <tr><td>Membership details: plan, status, renewal date, Stripe customer and subscription IDs</td><td>Knowing whether you’re a member</td><td>As long as the account exists; payment records as long as tax law requires</td></tr>
+          <tr><td>Crossword progress: filled squares, times, solves, stats, and puzzles you’ve made from your deck</td><td>So your progress follows you between devices</td><td>Until you delete your account</td></tr>
+          <tr><td>One-time sign-in links (stored only as a scrambled code)</td><td>Email sign-in</td><td>20 minutes</td></tr>
+          <tr><td>Crossword+ waitlist: email, language and what you said sounded good</td><td>The one email when Crossword+ launched</td><td>Until you remove yourself or I delete the list</td></tr>
+          <tr><td>Messages you send through the contact or sponsorship forms</td><td>Replying to you</td><td>As long as the conversation needs</td></tr>
+          <tr><td>Page views, without cookies (Cloudflare Web Analytics), and counts of clicks on sponsor links</td><td>Knowing which pages are useful, and reporting totals to sponsors</td><td>Aggregated; no IP addresses or browser IDs are stored for this</td></tr>
+          <tr><td>A scrambled (hashed) version of your IP address for a short time</td><td>Stopping spam and abuse of sign-in and forms</td><td>About an hour</td></tr>
+        </tbody>
+      </table>
+      <p><strong>Stays on your device only:</strong> the Anki decks you import into My deck, and your settings. If you don’t sign in, your crossword progress stays only in your browser too.</p>
+
+      <h2>3. Who I share it with</h2>
+      <p>Only the services that run the site, each only for its job:</p>
+      <ul>
+        <li><strong>Stripe</strong>: payments and subscriptions. Stripe handles your card details; I never see them. <a class="inline-link" href="https://stripe.com/privacy" target="_blank" rel="noopener">Stripe’s privacy policy</a>.</li>
+        <li><strong>Cloudflare</strong>: hosts the account server and database, and provides the cookieless analytics.</li>
+        <li><strong>GitHub Pages</strong>: hosts the website itself.</li>
+        <li><strong>Resend</strong>: sends the sign-in links and the welcome email.</li>
+        <li><strong>Google</strong>: only if you choose “Sign in with Google”.</li>
+        <li><strong>Web3Forms</strong>: delivers contact and sponsorship form messages to my inbox.</li>
+      </ul>
+      <p>I don’t sell or rent your data, and I don’t share it with advertisers. Sponsors only ever get totals (like “120 clicks this week”), never anything about you.</p>
+
+      <h2>4. Cookies and storage</h2>
+      <p>The site doesn’t use tracking or advertising cookies. It stores a few things in your browser’s local storage so the site works: your settings, your crossword progress, your imported deck, and, if you’re signed in, your session.</p>
+
+      <h2>5. Your choices and rights</h2>
+      <ul>
+        <li><strong>See or delete your data:</strong> email support@jareddesu.com from the address on your account. I’ll send you a copy, or delete your account and progress, usually within a few days. Payment records Stripe must keep for tax reasons stay with Stripe.</li>
+        <li><strong>Sign out everywhere:</strong> “Sign out” on the crossword page ends your session on that device; email me if you want every device signed out.</li>
+        <li><strong>Waitlist:</strong> every waitlist email included a link to remove yourself in one click.</li>
+        <li>Depending on where you live (for example the EU, UK or California), you may have further rights, such as correcting your data, objecting to its use, or complaining to your data protection authority. Email me and I’ll help.</li>
+      </ul>
+
+      <h2>6. Security</h2>
+      <p>Data travels over HTTPS. Sign-in uses one-time links or Google instead of passwords, and sessions can be ended from my side at any time. No system is perfect, but I keep what I collect small, which keeps the risk small.</p>
+
+      <h2>7. Where data is stored</h2>
+      <p>The services above may store data in the United States and other countries. When data leaves your country, it’s protected by those companies’ standard safeguards.</p>
+
+      <h2>8. Children</h2>
+      <p>The site isn’t directed at children under 13, and I don’t knowingly collect their data. If you think a child has signed up, email me and I’ll delete the account.</p>
+
+      <h2>9. Changes</h2>
+      <p>If this policy changes, the date at the top changes too. For important changes, I’ll email Crossword+ members.</p>
+
+      <p class="legal-links"><a class="inline-link" href="../terms/">Terms</a> · <a class="inline-link" href="../privacy/">Privacy</a> · <a class="inline-link" href="../refunds/">Refunds</a> · Questions: <a class="inline-link" href="mailto:support@jareddesu.com">support@jareddesu.com</a></p>
+    </div>
+  </main>
+
+  <footer class="colophon">
+    <nav class="colophon-links" aria-label="Footer">
+      <ul>
+        <li><a href="../about/">About</a></li>
+        <li><a href="../projects/">Projects</a></li>
+        <li><a href="../tools/">Tools</a></li>
+        <li><a href="../guide/">Guide</a></li>
+        <li><a href="../sponsorships/">Sponsorships</a></li>
+        <li><a href="../contact/">Contact</a></li>
+      </ul>
+      <ul>
+        <li><a href="https://youtube.com/@jareddesu" target="_blank" rel="noopener">YouTube ↗</a></li>
+        <li><a href="https://discord.gg/SqeuUd39sJ" target="_blank" rel="noopener">Discord ↗</a></li>
+        <li><a href="https://hakoshop.com" target="_blank" rel="noopener">hako ↗</a></li>
+        <li><a href="#">RSS</a></li>
+      </ul>
+      <ul class="colophon-legal">
+        <li><a href="../terms/">Terms</a></li>
+        <li><a href="../privacy/">Privacy</a></li>
+        <li><a href="../refunds/">Refunds</a></li>
+      </ul>
+    </nav>
+    <div class="colophon-box">
+      <p class="colophon-title" lang="ja">奥付</p>
+      <dl>
+        <div><dt>Site / <span lang="ja">サイト</span></dt><dd>jareddesu.com</dd></div>
+        <div><dt>Author / <span lang="ja">著者</span></dt><dd>Jared P. (<span lang="ja">まだまだ</span>Jared)</dd></div>
+        <div><dt>Published / <span lang="ja">発行</span></dt><dd>© 2026</dd></div>
+      </dl>
+    </div>
+  </footer>
+
+  <script src="../scripts/site.js?v=3"></script>
+</body>
+</html>
