@@ -110,7 +110,14 @@ export async function stripeSetup(env, db, workerOrigin) {
     cfg.webhook_id = w.id; cfg.webhook_secret = w.secret; cfg.webhook_url = url;
   }
   await saveConfig(db, mode, cfg);
-  return { mode, prices: cfg.prices, product: cfg.product, portal: cfg.portal, webhook: cfg.webhook_url };
+  // Going live: test-mode payments were never real, so those accounts start fresh
+  // (free access given in the desk stays). Their test welcome doesn't count either.
+  let cleared = 0;
+  if (mode === 'live') {
+    const r = await db.prepare("UPDATE plus_users SET stripe_customer = NULL, stripe_subscription = NULL, status = NULL, plan = NULL, period_end = NULL, stripe_mode = NULL, welcomed_at = CASE WHEN granted = 1 THEN welcomed_at ELSE NULL END WHERE COALESCE(stripe_mode, 'test') <> 'live' AND (stripe_customer IS NOT NULL OR stripe_subscription IS NOT NULL OR status IS NOT NULL)").run();
+    cleared = (r.meta && r.meta.changes) || 0;
+  }
+  return { mode, prices: cfg.prices, product: cfg.product, portal: cfg.portal, webhook: cfg.webhook_url, cleared_test_accounts: cleared };
 }
 
 export async function stripeStatus(env, db) {
@@ -148,11 +155,14 @@ async function applySubscription(env, db, sub) {
   if (['active', 'trialing'].includes(sub.status)) await sendWelcome(env, db, u.id, 'paid');
 }
 
+// One Stripe customer per account and mode: a test-mode customer doesn't exist in live mode
 async function customerFor(env, u) {
-  if (u.stripe_customer) return u.stripe_customer;
+  const mode = stripeMode(env);
+  if (u.stripe_customer && (u.stripe_mode || 'test') === mode) return u.stripe_customer;
   const c = await stripe(env, 'POST', 'customers', { email: u.email, name: u.name || undefined, metadata: { product: PRODUCT_TAG, account: u.id } });
   // Two tabs at once: keep whichever was saved first
-  await env.DB.prepare('UPDATE plus_users SET stripe_customer = COALESCE(stripe_customer, ?) WHERE id = ?').bind(c.id, u.id).run();
+  await env.DB.prepare("UPDATE plus_users SET stripe_customer = ?, stripe_mode = ? WHERE id = ? AND (stripe_customer IS NULL OR COALESCE(stripe_mode, 'test') <> ?)")
+    .bind(c.id, mode, u.id, mode).run();
   return (await env.DB.prepare('SELECT stripe_customer FROM plus_users WHERE id = ?').bind(u.id).first()).stripe_customer;
 }
 

@@ -260,10 +260,22 @@ subscription, or **free access** you give an email in the Sponsor desk.
 7. Try it with Stripe's test card `4242 4242 4242 4242`, any future date, any
    CVC. Check the account shows as paying in the desk, open Manage
    subscription, cancel, and see it end.
-8. **Go live:** swap `STRIPE_SECRET_KEY` for the live key (`sk_live_…`) and
-   `STRIPE_PUBLISHABLE_KEY` for `pk_live_…`, run
-   the deploy, press **Connect Stripe** again (live mode has its own prices
-   and webhook).
+8. **Go live:**
+   - Stripe → finish activating the account (business details, bank account for
+     payouts). Settings → Business → Public details: support email
+     `support@jareddesu.com` and a statement descriptor like `JAREDDESU CROSSWORD`.
+     Settings → Branding: icon and colours (the payment form uses them).
+   - Optional, for Apple Pay / Google Pay in the form: Settings → Payment method
+     domains → add `jareddesu.com`, `www.jareddesu.com` and `staging.jareddesu.com`.
+   - Developers → API keys, **live**: put `sk_live_…` in the GitHub secret
+     `STRIPE_SECRET_KEY` and `pk_live_…` in the variable `STRIPE_PUBLISHABLE_KEY`.
+   - Run **Sponsor CRM deploy**, then press **Connect Stripe** again: live mode
+     gets its own prices, portal settings and webhook. Accounts that paid in test
+     mode go back to unpaid (test payments were never real); free access you gave
+     stays. Each account remembers which mode its Stripe customer is in
+     (migration 0017), so a test customer is never used in live mode.
+   - Buy a month with a real card, check the desk shows it, then refund and cancel
+     it in Stripe.
 
 **Founding price for the waitlist:** in Stripe, make a coupon ($1.00 off,
 forever) and a promotion code for it (e.g. `FOUNDING`). Checkout has a box
