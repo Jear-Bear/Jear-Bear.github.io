@@ -37,9 +37,9 @@ const t = translator({
     board: 'Guesses', keys: 'Kana keyboard', ime: 'Type your guess (romaji or kana)',
     loadFail: 'Couldn’t load the word list. Try again in a moment.',
     titleDaily: 'Daily #{day} · {level} · {len} kana', titlePractice: 'Practice · {level} · {len} kana',
-    theme: 'Theme', meaning: 'Meaning', kana: 'Kana',
+    theme: 'Theme', meaning: 'Meaning', clue: 'Clue', kana: 'Kana',
     kanaHint: ({ n }) => [' Square ', String(n), ' is '],
-    hint1: 'Hint: show the meaning', hint2: 'Hint: show one kana',
+    hint1: 'Hint: show the meaning', hint1c: 'Hint: show a clue', hint2: 'Hint: show one kana',
     'pos.verb': 'verb', 'pos.adjective': 'い-adjective', 'pos.na-adjective': 'な-adjective', 'pos.adverb': 'adverb',
     'pos.expression': 'expression', 'pos.counter': 'counter', 'pos.noun': 'noun',
     tileEmpty: 'empty', 'mark.correct': 'correct', 'mark.present': 'present', 'mark.close': 'close', 'mark.absent': 'absent',
@@ -72,9 +72,9 @@ const t = translator({
     board: '回答', keys: 'かなキーボード', ime: '回答を入力（ローマ字・かな）',
     loadFail: '単語リストを読み込めませんでした。少し待ってから試してください。',
     titleDaily: 'デイリー #{day} · {level} · {len}文字', titlePractice: '練習 · {level} · {len}文字',
-    theme: 'テーマ', meaning: '意味', kana: 'かな',
+    theme: 'テーマ', meaning: '意味', clue: 'ヒント', kana: 'かな',
     kanaHint: ({ n }) => [` ${n}マス目は `],
-    hint1: 'ヒント：意味を見る', hint2: 'ヒント：かなを一つ見る',
+    hint1: 'ヒント：意味を見る', hint1c: 'ヒント：手がかりを見る', hint2: 'ヒント：かなを一つ見る',
     'pos.verb': '動詞', 'pos.adjective': 'い形容詞', 'pos.na-adjective': 'な形容詞', 'pos.adverb': '副詞',
     'pos.expression': '表現', 'pos.counter': '助数詞', 'pos.noun': '名詞',
     tileEmpty: '空き', 'mark.correct': '正解', 'mark.present': '別の位置', 'mark.close': '濁点違い', 'mark.absent': 'なし',
@@ -101,7 +101,8 @@ const t = translator({
   },
 });
 const LEVEL_NAME = (l) => t(`level.${l}`);
-const themeName = (name) => (document.documentElement.dataset.ui === 'ja' && THEMES_JA[name]) || name;
+// A hand-written theme (scripts/wordle/clues.mjs) has its own Japanese; the automatic ones use the table
+const themeName = (name, info = {}) => (document.documentElement.dataset.ui === 'ja' && (info.tj || THEMES_JA[name])) || name;
 const RANK = { absent: 1, close: 2, present: 3, correct: 4 };
 const EMOJI = { correct: '🟩', present: '🟨', close: '🟦', absent: '⬜' };
 
@@ -133,7 +134,7 @@ function h(tag, attrs, ...kids) {
 const lists = {};
 async function words(len) {
   if (lists[len]) return lists[len];
-  const res = await fetch(`../../data/wordle/words-${len}.json?v=2`);
+  const res = await fetch(`../../data/wordle/words-${len}.json?v=3`);
   if (!res.ok) throw new Error(`words-${len}.json: ${res.status}`);
   const d = await res.json();
   const bin = atob(d.answers.split('').reverse().join(''));
@@ -239,7 +240,7 @@ function renderTitle() {
     : t('titlePractice', { level: LEVEL_NAME(game.level), len: game.len });
 }
 
-// Theme, then up to two hints on request: the English meaning, then one kana
+// Theme, then up to two hints on request: a clue (or the English meaning), then one kana
 function hintKana() {
   const solved = new Set();
   game.guesses.forEach((g) => score(g, game.answer).forEach((m, i) => { if (m === 'correct') solved.add(i); }));
@@ -252,15 +253,16 @@ function renderHints() {
   const showTheme = !settings.notheme || game.done;
   const parts = [];
   if (showTheme && info.t) {
-    parts.push(h('p', { class: 'wd-theme' }, h('span', { class: 'wd-theme-label' }, t('theme')), ` ${themeName(info.t)}`, info.p && !/^(Something you do|A describing word|How, when or how much|Something people say|A thing or an idea)$/.test(info.t) ? h('span', { class: 'wd-muted' }, ` · ${t(`pos.${info.p}`)}`) : null));
+    parts.push(h('p', { class: 'wd-theme' }, h('span', { class: 'wd-theme-label' }, t('theme')), ` ${themeName(info.t, info)}`, !info.c && info.p && !/^(Something you do|A describing word|How, when or how much|Something people say|A thing or an idea)$/.test(info.t) ? h('span', { class: 'wd-muted' }, ` · ${t(`pos.${info.p}`)}`) : null));
   }
-  if (game.hints >= 1 && info.m) parts.push(h('p', { class: 'wd-hint' }, h('span', { class: 'wd-theme-label' }, t('meaning')), ' ', h('span', { lang: 'en' }, info.m)));
+  // The first hint: a clue when there's one (the meaning gives loanwords away), else the meaning
+  if (game.hints >= 1 && (info.c || info.m)) parts.push(h('p', { class: 'wd-hint' }, h('span', { class: 'wd-theme-label' }, t(info.c ? 'clue' : 'meaning')), ' ', h('span', { lang: 'en' }, info.c || info.m)));
   if (game.hints >= 2) {
     const k = game.hintKana || hintKana();
     if (k) { game.hintKana = k; parts.push(h('p', { class: 'wd-hint' }, h('span', { class: 'wd-theme-label' }, t('kana')), ...t('kanaHint', { n: k.i + 1 }), h('strong', { lang: 'ja' }, k.ch))); }
   }
   if (!game.done && game.hints < 2 && !settings.nohints) {
-    const label = game.hints === 0 ? t('hint1') : t('hint2');
+    const label = game.hints === 0 ? t(info.c ? 'hint1c' : 'hint1') : t('hint2');
     parts.push(h('button', { type: 'button', class: 'wd-hint-btn', onclick: () => { game.hints++; save(); renderHints(); } }, '💡 ', label));
   }
   box.replaceChildren(...parts);

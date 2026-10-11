@@ -4,3 +4,4 @@ exclude:
   - workers/
   - .github/
   - guide/audio/raw/
+  - data/wordle/clues.json
