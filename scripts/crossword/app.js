@@ -16,8 +16,8 @@
 import { toHiragana } from '../kanji/romaji.js?v=1';
 import { gridKana, cycleDakuten, romaji } from './kana.js?v=1';
 import { translator, lang, setLang, dateLocale } from '../games/i18n.js?v=1';
-import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=12';
-import { mountDeck } from './deck.js?v=10';
+import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=13';
+import { mountDeck } from './deck.js?v=11';
 import { openBrowse } from './browse.js?v=2';
 import { initSync, schedulePush } from './sync.js?v=1';
 import { handleReturn, refresh, isMember, onAccount, archiveDay, currentUser, logout, info as plusInfo } from './account.js?v=3';
@@ -40,7 +40,7 @@ const t = translator({
     'ime.convert': 'Convert to kanji before pressing Enter, or tap a tile.',
     'kanji.type': 'Type with a Japanese keyboard (IME) and convert to kanji, or tap the tiles under the grid.',
     modeGroup: 'Mode', 'mode.kana': 'Kana', 'mode.kanji': 'Kanji', 'mode.deck': 'My deck',
-    'acct.signIn': 'Sign in to Crossword+', 'acct.as': 'Signed in as {email}', 'acct.out': 'Sign out',
+    'acct.signIn': 'Sign in', 'acct.as': 'Signed in as {email}', 'acct.out': 'Sign out',
     locked: '<b>Past puzzles are part of Crossword+</b>, along with unlimited My deck crosswords and weekly bonus puzzles. Today’s puzzles are always free.', plusName: 'Crossword+', toToday: 'Go to today’s puzzle', seePlus: 'See Crossword+',
     tiles: 'Kanji tiles', 'empty.deck': '',
     level: 'Level', bar: 'Puzzle options', sizeGroup: 'Size', prev: 'Previous puzzle', next: 'Next puzzle', settings: 'Settings',
@@ -92,7 +92,7 @@ const t = translator({
     'ime.convert': '漢字に変換してから確定するか、タイルをタップしてください。',
     'kanji.type': '日本語入力（IME）で漢字に変換して入力するか、盤面の下のタイルをタップしてください。',
     modeGroup: 'モード', 'mode.kana': 'かな', 'mode.kanji': '漢字', 'mode.deck': 'マイデッキ',
-    'acct.signIn': 'クロスワード＋にログイン', 'acct.as': '{email} でログイン中', 'acct.out': 'ログアウト',
+    'acct.signIn': 'ログイン', 'acct.as': '{email} でログイン中', 'acct.out': 'ログアウト',
     locked: '<b>過去のパズルはクロスワード＋の特典です</b>。デッキのクロスワード作り放題、毎週のボーナスパズルも。今日のパズルはいつでも無料です。', plusName: 'クロスワード＋', toToday: '今日のパズルへ', seePlus: 'クロスワード＋を見る',
     tiles: '漢字タイル', 'empty.deck': '',
     level: 'レベル', bar: 'パズルの設定', sizeGroup: 'サイズ', prev: '前のパズル', next: '次のパズル', settings: '設定',
@@ -228,12 +228,13 @@ async function init() {
   // Back from an email sign-in link or from Stripe: open the Crossword+ panel and say what happened
   const back = await handleReturn();
   if (back) { settings.mode = 'deck'; save(); } else await refresh();
-  document.addEventListener('crossword:plus', () => {
+  // detail.signIn: the Sign in button up top (open the sign-in box instead of the plans)
+  document.addEventListener('crossword:plus', (e) => {
     $('done').hidden = true;
     settings.mode = 'deck';
     save();
     openPuzzle();
-    setTimeout(() => deck.showPlus(), 150);
+    setTimeout(() => deck.showPlus(e.detail || {}), 150);
   });
   // Becoming a member (or signing out) while on a past day: show it, or lock it
   let wasMember = isMember();
@@ -392,6 +393,7 @@ function renderBar() {
     b.querySelector('.cw-seg-sub').textContent = (SIZE_SUB[settings.mode] || SIZE_SUB.kana)[b.dataset.size];
   });
   ['size-seg', 'level-wrap', 'date-nav'].forEach((id) => { $(id).hidden = deckMode; });
+  document.querySelector('.cw-bar').hidden = deckMode;
   if (deckMode) { $('theme').hidden = true; return; }
   $('level').value = settings.level;
   const today = localDate();
@@ -527,10 +529,10 @@ function renderAccount() {
   if (!u && !canSignIn) { bar.hidden = true; return; }
   bar.hidden = false;
   if (!u) {
-    fill(bar, h('button', { type: 'button', class: 'btn-link', onclick: () => document.dispatchEvent(new CustomEvent('crossword:plus')) }, t('acct.signIn')));
+    fill(bar, h('button', { type: 'button', class: 'btn cw-acct-in', onclick: () => document.dispatchEvent(new CustomEvent('crossword:plus', { detail: { signIn: true } })) }, t('acct.signIn')));
     return;
   }
-  fill(bar, h('span', {}, t('acct.as', { email: u.email })),
+  fill(bar, h('span', { class: 'cw-acct-email', title: t('acct.as', { email: u.email }) }, u.email),
     u.member ? h('span', { class: 'cw-plus-badge cw-acct-badge' }, '✓ ', t('plusName')) : null,
     h('button', { type: 'button', class: 'btn-link', onclick: async () => { await logout(); renderAccount(); } }, t('acct.out')));
 }

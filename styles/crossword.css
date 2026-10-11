@@ -275,10 +275,11 @@ html[data-ui="ja"] [data-ui-only="en"], html:not([data-ui="ja"]) [data-ui-only="
 }
 :root[data-theme="dark"] .cw-plus-badge { color: #1a1324; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cw-plus-badge { color: #1a1324; } }
-.cw-perks { margin: 4px 0 10px; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 14px; line-height: 1.6; color: var(--ink-soft); }
-.cw-perks li { position: relative; padding-left: 22px; }
-.cw-perks li::before { content: "＋"; position: absolute; left: 0; top: 0; color: var(--plus); font-weight: 700; }
-.cw-perks strong { color: var(--ink); }
+.cw-perks { margin: 10px 0 12px; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.cw-perks li { display: grid; align-content: start; gap: 2px; padding: 10px 12px; border: 1px solid var(--plus-line); border-radius: 6px; background: var(--paper); }
+.cw-perks strong { font-size: 14px; line-height: 1.4; color: var(--ink); }
+.cw-perks strong::before { content: "＋"; margin-right: 4px; color: var(--plus); font-weight: 700; }
+.cw-perks span { font-size: 12.5px; line-height: 1.5; color: var(--muted); }
 .cw-plus-price { margin: 0 0 12px; font-size: 14px; color: var(--ink-soft); }
 .cw-plus-price strong { color: var(--plus-ink); font-size: 15px; }
 .cw-plus-help { margin: 10px 0 0; font-size: 12px; color: var(--muted); }
@@ -310,6 +311,9 @@ html[data-ui="ja"] [data-ui-only="en"], html:not([data-ui="ja"]) [data-ui-only="
 .cw-plus.is-section .cw-plus-body { color: var(--ink-soft); }
 .cw-plusblock { padding: 14px 16px; }
 .cw-plusblock > p { margin-bottom: 4px; }
+.cw-plusblock-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.cw-plusblock-head .cw-plus-badge { margin: 0; font-size: 13px; padding: 3px 11px; }
+.cw-deck .cw-plusblock-head .cw-plus-price { margin: 0; }
 .cw-modes .cw-plus-mark { display: inline-block; min-width: 1.4em; padding: 0 4px; border-radius: 999px; background: var(--plus); color: #fff; font-weight: 700; line-height: 1.5; }
 .cw-modes button[aria-checked="true"] .cw-plus-mark { color: #fff; }
 .cw-locked { padding: 14px 16px; border: 1px solid var(--plus-line); border-left: 4px solid var(--plus); border-radius: 8px; background: var(--plus-tint); text-align: left; }
@@ -365,16 +369,33 @@ button.cw-cal-day.is-picked { outline: 2px solid var(--plus); outline-offset: 1p
 .cw-date-btn { display: inline-flex; align-items: center; gap: 6px; }
 .cw-cal-icon { width: 18px; height: 18px; flex-shrink: 0; color: var(--page-ink); }
 
-/* Who's signed in (every tab) */
-.cw-account { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: -4px 0 12px; font-size: 13px; color: var(--muted); }
+/* The top row: modes on the left; who's signed in and ⚙ on the right (wraps on narrow screens) */
+.cw-top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 0 0 14px; }
+.cw-top .cw-modes { margin: 0; }
+.cw-top-end { display: flex; align-items: center; gap: 10px; margin-left: auto; min-width: 0; }
+.cw-top + .cw-bar { margin-top: 0; }
+.cw-account { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 4px 10px; min-width: 0; font-size: 13px; color: var(--muted); }
 .cw-account .btn-link { font-size: 13px; }
+.cw-acct-email { max-width: 16em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cw-acct-badge { margin: 0; font-size: 11px; padding: 1px 8px; }
+.cw-account .cw-acct-in { min-height: 40px; padding: 6px 14px; font-size: 14px; }
+/* Phones: just the badge and Sign out (the email stays in the tooltip) */
+@media (max-width: 520px) { .cw-acct-email { display: none; } }
 
-/* My deck: the free puzzle is used up / bonus puzzles for members */
-.cw-limit { margin: 12px 0; padding: 12px 14px; border: 1px solid var(--plus-line); border-left: 4px solid var(--plus); border-radius: 8px; background: var(--plus-tint); }
-.cw-limit .btn-plus { margin-top: 4px; }
-.cw-deck .cw-deck-locked { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--ink); }
-.cw-deck-locked .cw-plus-badge { margin: 0; }
+/* My deck: title with the member's status on the right; the Free strip for everyone else */
+.cw-deck-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 4px 16px; margin-bottom: 6px; }
+.cw-deck .cw-deck-head h2 { margin: 0; }
+.cw-deck-acct { display: grid; justify-items: end; gap: 0; text-align: right; font-size: 13px; }
+.cw-deck-acct .cw-deck-member { color: var(--plus-ink); font-weight: 600; }
+.cw-deck-acct .btn-link { font-size: 13px; }
+@media (max-width: 520px) { .cw-deck-acct { justify-items: start; text-align: left; } }
+.cw-free { margin: 4px 0 14px; padding: 10px 14px; border: 1px solid var(--border); border-left: 4px solid var(--page-color); border-radius: 8px; background: var(--page-color-soft); }
+.cw-free-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.cw-deck .cw-free-row p { flex: 1 1 260px; margin: 0; color: var(--ink-soft); }
+.cw-free-row strong { color: var(--ink); }
+.cw-free-tag { padding: 2px 10px; border-radius: 999px; background: var(--page-color); color: #fff; font-size: 12px; font-weight: 700; letter-spacing: .03em; }
+.cw-free .cw-signin { margin-top: 10px; padding-top: 10px; }
+.cw-free .cw-signin > p:first-child { margin-bottom: 6px; }
 .cw-plusblock.is-nudge { animation: cw-nudge .7s ease 2; }
 @media (prefers-reduced-motion: reduce) { .cw-plusblock.is-nudge { animation: none; outline: 3px solid var(--plus); } }
 
@@ -418,3 +439,9 @@ html.cw-lock, html.cw-lock body { overflow: hidden; }
   .cw-overlay { padding: 10px; }
   .cw-sheet, .cw-pay-sheet { max-height: calc(100vh - 20px); max-height: calc(100dvh - 20px); }
 }
+
+/* Less empty paper above the puzzle than the other pages: the puzzle is the point */
+.cw .page-head { padding: clamp(16px, 4vh, 44px) 0 clamp(18px, 3vh, 32px); gap: 20px; }
+.cw .page-head-copy { padding-top: 0; margin-left: clamp(0px, 4vw, 60px); }
+.cw .page-head .page-title { margin-bottom: 14px; }
+@media (max-width: 899px) { .cw .page-head-copy { margin-left: 0; } }

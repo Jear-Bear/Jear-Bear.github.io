@@ -40,9 +40,9 @@ const T = {
     openCta: 'See Crossword+',
     badge: 'Crossword+',
     sectionTitle: 'Want more puzzles?',
-    'perk.archive': '<b>Every past puzzle</b>, kana and kanji',
-    'perk.deck': '<b>Crosswords from your own Anki deck</b>, as many as you like',
-    'perk.bonus': '<b>Bonus puzzles</b> every week',
+    'perk.archive': 'Every past puzzle', 'perk.archive.sub': 'The whole archive, kana and kanji',
+    'perk.deck': 'Unlimited deck puzzles', 'perk.deck.sub': 'From your own Anki deck (free: 1 a day, signed in)',
+    'perk.bonus': 'Bonus puzzles', 'perk.bonus.sub': 'New ones every week', 'perk.bonus.n': '{n} waiting, more every week',
     price: '<b>{month}/month</b> or {year}/year · cancel anytime',
     free: 'Today’s puzzles are always free, no account needed.',
     member: 'You’re a Crossword+ member. Thank you!',
@@ -68,9 +68,9 @@ const T = {
     openCta: 'クロスワード＋を見る',
     badge: 'クロスワード＋',
     sectionTitle: 'もっと解きたい？',
-    'perk.archive': '<b>過去のパズル全部</b>（かな・漢字）',
-    'perk.deck': '<b>自分のAnkiデッキでクロスワード</b>、作り放題',
-    'perk.bonus': '<b>毎週のボーナスパズル</b>',
+    'perk.archive': '過去のパズル全部', 'perk.archive.sub': 'かなも漢字も、全部の日',
+    'perk.deck': 'デッキパズル作り放題', 'perk.deck.sub': '自分のAnkiデッキから（無料はログインで1日1つ）',
+    'perk.bonus': 'ボーナスパズル', 'perk.bonus.sub': '毎週追加', 'perk.bonus.n': '今{n}個、毎週追加',
     price: '<b>月{month}</b>または年{year}・いつでも解約OK',
     free: '今日のパズルはいつでも無料。登録も不要です。',
     member: 'クロスワード＋のメンバーです。いつもありがとう！',
@@ -95,9 +95,12 @@ function rich(k, nodes = {}, vars = {}) {
   return out;
 }
 
-// The selling points, shared by the page section, the solved screen and My deck
-export function plusPerks() {
-  return h('ul', { class: 'cw-perks' }, ['archive', 'deck', 'bonus'].map((k) => h('li', {}, rich(`perk.${k}`))));
+// The selling points, as three tiles readable at a glance; shared by the page section,
+// the solved screen and My deck. order: which comes first; bonusN: how many are waiting
+export function plusPerks({ order = ['archive', 'deck', 'bonus'], bonusN = 0 } = {}) {
+  return h('ul', { class: 'cw-perks' }, order.map((k) => h('li', {},
+    h('strong', {}, t(`perk.${k}`)),
+    h('span', {}, k === 'bonus' && bonusN ? t('perk.bonus.n', { n: bonusN }) : t(`perk.${k}.sub`)))));
 }
 // Draw the eye to a Crossword+ box that's already on screen
 export function nudge(el) {
