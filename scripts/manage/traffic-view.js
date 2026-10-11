@@ -270,15 +270,17 @@ function membersSection(m, reload) {
     reload(false);
   }, { kind: 'chip' });
   const users = m.users || [];
-  const paid = users.filter((u) => u.member && u.paid);
+  const trialing = users.filter((u) => u.member && u.paid && u.status === 'trialing');
+  const paid = users.filter((u) => u.member && u.paid && u.status !== 'trialing');
   const monthly = paid.filter((u) => u.plan === 'month').length;
   const yearly = paid.filter((u) => u.plan === 'year').length;
   const act = (u, label, body) => button(label, async (ev) => { await busy(ev.currentTarget, () => request('PATCH', `plus/${u.id}`, body)); reload(false); }, { kind: 'chip' });
-  const statusOf = (u) => (u.revoked ? 'turned off' : u.paid ? `${u.status}${u.plan ? ` · ${u.plan}ly` : ''}${u.period_end ? ` · ${u.status === 'canceled' ? 'ended' : 'renews'} ${fmtDate(u.period_end.slice(0, 10))}` : ''}` : u.granted ? 'free access' : 'signed up, not a member');
+  const statusOf = (u) => (u.revoked ? 'turned off' : u.paid && u.status === 'trialing' ? `free trial${u.plan ? ` · ${u.plan}ly after` : ''}${u.period_end ? ` · ends ${fmtDate(u.period_end.slice(0, 10))}` : ''}` : u.paid ? `${u.status}${u.plan ? ` · ${u.plan}ly` : ''}${u.period_end ? ` · ${u.status === 'canceled' ? 'ended' : 'renews'} ${fmtDate(u.period_end.slice(0, 10))}` : ''}` : u.granted ? 'free access' : 'signed up, not a member');
   return section('Crossword+ members',
     h('div', { class: 'crm-tiles' },
       tile('Paying members', num.format(paid.length), `${monthly} monthly · ${yearly} yearly`),
       tile('Monthly revenue', `$${(monthly * 2.99 + yearly * 24.99 / 12).toFixed(2)}`, 'before Stripe’s fees (yearly spread over 12)'),
+      tile('On a free trial', num.format(trialing.length), 'pay when it ends, unless they cancel'),
       tile('Free access', num.format(users.filter((u) => u.member && !u.paid).length), 'given here'),
       tile('Accounts', num.format(users.length), 'signed in at least once')),
     h('div', { class: 'crm-traffic-bar' },

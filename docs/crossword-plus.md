@@ -11,6 +11,15 @@ one My deck puzzle a day for anyone signed in (signing in is free).
 a few bonus puzzles a week.
 
 **Price:** $2.99/month or $24.99/year (about $2.08/month, roughly 30% off).
+
+**Free trial:** 7 days free for an account that has never had a subscription
+(one per account; `STRIPE_TRIAL_DAYS` on the Worker changes the length, 0 turns it
+off). Stripe takes the card at the start and charges the chosen plan when the
+trial ends unless they cancel. The plans, the price lines and Stripe's form all
+say so; the account shows "Free trial until {date}", and the Sponsor desk counts
+trials separately from paying members. In Stripe, turn on the trial reminder
+email (Settings → Billing → Subscriptions and emails → free trial reminders):
+card networks expect it.
 There's no founding or waitlist discount (decided Oct 2026: no promo code);
 waitlist members pay the same price. Ending in .99 is the standard for small
 subscriptions, and keeping it under $3 makes it feel like a tip, not a bill.

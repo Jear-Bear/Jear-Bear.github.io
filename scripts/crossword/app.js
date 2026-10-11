@@ -16,8 +16,8 @@
 import { toHiragana } from '../kanji/romaji.js?v=1';
 import { gridKana, cycleDakuten, romaji } from './kana.js?v=1';
 import { translator, lang, setLang, dateLocale } from '../games/i18n.js?v=1';
-import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=14';
-import { mountDeck } from './deck.js?v=14';
+import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=15';
+import { mountDeck } from './deck.js?v=15';
 import { openBrowse } from './browse.js?v=2';
 import { initSync, schedulePush, flush } from './sync.js?v=2';
 import { handleReturn, refresh, isMember, onAccount, archiveDay, currentUser, signedIn, logout, info as plusInfo } from './account.js?v=4';

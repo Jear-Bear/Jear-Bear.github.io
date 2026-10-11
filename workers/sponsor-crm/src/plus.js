@@ -115,6 +115,7 @@ export async function publicUser(db, u) {
     email: u.email, name: u.name || null, google: Boolean(u.google_sub),
     member: isMember(u), granted: Boolean(u.granted) && !u.revoked, paid: Boolean(u.stripe_subscription),
     status: u.status || null, plan: u.plan || null, renews: u.period_end || null,
+    trialOk: !u.stripe_subscription,              // a free trial is still open to them (stripe.js)
   };
 }
 

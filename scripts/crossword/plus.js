@@ -12,7 +12,7 @@
 // Emails go to the sponsor Worker's private database (waitlist.js), never the repo.
 
 import { lang } from '../games/i18n.js?v=1';
-import { info, isMember, onAccount } from './account.js?v=4';
+import { info, isMember, onAccount, currentUser } from './account.js?v=4';
 
 const API = 'https://sponsor-crm.jared-65b.workers.dev';
 const KEY = 'jareddesu.crossword.plus';
@@ -44,6 +44,7 @@ const T = {
     'perk.deck': 'Unlimited deck puzzles', 'perk.deck.sub': 'From your own Anki deck (free: 1 a day, signed in)',
     'perk.bonus': 'Bonus puzzles', 'perk.bonus.sub': 'New ones every week', 'perk.bonus.n': '{n} waiting, more every week',
     price: '<b>{month}/month</b> or {year}/year · cancel anytime',
+    priceTrial: '<b>{days} days free</b>, then {month}/month or {year}/year · cancel anytime',
     free: 'Today’s puzzles are always free, no account needed.',
     member: 'You’re a Crossword+ member. Thank you!',
     memberCta: 'Open Crossword+',
@@ -72,6 +73,7 @@ const T = {
     'perk.deck': 'デッキパズル作り放題', 'perk.deck.sub': '自分のAnkiデッキから（無料はログインで1日1つ）',
     'perk.bonus': 'ボーナスパズル', 'perk.bonus.sub': '毎週追加', 'perk.bonus.n': '今{n}個、毎週追加',
     price: '<b>月{month}</b>または年{year}・いつでも解約OK',
+    priceTrial: '<b>{days}日間無料</b>、その後は月{month}または年{year}・いつでも解約OK',
     free: '今日のパズルはいつでも無料。登録も不要です。',
     member: 'クロスワード＋のメンバーです。いつもありがとう！',
     memberCta: 'クロスワード＋を開く',
@@ -110,7 +112,12 @@ export function nudge(el) {
   void el.offsetWidth;
   el.classList.add('is-nudge');
 }
-export function plusPrice(prices) { return h('p', { class: 'cw-plus-price' }, rich('price', {}, prices)); }
+// days: the free trial (info().trialDays), shown unless this account has had one
+export function plusPrice(prices, days = 0) {
+  const u = currentUser();
+  const trial = days && !(u && u.trialOk === false);
+  return h('p', { class: 'cw-plus-price' }, rich(trial ? 'priceTrial' : 'price', {}, { ...prices, days }));
+}
 export function plusBadge() { return h('span', { class: 'cw-plus-badge' }, t('badge')); }
 export function supportLine() {
   return h('p', { class: 'cw-plus-help' }, rich('help', { email: h('a', { href: `mailto:${SUPPORT_EMAIL}` }, SUPPORT_EMAIL) }));
@@ -202,7 +209,7 @@ export function plusCard() {
       plusBadge(),
       h('p', { class: 'cw-plus-title' }, t('sectionTitle')),
       plusPerks(),
-      plusPrice(open.prices),
+      plusPrice(open.prices, open.trialDays),
       h('p', { class: 'cw-plus-fine' }, h('button', { type: 'button', class: 'btn btn-plus', onclick: openPanel }, t('openCta')), ' ',
         h('button', { type: 'button', class: 'btn-link cw-plus-not', onclick: () => { write({ hideUntil: Date.now() + HIDE_DAYS * 86400000 }); box.replaceChildren(h('p', { class: 'cw-plus-thanks' }, t('hidden'))); } }, t('not'))));
     return box;
@@ -222,7 +229,7 @@ export function mountPlusSection() {
       kids = [plusBadge(), h('p', { class: 'cw-plus-title' }, t('member')),
         h('p', {}, h('button', { type: 'button', class: 'btn btn-plus', onclick: () => { openPanel(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }, t('memberCta')))];
     } else if (open && open.open) {
-      kids = [plusBadge(), h('p', { class: 'cw-plus-title' }, t('sectionTitle')), plusPerks(), plusPrice(open.prices),
+      kids = [plusBadge(), h('p', { class: 'cw-plus-title' }, t('sectionTitle')), plusPerks(), plusPrice(open.prices, open.trialDays),
         h('p', {}, h('button', { type: 'button', class: 'btn btn-plus', onclick: () => { openPanel(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }, t('openCta'))),
         h('p', { class: 'cw-plus-fine' }, t('free'))];
     } else {
