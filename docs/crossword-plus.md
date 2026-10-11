@@ -11,8 +11,8 @@ one My deck puzzle a day for anyone signed in (signing in is free).
 a few bonus puzzles a week.
 
 **Price:** $2.99/month or $24.99/year (about $2.08/month, roughly 30% off).
-Waitlist members get a founding price of $1.99/month, locked in for as long
-as they stay subscribed. Ending in .99 is the standard for small
+There's no founding or waitlist discount (decided Oct 2026: no promo code);
+waitlist members pay the same price. Ending in .99 is the standard for small
 subscriptions, and keeping it under $3 makes it feel like a tip, not a bill.
 
 **Launch when:** about 150–200 sign-ups, or 3–4 weeks of steady sign-ups
