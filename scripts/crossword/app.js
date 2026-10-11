@@ -535,6 +535,14 @@ function renderAccount() {
     h('button', { type: 'button', class: 'btn-link', onclick: async () => { await logout(); renderAccount(); } }, t('acct.out')));
 }
 
+// While any popup is open (settings, past puzzles, solved, Stripe's form), the page
+// behind it stays put, so a swipe scrolls the popup instead
+function syncScrollLock() {
+  const open = [...document.querySelectorAll('.cw-overlay')].some((o) => !o.hidden && o.isConnected);
+  document.documentElement.classList.toggle('cw-lock', open);
+}
+new MutationObserver(syncScrollLock).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['hidden'] });
+
 // A small calendar so it's clear the date opens the calendar/list of past puzzles
 const CAL_ICON = () => {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');

@@ -404,3 +404,17 @@ button.cw-cal-day.is-picked { outline: 2px solid var(--plus); outline-offset: 1p
 .cw-pay-close:hover { background: #f0f0f0; }
 .cw-set-grid { align-items: start; }
 .cw-set-grid > .cw-set-col { margin: 0; padding: 0; }
+
+
+/* Popups on phones: the popup scrolls, the page behind it doesn't (app.js adds
+   .cw-lock to <html> while any popup is open). 100dvh is the visible height on
+   phones (100vh includes the space behind the browser bars). */
+html.cw-lock, html.cw-lock body { overflow: hidden; }
+.cw-overlay { overscroll-behavior: contain; touch-action: pan-y; }
+.cw-sheet, .cw-pay-sheet { max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.cw-sheet.cw-settings { padding-top: 0; }
+.cw-set-top { position: sticky; top: 0; z-index: 2; background: var(--surface); padding-top: clamp(14px, 3vw, 24px); }
+@media (max-width: 560px) {
+  .cw-overlay { padding: 10px; }
+  .cw-sheet, .cw-pay-sheet { max-height: calc(100vh - 20px); max-height: calc(100dvh - 20px); }
+}
