@@ -23,14 +23,15 @@
 
 import { HttpError } from './data.js';
 import { text } from './public.js';
-import { sessionUser, publicUser, siteFor, sendWelcome } from './plus.js';
+import { sessionUser, publicUser, siteFor, sendWelcome, sendTrialReminder } from './plus.js';
 
 const API_VERSION = '2024-06-20';                 // pinned: subscription.current_period_end lives on the subscription
 export const PLANS = {
   month: { amount: 299, interval: 'month', lookup: 'crossword_plus_month', label: '$2.99' },
   year: { amount: 2499, interval: 'year', lookup: 'crossword_plus_year', label: '$24.99' },
 };
-const EVENTS = ['checkout.session.completed', 'customer.subscription.created', 'customer.subscription.updated', 'customer.subscription.deleted'];
+// trial_will_end: Stripe sends it 3 days before a free trial ends; the Worker emails a reminder
+const EVENTS = ['checkout.session.completed', 'customer.subscription.created', 'customer.subscription.updated', 'customer.subscription.deleted', 'customer.subscription.trial_will_end'];
 const PRODUCT_TAG = 'crossword_plus';
 const SITE = 'https://www.jareddesu.com';
 
@@ -116,6 +117,9 @@ export async function stripeSetup(env, db, workerOrigin) {
     for (const w of list.data || []) if (w.url === url) await stripe(env, 'DELETE', `webhook_endpoints/${w.id}`);
     const w = await stripe(env, 'POST', 'webhook_endpoints', { url, enabled_events: EVENTS, api_version: API_VERSION, description: 'Crossword+ (jareddesu.com sponsor Worker)' });
     cfg.webhook_id = w.id; cfg.webhook_secret = w.secret; cfg.webhook_url = url;
+  } else if (cfg.webhook_id) {
+    // Pressing Connect Stripe again keeps the webhook's events current (same secret)
+    await stripe(env, 'POST', `webhook_endpoints/${cfg.webhook_id}`, { enabled_events: EVENTS });
   }
   await saveConfig(db, mode, cfg);
   // Going live: test-mode payments were never real, so those accounts start fresh
@@ -165,7 +169,7 @@ async function applySubscription(env, db, sub) {
   await db.prepare('UPDATE plus_users SET stripe_subscription = ?, status = ?, plan = ?, period_end = ? WHERE id = ?')
     .bind(sub.id, sub.status, planOf(sub), iso(sub.current_period_end), u.id).run();
   // A new member: the one welcome email (sendWelcome makes sure it's only once)
-  if (['active', 'trialing'].includes(sub.status)) await sendWelcome(env, db, u.id, 'paid');
+  if (['active', 'trialing'].includes(sub.status)) await sendWelcome(env, db, u.id, sub.status === 'trialing' ? 'trial' : 'paid');
 }
 
 // One Stripe customer per account and mode: a test-mode customer doesn't exist in live mode
@@ -262,7 +266,15 @@ export async function stripeWebhook(request, env) {
   if (!ok) return new Response('Bad signature', { status: 400 });
   const ev = JSON.parse(payload);
   const o = ev.data && ev.data.object;
-  if (o && ev.type && ev.type.startsWith('customer.subscription.') && o.metadata && o.metadata.product === PRODUCT_TAG) await applySubscription(env, env.DB, o);
+  if (o && ev.type && ev.type.startsWith('customer.subscription.') && o.metadata && o.metadata.product === PRODUCT_TAG) {
+    await applySubscription(env, env.DB, o);
+    // A free trial ends in 3 days: a heads-up email, unless they've already cancelled
+    if (ev.type === 'customer.subscription.trial_will_end' && o.status === 'trialing' && !o.cancel_at_period_end && !o.cancel_at) {
+      const customer = typeof o.customer === 'string' ? o.customer : o.customer && o.customer.id;
+      const plan = PLANS[planOf(o)] ? planOf(o) : 'month';
+      await sendTrialReminder(env, env.DB, customer, { ends: iso(o.trial_end || o.current_period_end), plan, price: PLANS[plan].label });
+    }
+  }
   else if (o && ev.type === 'checkout.session.completed' && o.metadata && o.metadata.product === PRODUCT_TAG && o.subscription) {
     await applySubscription(env, env.DB, typeof o.subscription === 'string' ? await stripe(env, 'GET', `subscriptions/${o.subscription}`) : o.subscription);
   }

@@ -17,9 +17,16 @@ a few bonus puzzles a week.
 off). Stripe takes the card at the start and charges the chosen plan when the
 trial ends unless they cancel. The plans, the price lines and Stripe's form all
 say so; the account shows "Free trial until {date}", and the Sponsor desk counts
-trials separately from paying members. In Stripe, turn on the trial reminder
-email (Settings → Billing → Subscriptions and emails → free trial reminders):
-card networks expect it.
+trials separately from paying members.
+
+Emails: the welcome email says the trial has started and that one reminder will
+come. Three days before the trial ends, Stripe sends the Worker
+`customer.subscription.trial_will_end` and it emails a reminder (once per account,
+`plus_users.trial_reminded_at`, migration 0018; not if they've already cancelled):
+when it ends, what it'll cost, and how to cancel. Stripe's own trial reminder is
+always 7 days before the end, which for a 7-day trial is the start, so it's not
+needed. After deploying, press **Connect Stripe** once so the webhook also gets the
+`trial_will_end` event.
 There's no founding or waitlist discount (decided Oct 2026: no promo code);
 waitlist members pay the same price. Ending in .99 is the standard for small
 subscriptions, and keeping it under $3 makes it feel like a tip, not a bill.
