@@ -1,9 +1,7 @@
 // plussync.js — things tied to a signed-in crossword account (any account, member or not):
-//   POST /public/plus/deck-use  { day, peek }  the free My deck puzzle: one per account per day
+//   POST /public/plus/deck-use  { day }        whether this account can make deck puzzles (members only)
 //   POST /public/plus/load                     this account's saved progress
 //   POST /public/plus/save      { data }       replace it (the page merges before saving)
-// The page builds deck puzzles itself, so this is a fair-use check (no more resetting the
-// count in a private window), not a lock: it's tied to the email instead of the browser.
 
 import { needUser, isMember } from './plus.js';
 import { HttpError } from './data.js';
@@ -29,16 +27,10 @@ function checkDay(day) {
 export async function deckUse(request, env) {
   const u = await needUser(request, env);
   const b = await body(request, 2000);
-  const day = checkDay(b.day);
-  if (isMember(u)) return { ok: true, unlimited: true };
-  if (b.peek) {
-    const r = await env.DB.prepare('SELECT 1 FROM plus_deck_uses WHERE user_id = ? AND day = ?').bind(u.id, day).first();
-    return { ok: true, left: r ? 0 : 1 };
-  }
-  const r = await env.DB.prepare('INSERT OR IGNORE INTO plus_deck_uses (user_id, day) VALUES (?, ?)').bind(u.id, day).run();
-  // Old rows are no use to anyone
-  await env.DB.prepare("DELETE FROM plus_deck_uses WHERE day < date('now', '-3 days')").run();
-  return r.meta && r.meta.changes ? { ok: true, left: 0 } : { ok: false, used: true, left: 0 };
+  checkDay(b.day);
+  // My deck is for Crossword+ members only (there used to be one free puzzle a day;
+  // plus_deck_uses kept those counts)
+  return isMember(u) ? { ok: true, unlimited: true } : { ok: false, member: false, left: 0 };
 }
 
 export async function loadSave(request, env) {
