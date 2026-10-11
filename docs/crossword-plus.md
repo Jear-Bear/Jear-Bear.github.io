@@ -5,7 +5,7 @@ once Stripe is connected (see "Accounts and payments"); until then the page
 shows the waitlist.
 
 **What's free:** today's puzzles, kana and kanji, every level and size, plus
-one My deck puzzle a day.
+one My deck puzzle a day for anyone signed in (signing in is free).
 
 **What's in Crossword+:** every past puzzle, unlimited My deck puzzles, and
 a few bonus puzzles a week.
@@ -99,8 +99,11 @@ Add this to the nightly crossword task (after publishing the dailies):
 ## My deck
 
 Crosswords made from your own Anki deck, on the crossword page under
-**My deck**. **One a day is free** for everyone (no account; counted in the
-browser), and members can make as many as they like.
+**My deck**. **One a day is free** with a (free) account, and members can make
+as many as they like. The free one is counted by the Worker per account
+(`POST /public/plus/deck-use`, table `plus_deck_uses`, migration 0016), so a
+private window doesn't reset it. Puzzles are still built in the browser, so
+this is a fair-use limit, not a lock.
 
 - **Import:** an **.apkg** (Anki → File → Export → Anki Deck Package, or a
   deck from AnkiWeb; a whole-collection .colpkg works too), or "Notes in
@@ -192,6 +195,17 @@ Check the waitlist after 3 to 4 weeks next to the crossword's daily visits
 out of the public repo into the Worker. Under about 50 means keep it free and
 grow the audience first.
 
+## Sync between devices
+
+Signed in (member or not), a person's progress follows them: every puzzle's
+squares, times and solves, the stats, and the deck puzzles they've made (newest
+60). `scripts/crossword/sync.js` saves it on the Worker under the account
+(`POST /public/plus/save` / `load`, table `plus_saves`) at most every 15
+seconds while playing and when the tab is hidden, and merges it in on sign-in and
+when the tab comes back. Merging keeps a finished solve over an unfinished one,
+then the further-along one. Settings and the imported deck itself (the word list)
+stay in each browser.
+
 ## Accounts and payments (built)
 
 **Signing in** (only for Crossword+; the daily puzzles never need it). An
@@ -206,8 +220,9 @@ matches:
 Signing in gives the browser a session (90 days; "Sign out" ends it on every
 device). Code: `workers/sponsor-crm/src/plus.js`, `scripts/crossword/account.js`.
 
-**Paying.** Signed in, a member picks $2.99/month or $24.99/year and goes to
-**Stripe Checkout**. Each account gets one Stripe customer with its email, so
+**Paying.** Signed in, a member picks $2.99/month or $24.99/year and pays in
+**Stripe's own form in a window on the page** (Embedded Checkout), or on
+Stripe's checkout page if the publishable key isn't set. Each account gets one Stripe customer with its email, so
 the subscription belongs to that email. Stripe's webhook keeps the account's
 status current (renewals, failed cards, cancellations), and the page also
 checks the moment they come back from Checkout. **Manage subscription** opens
@@ -232,15 +247,21 @@ subscription, or **free access** you give an email in the Sponsor desk.
    and the DNS records it shows, then add an API key as the GitHub secret
    `RESEND_API_KEY`. Optional variable `LOGIN_EMAIL_FROM`, e.g.
    `Jared’s Crossword <crossword@jareddesu.com>`.
-4. GitHub → Actions → **Sponsor CRM deploy** → Run workflow (pushes the new
+4. **Payment form on the page (optional, recommended).** Stripe → Developers →
+   API keys → the **publishable key** (`pk_test_…`; not secret). Add it as the
+   GitHub variable (or secret) `STRIPE_PUBLISHABLE_KEY`. Without it, people are
+   sent to Stripe's checkout page instead. Going live, swap it for `pk_live_…`
+   together with the secret key.
+5. GitHub → Actions → **Sponsor CRM deploy** → Run workflow (pushes the new
    secrets to the Worker).
-5. Sponsor desk → Traffic → Crossword+ members → **Connect Stripe**. It makes
+6. Sponsor desk → Traffic → Crossword+ members → **Connect Stripe**. It makes
    the two prices, the portal settings and the webhook (safe to press again).
    The crossword page then shows the plans, marked "Test mode".
-6. Try it with Stripe's test card `4242 4242 4242 4242`, any future date, any
+7. Try it with Stripe's test card `4242 4242 4242 4242`, any future date, any
    CVC. Check the account shows as paying in the desk, open Manage
    subscription, cancel, and see it end.
-7. **Go live:** swap `STRIPE_SECRET_KEY` for the live key (`sk_live_…`), run
+8. **Go live:** swap `STRIPE_SECRET_KEY` for the live key (`sk_live_…`) and
+   `STRIPE_PUBLISHABLE_KEY` for `pk_live_…`, run
    the deploy, press **Connect Stripe** again (live mode has its own prices
    and webhook).
 

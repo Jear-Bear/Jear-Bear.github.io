@@ -125,7 +125,7 @@ export async function plusInfo(env) {
   const st = await stripeStatus(env, env.DB);
   return {
     open: st.connected, test: st.connected && st.mode === 'test',
-    google: env.GOOGLE_CLIENT_ID || null, email: Boolean(env.RESEND_API_KEY),
+    google: env.GOOGLE_CLIENT_ID || null, email: Boolean(env.RESEND_API_KEY), embedded: Boolean(env.STRIPE_PUBLISHABLE_KEY),
     prices: Object.fromEntries(Object.entries(PLANS).map(([k, p]) => [k, p.label])),
   };
 }
@@ -169,19 +169,21 @@ export async function plusCheckout(request, env, origin) {
   if (!env.STRIPE_SECRET_KEY || !cfg || !cfg.prices) throw new HttpError(503, 'Crossword+ isn’t open yet');
   if (['active', 'trialing', 'past_due'].includes(u.status)) throw new HttpError(409, 'You’re already a member. Use “Manage subscription” to change plans.');
   const site = siteFor(origin);
+  // Embedded Checkout (Stripe's form on our page) needs the publishable key; otherwise Stripe's own page
+  const embedded = Boolean(body.embedded && env.STRIPE_PUBLISHABLE_KEY);
+  const back = `${site}/tools/crossword/?plus=success&session_id={CHECKOUT_SESSION_ID}`;
   const s = await stripe(env, 'POST', 'checkout/sessions', {
     mode: 'subscription',
+    ...(embedded ? { ui_mode: 'embedded', return_url: back } : { success_url: back, cancel_url: `${site}/tools/crossword/?plus=cancel` }),
     customer: await customerFor(env, u),
     client_reference_id: u.id,
     line_items: [{ price: cfg.prices[plan], quantity: 1 }],
     allow_promotion_codes: 'true',
-    success_url: `${site}/tools/crossword/?plus=success&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${site}/tools/crossword/?plus=cancel`,
     metadata: { product: PRODUCT_TAG, account: u.id },
     subscription_data: { metadata: { product: PRODUCT_TAG, account: u.id } },
     ...(env.STRIPE_AUTOMATIC_TAX === 'true' ? { automatic_tax: { enabled: 'true' }, customer_update: { address: 'auto' } } : {}),
   });
-  return { url: s.url };
+  return embedded ? { clientSecret: s.client_secret, publishableKey: env.STRIPE_PUBLISHABLE_KEY } : { url: s.url };
 }
 
 // Back from Checkout: read the session from Stripe so the account is a member

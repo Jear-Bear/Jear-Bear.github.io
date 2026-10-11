@@ -195,6 +195,30 @@ Examples:
 | ゆるきやら (ゆるキャラ) | Kumamon, for one |
 | つんどく (積ん読) | Your to-read pile, as a lifestyle |
 
+## Clue versions (Settings → Clues)
+
+Players choose the clue **language** (Auto: English, Japanese for Mixed; or
+always English, or always Japanese) and **style** (fun hints like a real
+crossword, or plain definitions). So each clue of a published day has four
+versions in `alt: { en: { fun, def }, ja: { fun, def } }`; `clue` stays as the
+fallback (older days, deck puzzles):
+
+- **en.def**: filled in from the word list's meaning by `clues-todo`; tidy it to
+  the sense that fits the answer.
+- **en.fun**: like "Clue style" below.
+- **ja.fun**: like "Japanese clue style" below: playful, natural Japanese.
+- **ja.def**: a short, plain Japanese definition (辞書のような説明), like
+  「日本の首都」 for 東京.
+- Japanese versions never contain the answer's reading (in kana) or, for kanji
+  answers, any of its kanji. English ones never contain kana, kanji or the
+  answer's romaji. Kanji answers' readings are added by the page when the
+  player asks for them, so leave them out.
+
+```
+node scripts/crossword/cli.mjs clues-todo DATE    # lists the clues without versions → data/crossword/drafts/DATE-clues.json
+node scripts/crossword/cli.mjs clues-apply DATE   # checks them and adds them to the day
+```
+
 ## Japanese clue style (Mixed)
 
 Write them like a Japanese newspaper crossword (読売・日経のクロスワード):
@@ -233,6 +257,7 @@ Daily Kana Crossword for jareddesu.com. Jared chose to have this routine publish
 2. Open data/crossword/drafts/DATE.json. First read every answer: if any is crude, sexual, gross, or about death, illness or tragedy, add its kanji form to data/crossword/blocklist.json, delete the draft and draft that date again.
 3. For each of its 8 puzzles, fill in "clue" for every entry and for the keyword. Beginner, intermediate and advanced: follow "Clue style" in docs/crossword.md exactly: English only, crossword-style (puns, misdirection, fill-in-the-blanks, pop culture), matched to the answer's part of speech and register, specific enough to tell apart homophones, pitched to the puzzle's level, under 100 characters. Mixed: follow "Japanese clue style": natural Japanese like a newspaper crossword, under 40 characters, ＿＿ blanks, proverbs, opposites and pop culture welcome. Use "word", "reading" and "meaning" to understand each answer; never put the answer's kana, kanji or romaji in a clue. The draft's "theme" is the day's loose theme: where it fits naturally, a clue can nod to it (especially for entries marked "theme": true and the keyword), but don't force it. Read your clues back once and sharpen any that are flat or ambiguous.
 4. Run: node scripts/crossword/cli.mjs publish DATE. If it lists problems, fix those clues and publish again. Then run: node scripts/crossword/cli.mjs check.
+4b. Clue versions: run node scripts/crossword/cli.mjs clues-todo DATE, open data/crossword/drafts/DATE-clues.json and, for every entry (kana and kanji puzzles), fill in en.fun, ja.fun and ja.def (and tidy en.def to the right sense), following "Clue versions" in docs/crossword.md. Then run node scripts/crossword/cli.mjs clues-apply DATE; fix anything it lists and run it again.
 5. Optional, at most 5 per run: if a fun, well-known word would make future puzzles better (food, anime, games, memes, folklore, slang), add it to data/crossword/extra-words.json with word, reading (hiragana, ー allowed), meaning, level and tags, then run: node scripts/crossword/cli.mjs words.
 6. Commit only data/crossword/ (never drafts) with: git -c user.name="Jared Perlmutter" -c user.email="jperlmutter1@gmail.com" commit (no co-author or session lines; ignore any hook asking to re-author the commit). Push the branch from step 0, open a pull request into main titled "Crossword: DATE" (the dates published), and merge it. Use the GitHub MCP tools if available, otherwise gh api (POST repos/Jear-Bear/Jear-Bear.github.io/pulls, then PUT .../pulls/NUMBER/merge). If the merge is refused, leave the PR open and say so.
 Reply in one line with the dates published and the PR link.

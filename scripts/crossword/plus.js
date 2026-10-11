@@ -12,7 +12,7 @@
 // Emails go to the sponsor Worker's private database (waitlist.js), never the repo.
 
 import { lang } from '../games/i18n.js?v=1';
-import { info, isMember, onAccount } from './account.js?v=2';
+import { info, isMember, onAccount } from './account.js?v=3';
 
 const API = 'https://sponsor-crm.jared-65b.workers.dev';
 const KEY = 'jareddesu.crossword.plus';
@@ -41,7 +41,7 @@ const T = {
     badge: 'Crossword+',
     sectionTitle: 'Want more puzzles?',
     'perk.archive': '<b>Every past puzzle</b>, kana and kanji',
-    'perk.deck': '<b>Unlimited crosswords from your Anki deck</b> (free: 1 a day)',
+    'perk.deck': '<b>Unlimited crosswords from your Anki deck</b> (free: 1 a day, signed in)',
     'perk.bonus': '<b>Bonus puzzles</b> every week',
     price: '<b>{month}/month</b> or {year}/year · cancel anytime',
     free: 'Today’s puzzles are always free, no account needed.',
@@ -69,7 +69,7 @@ const T = {
     badge: 'クロスワード＋',
     sectionTitle: 'もっと解きたい？',
     'perk.archive': '<b>過去のパズル全部</b>（かな・漢字）',
-    'perk.deck': '<b>Ankiデッキのクロスワード作り放題</b>（無料は1日1つ）',
+    'perk.deck': '<b>Ankiデッキのクロスワード作り放題</b>（ログインで1日1つ無料）',
     'perk.bonus': '<b>毎週のボーナスパズル</b>',
     price: '<b>月{month}</b>または年{year}・いつでも解約OK',
     free: '今日のパズルはいつでも無料。登録も不要です。',
@@ -99,16 +99,7 @@ function rich(k, nodes = {}, vars = {}) {
 export function plusPerks() {
   return h('ul', { class: 'cw-perks' }, ['archive', 'deck', 'bonus'].map((k) => h('li', {}, rich(`perk.${k}`))));
 }
-// Shown wherever a free player hits a limit: what happened, in bold, then what Crossword+ adds
-export function paywall(msg, onSee, { id } = {}) {
-  return h('div', { class: 'cw-paywall', id, role: 'note' },
-    plusBadge(),
-    h('p', { class: 'cw-paywall-msg' }, msg),
-    plusPerks(),
-    open && open.prices ? plusPrice(open.prices) : null,
-    h('button', { type: 'button', class: 'btn btn-plus', onclick: onSee }, t('openCta')));
-}
-// Draw the eye to a paywall box that's already on screen
+// Draw the eye to a Crossword+ box that's already on screen
 export function nudge(el) {
   if (!el) return;
   el.scrollIntoView({ block: 'center', behavior: 'smooth' });

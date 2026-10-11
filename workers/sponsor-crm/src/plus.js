@@ -38,7 +38,9 @@ const ACTIVE = new Set(['active', 'trialing', 'past_due']);    // past_due: Stri
 const SITE = 'https://www.jareddesu.com';
 
 export const isMember = (u) => Boolean(u) && !u.revoked && (Boolean(u.granted) || ACTIVE.has(u.status));
-export const siteFor = (origin) => (origin && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) ? origin : SITE);
+// Links back to the page (email sign-in, Stripe): local testing and the staging site get their own
+export const STAGING = 'https://staging.jareddesu.com';
+export const siteFor = (origin) => (origin && (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) || origin === STAGING) ? origin : SITE);
 
 const b64url = (bytes) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const fromB64url = (s) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (s.length % 4)) % 4)), (c) => c.charCodeAt(0));
@@ -84,7 +86,7 @@ export async function sessionUser(request, env) {
   return u && String(u.session_ver) === ver ? u : null;
 }
 
-async function needUser(request, env) {
+export async function needUser(request, env) {
   const u = await sessionUser(request, env);
   if (!u) throw new HttpError(401, 'Please sign in again');
   return u;

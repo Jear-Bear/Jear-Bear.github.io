@@ -13,9 +13,10 @@
 
 import { lang } from '../games/i18n.js?v=1';
 import { gridKana, toHira } from './kana.js?v=1';
-import { info, refresh, currentUser, onAccount, signedIn, sendEmailLink, googleButton, logout, checkout, portal, bonusPuzzle } from './account.js?v=2';
-import { plusPerks, plusBadge, supportLine, paywall, nudge } from './plus.js?v=10';
-import { openBrowse } from './browse.js?v=1';
+import { info, refresh, currentUser, onAccount, signedIn, sendEmailLink, googleButton, checkout, portal, bonusPuzzle, deckUse } from './account.js?v=3';
+import { schedulePush } from './sync.js?v=1';
+import { plusPerks, plusBadge, supportLine, nudge } from './plus.js?v=11';
+import { openBrowse } from './browse.js?v=2';
 
 const STORE = 'jareddesu.crossword.deck';
 const KEEP = 60;                 // puzzles kept to replay (the list shows the newest few; the rest are under "See all")
@@ -26,10 +27,11 @@ const MAX_NOTES = 20000;
 const T = {
   en: {
     title: 'My deck',
-    intro: 'Turn your own Anki deck into crosswords: your words, with your meanings as the clues. One a day is free.',
+    intro: 'Turn your own Anki deck into crosswords: your words, with your meanings as the clues. One a day is free when you sign in.',
     plusTitle: 'Crossword+',
     pitch: 'Today’s puzzles are always free. Crossword+ unlocks:',
-    seeAll: 'See all {n}', bonusLockedN: '{n} bonus puzzles are waiting in Crossword+.',
+    seeAll: 'See all {n}', seePlans: 'See plans ↓',
+    signInFree: 'Sign in for your free puzzle', signInFirst: 'Sign in (it’s free) to make your daily deck puzzle. It’s one a day per account, and your puzzles and progress then follow you to any device.', signInBtn: 'Sign in ↓', bonusLockedN: '{n} bonus puzzles are waiting in Crossword+.',
     freeLeft: '1 free puzzle today', freeUsed: 'You’ve made today’s free deck puzzle. With Crossword+ you can make as many as you like.', unlimited: 'Unlimited with Crossword+',
     bonusLocked: 'Bonus puzzles are part of Crossword+.',
     perMonth: '{price} / month', perYear: '{price} / year', yearNote: 'about 30% off',
@@ -62,10 +64,11 @@ const T = {
   },
   ja: {
     title: 'マイデッキ',
-    intro: '自分のAnkiデッキがクロスワードに。答えは自分の単語、カギは自分で書いた意味です。1日1つは無料。',
+    intro: '自分のAnkiデッキがクロスワードに。答えは自分の単語、カギは自分で書いた意味です。ログインすれば1日1つ無料。',
     plusTitle: 'クロスワード＋',
     pitch: '今日のパズルはずっと無料。クロスワード＋なら：',
-    seeAll: '全部見る（{n}）', bonusLockedN: 'クロスワード＋で{n}個のボーナスパズルが遊べます。',
+    seeAll: '全部見る（{n}）', seePlans: 'プランを見る ↓',
+    signInFree: 'ログインで無料パズル', signInFirst: '無料のログインで、毎日1つデッキパズルを作れます（1アカウント1日1つ）。作ったパズルや進み具合も、どの端末でも続きから遊べます。', signInBtn: 'ログイン ↓', bonusLockedN: 'クロスワード＋で{n}個のボーナスパズルが遊べます。',
     freeLeft: '今日の無料パズル：あと1つ', freeUsed: '今日の無料デッキパズルを作りました。クロスワード＋なら何個でも作れます。', unlimited: 'クロスワード＋で作り放題',
     bonusLocked: 'ボーナスパズルはクロスワード＋の特典です。',
     perMonth: '月{price}', perYear: '年{price}', yearNote: '約30%お得',
@@ -113,7 +116,7 @@ function h(tag, attrs, ...kids) {
 
 const localDate = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 function read() { try { return JSON.parse(localStorage.getItem(STORE) || '{}'); } catch { return {}; } }
-function write(v) { localStorage.setItem(STORE, JSON.stringify(v)); }       // throws when full (caller handles)
+function write(v) { localStorage.setItem(STORE, JSON.stringify(v)); schedulePush(); }       // throws when full (caller handles)
 
 // --- reading an export ------------------------------------------------------------------------
 // Anki's plain-text export: optional "#key:value" header lines, then one note
@@ -319,9 +322,18 @@ export function mountDeck({ root, play }) {
 
   const state = () => read();
   const member = () => Boolean(currentUser() && currentUser().member);
-  // Everyone gets 1 deck puzzle a day (counted in this browser); members, as many as they like
-  const freeLeft = () => { const f = state().free || {}; return f.day === localDate() ? Math.max(0, FREE_PER_DAY - f.n) : FREE_PER_DAY; };
-  const useFree = () => { const x = state(); const f = x.free && x.free.day === localDate() ? x.free : { day: localDate(), n: 0 }; x.free = { day: f.day, n: f.n + 1 }; try { write(x); } catch { /* full */ } };
+  // One free deck puzzle a day per account, counted by the Worker (so a private window
+  // doesn't reset it); signing in is free. Members make as many as they like.
+  let free = { day: null, left: null };
+  const freeLeft = () => (free.day === localDate() && free.left != null ? free.left : null);
+  async function peekFree() {
+    if (!signedIn() || member()) return;
+    const day = localDate();
+    if (free.day === day && free.left != null) return;
+    free = { day, left: null };
+    try { const r = await deckUse(day, true); free = { day, left: r.unlimited ? Infinity : r.left }; } catch { free = { day, left: FREE_PER_DAY }; }
+    render();
+  }
   const setStatus = (text, error = false) => { status = { text, error }; render(); };
   const fmtDay = (iso) => (iso ? new Date(iso).toLocaleDateString(lang() === 'ja' ? 'ja-JP' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '');
   onAccount(() => render());
@@ -341,7 +353,7 @@ export function mountDeck({ root, play }) {
     const go = (plan) => async (e) => {
       if (!signedIn()) { document.getElementById('cw-signin')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
       busy = true; setStatus(t('paying'));
-      try { await checkout(plan); } catch (err) { busy = false; setStatus(err.message || t('failed'), true); }
+      try { await checkout(plan); busy = false; setStatus(''); } catch (err) { busy = false; setStatus(err.message || t('failed'), true); }
     };
     return [
       h('div', { class: 'cw-deck-row cw-plans' },
@@ -375,10 +387,6 @@ export function mountDeck({ root, play }) {
     ];
   }
 
-  function accountLine(u) {
-    return h('p', { class: 'cw-deck-muted' }, t('signedInAs', { email: u.email }), ' · ',
-      h('button', { type: 'button', class: 'btn-link', onclick: async () => { await logout(); setStatus(''); } }, t('signOut')));
-  }
 
   function membership(u) {
     const line = u.granted && !u.paid ? t('memberFree')
@@ -479,17 +487,26 @@ export function mountDeck({ root, play }) {
       onclick: () => { const x = state(); x[name] = v; try { write(x); } catch { /* full */ } render(); },
     }, label)));
     const isMember = member();
-    const left = isMember ? Infinity : freeLeft();
+    const out = !isMember && !signedIn();          // the free puzzle needs a (free) sign-in
+    const left = isMember ? Infinity : out ? 0 : freeLeft();
+    if (!isMember && !out && left == null) peekFree();
     const made = (s.made || []).slice().reverse();
+    const toSignIn = () => { const el = document.getElementById('cw-signin'); if (el) { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); const i = el.querySelector('input'); if (i) setTimeout(() => i.focus({ preventScroll: true }), 400); } };
     return [
       h('p', { class: 'cw-deck-muted' }, `${s.name} · ${t('words', { n: s.words.length })} · ${t('usable', c)}`),
       h('div', { class: 'cw-deck-row' },
         seg('size', size, [['mini', t('mini')], ['daily', t('daily')]]),
         seg('kind', kind, [['kana', t('kana'), c.kana < MIN_WORDS], ['kanji', t('kanji'), c.kanji < MIN_WORDS]])),
       h('div', { class: 'cw-deck-row' },
-        h('button', { type: 'button', class: 'btn btn-primary', disabled: busy, onclick: () => (left ? make(s, size, kind) : nudge(document.getElementById('cw-paywall'))) }, t('make')),
-        h('span', { class: 'cw-deck-muted' }, isMember ? t('unlimited') : left ? t('freeLeft') : '')),
-      !isMember && !left ? paywall(t('freeUsed'), showPlus, { id: 'cw-paywall' }) : null,
+        h('button', { type: 'button', class: 'btn btn-primary cw-make', disabled: busy || left == null,
+          onclick: () => (out ? toSignIn() : left ? make(s, size, kind) : nudge(document.getElementById('cw-plusblock'))) }, t('make')),
+        h('span', { class: 'cw-deck-muted' }, isMember ? t('unlimited') : out ? t('signInFree') : left == null ? '…' : left ? t('freeLeft') : '')),
+      out ? h('div', { class: 'cw-limit', role: 'note' },
+        h('p', { class: 'cw-paywall-msg' }, t('signInFirst')),
+        h('button', { type: 'button', class: 'btn btn-plus', onclick: toSignIn }, t('signInBtn'))) : null,
+      !isMember && !out && left === 0 ? h('div', { class: 'cw-limit', role: 'note' }, plusBadge(),
+        h('p', { class: 'cw-paywall-msg' }, t('freeUsed')),
+        h('button', { type: 'button', class: 'btn btn-plus', onclick: () => nudge(document.getElementById('cw-plusblock')) }, t('seePlans'))) : null,
       made.length ? h('div', {}, h('h3', { class: 'cw-deck-sub' }, t('recent')),
         h('ul', { class: 'cw-deck-list' }, made.slice(0, SHOW).map((p) => h('li', {}, h('button', { type: 'button', onclick: () => play(p) },
           h('span', {}, deckLabel(p)),
@@ -507,7 +524,7 @@ export function mountDeck({ root, play }) {
 
   function bonusView() {
     if (!bonus) return [];
-    if (!member()) return bonus.length ? [h('h3', { class: 'cw-deck-sub' }, t('bonusTitle')), paywall(t('bonusLockedN', { n: bonus.length }), showPlus)] : [];
+    if (!member()) return bonus.length ? [h('h3', { class: 'cw-deck-sub' }, t('bonusTitle')), h('p', { class: 'cw-deck-locked' }, plusBadge(), ' ', h('strong', {}, t('bonusLockedN', { n: bonus.length })))] : [];
     if (!bonus.length) return [h('h3', { class: 'cw-deck-sub' }, t('bonusTitle')), h('p', { class: 'cw-deck-muted' }, t('bonusNone'))];
     const done = solvedIds();
     return [
@@ -553,7 +570,13 @@ export function mountDeck({ root, play }) {
       });
     } catch { busy = false; setStatus(t('buildFail'), true); return; }
     busy = false;
-    if (!member()) useFree();
+    if (!member()) {
+      try {
+        const r = await deckUse(localDate());
+        free = { day: localDate(), left: 0 };
+        if (!r.ok && !r.unlimited) { setStatus(''); return; }       // already used today (another device): the note shows
+      } catch (err) { setStatus(err.message || t('failed'), true); return; }
+    }
     const p = toPuzzle(draftPuzzle, { kind, size, name: s.name, seed });
     const x = state();
     x.made = [...(x.made || []), p].slice(-KEEP);
@@ -568,7 +591,6 @@ export function mountDeck({ root, play }) {
       plusBadge(),
       h('p', {}, t('pitch')),
       plusPerks(),
-      u ? accountLine(u) : null,
       ...plans(),
       ...(u ? [] : signInBox()),
       supportLine());
@@ -583,7 +605,7 @@ export function mountDeck({ root, play }) {
     let body;
     if (!loaded || !cfg) body = [h('p', { class: 'cw-deck-muted' }, '…')];
     else {
-      body = u && u.member ? [accountLine(u), ...membership(u)] : [h('p', {}, t('intro'))];
+      body = u && u.member ? membership(u) : [h('p', {}, t('intro'))];
       if (draft) body.push(...picker());
       else if (!s.words || !s.words.length) body.push(...importer());
       else body.push(...deckView(s, u));

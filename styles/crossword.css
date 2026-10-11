@@ -364,3 +364,43 @@ button.cw-cal-day.is-picked { outline: 2px solid var(--plus); outline-offset: 1p
 .cw-timer.is-hidden { visibility: hidden; }
 .cw-date-btn { display: inline-flex; align-items: center; gap: 6px; }
 .cw-cal-icon { width: 18px; height: 18px; flex-shrink: 0; color: var(--page-ink); }
+
+/* Who's signed in (every tab) */
+.cw-account { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: -4px 0 12px; font-size: 13px; color: var(--muted); }
+.cw-account .btn-link { font-size: 13px; }
+.cw-acct-badge { margin: 0; font-size: 11px; padding: 1px 8px; }
+
+/* My deck: the free puzzle is used up / bonus puzzles for members */
+.cw-limit { margin: 12px 0; padding: 12px 14px; border: 1px solid var(--plus-line); border-left: 4px solid var(--plus); border-radius: 8px; background: var(--plus-tint); }
+.cw-limit .btn-plus { margin-top: 4px; }
+.cw-deck .cw-deck-locked { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--ink); }
+.cw-deck-locked .cw-plus-badge { margin: 0; }
+.cw-plusblock.is-nudge { animation: cw-nudge .7s ease 2; }
+@media (prefers-reduced-motion: reduce) { .cw-plusblock.is-nudge { animation: none; outline: 3px solid var(--plus); } }
+
+/* My deck's main action stands out from the size/answer toggles */
+.cw-deck .btn.cw-make { min-height: 50px; padding: 0 26px; font-size: 16px; font-weight: 700; background: var(--page-color); border-color: var(--page-color); color: #fff; border-radius: 6px; box-shadow: 0 2px 0 var(--page-ink); }
+.cw-deck .btn.cw-make::before { content: "✦ "; }
+.cw-deck .btn.cw-make:hover { background: var(--page-ink); border-color: var(--page-ink); }
+.cw-deck .btn.cw-make:disabled { opacity: .6; }
+
+/* Settings: a wide popup in three columns (one on phones) */
+.cw-sheet.cw-settings { max-width: 980px; gap: 0; padding: clamp(18px, 3vw, 28px) clamp(18px, 3vw, 32px); }
+.cw-set-top { display: flex; align-items: center; gap: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-strong); }
+.cw-set-top .cw-sheet-title { margin-right: auto; }
+.cw-set-x { width: 40px; height: 40px; border: 0; background: none; font-size: 28px; line-height: 1; color: var(--ink); cursor: pointer; border-radius: 6px; }
+.cw-set-x:hover { background: var(--page-color-soft); }
+.cw-set-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 28px; }
+.cw-set-col { min-width: 0; }
+.cw-set-col .cw-set-head { margin: 14px 0 2px; }
+.cw-set-col .cw-toggle:last-child, .cw-set-col .cw-set-radio:last-child { border-bottom: 0; }
+@media (max-width: 860px) { .cw-set-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .cw-set-grid { grid-template-columns: 1fr; } .cw-set-top { gap: 8px; } .cw-set-top .cw-sheet-title { font-size: 1.35rem; } .cw-set-top .cw-seg button { padding-left: 10px; padding-right: 10px; } .cw-set-x { width: 34px; flex-shrink: 0; } }
+
+/* Stripe's payment form, in a window on the page */
+.cw-pay { z-index: 300; }
+.cw-pay-sheet { position: relative; width: 100%; max-width: 560px; max-height: calc(100vh - 32px); overflow-y: auto; background: #fff; border-radius: 10px; padding: 44px 8px 8px; }
+.cw-pay-close { position: absolute; top: 6px; right: 8px; width: 36px; height: 36px; border: 0; background: none; font-size: 26px; line-height: 1; color: #333; cursor: pointer; border-radius: 6px; }
+.cw-pay-close:hover { background: #f0f0f0; }
+.cw-set-grid { align-items: start; }
+.cw-set-grid > .cw-set-col { margin: 0; padding: 0; }

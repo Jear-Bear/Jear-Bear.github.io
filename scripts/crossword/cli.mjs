@@ -485,6 +485,87 @@ async function bonusPublish(id) {
   console.log(`Sealed ${id} (${p.level}). Backlog: ${index.bonus.length} bonus puzzles`);
 }
 
+// --- clue versions (fun / definition × English / Japanese) ----------------------------------
+// Each published clue can carry alt: { en: { fun, def }, ja: { fun, def } }. The player
+// picks one from Settings (clue language and style) and falls back to "clue".
+// The English definition comes from the word list's meaning; the other three are written.
+const CLUE_TODO = (date) => path.join(DRAFTS, `${date}-clues.json`);
+const answerChars = (x) => [...new Set([...(x.word || '')].filter((ch) => /[一-鿿々]/.test(ch)))];
+
+export function altProblems(x) {
+  const out = [];
+  const label = `${x.id} (${x.word})`;
+  const en = (k, c) => {
+    if (!c) { out.push(`${label}: missing en.${k}`); return; }
+    if (c.length > 140) out.push(`${label}: en.${k} over 140 characters`);
+    if (JAPANESE.test(c)) out.push(`${label}: en.${k} must be English only`);
+    const r = romaji(x.answer || toHira(x.reading || ''));
+    if (r.length >= 3 && new RegExp(`\\b${r}\\b`, 'i').test(c)) out.push(`${label}: en.${k} gives away the answer ("${r}")`);
+  };
+  const ja = (k, c) => {
+    if (!c) { out.push(`${label}: missing ja.${k}`); return; }
+    if (c.length > 60) out.push(`${label}: ja.${k} over 60 characters`);
+    if (!JAPANESE.test(c)) out.push(`${label}: ja.${k} must be in Japanese`);
+    const reading = toHira(x.reading || '');
+    const runs = (c.match(/[぀-ヿ]+/g) || []).map((r) => toHira(r));
+    if (reading && runs.some((r) => (reading.length > 2 ? r.includes(reading) : r === reading))) out.push(`${label}: ja.${k} gives away the reading (${reading})`);
+    if (answerChars(x).some((ch) => c.includes(ch)) && (x.mode === 'kanji' || c.includes(x.word))) out.push(`${label}: ja.${k} uses the answer's kanji`);
+  };
+  en('fun', x.en && x.en.fun); en('def', x.en && x.en.def);
+  ja('fun', x.ja && x.ja.fun); ja('def', x.ja && x.ja.def);
+  return out;
+}
+
+const defEn = (m) => {
+  const parts = String(m || '').replace(/\s*\([^)]*\)\s*/g, ' ').split(/;/).map((x) => x.trim()).filter(Boolean);
+  let out = parts[0] || '';
+  for (const q of parts.slice(1)) { if ((out + '; ' + q).length > 70) break; out += `; ${q}`; }
+  return out.charAt(0).toUpperCase() + out.slice(1);
+};
+
+// Lists the clues of a published day that have no versions yet, with the English definition filled in
+function cluesTodo(date) {
+  if (!isDate(date)) die('Usage: clues-todo YYYY-MM-DD');
+  const f = readJson(path.join(PUZZLES, `${date}.json`), null);
+  if (!f) die(`${date} isn't published`);
+  if (isSealed(f)) die(`${date} is sealed; its clues can't change any more`);
+  const entries = [];
+  f.puzzles.forEach((p) => {
+    const key = decode(p.key);
+    p.clues.forEach((c) => {
+      if (c.alt) return;
+      const k = key.entries.find((e) => e.num === c.num && e.dir === c.dir) || {};
+      entries.push({ id: `${p.id}|${c.num}${c.dir[0]}`, mode: p.mode || 'kana', level: p.level, word: k.word, reading: k.reading, answer: k.answer, meaning: k.meaning, clue: c.clue,
+        en: { fun: '', def: defEn(k.meaning) }, ja: { fun: '', def: '' } });
+    });
+  });
+  if (!entries.length) { console.log(`${date}: every clue has its versions`); return; }
+  writeJson(CLUE_TODO(date), { date, note: 'Fill en.fun, ja.fun and ja.def for every entry (en.def is the dictionary meaning: tidy it if needed), then run: node scripts/crossword/cli.mjs clues-apply ' + date, entries });
+  console.log(`${entries.length} clues to write → ${path.relative(ROOT, CLUE_TODO(date))}`);
+}
+
+function cluesApply(date) {
+  if (!isDate(date)) die('Usage: clues-apply YYYY-MM-DD');
+  const todo = readJson(CLUE_TODO(date), null);
+  if (!todo) die(`No ${path.relative(ROOT, CLUE_TODO(date))}; run clues-todo first`);
+  const file = path.join(PUZZLES, `${date}.json`);
+  const f = readJson(file, null);
+  if (!f || isSealed(f)) die(`${date} isn't published, or is sealed`);
+  const clean = (v) => String(v || '').trim();
+  const items = todo.entries.map((x) => ({ ...x, en: { fun: clean(x.en && x.en.fun), def: clean(x.en && x.en.def) }, ja: { fun: clean(x.ja && x.ja.fun), def: clean(x.ja && x.ja.def) } }));
+  const problems = items.flatMap(altProblems);
+  if (problems.length) die(`Fix these first:\n- ${problems.join('\n- ')}`);
+  const byId = new Map(items.map((x) => [x.id, x]));
+  let n = 0;
+  f.puzzles.forEach((p) => p.clues.forEach((c) => {
+    const x = byId.get(`${p.id}|${c.num}${c.dir[0]}`);
+    if (x) { c.alt = { en: x.en, ja: x.ja }; n++; }
+  }));
+  writeJson(file, f, false);
+  fs.rmSync(CLUE_TODO(date));
+  console.log(`${date}: added versions to ${n} clues`);
+}
+
 const [cmd, arg] = process.argv.slice(2);
 if (cmd === 'words') await words();
 else if (cmd === 'draft') draft(arg);
@@ -496,4 +577,6 @@ else if (cmd === 'status') status(Number(arg) || 3);
 else if (cmd === 'bonus-key') await bonusKey();
 else if (cmd === 'bonus-draft') bonusDraft(Number(arg) || 1);
 else if (cmd === 'bonus-publish') await bonusPublish(arg);
-else die('Commands: words | status [days] | draft DATE | publish DATE | check | kanji DATE|all | seal-archive | bonus-key | bonus-draft [n] | bonus-publish ID');
+else if (cmd === 'clues-todo') cluesTodo(arg);
+else if (cmd === 'clues-apply') cluesApply(arg);
+else die('Commands: words | status [days] | draft DATE | publish DATE | check | kanji DATE|all | seal-archive | bonus-key | bonus-draft [n] | bonus-publish ID | clues-todo DATE | clues-apply DATE');

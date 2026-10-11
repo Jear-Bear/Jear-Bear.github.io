@@ -1,0 +1,69 @@
+# Staging: every pull request into main is built exactly like GitHub Pages builds the
+# live site (Jekyll), then put on https://staging.jareddesu.com (Cloudflare Pages,
+# project "jareddesu-staging"), so changes can be tried before they reach everyone.
+# The newest pull request wins; merging puts it live as usual.
+#
+# The staging site uses the real sponsor Worker (sign-in, Crossword+, Stripe), which
+# accepts staging.jareddesu.com. It isn't indexed by search engines and shows a
+# small STAGING tag. Setup (once): docs/staging.md
+name: Staging
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: staging
+  cancel-in-progress: true
+
+jobs:
+  staging:
+    # Pull requests from forks don't get the Cloudflare secrets
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN || secrets.CLOUDFARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || secrets.CLOUDFARE_ACCOUNT_ID }}
+      PROJECT: jareddesu-staging
+    steps:
+      - name: Check out
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Build the site (same as GitHub Pages)
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+
+      - name: Mark it as staging
+        run: |
+          sudo chown -R "$(id -u)" _site
+          # Not for search engines
+          printf '/*\n  X-Robots-Tag: noindex, nofollow\n' > _site/_headers
+          printf 'User-agent: *\nDisallow: /\n' > _site/robots.txt
+          # A small tag in the corner of every page
+          tag='<div style="position:fixed;left:8px;bottom:8px;z-index:9999;padding:3px 8px;border-radius:4px;background:#c2410c;color:#fff;font:600 11px/1.4 system-ui,sans-serif;letter-spacing:.06em;pointer-events:none">STAGING</div>'
+          find _site -name '*.html' -print0 | xargs -0 sed -i "s|</body>|${tag}</body>|"
+          # Cloudflare Pages takes files up to 25 MiB
+          find _site -type f -size +25M -print -delete
+
+      - name: Deploy to Cloudflare Pages
+        working-directory: workers/sponsor-crm
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then echo "::error::Missing the Cloudflare secrets"; exit 1; fi
+          npm ci --no-audit --no-fund
+          npx wrangler pages project create "$PROJECT" --production-branch=main >/dev/null 2>&1 || true
+          npx wrangler pages deploy ../../_site --project-name="$PROJECT" --branch=main --commit-dirty=true \
+            || { echo "::error::Couldn't deploy. The Cloudflare API token needs the 'Cloudflare Pages: Edit' permission (see docs/staging.md)."; exit 1; }
+          {
+            echo "### Staging is up"
+            echo "https://staging.jareddesu.com (also https://$PROJECT.pages.dev)"
+            echo
+            echo "From: ${{ github.event.pull_request.title || github.ref_name }}"
+          } >> "$GITHUB_STEP_SUMMARY"

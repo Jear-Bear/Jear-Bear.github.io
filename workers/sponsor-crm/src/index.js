@@ -35,6 +35,7 @@
 //   POST /public/click              a click on a sponsor card on the site (counts only)
 //   /public/plus/…                  Crossword+ accounts (sign in with Google or an email link), past days, bonus puzzles (plus.js)
 //   /public/plus/checkout|sync|portal, POST /public/stripe/webhook    payments (stripe.js)
+//   /public/plus/deck-use|load|save  the free deck puzzle per account, progress synced between devices (plussync.js)
 //
 // A daily cron refreshes the uploads (capturing 30-day views) and the history.
 //
@@ -64,6 +65,7 @@ import { listDrafts, requestDraft, closeDraft } from './drafts.js';
 import { availability, inquiry } from './public.js';
 import { joinWaitlist, leaveWaitlist, listWaitlist } from './waitlist.js';
 import { loginGoogle, loginEmail, loginVerify, me as plusMe, logout as plusLogout, dayArchive, bonusPuzzle, listPlus, grantPlus, updatePlus } from './plus.js';
+import { deckUse, loadSave, putSave } from './plussync.js';
 import { plusInfo, plusCheckout, plusSync, plusPortal, stripeWebhook, stripeSetup, stripeStatus } from './stripe.js';
 import { publicKey, bonusBacklog, openSealed } from './sealed.js';
 import { pullTraffic, loadTraffic, trafficConfigured } from './traffic.js';
@@ -317,6 +319,9 @@ const app = {
           checkout: () => plusCheckout(request, env, origin),
           sync: () => plusSync(request, env),
           portal: () => plusPortal(request, env, origin),
+          'deck-use': () => deckUse(request, env),
+          load: () => loadSave(request, env),
+          save: () => putSave(request, env),
         };
         if (!routes[what]) return json({ error: 'Not found' }, 404, origin);
         return json(await routes[what](), 200, origin);
