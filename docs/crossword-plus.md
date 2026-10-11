@@ -250,6 +250,12 @@ Code: `workers/sponsor-crm/src/stripe.js`.
 A member is: an active (or trialing, or past-due while Stripe retries)
 subscription, or **free access** you give an email in the Sponsor desk.
 
+In the desk (Traffic → Crossword+ members) each account can have free access
+removed, be turned off or back on, be signed out everywhere, or be **deleted**:
+the account, its saved progress and its free-puzzle count go for good (for test
+or leftover accounts). An account with a live subscription can't be deleted until
+it's cancelled in Stripe, so nobody keeps getting charged for an account that's gone.
+
 ### Turning it on
 
 1. **Stripe key.** Stripe → Developers → API keys. Start with the **test**
