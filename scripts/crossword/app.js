@@ -16,8 +16,8 @@
 import { toHiragana } from '../kanji/romaji.js?v=1';
 import { gridKana, cycleDakuten, romaji } from './kana.js?v=1';
 import { translator, lang, setLang, dateLocale } from '../games/i18n.js?v=1';
-import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=11';
-import { mountDeck } from './deck.js?v=8';
+import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=12';
+import { mountDeck } from './deck.js?v=9';
 import { openBrowse } from './browse.js?v=2';
 import { initSync, schedulePush } from './sync.js?v=1';
 import { handleReturn, refresh, isMember, onAccount, archiveDay, currentUser, logout, info as plusInfo } from './account.js?v=3';
@@ -534,6 +534,14 @@ function renderAccount() {
     u.member ? h('span', { class: 'cw-plus-badge cw-acct-badge' }, '✓ ', t('plusName')) : null,
     h('button', { type: 'button', class: 'btn-link', onclick: async () => { await logout(); renderAccount(); } }, t('acct.out')));
 }
+
+// While any popup is open (settings, past puzzles, solved, Stripe's form), the page
+// behind it stays put, so a swipe scrolls the popup instead
+function syncScrollLock() {
+  const open = [...document.querySelectorAll('.cw-overlay')].some((o) => !o.hidden && o.isConnected);
+  document.documentElement.classList.toggle('cw-lock', open);
+}
+new MutationObserver(syncScrollLock).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['hidden'] });
 
 // A small calendar so it's clear the date opens the calendar/list of past puzzles
 const CAL_ICON = () => {

@@ -4,11 +4,10 @@ Optional extras on top of the free daily crossword. Built and ready to sell
 once Stripe is connected (see "Accounts and payments"); until then the page
 shows the waitlist.
 
-**What's free:** today's puzzles, kana and kanji, every level and size, plus
-one My deck puzzle a day for anyone signed in (signing in is free).
+**What's free:** today's puzzles, kana and kanji, every level and size.
 
-**What's in Crossword+:** every past puzzle, unlimited My deck puzzles, and
-a few bonus puzzles a week.
+**What's in Crossword+:** every past puzzle, My deck (crosswords from your
+own Anki deck, as many as you like), and a few bonus puzzles a week.
 
 **Price:** $2.99/month or $24.99/year (about $2.08/month, roughly 30% off).
 Waitlist members get a founding price of $1.99/month, locked in for as long
@@ -99,11 +98,9 @@ Add this to the nightly crossword task (after publishing the dailies):
 ## My deck
 
 Crosswords made from your own Anki deck, on the crossword page under
-**My deck**. **One a day is free** with a (free) account, and members can make
-as many as they like. The free one is counted by the Worker per account
-(`POST /public/plus/deck-use`, table `plus_deck_uses`, migration 0016), so a
-private window doesn't reset it. Puzzles are still built in the browser, so
-this is a fair-use limit, not a lock.
+**My deck**. **Members only** (until Oct 2026 there was one free puzzle a day).
+Everyone else sees what it does and the plans; the Worker's
+`POST /public/plus/deck-use` also answers members-only.
 
 - **Import:** an **.apkg** (Anki → File → Export → Anki Deck Package, or a
   deck from AnkiWeb; a whole-collection .colpkg works too), or "Notes in
@@ -119,8 +116,7 @@ this is a fair-use limit, not a lock.
 - **Puzzles:** Mini or Daily, kana or kanji answers, built in the browser
   (freeform grids, only the deck's words). The deck and the puzzles stay in
   that browser; nothing from the deck is sent anywhere.
-- After the free one, **Make a puzzle** points to Crossword+. Made puzzles can
-  be replayed any time: the newest 60 are kept, the panel shows 3, and
+- Made puzzles can be replayed any time: the newest 60 are kept, the panel shows 3, and
   **See all** opens them by calendar or as a list (same for bonus puzzles).
 
 ## Past puzzles (the archive)
