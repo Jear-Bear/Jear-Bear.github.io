@@ -194,6 +194,7 @@ html[data-ui="ja"] [data-ui-only="en"], html:not([data-ui="ja"]) [data-ui-only="
 .cw-plus-status:empty { display: none; }
 .cw-plus-fine { margin: 8px 0 0; font-size: 12px; color: var(--muted); }
 .cw-plus-not { font-size: 12px; }
+.cw-plus.is-open .cw-plus-not { margin-left: 18px; }
 .cw-plus-thanks { margin: 0; font-size: 14px; }
 .cw-plus-about p { margin: 0 0 10px; line-height: 1.75; }
 .cw-plus .cw-plus-submit { background: transparent; color: var(--ink); border: 1px solid var(--ink); }

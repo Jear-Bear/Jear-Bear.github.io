@@ -46,7 +46,7 @@ const T = {
     manage: 'Manage subscription', welcome: 'Welcome to Crossword+! Thanks for supporting the crossword.', signedInMsg: 'You’re signed in.', cancelled: 'No charge was made.',
     deckTitle: 'My deck', bonusTitle: 'Bonus puzzles', bonusNone: 'The first bonus puzzles are on their way.', bonusLoad: 'Couldn’t open that puzzle. Please try again.',
     importTitle: 'Import your deck',
-    step1: 'Import your Anki deck', step2: 'Pick the fields', step3: 'Choose a puzzle', step4: 'Make it', stepDone: 'done', stepAfter: 'Sign in above to start.',
+    step1: 'Import your Anki deck', step2: 'Choose your fields', step3: 'Choose a puzzle', step4: 'Make it', stepDone: 'done', stepAfter: 'Sign in above to start.',
     canKana: '{n} can be kana answers', canKanji: '{n} can be kanji answers',
     howto: 'Pick the .apkg file you exported from Anki (File → Export → Anki Deck Package, or the file you downloaded from AnkiWeb). A plain-text export, a CSV, or a list pasted from a spreadsheet works too.',
     file: 'Choose a file', paste: 'Or paste it', read: 'Read it', empty: 'There’s nothing to read in that.',
