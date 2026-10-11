@@ -473,3 +473,52 @@ html.cw-lock, html.cw-lock body { overflow: hidden; }
 
 /* The solved screen has room for the perk tiles on a computer */
 .cw-sheet.cw-done-sheet { max-width: 560px; }
+
+/* Sign in (and "Get Crossword+: 1 sign in, 2 pay") in a popup */
+.cw-signin-sheet { max-width: 460px; }
+.cw-signin-sheet .cw-sheet-title { margin: 0; }
+.cw-signin-sheet .cw-plus-badge { margin: 0; }
+.cw-signin-sheet p { margin: 0; font-size: 14px; line-height: 1.7; color: var(--ink-soft); }
+.cw-signin-sheet .cw-deck-muted { font-size: 13px; color: var(--muted); }
+.cw-signin-sheet .cw-deck-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.cw-signin-sheet input[type="email"] { font: 15px var(--font-gothic); padding: 8px 10px; min-height: 42px; border: 1px solid var(--border-strong); background: var(--paper); color: var(--ink); flex: 1 1 200px; min-width: 0; }
+.cw-signin-sheet a { color: var(--plus-ink); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.cw-pop-x { position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; border: 0; background: transparent; color: var(--muted); font-size: 24px; line-height: 1; cursor: pointer; }
+.cw-pop-x:hover { color: var(--ink); }
+.cw-pop-steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 6px; font-size: 14px; color: var(--muted); }
+.cw-pop-steps li { counter-increment: s; display: flex; align-items: center; gap: 10px; }
+.cw-pop-steps li::before { content: counter(s); display: inline-grid; place-items: center; width: 22px; height: 22px; flex: none; border-radius: 50%; border: 1.5px solid var(--border-strong); font-size: 12px; font-weight: 700; }
+.cw-pop-steps li.is-now { color: var(--ink); font-weight: 600; }
+.cw-pop-steps li.is-now::before { border-color: var(--plus); background: var(--plus); color: #fff; }
+
+/* A message that floats over the page (welcome, no charge, signed in) */
+.cw-notice { position: fixed; left: 50%; bottom: max(16px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 1000; display: flex; align-items: center; gap: 12px; width: max-content; max-width: min(520px, calc(100vw - 32px)); padding: 12px 10px 12px 16px; border: 1px solid var(--plus-line); border-left: 4px solid var(--plus); border-radius: 8px; background: var(--surface); color: var(--ink); font-size: 14px; line-height: 1.5; box-shadow: 0 8px 28px rgba(0, 0, 0, .18); animation: cw-notice-in .25s ease; }
+.cw-notice.is-error { border-color: var(--cw-wrong); border-left-color: var(--cw-wrong); }
+.cw-notice-x { flex: none; width: 30px; height: 30px; border: 0; background: transparent; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; }
+@keyframes cw-notice-in { from { opacity: 0; transform: translate(-50%, 8px); } }
+
+/* The Crossword+ tab: "Crossword" with the purple ＋ */
+.cw-modes .cw-plus-mark { margin-left: 4px; }
+/* Its box: My deck and Bonus puzzles as its two parts */
+.cw-deck .cw-deck-part { margin: 18px 0 4px; font-family: var(--font-mincho); font-size: 1.05rem; font-weight: 600; color: var(--ink); }
+.cw-deck .cw-deck-head + .cw-deck-part, .cw-deck .cw-deck-head + * + .cw-deck-part { margin-top: 6px; }
+
+/* Phones: fewer rows above the puzzle. Modes, Sign in and ⚙ share a row; size and level
+   share the next; then the date. */
+@media (max-width: 560px) {
+  .cw-top { gap: 8px; margin-bottom: 10px; }
+  .cw-top-end { gap: 6px; }
+  .cw-modes button { min-width: 0; padding: 8px 11px; }
+  .cw-modes .cw-seg-sub { display: none; }
+  .cw-account .cw-acct-in { min-height: 38px; padding: 6px 10px; font-size: 13px; letter-spacing: .02em; }
+  .cw-top .cw-gear { width: 38px; height: 38px; }
+  .cw-bar { gap: 8px; margin-bottom: 12px; }
+  .cw-bar #size-seg button { padding: 8px 10px; }
+  .cw-select-wrap { flex: 1 1 140px; min-width: 0; }
+  .cw-select-wrap .cw-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .cw-select { width: 100%; min-width: 0; border-radius: 0; -webkit-appearance: none; appearance: none; padding-right: 26px; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: right 12px center, right 7px center; background-size: 5px 5px; background-repeat: no-repeat; }
+  .cw-date { flex-basis: 100%; }
+}
+
+/* The page ends with the Crossword+ box; the footer follows closer than on the essay pages */
+.colophon { margin-top: clamp(40px, 7vh, 72px); }

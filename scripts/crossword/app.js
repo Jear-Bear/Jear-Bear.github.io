@@ -16,11 +16,11 @@
 import { toHiragana } from '../kanji/romaji.js?v=1';
 import { gridKana, cycleDakuten, romaji } from './kana.js?v=1';
 import { translator, lang, setLang, dateLocale } from '../games/i18n.js?v=1';
-import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=13';
-import { mountDeck } from './deck.js?v=13';
+import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=14';
+import { mountDeck } from './deck.js?v=14';
 import { openBrowse } from './browse.js?v=2';
-import { initSync, schedulePush } from './sync.js?v=1';
-import { handleReturn, refresh, isMember, onAccount, archiveDay, currentUser, logout, info as plusInfo } from './account.js?v=3';
+import { initSync, schedulePush, flush } from './sync.js?v=2';
+import { handleReturn, refresh, isMember, onAccount, archiveDay, currentUser, signedIn, logout, info as plusInfo } from './account.js?v=4';
 import { rng } from './construct.mjs?v=1';
 
 const $ = (id) => document.getElementById(id);
@@ -39,7 +39,7 @@ const t = translator({
     'ime.kanji': 'Only kana fit in the squares. Press Enter instead of converting to kanji.',
     'ime.convert': 'Convert to kanji before pressing Enter, or tap a tile.',
     'kanji.type': 'Type with a Japanese keyboard (IME) and convert to kanji, or tap the tiles under the grid.',
-    modeGroup: 'Mode', 'mode.kana': 'Kana', 'mode.kanji': 'Kanji', 'mode.deck': 'My deck',
+    modeGroup: 'Mode', 'mode.kana': 'Kana', 'mode.kanji': 'Kanji', 'mode.deck': 'Crossword',
     'acct.signIn': 'Sign in', 'acct.as': 'Signed in as {email}', 'acct.out': 'Sign out',
     locked: '<b>Past puzzles are part of Crossword+</b>, along with unlimited My deck crosswords and weekly bonus puzzles. Today’s puzzles are always free.', plusName: 'Crossword+', toToday: 'Go to today’s puzzle', seePlus: 'See Crossword+',
     tiles: 'Kanji tiles', 'empty.deck': '',
@@ -91,7 +91,7 @@ const t = translator({
     'ime.kanji': 'マスに入るのはかなだけです。漢字に変換せず、そのまま確定してください。',
     'ime.convert': '漢字に変換してから確定するか、タイルをタップしてください。',
     'kanji.type': '日本語入力（IME）で漢字に変換して入力するか、盤面の下のタイルをタップしてください。',
-    modeGroup: 'モード', 'mode.kana': 'かな', 'mode.kanji': '漢字', 'mode.deck': 'マイデッキ',
+    modeGroup: 'モード', 'mode.kana': 'かな', 'mode.kanji': '漢字', 'mode.deck': 'クロスワード',
     'acct.signIn': 'ログイン', 'acct.as': '{email} でログイン中', 'acct.out': 'ログアウト',
     locked: '<b>過去のパズルはクロスワード＋の特典です</b>。デッキのクロスワード作り放題、毎週のボーナスパズルも。今日のパズルはいつでも無料です。', plusName: 'クロスワード＋', toToday: '今日のパズルへ', seePlus: 'クロスワード＋を見る',
     tiles: '漢字タイル', 'empty.deck': '',
@@ -221,7 +221,8 @@ async function init() {
       store.progress = progress;
       store.stats = stats;
       save(true);
-      if (pz && !pz.deck && progress[pz.id] !== before) openPuzzle(); else if (pz) renderStats();
+      if (pz && pz.deck && !signedIn()) openPuzzle();          // signed out: their deck puzzle goes too
+      else if (pz && !pz.deck && progress[pz.id] !== before) openPuzzle(); else if (pz) renderStats();
       deck.relabel();
     },
   });
@@ -230,6 +231,7 @@ async function init() {
   if (back) { settings.mode = 'deck'; save(); } else await refresh();
   // detail.signIn: the Sign in button up top (open the sign-in box instead of the plans)
   document.addEventListener('crossword:plus', (e) => {
+    if (e.detail && e.detail.signIn) { deck.openSignIn(); return; }      // a popup, on whatever tab they're on
     $('done').hidden = true;
     settings.mode = 'deck';
     save();
@@ -534,7 +536,7 @@ function renderAccount() {
   }
   fill(bar, h('span', { class: 'cw-acct-email', title: t('acct.as', { email: u.email }) }, u.email),
     u.member ? h('span', { class: 'cw-plus-badge cw-acct-badge' }, '✓ ', t('plusName')) : null,
-    h('button', { type: 'button', class: 'btn-link', onclick: async () => { await logout(); renderAccount(); } }, t('acct.out')));
+    h('button', { type: 'button', class: 'btn-link', onclick: async () => { await flush(); await logout(); renderAccount(); } }, t('acct.out')));
 }
 
 // While any popup is open (settings, past puzzles, solved, Stripe's form), the page

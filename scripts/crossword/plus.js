@@ -12,7 +12,7 @@
 // Emails go to the sponsor Worker's private database (waitlist.js), never the repo.
 
 import { lang } from '../games/i18n.js?v=1';
-import { info, isMember, onAccount } from './account.js?v=3';
+import { info, isMember, onAccount } from './account.js?v=4';
 
 const API = 'https://sponsor-crm.jared-65b.workers.dev';
 const KEY = 'jareddesu.crossword.plus';
@@ -46,7 +46,7 @@ const T = {
     price: '<b>{month}/month</b> or {year}/year · cancel anytime',
     free: 'Today’s puzzles are always free, no account needed.',
     member: 'You’re a Crossword+ member. Thank you!',
-    memberCta: 'Open My deck',
+    memberCta: 'Open Crossword+',
     help: 'Questions or problems? {email}',
     thanksYT: 'Just want to say thanks? {link} helps too.', thanksYTLink: 'Joining the channel on YouTube',
   },
@@ -74,7 +74,7 @@ const T = {
     price: '<b>月{month}</b>または年{year}・いつでも解約OK',
     free: '今日のパズルはいつでも無料。登録も不要です。',
     member: 'クロスワード＋のメンバーです。いつもありがとう！',
-    memberCta: 'マイデッキを開く',
+    memberCta: 'クロスワード＋を開く',
     help: 'ご質問・不具合は {email} へ',
     thanksYT: '応援したい方は、{link}も励みになります。', thanksYTLink: 'YouTubeのメンバーシップ',
   },
