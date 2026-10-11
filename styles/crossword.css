@@ -275,7 +275,7 @@ html[data-ui="ja"] [data-ui-only="en"], html:not([data-ui="ja"]) [data-ui-only="
 }
 :root[data-theme="dark"] .cw-plus-badge { color: #1a1324; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cw-plus-badge { color: #1a1324; } }
-.cw-perks { margin: 10px 0 12px; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.cw-perks { margin: 10px 0 12px; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
 .cw-perks li { display: grid; align-content: start; gap: 2px; padding: 10px 12px; border: 1px solid var(--plus-line); border-radius: 6px; background: var(--paper); }
 .cw-perks strong { font-size: 14px; line-height: 1.4; color: var(--ink); }
 .cw-perks strong::before { content: "＋"; margin-right: 4px; color: var(--plus); font-weight: 700; }
@@ -400,9 +400,8 @@ button.cw-cal-day.is-picked { outline: 2px solid var(--plus); outline-offset: 1p
 @media (prefers-reduced-motion: reduce) { .cw-plusblock.is-nudge { animation: none; outline: 3px solid var(--plus); } }
 
 /* My deck's main action stands out from the size/answer toggles */
-.cw-deck .btn.cw-make { min-height: 50px; padding: 0 26px; font-size: 16px; font-weight: 700; background: var(--page-color); border-color: var(--page-color); color: #fff; border-radius: 6px; box-shadow: 0 2px 0 var(--page-ink); }
-.cw-deck .btn.cw-make::before { content: "✦ "; }
-.cw-deck .btn.cw-make:hover { background: var(--page-ink); border-color: var(--page-ink); }
+.cw-deck .btn.cw-make { background: var(--page-color); border-color: var(--page-color); color: #fff; }
+.cw-deck .btn.cw-make:hover { background: var(--page-ink); border-color: var(--page-ink); color: #fff; }
 .cw-deck .btn.cw-make:disabled { opacity: .6; }
 
 /* Settings: a wide popup in three columns (one on phones) */
@@ -445,3 +444,26 @@ html.cw-lock, html.cw-lock body { overflow: hidden; }
 .cw .page-head-copy { padding-top: 0; margin-left: clamp(0px, 4vw, 60px); }
 .cw .page-head .page-title { margin-bottom: 14px; }
 @media (max-width: 899px) { .cw .page-head-copy { margin-left: 0; } }
+
+/* My deck in four steps (deck.js steps()): a numbered list; done steps fold into one line */
+.cw-steps { list-style: none; margin: 4px 0 8px; padding: 0; display: grid; gap: 0; }
+.cw-step { padding: 10px 0; border-top: 1px solid var(--border); }
+.cw-step:first-child { border-top: 0; }
+.cw-step-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.cw-step-n { flex: none; display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--page-color); color: var(--page-ink); font-size: 13px; font-weight: 700; line-height: 1; transform: translateY(-1px); align-self: center; }
+.cw-step-title { font-size: 15px; font-weight: 600; color: var(--ink); }
+.cw-step-sum { font-size: 13px; color: var(--muted); }
+.cw-step-note { display: block; }
+.cw-step-act { margin-left: auto; font-size: 13px; }
+.cw-step.is-done .cw-step-n { background: var(--page-color); color: #fff; }
+.cw-step.is-done .cw-step-title { font-weight: 500; color: var(--ink-soft); }
+.cw-step.is-later .cw-step-n { border-color: var(--border-strong); color: var(--muted); }
+.cw-step.is-later .cw-step-title { font-weight: 500; color: var(--muted); }
+.cw-step-body { padding-left: 34px; }
+.cw-step-body > :first-child { margin-top: 8px; }
+.cw-step-body > :last-child { margin-bottom: 0; }
+.cw-steps.is-preview .cw-step { padding: 6px 0; }
+@media (max-width: 520px) { .cw-step-body { padding-left: 0; } .cw-step-sum { flex-basis: 100%; padding-left: 34px; } .cw-step-act { margin-left: 34px; } }
+
+/* The solved screen has room for the perk tiles on a computer */
+.cw-sheet.cw-done-sheet { max-width: 560px; }

@@ -46,6 +46,8 @@ const T = {
     manage: 'Manage subscription', welcome: 'Welcome to Crossword+! Thanks for supporting the crossword.', signedInMsg: 'You’re signed in.', cancelled: 'No charge was made.',
     deckTitle: 'My deck', bonusTitle: 'Bonus puzzles', bonusNone: 'The first bonus puzzles are on their way.', bonusLoad: 'Couldn’t open that puzzle. Please try again.',
     importTitle: 'Import your deck',
+    step1: 'Import your Anki deck', step2: 'Pick the fields', step3: 'Choose a puzzle', step4: 'Make it', stepDone: 'done', stepAfter: 'Sign in above to start.',
+    canKana: '{n} can be kana answers', canKanji: '{n} can be kanji answers',
     howto: 'Pick the .apkg file you exported from Anki (File → Export → Anki Deck Package, or the file you downloaded from AnkiWeb). A plain-text export, a CSV, or a list pasted from a spreadsheet works too.',
     file: 'Choose a file', paste: 'Or paste it', read: 'Read it', empty: 'There’s nothing to read in that.',
     readingApkg: 'Opening your deck…', apkgBad: 'That doesn’t look like an Anki deck package. Try exporting it again, or use “Notes in Plain Text”.',
@@ -85,6 +87,8 @@ const T = {
     manage: 'プランの管理', welcome: 'クロスワード＋へようこそ！応援ありがとうございます。', signedInMsg: 'ログインしました。', cancelled: '請求はされていません。',
     deckTitle: 'マイデッキ', bonusTitle: 'ボーナスパズル', bonusNone: '最初のボーナスパズルは準備中です。', bonusLoad: 'パズルを開けませんでした。もう一度お試しください。',
     importTitle: 'デッキを読み込む',
+    step1: 'Ankiデッキを読み込む', step2: 'フィールドを選ぶ', step3: 'パズルを選ぶ', step4: '作る', stepDone: '完了', stepAfter: '上でログインすると始められます。',
+    canKana: 'かなの答え{n}語', canKanji: '漢字の答え{n}語',
     howto: 'Ankiで書き出した .apkg ファイル（「ファイル → 書き出す → Ankiデッキパッケージ」、またはAnkiWebでダウンロードしたもの）を選んでください。プレーンテキストやCSV、表計算ソフトから貼り付けたリストでも大丈夫です。',
     file: 'ファイルを選ぶ', paste: 'または貼り付け', read: '読み込む', empty: '読み込めるものがありませんでした。',
     readingApkg: 'デッキを開いています…', apkgBad: 'Ankiのデッキパッケージではないようです。もう一度書き出すか、「ノートをプレーンテキストで」を使ってください。',
@@ -455,7 +459,6 @@ export function mountDeck({ root, play }) {
       } catch (e) { busy = false; setStatus(t(e.message === 'nocollection' ? 'apkgBad' : 'apkgFail'), true); }
     });
     return [
-      h('h3', { class: 'cw-deck-sub' }, t('importTitle')),
       h('p', {}, t('howto')),
       h('div', { class: 'cw-deck-row' }, fileIn),
       h('details', {}, h('summary', {}, t('paste')), area, h('div', { class: 'cw-deck-row' }, h('button', { type: 'button', class: 'btn', onclick: () => start(area.value, 'My deck') }, t('read')))),
@@ -498,10 +501,9 @@ export function mountDeck({ root, play }) {
       const s = state();
       try { write({ ...s, name: d.name.trim() || 'My deck', words, kind: c.kana >= MIN_WORDS ? (s.kind || 'kana') : 'kanji' }); } catch { setStatus(t('tooBig'), true); return; }
       draft = null;
-      setStatus(t('usable', c) + (c.n - c.kana ? ` ${t('noReading', { n: c.n - c.kana })}` : ''));
+      setStatus('');
     } }, t('save', { n: d.notes.length }));
     return [
-      h('h3', { class: 'cw-deck-sub' }, t('importTitle')),
       h('p', {}, t('pick')),
       typeSel ? h('div', { class: 'cw-deck-fields' }, typeSel) : null,
       preview,
@@ -512,7 +514,7 @@ export function mountDeck({ root, play }) {
     ];
   }
 
-  function deckView(s, u) {
+  function deckView(s) {
     const c = counts(s.words);
     const size = s.size || 'mini';
     const kind = c.kanji >= MIN_WORDS && s.kind === 'kanji' ? 'kanji' : c.kana >= MIN_WORDS ? 'kana' : 'kanji';
@@ -525,16 +527,15 @@ export function mountDeck({ root, play }) {
     const left = isMember ? Infinity : out ? 0 : freeLeft();
     if (!isMember && !out && left == null) peekFree();
     const made = (s.made || []).slice().reverse();
-    return [
-      h('p', { class: 'cw-deck-muted' }, `${s.name} · ${t('words', { n: s.words.length })} · ${t('usable', c)}`),
-      h('div', { class: 'cw-deck-row' },
+    return {
+      choose: h('div', { class: 'cw-deck-row' },
         seg('size', size, [['mini', t('mini')], ['daily', t('daily')]]),
         seg('kind', kind, [['kana', t('kana'), c.kana < MIN_WORDS], ['kanji', t('kanji'), c.kanji < MIN_WORDS]])),
-      h('div', { class: 'cw-deck-row' },
-        h('button', { type: 'button', class: 'btn btn-primary cw-make', disabled: busy || (!out && left == null),
+      make: h('div', { class: 'cw-deck-row' },
+        h('button', { type: 'button', class: 'btn cw-make', disabled: busy || (!out && left == null),
           onclick: () => (out ? openSignIn() : left ? make(s, size, kind) : nudge(document.getElementById('cw-plusblock'))) }, t('make')),
         h('span', { class: 'cw-deck-muted' }, isMember ? t('unlimited') : out ? t('makeOut') : left == null ? '…' : left ? t('freeLeft') : t('freeUsedHint'))),
-      made.length ? h('div', {}, h('h3', { class: 'cw-deck-sub' }, t('recent')),
+      list: made.length ? h('div', {}, h('h3', { class: 'cw-deck-sub' }, t('recent')),
         h('ul', { class: 'cw-deck-list' }, made.slice(0, SHOW).map((p) => h('li', {}, h('button', { type: 'button', onclick: () => play(p) },
           h('span', {}, deckLabel(p)),
           h('span', { class: 'cw-deck-muted' }, `${p.made}${solvedIds().has(p.id) ? ` · ${t('solved')} ✓` : ''}`))))),
@@ -542,9 +543,47 @@ export function mountDeck({ root, play }) {
           const done = solvedIds();
           openBrowse({ title: t('recent'), items: made.map((p, i) => ({ date: p.made, label: `#${made.length - i} · ${deckLabel(p)}`, done: done.has(p.id), p })), onPick: (x) => play(x.p) });
         } }, t('seeAll', { n: made.length })) : null) : null,
-      h('div', { class: 'cw-deck-row' },
-        h('button', { type: 'button', class: 'btn-link', onclick: () => { if (confirm(t('confirmReplace'))) { const x = state(); delete x.words; delete x.name; write(x); render(); } } }, t('replace'))),
-    ];
+    };
+  }
+
+  // The deck in four steps: import, fields, puzzle, make. Done steps fold into one line;
+  // signed out, they're only a preview of what's to come.
+  function steps(s) {
+    const out = !signedIn();
+    const has = Boolean(s.words && s.words.length);
+    const step = (n, title, st, { sum, action, body } = {}) => h('li', { class: `cw-step is-${st}` },
+      h('div', { class: 'cw-step-head' },
+        h('span', { class: 'cw-step-n', 'aria-label': st === 'done' ? `${n} · ${t('stepDone')}` : String(n) }, st === 'done' ? '✓' : n),
+        h('span', { class: 'cw-step-title' }, title),
+        sum ? h('span', { class: 'cw-step-sum' }, sum) : null,
+        action || null),
+      body ? h('div', { class: 'cw-step-body' }, body) : null);
+    if (out) {
+      return [h('ol', { class: 'cw-steps is-preview' },
+        ['step1', 'step2', 'step3', 'step4'].map((k, i) => step(i + 1, t(k), 'later'))),
+      h('p', { class: 'cw-deck-muted' }, t('stepAfter'))];
+    }
+    if (draft) {
+      return [h('ol', { class: 'cw-steps' },
+        step(1, t('step1'), 'done', { sum: `${draft.name} · ${t('notesN', { n: draft.notes.length })}` }),
+        step(2, t('step2'), 'now', { body: picker() }),
+        step(3, t('step3'), 'later'), step(4, t('step4'), 'later'))];
+    }
+    if (!has) {
+      return [h('ol', { class: 'cw-steps' },
+        step(1, t('step1'), 'now', { body: importer() }),
+        step(2, t('step2'), 'later'), step(3, t('step3'), 'later'), step(4, t('step4'), 'later'))];
+    }
+    const c = counts(s.words);
+    const v = deckView(s);
+    const replace = h('button', { type: 'button', class: 'btn-link cw-step-act', onclick: () => { if (confirm(t('confirmReplace'))) { const x = state(); delete x.words; delete x.name; write(x); render(); } } }, t('replace'));
+    return [h('ol', { class: 'cw-steps' },
+      step(1, t('step1'), 'done', { sum: `${s.name} · ${t('words', { n: s.words.length })}`, action: replace }),
+      step(2, t('step2'), 'done', { sum: [t('canKana', { n: c.kana }), ' · ', t('canKanji', { n: c.kanji }),
+        c.n - c.kana ? h('span', { class: 'cw-step-note' }, t('noReading', { n: c.n - c.kana })) : null] }),
+      step(3, t('step3'), 'now', { body: v.choose }),
+      step(4, t('step4'), 'now', { body: v.make })),
+    v.list];
   }
 
   const deckLabel = (p) => `${p.deck.name} · ${t(p.size)} · ${t(p.mode === 'kanji' ? 'kanji' : 'kana')}`;
@@ -642,9 +681,7 @@ export function mountDeck({ root, play }) {
       body = isMember
         ? [u.status === 'past_due' ? h('p', { class: 'cw-deck-status is-error' }, t('pastDue')) : null]
         : [h('p', {}, t('intro')), freeStrip()];
-      if (draft) body.push(...picker());
-      else if (!s.words || !s.words.length) body.push(...importer());
-      else body.push(...deckView(s, u));
+      body.push(...steps(s));
       body.push(statusLine(), ...(isMember ? [...bonusView(), supportLine()] : [plusBlock()]));
     }
     root.replaceChildren(head, ...body.filter(Boolean));
