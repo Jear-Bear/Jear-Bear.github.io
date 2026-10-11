@@ -4,14 +4,15 @@ Optional extras on top of the free daily crossword. Built and ready to sell
 once Stripe is connected (see "Accounts and payments"); until then the page
 shows the waitlist.
 
-**What's free:** today's puzzles, kana and kanji, every level and size.
+**What's free:** today's puzzles, kana and kanji, every level and size, plus
+one My deck puzzle a day for anyone signed in (signing in is free).
 
-**What's in Crossword+:** every past puzzle, My deck (crosswords from your
-own Anki deck, as many as you like), and a few bonus puzzles a week.
+**What's in Crossword+:** every past puzzle, unlimited My deck puzzles, and
+a few bonus puzzles a week.
 
 **Price:** $2.99/month or $24.99/year (about $2.08/month, roughly 30% off).
-Waitlist members get a founding price of $1.99/month, locked in for as long
-as they stay subscribed. Ending in .99 is the standard for small
+There's no founding or waitlist discount (decided Oct 2026: no promo code);
+waitlist members pay the same price. Ending in .99 is the standard for small
 subscriptions, and keeping it under $3 makes it feel like a tip, not a bill.
 
 **Launch when:** about 150–200 sign-ups, or 3–4 weeks of steady sign-ups
@@ -40,7 +41,15 @@ sponsor ad (orange, labelled **AD**).
   selling points in bold, the price, **See Crossword+**, a YouTube-membership
   "say thanks" link and the support email). Before sales open it's the
   waitlist form instead; for members it's a thank-you. It never pops up.
-- **My deck** panel: the same perks, the plans and sign-in.
+- **Crossword+** tab (it was "My deck" until Oct 2026): My deck, bonus puzzles,
+  the member's status and Manage subscription; for everyone else the Free strip
+  and one Crossword+ card with the perks and the plans.
+- **Signing in** is a popup (the Sign in button by ⚙, the Free strip, or a plan
+  button while signed out). From a plan button it says "1 Sign in, 2 Pay" and the
+  payment form opens by itself once they're signed in, even when they come back
+  from the email link (the chosen plan waits in the browser for 2 hours).
+- **Messages** after Stripe or an email link (welcome, no charge was made,
+  signed in) float at the bottom of the screen, wherever the page is scrolled.
 - **Past day** (🔒): the same purple box with **See Crossword+**.
 - **Hitting a limit** (the free deck puzzle used up, bonus puzzles): a purple
   box with what happened in bold, the perks and **See Crossword+**. Pressing
@@ -98,9 +107,14 @@ Add this to the nightly crossword task (after publishing the dailies):
 ## My deck
 
 Crosswords made from your own Anki deck, on the crossword page under
-**My deck**. **Members only** (until Oct 2026 there was one free puzzle a day).
-Everyone else sees what it does and the plans; the Worker's
-`POST /public/plus/deck-use` also answers members-only.
+the **Crossword+** tab. **One a day is free** with a (free) account, and members can make
+as many as they like. The box says so up top (a blue **Free** strip: sign in,
+then today's one is ready or used), and the Crossword+ card under it has the
+three perks as tiles, the price and the plans. The free one is counted by the
+Worker per account (`POST /public/plus/deck-use`, table `plus_deck_uses`,
+migration 0016), so a private window doesn't reset it. Puzzles are still built
+in the browser, so this is a fair-use limit, not a lock. (For a few days in
+Oct 2026 My deck was members only.)
 
 - **Import:** an **.apkg** (Anki → File → Export → Anki Deck Package, or a
   deck from AnkiWeb; a whole-collection .colpkg works too), or "Notes in
@@ -116,7 +130,7 @@ Everyone else sees what it does and the plans; the Worker's
 - **Puzzles:** Mini or Daily, kana or kanji answers, built in the browser
   (freeform grids, only the deck's words). The deck and the puzzles stay in
   that browser; nothing from the deck is sent anywhere.
-- Made puzzles can be replayed any time: the newest 60 are kept, the panel shows 3, and
+- After the free one, **Make a puzzle** points to Crossword+. Made puzzles can be replayed any time: the newest 60 are kept, the panel shows 3, and
   **See all** opens them by calendar or as a list (same for bonus puzzles).
 
 ## Past puzzles (the archive)
@@ -199,8 +213,15 @@ squares, times and solves, the stats, and the deck puzzles they've made (newest
 (`POST /public/plus/save` / `load`, table `plus_saves`) at most every 15
 seconds while playing and when the tab is hidden, and merges it in on sign-in and
 when the tab comes back. Merging keeps a finished solve over an unfinished one,
-then the further-along one. Settings and the imported deck itself (the word list)
-stay in each browser.
+then the further-along one. Settings stay in each browser, and the imported deck
+itself (the word list) stays in the browser it was imported in, never on the Worker.
+
+What's in a browser belongs to one account at a time: the deck is kept under that
+account's email (`jareddesu.crossword.deck.<email>`), and when that account signs
+out, or another one signs in, the browser forgets its progress and deck (they're on
+the account; the deck is imported again after signing back in). Someone who played
+without signing in keeps their progress, and it joins the first account they sign
+in with.
 
 ## Accounts and payments (built)
 

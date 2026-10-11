@@ -9,6 +9,9 @@
 // All in grid kana (hiragana, small kana full size, ー allowed).
 // Writes data/wordle/words-4.json and words-5.json. Answers are lightly
 // encoded so they don't show in view-source.
+// Afterwards run `node scripts/wordle/clues.mjs apply` to put the hand-written
+// themes and clues (data/wordle/clues.json) back in. Keep the answer order: the daily
+// word is picked by position, so reordering changes every day's word.
 
 import fs from 'node:fs';
 import path from 'node:path';

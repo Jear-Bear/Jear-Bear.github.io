@@ -1,0 +1,17 @@
+/* Terms, privacy and refunds: plain reading pages */
+body { --page-color: #95483f; }
+.legal { max-width: 44rem; padding-bottom: clamp(48px, 8vh, 96px); }
+.legal .page-intro { max-width: 40rem; }
+.legal-meta { margin: 0 0 8px; font-size: 13px; color: var(--muted); }
+.legal-tldr { margin: 0 0 clamp(28px, 5vh, 48px); padding: 16px 20px; border: 1px solid var(--border-strong); border-left: 4px solid var(--page-color); background: var(--surface); }
+.legal-tldr p { margin: 0 0 6px; font-weight: 600; color: var(--ink); }
+.legal-tldr ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; color: var(--ink-soft); line-height: 1.7; }
+.legal h2 { margin: 36px 0 10px; font-family: var(--font-mincho); font-weight: 600; font-size: 1.3rem; color: var(--ink); }
+.legal p, .legal li { line-height: 1.85; color: var(--ink-soft); }
+.legal ul { padding-left: 20px; display: grid; gap: 6px; }
+.legal strong { color: var(--ink); }
+.legal table { width: 100%; border-collapse: collapse; margin: 8px 0 16px; font-size: 14px; }
+.legal th, .legal td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--border); line-height: 1.6; }
+.legal th { color: var(--ink); font-weight: 600; }
+.legal-links { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 14px; }
+@media (max-width: 560px) { .legal table, .legal thead, .legal tbody, .legal tr, .legal th, .legal td { display: block; } .legal thead { display: none; } .legal td { border: 0; padding: 2px 0; } .legal tr { padding: 10px 0; border-bottom: 1px solid var(--border); } .legal td:first-child { font-weight: 600; color: var(--ink); } }

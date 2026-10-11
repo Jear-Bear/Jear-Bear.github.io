@@ -1,52 +1,57 @@
 // deck.js — the My deck panel on the crossword page: crosswords from your
-// own Anki deck and bonus puzzles, both for Crossword+ members only, and
-// Crossword+ itself: sign in and plans (account.js; the sponsor Worker's
-// plus.js and stripe.js). Everyone else sees what My deck is, and the plans.
+// own Anki deck (1 free a day when signed in, unlimited with Crossword+),
+// bonus puzzles for members, and Crossword+ itself: sign in and plans
+// (account.js; the sponsor Worker's plus.js and stripe.js).
 //
 // 2. Import: Anki's "Notes in Plain Text" export (or any tab/CSV list, or a
 //    paste), or an .apkg deck package. Every deck has different fields, so the player picks which field
 //    is the word, the meaning, and (optionally) the reading.
 // 3. Make a puzzle: built here in a Web Worker (deck-worker.js) from the deck's
-//    words only.
+//    words only, then counted against today's free one by the Worker (members: no limit).
 // The deck stays in this browser (localStorage); made puzzles also sync to the
-// member's account (sync.js). The deck's word list itself is never sent anywhere. Everything from the deck is inserted as text.
+// account (sync.js). The deck's word list itself is never sent anywhere. Everything from the deck is inserted as text.
 
 import { lang } from '../games/i18n.js?v=1';
 import { gridKana, toHira } from './kana.js?v=1';
-import { info, refresh, currentUser, onAccount, signedIn, sendEmailLink, googleButton, checkout, portal, bonusPuzzle } from './account.js?v=3';
-import { schedulePush } from './sync.js?v=1';
-import { plusPerks, plusBadge, supportLine } from './plus.js?v=12';
+import { info, refresh, currentUser, onAccount, signedIn, sendEmailLink, googleButton, checkout, portal, bonusPuzzle, deckUse, deckKey } from './account.js?v=4';
+import { schedulePush } from './sync.js?v=2';
+import { plusPerks, plusPrice, plusBadge, supportLine, nudge } from './plus.js?v=14';
 import { openBrowse } from './browse.js?v=2';
 
-const STORE = 'jareddesu.crossword.deck';
+const PENDING = 'jareddesu.crossword.pendingPlan';   // a plan picked before signing in
 const KEEP = 60;                 // puzzles kept to replay (the list shows the newest few; the rest are under "See all")
 const SHOW = 3;
+const FREE_PER_DAY = 1;
 const MAX_NOTES = 20000;
 
 const T = {
   en: {
-    title: 'My deck',
+    title: 'Crossword+',
     intro: 'Turn your own Anki deck into crosswords: your words, with your meanings as the clues.',
-    lockedTitle: 'My deck is part of Crossword+: crosswords made from your own Anki deck.',
-    locked1: 'Import your deck (.apkg, or a text or CSV export) and pick which field is the word and which is the meaning.',
-    locked2: 'Make as many as you like: Mini or Daily, kana or kanji answers, with your own meanings as the clues.',
-    locked3: 'Your deck puzzles and progress follow you to any device you sign in on.',
-    plusTitle: 'Crossword+',
-    pitch: 'Today’s puzzles are always free. Crossword+ unlocks:',
-    seeAll: 'See all {n}', seePlans: 'See plans ↓',
-    bonusLockedN: '{n} bonus puzzles are waiting in Crossword+.',
+    signInTitle: 'Sign in', getPlus: 'Get Crossword+', close: 'Close',
+    popStep1: 'Sign in, so Crossword+ works on all your devices', popStep2: 'Pay: {price}',
+    sentPlan: 'Check your inbox for a sign-in link (it works for 20 minutes; check spam too). Open it on this device and you’ll go straight to paying.',
+    toPay: 'You’re signed in. Opening the payment form…',
+    freeTag: 'Free', freeHead: '1 deck puzzle a day',
+    freeOut: 'Sign in (it’s free) to make it. Your puzzles then follow you to any device.',
+    freeReady: 'Today’s is ready to make.', freeUsed: 'You’ve made today’s. More tomorrow, or as many as you like with Crossword+.',
+    signInBtn: 'Sign in',
+    makeOut: 'Sign in to make your free one', freeLeft: '1 free puzzle today', freeUsedHint: 'Today’s free one is made',
+    seeAll: 'See all {n}', seePlans: 'Get Crossword+ ↓',
     unlimited: 'Unlimited with Crossword+',
-    bonusLocked: 'Bonus puzzles are part of Crossword+.',
     perMonth: '{price} / month', perYear: '{price} / year', yearNote: 'about 30% off',
-    signInTitle: 'Sign in', signInWhy: 'Crossword+ is tied to your email, so it works on all your devices. Signing in is only for Crossword+; the daily puzzles never need it.',
+    signInWhy: 'Your free deck puzzle and Crossword+ are tied to your email, so they work on all your devices. The daily puzzles never need an account.',
     emailLabel: 'Your email', sendLink: 'Email me a sign-in link', sending: 'Sending…', sent: 'Check your inbox for a sign-in link (it works for 20 minutes). It can take a minute; check spam too.',
     or: 'or', noSignIn: 'Sign-in isn’t set up yet.',
     signedInAs: 'Signed in as {email}', signOut: 'Sign out', notOpen: 'Crossword+ isn’t open yet.', joinList: 'Join the list for one email when it is.',
+    agreePay: 'By subscribing you agree to the', agreeSignIn: 'Signing in means you agree to the', lTerms: 'Terms', lPrivacy: 'Privacy policy', lRefunds: 'Refunds',
     choose: 'Choose a plan', paying: 'Opening Stripe…', test: 'Test mode: no real charges.', secure: 'Payment by Stripe. Cancel anytime from “Manage subscription”.',
-    member: 'You’re a Crossword+ member', memberFree: 'You have Crossword+ (on the house)', renews: 'Renews {date}', ends: 'Ends {date}', pastDue: 'Your last payment didn’t go through; Stripe will try again. Update your card in “Manage subscription”.',
+    member: 'Crossword+ member', memberFree: 'Crossword+ (on the house)', renews: 'Renews {date}', ends: 'Ends {date}', pastDue: 'Your last payment didn’t go through; Stripe will try again. Update your card in “Manage subscription”.',
     manage: 'Manage subscription', welcome: 'Welcome to Crossword+! Thanks for supporting the crossword.', signedInMsg: 'You’re signed in.', cancelled: 'No charge was made.',
     deckTitle: 'My deck', bonusTitle: 'Bonus puzzles', bonusNone: 'The first bonus puzzles are on their way.', bonusLoad: 'Couldn’t open that puzzle. Please try again.',
     importTitle: 'Import your deck',
+    step1: 'Import your Anki deck', step2: 'Choose your fields', step3: 'Choose a puzzle', step4: 'Make it', stepDone: 'done', stepAfter: 'Sign in to start →',
+    canKana: '{n} can be kana answers', canKanji: '{n} can be kanji answers',
     howto: 'Pick the .apkg file you exported from Anki (File → Export → Anki Deck Package, or the file you downloaded from AnkiWeb). A plain-text export, a CSV, or a list pasted from a spreadsheet works too.',
     file: 'Choose a file', paste: 'Or paste it', read: 'Read it', empty: 'There’s nothing to read in that.',
     readingApkg: 'Opening your deck…', apkgBad: 'That doesn’t look like an Anki deck package. Try exporting it again, or use “Notes in Plain Text”.',
@@ -66,28 +71,32 @@ const T = {
     replace: 'Import a different deck', confirmReplace: 'Replace this deck? Your deck puzzles stay.', words: '{n} words',
   },
   ja: {
-    title: 'マイデッキ',
+    title: 'クロスワード＋',
     intro: '自分のAnkiデッキがクロスワードに。答えは自分の単語、カギは自分で書いた意味です。',
-    lockedTitle: 'マイデッキはクロスワード＋の機能です。自分のAnkiデッキからクロスワードを作れます。',
-    locked1: 'デッキ（.apkg、テキストやCSV）を読み込み、どのフィールドが単語と意味かを選ぶだけ。',
-    locked2: 'ミニもデイリーも、かなでも漢字でも、何個でも作れます。カギは自分の意味。',
-    locked3: '作ったパズルと進み具合は、ログインしたどの端末でも続きから。',
-    plusTitle: 'クロスワード＋',
-    pitch: '今日のパズルはずっと無料。クロスワード＋なら：',
-    seeAll: '全部見る（{n}）', seePlans: 'プランを見る ↓',
-    bonusLockedN: 'クロスワード＋で{n}個のボーナスパズルが遊べます。',
+    signInTitle: 'ログイン', getPlus: 'クロスワード＋に登録', close: '閉じる',
+    popStep1: 'ログイン（どの端末でも使えるように）', popStep2: 'お支払い：{price}',
+    sentPlan: 'ログインリンクを送りました（20分間有効。迷惑メールも確認してください）。この端末で開くと、そのままお支払いに進みます。',
+    toPay: 'ログインしました。お支払い画面を開いています…',
+    freeTag: '無料', freeHead: '1日1つデッキパズル',
+    freeOut: 'ログイン（無料）で作れます。作ったパズルはどの端末でも続きから。',
+    freeReady: '今日の1つはまだ作れます。', freeUsed: '今日の1つは作りました。また明日、またはクロスワード＋で作り放題。',
+    signInBtn: 'ログイン',
+    makeOut: 'ログインで今日の無料パズル', freeLeft: '今日の無料：あと1つ', freeUsedHint: '今日の無料分は作成済み',
+    seeAll: '全部見る（{n}）', seePlans: 'クロスワード＋を見る ↓',
     unlimited: 'クロスワード＋で作り放題',
-    bonusLocked: 'ボーナスパズルはクロスワード＋の特典です。',
     perMonth: '月{price}', perYear: '年{price}', yearNote: '約30%お得',
-    signInTitle: 'ログイン', signInWhy: 'クロスワード＋はメールアドレスにひもづくので、どの端末でも使えます。ログインはクロスワード＋のためだけで、毎日のパズルには必要ありません。',
+    signInWhy: '無料のデッキパズルもクロスワード＋もメールアドレスにひもづくので、どの端末でも使えます。毎日のパズルにはログイン不要です。',
     emailLabel: 'メールアドレス', sendLink: 'ログインリンクをメールで送る', sending: '送信中…', sent: 'ログインリンクを送りました（20分間有効）。届くまで少しかかることがあります。迷惑メールも確認してください。',
     or: 'または', noSignIn: 'ログインはまだ準備中です。',
     signedInAs: '{email} でログイン中', signOut: 'ログアウト', notOpen: 'クロスワード＋はまだ準備中です。', joinList: 'リストに登録すると、始まったときにメールを1通だけ送ります。',
+    agreePay: 'ご登録により、次に同意したものとみなされます：', agreeSignIn: 'ログインにより、次に同意したものとみなされます：', lTerms: '利用規約', lPrivacy: 'プライバシーポリシー', lRefunds: '返金について',
     choose: 'プランを選ぶ', paying: 'Stripeを開いています…', test: 'テストモード：実際の請求はありません。', secure: 'お支払いはStripeで。「プランの管理」からいつでも解約できます。',
-    member: 'クロスワード＋のメンバーです', memberFree: 'クロスワード＋をご利用いただけます（招待）', renews: '{date}に更新', ends: '{date}に終了', pastDue: '前回のお支払いができませんでした。Stripeが再度試みます。「プランの管理」でカードを更新してください。',
+    member: 'クロスワード＋メンバー', memberFree: 'クロスワード＋（招待）', renews: '{date}に更新', ends: '{date}に終了', pastDue: '前回のお支払いができませんでした。Stripeが再度試みます。「プランの管理」でカードを更新してください。',
     manage: 'プランの管理', welcome: 'クロスワード＋へようこそ！応援ありがとうございます。', signedInMsg: 'ログインしました。', cancelled: '請求はされていません。',
     deckTitle: 'マイデッキ', bonusTitle: 'ボーナスパズル', bonusNone: '最初のボーナスパズルは準備中です。', bonusLoad: 'パズルを開けませんでした。もう一度お試しください。',
     importTitle: 'デッキを読み込む',
+    step1: 'Ankiデッキを読み込む', step2: 'フィールドを選ぶ', step3: 'パズルを選ぶ', step4: '作る', stepDone: '完了', stepAfter: 'ログインして始める →',
+    canKana: 'かなの答え{n}語', canKanji: '漢字の答え{n}語',
     howto: 'Ankiで書き出した .apkg ファイル（「ファイル → 書き出す → Ankiデッキパッケージ」、またはAnkiWebでダウンロードしたもの）を選んでください。プレーンテキストやCSV、表計算ソフトから貼り付けたリストでも大丈夫です。',
     file: 'ファイルを選ぶ', paste: 'または貼り付け', read: '読み込む', empty: '読み込めるものがありませんでした。',
     readingApkg: 'デッキを開いています…', apkgBad: 'Ankiのデッキパッケージではないようです。もう一度書き出すか、「ノートをプレーンテキストで」を使ってください。',
@@ -122,8 +131,33 @@ function h(tag, attrs, ...kids) {
 }
 
 const localDate = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-function read() { try { return JSON.parse(localStorage.getItem(STORE) || '{}'); } catch { return {}; } }
-function write(v) { localStorage.setItem(STORE, JSON.stringify(v)); schedulePush(); }       // throws when full (caller handles)
+// The deck is kept under the signed-in account (account.js deckKey); signed out, there's none
+function read() { const k = deckKey(); try { return k ? JSON.parse(localStorage.getItem(k) || '{}') : {}; } catch { return {}; } }
+function write(v) {        // throws when full or signed out (callers handle it)
+  const k = deckKey();
+  if (!k) throw new Error('signed out');
+  localStorage.setItem(k, JSON.stringify(v));
+  schedulePush();
+}
+
+// A plan picked while signed out: paying starts right after signing in (even from the email link)
+function setPending(plan) { try { localStorage.setItem(PENDING, JSON.stringify({ plan, at: Date.now() })); } catch { /* private mode */ } }
+function clearPending() { try { localStorage.removeItem(PENDING); } catch { /* private mode */ } }
+function pendingPlan() {
+  try { const p = JSON.parse(localStorage.getItem(PENDING) || 'null'); return p && Date.now() - p.at < 2 * 3600 * 1000 ? p.plan : null; } catch { return null; }
+}
+
+// A message that floats at the bottom of the screen, wherever the page is scrolled
+let noticeTimer = null;
+function notice(text, { error = false, ms = 7000 } = {}) {
+  document.querySelector('.cw-notice')?.remove();
+  const el = h('div', { class: `cw-notice${error ? ' is-error' : ''}`, role: error ? 'alert' : 'status', 'aria-live': 'polite' },
+    h('span', {}, text),
+    h('button', { type: 'button', class: 'cw-notice-x', 'aria-label': t('close'), onclick: () => el.remove() }, '×'));
+  document.body.append(el);
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(() => el.remove(), ms);
+}
 
 // --- reading an export ------------------------------------------------------------------------
 // Anki's plain-text export: optional "#key:value" header lines, then one note
@@ -329,9 +363,63 @@ export function mountDeck({ root, play }) {
 
   const state = () => read();
   const member = () => Boolean(currentUser() && currentUser().member);
+  // One free deck puzzle a day per account, counted by the Worker (so a private window
+  // doesn't reset it); signing in is free. Members make as many as they like.
+  let free = { day: null, left: null };
+  let signInPop = null;         // the sign-in popup, while it's open
+  const freeLeft = () => (free.day === localDate() && free.left != null ? free.left : null);
+  async function peekFree() {
+    if (!signedIn() || member()) return;
+    const day = localDate();
+    if (free.day === day && free.left != null) return;
+    free = { day, left: null };
+    try { const r = await deckUse(day, true); free = { day, left: r.unlimited ? Infinity : r.left }; } catch { free = { day, left: FREE_PER_DAY }; }
+    render();
+  }
+  // Sign in, in a popup over the page. plan: they picked a plan first, so it says
+  // "1 Sign in, 2 Pay" and the payment form opens as soon as they're signed in.
+  async function openSignIn({ plan = null } = {}) {
+    if (!cfg) cfg = await info();
+    if (signInPop) signInPop.close();
+    if (plan) setPending(plan); else clearPending();
+    const msg = h('p', { class: 'cw-deck-status', role: 'status', 'aria-live': 'polite' });
+    const say = (text, error = false) => { msg.textContent = text; msg.classList.toggle('is-error', error); };
+    const form = signInForm(say, plan);
+    const price = plan && cfg.prices ? t(plan === 'year' ? 'perYear' : 'perMonth', { price: cfg.prices[plan] }) : '';
+    const overlay = h('div', { class: 'cw-overlay cw-signin-pop' });
+    const close = () => { overlay.remove(); signInPop = null; document.removeEventListener('keydown', esc); };
+    const esc = (e) => { if (e.key === 'Escape') close(); };
+    overlay.append(h('div', { class: 'cw-sheet cw-signin-sheet', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'cw-signin-title' },
+      h('button', { type: 'button', class: 'cw-pop-x', 'aria-label': t('close'), onclick: close }, '×'),
+      plan ? h('div', {}, plusBadge()) : null,
+      h('h2', { class: 'cw-sheet-title', id: 'cw-signin-title' }, t(plan ? 'getPlus' : 'signInTitle')),
+      plan ? h('ol', { class: 'cw-pop-steps' }, h('li', { class: 'is-now' }, t('popStep1')), h('li', {}, t('popStep2', { price }))) : null,
+      form.nodes, msg));
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', esc);
+    (document.querySelector('.cw') || document.body).append(overlay);
+    signInPop = { close };
+    form.ready();
+  }
+  // Pay for a plan: Stripe's form in a popup; closing it without paying says so
+  async function startCheckout(plan) {
+    busy = true; render();
+    try { await checkout(plan, { onClose: () => notice(t('cancelled')) }); } catch (err) { notice(err.message || t('failed'), { error: true }); }
+    busy = false; render();
+  }
   const setStatus = (text, error = false) => { status = { text, error }; render(); };
   const fmtDay = (iso) => (iso ? new Date(iso).toLocaleDateString(lang() === 'ja' ? 'ja-JP' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '');
-  onAccount(() => render());
+  onAccount(() => {
+    if (signedIn()) {
+      if (signInPop) signInPop.close();
+      const plan = pendingPlan();
+      if (plan && currentUser()) {
+        clearPending();
+        if (!member()) { notice(t('toPay')); startCheckout(plan); }
+      }
+    }
+    render();
+  });
 
   async function load() {
     if (loaded) return;
@@ -345,52 +433,73 @@ export function mountDeck({ root, play }) {
   // --- views
   function plans() {
     if (!cfg || !cfg.open) return [h('p', { class: 'cw-deck-muted' }, t('notOpen'), ' ', h('a', { href: '#plus-sec' }, t('joinList')))];
-    const go = (plan) => async (e) => {
-      if (!signedIn()) { document.getElementById('cw-signin')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
-      busy = true; setStatus(t('paying'));
-      try { await checkout(plan); busy = false; setStatus(''); } catch (err) { busy = false; setStatus(err.message || t('failed'), true); }
-    };
+    const go = (plan) => () => (signedIn() ? startCheckout(plan) : openSignIn({ plan }));
     return [
       h('div', { class: 'cw-deck-row cw-plans' },
         h('button', { type: 'button', class: 'btn btn-plus', disabled: busy, onclick: go('month') }, t('perMonth', { price: cfg.prices.month })),
         h('button', { type: 'button', class: 'btn', disabled: busy, onclick: go('year') }, t('perYear', { price: cfg.prices.year }), h('span', { class: 'cw-seg-sub' }, ` · ${t('yearNote')}`))),
       h('p', { class: 'cw-deck-muted' }, t('secure'), cfg.test ? ` ${t('test')}` : ''),
+      legalLine('agreePay'),
     ];
   }
 
-  function signInBox() {
+  // "By subscribing you agree to the Terms…" with the three policy pages
+  const legalLine = (k) => h('p', { class: 'cw-deck-muted cw-legal' }, t(k), ' ',
+    h('a', { href: '../../terms/' }, t('lTerms')), ' · ', h('a', { href: '../../privacy/' }, t('lPrivacy')), ' · ', h('a', { href: '../../refunds/' }, t('lRefunds')));
+
+  // Google and the email link, for the sign-in popup. say: its message line.
+  // ready(): once it's on the page (Google's button sizes itself to it)
+  function signInForm(say, plan) {
     const useGoogle = cfg && cfg.google && googleOk;
-    if (!cfg || (!useGoogle && !cfg.email)) return [h('p', { class: 'cw-deck-muted' }, t('noSignIn'))];
+    if (!cfg || (!useGoogle && !cfg.email)) return { nodes: [h('p', { class: 'cw-deck-muted' }, t('noSignIn'))], ready() {} };
     const g = h('div', { class: 'cw-google' });
-    // A failed load hides the button (no message: re-rendering would just try again)
-    if (useGoogle) googleButton(g, { onError: (e) => { if (/load/i.test(e.message || '')) { googleOk = false; render(); } else setStatus(e.message || t('failed'), true); } });
+    const or = useGoogle && cfg.email ? h('p', { class: 'cw-deck-or' }, t('or')) : null;
     const email = h('input', { type: 'email', autocomplete: 'email', inputmode: 'email', placeholder: t('emailLabel'), 'aria-label': t('emailLabel'), maxlength: '254' });
-    const send = h('button', { type: 'button', class: 'btn', disabled: busy, onclick: async () => {
+    const send = h('button', { type: 'button', class: 'btn', onclick: async () => {
       const v = email.value.trim();
       if (!v) { email.focus(); return; }
-      busy = true; setStatus(t('sending'));
-      try { await sendEmailLink(v); busy = false; setStatus(t('sent')); } catch (e) { busy = false; setStatus(e.message || t('failed'), true); }
+      send.disabled = true; say(t('sending'));
+      try { await sendEmailLink(v); say(t(plan ? 'sentPlan' : 'sent')); } catch (e) { say(e.message || t('failed'), true); }
+      send.disabled = false;
     } }, t('sendLink'));
     email.addEventListener('keydown', (e) => { if (e.key === 'Enter') send.click(); });
-    return [
-      h('div', { class: 'cw-signin', id: 'cw-signin' },
-        h('h3', { class: 'cw-deck-sub' }, t('signInTitle')),
+    return {
+      nodes: [
         h('p', { class: 'cw-deck-muted' }, t('signInWhy')),
         useGoogle ? g : null,
-        useGoogle && cfg.email ? h('p', { class: 'cw-deck-or' }, t('or')) : null,
-        cfg.email ? h('div', { class: 'cw-deck-row' }, email, send) : null),
-    ];
+        or,
+        cfg.email ? h('div', { class: 'cw-deck-row' }, email, send) : null,
+        legalLine('agreeSignIn')],
+      ready() {
+        // A failed load just leaves the email link
+        if (useGoogle) googleButton(g, { onError: (e) => { if (/load/i.test(e.message || '')) { googleOk = false; g.remove(); if (or) or.remove(); } else say(e.message || t('failed'), true); } });
+        if (!useGoogle) setTimeout(() => email.focus(), 50);
+      },
+    };
   }
 
-
+  // Members: their status and Manage subscription, top right of the box
   function membership(u) {
-    const line = u.granted && !u.paid ? t('memberFree')
-      : `${t('member')}${u.renews ? ` · ${t(u.status === 'canceled' ? 'ends' : 'renews', { date: fmtDay(u.renews) })}` : ''}`;
-    return [
-      h('p', { class: 'cw-deck-member' }, '✓ ', line),
-      u.status === 'past_due' ? h('p', { class: 'cw-deck-status is-error' }, t('pastDue')) : null,
-      u.paid ? h('div', { class: 'cw-deck-row' }, h('button', { type: 'button', class: 'btn-link', onclick: async () => { try { await portal(); } catch (e) { setStatus(e.message || t('failed'), true); } } }, t('manage'))) : null,
-    ];
+    const when = !(u.granted && !u.paid) && u.renews ? t(u.status === 'canceled' ? 'ends' : 'renews', { date: fmtDay(u.renews) }) : '';
+    return h('div', { class: 'cw-deck-acct' },
+      h('span', { class: 'cw-deck-member' }, '✓ ', t(u.granted && !u.paid ? 'memberFree' : 'member')),
+      h('span', { class: 'cw-deck-muted' }, when,
+        when && u.paid ? ' · ' : '',
+        u.paid ? h('button', { type: 'button', class: 'btn-link', onclick: async () => { try { await portal(); } catch (e) { setStatus(e.message || t('failed'), true); } } }, t('manage')) : null));
+  }
+
+  // Everyone else: what's free (one a day, signed in), and today's state
+  function freeStrip() {
+    const out = !signedIn();
+    const left = out ? null : freeLeft();
+    const sub = out ? t('freeOut') : left == null ? '…' : left ? t('freeReady') : t('freeUsed');
+    return h('div', { class: 'cw-free' },
+      h('div', { class: 'cw-free-row' },
+        h('span', { class: 'cw-free-tag' }, t('freeTag')),
+        h('p', {}, h('strong', {}, t('freeHead')), ' · ', sub),
+        out ? h('button', { type: 'button', class: 'btn btn-primary', onclick: () => openSignIn() }, t('signInBtn')) : null,
+        !out && left === 0 ? h('button', { type: 'button', class: 'btn-link', onclick: () => nudge(document.getElementById('cw-plusblock')) }, t('seePlans')) : null),
+    );
   }
 
   function importer() {
@@ -416,7 +525,6 @@ export function mountDeck({ root, play }) {
       } catch (e) { busy = false; setStatus(t(e.message === 'nocollection' ? 'apkgBad' : 'apkgFail'), true); }
     });
     return [
-      h('h3', { class: 'cw-deck-sub' }, t('importTitle')),
       h('p', {}, t('howto')),
       h('div', { class: 'cw-deck-row' }, fileIn),
       h('details', {}, h('summary', {}, t('paste')), area, h('div', { class: 'cw-deck-row' }, h('button', { type: 'button', class: 'btn', onclick: () => start(area.value, 'My deck') }, t('read')))),
@@ -459,10 +567,9 @@ export function mountDeck({ root, play }) {
       const s = state();
       try { write({ ...s, name: d.name.trim() || 'My deck', words, kind: c.kana >= MIN_WORDS ? (s.kind || 'kana') : 'kanji' }); } catch { setStatus(t('tooBig'), true); return; }
       draft = null;
-      setStatus(t('usable', c) + (c.n - c.kana ? ` ${t('noReading', { n: c.n - c.kana })}` : ''));
+      setStatus('');
     } }, t('save', { n: d.notes.length }));
     return [
-      h('h3', { class: 'cw-deck-sub' }, t('importTitle')),
       h('p', {}, t('pick')),
       typeSel ? h('div', { class: 'cw-deck-fields' }, typeSel) : null,
       preview,
@@ -473,7 +580,7 @@ export function mountDeck({ root, play }) {
     ];
   }
 
-  function deckView(s, u) {
+  function deckView(s) {
     const c = counts(s.words);
     const size = s.size || 'mini';
     const kind = c.kanji >= MIN_WORDS && s.kind === 'kanji' ? 'kanji' : c.kana >= MIN_WORDS ? 'kana' : 'kanji';
@@ -481,16 +588,20 @@ export function mountDeck({ root, play }) {
       type: 'button', role: 'radio', 'aria-checked': String(v === value), disabled,
       onclick: () => { const x = state(); x[name] = v; try { write(x); } catch { /* full */ } render(); },
     }, label)));
+    const isMember = member();
+    const out = !isMember && !signedIn();          // the free puzzle needs a (free) sign-in
+    const left = isMember ? Infinity : out ? 0 : freeLeft();
+    if (!isMember && !out && left == null) peekFree();
     const made = (s.made || []).slice().reverse();
-    return [
-      h('p', { class: 'cw-deck-muted' }, `${s.name} · ${t('words', { n: s.words.length })} · ${t('usable', c)}`),
-      h('div', { class: 'cw-deck-row' },
+    return {
+      choose: h('div', { class: 'cw-deck-row' },
         seg('size', size, [['mini', t('mini')], ['daily', t('daily')]]),
         seg('kind', kind, [['kana', t('kana'), c.kana < MIN_WORDS], ['kanji', t('kanji'), c.kanji < MIN_WORDS]])),
-      h('div', { class: 'cw-deck-row' },
-        h('button', { type: 'button', class: 'btn btn-primary cw-make', disabled: busy, onclick: () => make(s, size, kind) }, t('make')),
-        h('span', { class: 'cw-deck-muted' }, t('unlimited'))),
-      made.length ? h('div', {}, h('h3', { class: 'cw-deck-sub' }, t('recent')),
+      make: h('div', { class: 'cw-deck-row' },
+        h('button', { type: 'button', class: 'btn cw-make', disabled: busy || (!out && left == null),
+          onclick: () => (out ? openSignIn() : left ? make(s, size, kind) : nudge(document.getElementById('cw-plusblock'))) }, t('make')),
+        h('span', { class: 'cw-deck-muted' }, isMember ? t('unlimited') : out ? t('makeOut') : left == null ? '…' : left ? t('freeLeft') : t('freeUsedHint'))),
+      list: made.length ? h('div', {}, h('h3', { class: 'cw-deck-sub' }, t('recent')),
         h('ul', { class: 'cw-deck-list' }, made.slice(0, SHOW).map((p) => h('li', {}, h('button', { type: 'button', onclick: () => play(p) },
           h('span', {}, deckLabel(p)),
           h('span', { class: 'cw-deck-muted' }, `${p.made}${solvedIds().has(p.id) ? ` · ${t('solved')} ✓` : ''}`))))),
@@ -498,20 +609,58 @@ export function mountDeck({ root, play }) {
           const done = solvedIds();
           openBrowse({ title: t('recent'), items: made.map((p, i) => ({ date: p.made, label: `#${made.length - i} · ${deckLabel(p)}`, done: done.has(p.id), p })), onPick: (x) => play(x.p) });
         } }, t('seeAll', { n: made.length })) : null) : null,
-      h('div', { class: 'cw-deck-row' },
-        h('button', { type: 'button', class: 'btn-link', onclick: () => { if (confirm(t('confirmReplace'))) { const x = state(); delete x.words; delete x.name; write(x); render(); } } }, t('replace'))),
-    ];
+    };
+  }
+
+  // The deck in four steps: import, fields, puzzle, make. Done steps fold into one line;
+  // signed out, they're only a preview of what's to come.
+  function steps(s) {
+    const out = !signedIn();
+    const has = Boolean(s.words && s.words.length);
+    const step = (n, title, st, { sum, action, body } = {}) => h('li', { class: `cw-step is-${st}` },
+      h('div', { class: 'cw-step-head' },
+        h('span', { class: 'cw-step-n', 'aria-label': st === 'done' ? `${n} · ${t('stepDone')}` : String(n) }, st === 'done' ? '✓' : n),
+        h('span', { class: 'cw-step-title' }, title),
+        sum ? h('span', { class: 'cw-step-sum' }, sum) : null,
+        action || null),
+      body ? h('div', { class: 'cw-step-body' }, body) : null);
+    if (out) {
+      return [h('ol', { class: 'cw-steps is-preview' },
+        ['step1', 'step2', 'step3', 'step4'].map((k, i) => step(i + 1, t(k), 'later'))),
+      h('p', {}, h('button', { type: 'button', class: 'btn-link', onclick: () => openSignIn() }, t('stepAfter')))];
+    }
+    if (draft) {
+      return [h('ol', { class: 'cw-steps' },
+        step(1, t('step1'), 'done', { sum: `${draft.name} · ${t('notesN', { n: draft.notes.length })}` }),
+        step(2, t('step2'), 'now', { body: picker() }),
+        step(3, t('step3'), 'later'), step(4, t('step4'), 'later'))];
+    }
+    if (!has) {
+      return [h('ol', { class: 'cw-steps' },
+        step(1, t('step1'), 'now', { body: importer() }),
+        step(2, t('step2'), 'later'), step(3, t('step3'), 'later'), step(4, t('step4'), 'later'))];
+    }
+    const c = counts(s.words);
+    const v = deckView(s);
+    const replace = h('button', { type: 'button', class: 'btn-link cw-step-act', onclick: () => { if (confirm(t('confirmReplace'))) { const x = state(); delete x.words; delete x.name; write(x); render(); } } }, t('replace'));
+    return [h('ol', { class: 'cw-steps' },
+      step(1, t('step1'), 'done', { sum: `${s.name} · ${t('words', { n: s.words.length })}`, action: replace }),
+      step(2, t('step2'), 'done', { sum: [t('canKana', { n: c.kana }), ' · ', t('canKanji', { n: c.kanji }),
+        c.n - c.kana ? h('span', { class: 'cw-step-note' }, t('noReading', { n: c.n - c.kana })) : null] }),
+      step(3, t('step3'), 'now', { body: v.choose }),
+      step(4, t('step4'), 'now', { body: v.make })),
+    v.list];
   }
 
   const deckLabel = (p) => `${p.deck.name} · ${t(p.size)} · ${t(p.mode === 'kanji' ? 'kanji' : 'kana')}`;
 
   function bonusView() {
     if (!bonus) return [];
-    if (!member()) return bonus.length ? [h('h3', { class: 'cw-deck-sub' }, t('bonusTitle')), h('p', { class: 'cw-deck-locked' }, plusBadge(), ' ', h('strong', {}, t('bonusLockedN', { n: bonus.length })))] : [];
-    if (!bonus.length) return [h('h3', { class: 'cw-deck-sub' }, t('bonusTitle')), h('p', { class: 'cw-deck-muted' }, t('bonusNone'))];
+    if (!member()) return [];                      // the count is in the Crossword+ card
+    if (!bonus.length) return [h('h3', { class: 'cw-deck-part' }, t('bonusTitle')), h('p', { class: 'cw-deck-muted' }, t('bonusNone'))];
     const done = solvedIds();
     return [
-      h('h3', { class: 'cw-deck-sub' }, t('bonusTitle')),
+      h('h3', { class: 'cw-deck-part' }, t('bonusTitle')),
       h('ul', { class: 'cw-deck-list' }, bonus.slice().reverse().slice(0, SHOW).map((b) => h('li', {}, h('button', { type: 'button', onclick: () => openBonus(b) },
         h('span', {}, bonusLabel(b)),
         h('span', { class: 'cw-deck-muted' }, done.has(b.id) ? `${t('solved')} ✓` : ''))))),
@@ -553,7 +702,13 @@ export function mountDeck({ root, play }) {
       });
     } catch { busy = false; setStatus(t('buildFail'), true); return; }
     busy = false;
-    if (!member()) { setStatus(''); render(); return; }       // no longer a member (another tab signed out)
+    if (!member()) {
+      try {
+        const r = await deckUse(localDate());
+        free = { day: localDate(), left: 0 };
+        if (!r.ok && !r.unlimited) { setStatus(''); return; }       // already used today (another device): the strip says so
+      } catch (err) { setStatus(err.message || t('failed'), true); return; }
+    }
     const p = toPuzzle(draftPuzzle, { kind, size, name: s.name, seed });
     const x = state();
     x.made = [...(x.made || []), p].slice(-KEEP);
@@ -562,41 +717,42 @@ export function mountDeck({ root, play }) {
     play(p);
   }
 
-  // Crossword+ for people who aren't members yet: what it is, plans, sign in
-  function plusBlock(u) {
+  // Crossword+ for everyone else, in one card: the three perks, the price, the plans
+  function plusBlock() {
     return h('div', { class: 'cw-plusblock', id: 'cw-plusblock' },
-      plusBadge(),
-      h('p', {}, t('pitch')),
-      plusPerks(),
+      h('div', { class: 'cw-plusblock-head' }, plusBadge(), cfg && cfg.open ? plusPrice(cfg.prices) : null),
+      plusPerks({ order: ['deck', 'archive', 'bonus'], bonusN: bonus ? bonus.length : 0 }),
       ...plans(),
-      ...(u ? [] : signInBox()),
       supportLine());
   }
-  function showPlus() { const el = document.getElementById('cw-plusblock'); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+  // signIn: from the Sign in button up top
+  function showPlus({ signIn = false } = {}) {
+    if (signIn && !signedIn()) { openSignIn(); return; }      // (app.js opens it without switching tabs too)
+    const el = document.getElementById('cw-plusblock');
+    if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
+  // Under the deck part, so messages (built, sign-in link sent, Stripe) show near what caused them
+  const statusLine = () => h('p', { class: `cw-deck-status${status.error ? ' is-error' : ''}`, role: 'status', 'aria-live': 'polite' }, status.text);
 
   function render() {
     if (!visible) return;
     const s = state();
     const u = currentUser();
-    const head = h('h2', {}, t('title'));
+    const isMember = Boolean(u && u.member);
+    const head = h('div', { class: 'cw-deck-head' }, h('h2', {}, t('title')), loaded && cfg && isMember ? membership(u) : null);
     let body;
-    if (!loaded || !cfg) body = [h('p', { class: 'cw-deck-muted' }, '…')];
+    if (!loaded || !cfg) body = [h('p', { class: 'cw-deck-muted' }, '…'), statusLine()];
     else {
-      if (u && u.member) {
-        body = membership(u);
-        if (draft) body.push(...picker());
-        else if (!s.words || !s.words.length) body.push(...importer());
-        else body.push(...deckView(s, u));
-        body.push(...bonusView(), supportLine());
-      } else {
-        // My deck is for Crossword+ members only: what it is, then the plans and sign-in
-        body = [h('div', { class: 'cw-limit', role: 'note' }, plusBadge(),
-          h('p', { class: 'cw-paywall-msg' }, t('lockedTitle')),
-          h('ul', { class: 'cw-perks' }, ['locked1', 'locked2', 'locked3'].map((k) => h('li', {}, t(k))))),
-        ...bonusView(), plusBlock(u)];
-      }
+      body = [
+        isMember && u.status === 'past_due' ? h('p', { class: 'cw-deck-status is-error' }, t('pastDue')) : null,
+        h('h3', { class: 'cw-deck-part' }, t('deckTitle')),
+        h('p', {}, t('intro')),
+        isMember ? null : freeStrip()];
+      body.push(...steps(s));
+      body.push(statusLine(), ...(isMember ? [...bonusView(), supportLine()] : [plusBlock()]));
     }
-    root.replaceChildren(head, ...body.filter(Boolean), h('p', { class: `cw-deck-status${status.error ? ' is-error' : ''}`, role: 'status', 'aria-live': 'polite' }, status.text));
+    root.replaceChildren(head, ...body.filter(Boolean));
   }
 
   return {
@@ -608,8 +764,11 @@ export function mountDeck({ root, play }) {
       render();
     },
     showPlus,
+    openSignIn,
+    // Back from Stripe or an email link: a floating message, wherever the page is scrolled
     message(kind, text) {
-      setStatus(kind === 'paid' ? t('welcome') : kind === 'signedIn' ? t('signedInMsg') : kind === 'cancelled' ? t('cancelled') : text || t('failed'), kind === 'error');
+      if (kind === 'signedIn' && (pendingPlan() || busy)) return;       // straight on to paying instead
+      notice(kind === 'paid' ? t('welcome') : kind === 'signedIn' ? t('signedInMsg') : kind === 'cancelled' ? t('cancelled') : text || t('failed'), { error: kind === 'error', ms: kind === 'paid' ? 10000 : 7000 });
     },
     current() { return null; },
     relabel() { render(); },

@@ -127,7 +127,7 @@
     line: function (slot, t, via) {
       slot.classList.add('pt-line');
       if (t.lang) slot.setAttribute('lang', t.lang); else slot.removeAttribute('lang');
-      slot.replaceChildren(el('span', { class: 'pt-tag' }, [t.tag]), ' ', t.line, ' ', link(via, 'pt-line-cta', [t.lineCta, arrow()]));
+      slot.replaceChildren(el('span', { class: 'pt-tag' }, [t.tag]), ' ', el('span', { class: 'pt-line-text' }, [t.line]), ' ', link(via, 'pt-line-cta', [t.lineCta, arrow()]));
     },
   };
 

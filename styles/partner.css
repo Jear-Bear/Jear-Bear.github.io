@@ -67,3 +67,29 @@
 }
 :root[data-theme="dark"] .pt-card.is-boxed { --pt-tint: #2a2118; --pt-line: #5a4127; }
 :root[data-theme="dark"] .pt-card.is-boxed .pt-kicker { color: #1a140e; }
+
+
+/* The result-screen line as a small card in the sponsor's colour, so it stands
+   out from the puzzle and from Crossword+ (purple) */
+.pt-line {
+  --pt-color: #d9822b;
+  --pt-tint: #fbefe2;
+  --pt-line: #ecc9a3;
+  padding: 12px 14px;
+  border: 1px solid var(--pt-line);
+  border-left: 4px solid var(--pt-color);
+  border-radius: 8px;
+  background: var(--pt-tint);
+  font-size: 14px;
+  color: var(--ink);
+}
+.pt-line .pt-tag { padding: 1px 8px; border: 0; border-radius: 999px; background: var(--pt-color); color: #fff; font-weight: 700; font-size: 11px; vertical-align: 1px; }
+.pt-line-text { color: var(--ink); }
+.pt-line .pt-line-cta { display: flex; width: fit-content; align-items: center; gap: 4px; margin-top: 10px; padding: 7px 14px; border: 0; border-radius: 6px; background: var(--pt-color); color: #fff; font-weight: 700; }
+.pt-line .pt-line-cta:hover { background: #b9661a; color: #fff; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .pt-line { --pt-tint: #2a2118; --pt-line: #5a4127; }
+  :root:not([data-theme="light"]) .pt-line .pt-tag, :root:not([data-theme="light"]) .pt-line .pt-line-cta { color: #1a140e; }
+}
+:root[data-theme="dark"] .pt-line { --pt-tint: #2a2118; --pt-line: #5a4127; }
+:root[data-theme="dark"] .pt-line .pt-tag, :root[data-theme="dark"] .pt-line .pt-line-cta { color: #1a140e; }

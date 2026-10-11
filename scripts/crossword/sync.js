@@ -3,10 +3,15 @@
 // sponsor Worker under their account (POST /public/plus/save) a few seconds after
 // a change, and merged in when they sign in or come back to the tab.
 // Signed out, everything stays in this browser only, as before.
+//
+// What's in this browser belongs to one account at a time: the deck is kept under the
+// account (account.js deckKey), and the progress is cleared when that account signs out
+// or another one signs in, so nobody sees (or merges in) someone else's puzzles.
 
-import { signedIn, onAccount, currentUser, loadSave, putSave } from './account.js?v=3';
+import { signedIn, onAccount, accountId, deckKey, deckKeyFor, loadSave, putSave } from './account.js?v=4';
 
-const DECK = 'jareddesu.crossword.deck';
+const OWNER = 'jareddesu.crossword.owner';       // whose progress this browser holds
+const LEGACY_DECK = 'jareddesu.crossword.deck';   // before decks were kept per account
 const KEEP_MADE = 60;
 let hooks = null;
 let timer = null;
@@ -36,7 +41,18 @@ const mergeMap = (a = {}, b = {}, pick) => {
   return out;
 };
 
-function readDeck() { try { return JSON.parse(localStorage.getItem(DECK) || '{}'); } catch { return {}; } }
+function readDeck() { const k = deckKey(); try { return k ? JSON.parse(localStorage.getItem(k) || '{}') : {}; } catch { return {}; } }
+const owner = () => { try { return localStorage.getItem(OWNER); } catch { return null; } };
+function setOwner(v) { try { if (v) localStorage.setItem(OWNER, v); else localStorage.removeItem(OWNER); } catch { /* private mode */ } }
+// This browser's progress and deck belong to someone else (or to nobody, once they sign
+// out): forget them here. Their solves and deck puzzles are saved on their account; the
+// deck's word list never leaves the browser, so it's imported again after signing back in.
+function forget() {
+  if (timer) { clearTimeout(timer); timer = null; }
+  lastSent = '';
+  try { if (owner()) localStorage.removeItem(deckKeyFor(owner())); } catch { /* private mode */ }
+  hooks.set({ progress: {}, stats: {} });
+}
 function local() {
   const h = hooks.get();
   return { v: 1, progress: h.progress || {}, stats: h.stats || {}, made: readDeck().made || [] };
@@ -44,7 +60,19 @@ function local() {
 
 export function initSync(h) {
   hooks = h;
-  onAccount((u) => { if (u && pulledFor !== u.id) pull(); if (!u) pulledFor = null; });
+  try { localStorage.removeItem(LEGACY_DECK); } catch { /* private mode */ }
+  onAccount((u) => {
+    const id = accountId();
+    if (u && id) {
+      if (owner() && owner() !== id) forget();
+      setOwner(id);
+      if (pulledFor !== id) pull();
+    }
+    if (!signedIn()) {
+      pulledFor = null;
+      if (owner()) { forget(); setOwner(null); }        // signed out: their puzzles go with them
+    }
+  });
   // Back on this tab after a while: pick up what was done on another device
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && Date.now() - lastPull > 60000) pull();
@@ -57,8 +85,7 @@ export async function pull() {
   lastPull = Date.now();
   try {
     const r = await loadSave();
-    const u = currentUser();
-    if (u) pulledFor = u.id;
+    pulledFor = accountId();
     const mine = local();
     const theirs = r && r.data;
     if (theirs && typeof theirs === 'object') {
@@ -68,7 +95,7 @@ export async function pull() {
       [...(theirs.made || []), ...mine.made].forEach((p) => { if (p && p.id && !byId.has(p.id)) byId.set(p.id, p); });
       const made = [...byId.values()].sort((a, b) => String(a.made).localeCompare(String(b.made))).slice(-KEEP_MADE);
       if (made.length !== mine.made.length) {
-        try { const d = readDeck(); d.made = made; localStorage.setItem(DECK, JSON.stringify(d)); } catch { /* full */ }
+        try { const d = readDeck(); d.made = made; localStorage.setItem(deckKey(), JSON.stringify(d)); } catch { /* full */ }
       }
       hooks.set({ progress, stats });
     }
@@ -81,6 +108,12 @@ export async function pull() {
 export function schedulePush() {
   if (!hooks || !signedIn() || timer) return;
   timer = setTimeout(() => { timer = null; push(); }, 15000);
+}
+
+// Signing out: send what's waiting first, since this browser forgets it after
+export async function flush() {
+  if (timer) { clearTimeout(timer); timer = null; }
+  await push();
 }
 
 async function push() {

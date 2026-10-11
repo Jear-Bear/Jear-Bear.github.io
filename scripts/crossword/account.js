@@ -23,6 +23,11 @@ export const onAccount = (f) => { listeners.add(f); return () => listeners.delet
 export const currentUser = () => user;
 export const signedIn = () => Boolean(read().token);
 export const isMember = () => Boolean(user && user.member);
+// Which account is signed in (its email), kept with the token so it's known before /me answers.
+// Things saved in this browser for an account (the deck) are kept under it.
+export const accountId = () => read().uid || null;
+export const deckKeyFor = (id) => `jareddesu.crossword.deck.${id}`;
+export const deckKey = () => (accountId() ? deckKeyFor(accountId()) : null);
 
 async function call(path, body = {}, { method = 'POST' } = {}) {
   const token = read().token;
@@ -38,7 +43,7 @@ async function call(path, body = {}, { method = 'POST' } = {}) {
 }
 
 function signIn(r) {
-  write({ token: r.token });
+  write({ token: r.token, uid: r.user && r.user.email ? r.user.email.toLowerCase() : undefined });
   user = r.user;
   emit();
   return user;
@@ -53,6 +58,7 @@ export async function info() {
 export async function refresh() {
   if (!read().token) { user = null; emit(); return null; }
   try { user = (await call('me')).user; } catch (e) { if (e.status === 401) user = null; }
+  if (user && user.email && read().uid !== user.email.toLowerCase()) write({ ...read(), uid: user.email.toLowerCase() });
   emit();
   return user;
 }
@@ -67,11 +73,12 @@ export async function logout() {
 
 // Paying: Stripe's form in a window on this page (Embedded Checkout) when the Worker has
 // the publishable key, else Stripe's own checkout page. Either way Stripe brings the
-// person back to ?plus=success, which handleReturn picks up.
-export async function checkout(plan) {
+// person back to ?plus=success, which handleReturn picks up. onClose: they closed
+// Stripe's form without paying.
+export async function checkout(plan, { onClose } = {}) {
   const i = await info();
   const r = await call('checkout', { plan, embedded: Boolean(i.embedded) });
-  if (r.clientSecret) return openEmbedded(r);
+  if (r.clientSecret) return openEmbedded(r, onClose);
   location.href = r.url;
   return null;
 }
@@ -85,7 +92,7 @@ const loadStripe = () => stripeJs || (stripeJs = new Promise((ok, no) => {
   document.head.append(s);
 }));
 let embedded = null;
-async function openEmbedded({ clientSecret, publishableKey }) {
+async function openEmbedded({ clientSecret, publishableKey }, onClose) {
   const Stripe = await loadStripe();
   if (embedded) { embedded.destroy(); embedded = null; }
   document.querySelector('.cw-pay')?.remove();
@@ -106,8 +113,9 @@ async function openEmbedded({ clientSecret, publishableKey }) {
   overlay.className = 'cw-overlay cw-pay';
   overlay.append(sheet);
   const shut = () => { if (embedded) { embedded.destroy(); embedded = null; } overlay.remove(); };
-  close.addEventListener('click', shut);
-  overlay.addEventListener('click', (e) => { if (e.target === overlay) shut(); });
+  const cancel = () => { shut(); if (onClose) onClose(); };
+  close.addEventListener('click', cancel);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) cancel(); });
   (document.querySelector('.cw') || document.body).append(overlay);
   embedded = await Stripe(publishableKey).initEmbeddedCheckout({ fetchClientSecret: async () => clientSecret });
   embedded.mount(mount);
