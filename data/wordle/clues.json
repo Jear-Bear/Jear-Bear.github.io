@@ -99,6 +99,11 @@
   "t": "Saying yes",
   "tj": "承諾"
  },
+ "うそつき": {
+  "c": "Pinocchio, whenever his nose grows",
+  "t": "Dishonest people",
+  "tj": "正直でない人"
+ },
  "うつくしい": {
   "c": "Describes Mount Fuji at sunrise",
   "t": "Looks",
@@ -154,6 +159,11 @@
   "t": "Royalty",
   "tj": "皇族"
  },
+ "おうせつ": {
+  "c": "Receiving visitors; at the office it gets its own room with a sofa set",
+  "t": "Hosting guests",
+  "tj": "来客のもてなし"
+ },
  "おうよう": {
   "c": "Putting what you learned to practical use",
   "t": "Learning",
@@ -183,6 +193,11 @@
   "c": "What you say to a friend who's moving away: take care!",
   "t": "Goodbyes",
   "tj": "別れのあいさつ"
+ },
+ "おじいさん": {
+  "c": "In the folktale he heads to the mountains for firewood while she does laundry by the river",
+  "t": "Grandparents",
+  "tj": "祖父母"
  },
  "おてあらい": {
   "c": "The polite way to ask where the restroom is",
@@ -238,6 +253,11 @@
   "c": "Steaming natural baths, often with a mountain view",
   "t": "Japanese culture",
   "tj": "日本の文化"
+ },
+ "おんちゆう": {
+  "c": "Honorific written after a company name on an envelope, never after a person's",
+  "t": "Letter etiquette",
+  "tj": "手紙の書き方"
  },
  "おんなのこ": {
   "c": "A young daughter, for example",
@@ -813,6 +833,11 @@
   "c": "The big white surface a film is projected onto",
   "t": "At the movies",
   "tj": "映画館"
+ },
+ "すてれお": {
+  "c": "Two-speaker sound system on a 1980s shelf, left and right channels",
+  "t": "Audio equipment",
+  "tj": "音響機器"
  },
  "すとーぶ": {
   "c": "The thing you huddle around in a cold room in winter",
