@@ -484,6 +484,11 @@
   "t": "Arguments",
   "tj": "もめごと"
  },
+ "けんぎよう": {
+  "c": "Wearing two work hats at once, like a farmer with an office job",
+  "t": "Work",
+  "tj": "仕事"
+ },
  "けんめい": {
   "c": "Wise, sensible: the smart choice",
   "t": "Good judgment",
@@ -498,6 +503,11 @@
   "c": "For everyone's use, like parks and libraries",
   "t": "Society",
   "tj": "社会"
+ },
+ "こうぎよう": {
+  "c": "Factories, assembly lines and smokestacks, as a sector",
+  "t": "Economy",
+  "tj": "経済"
  },
  "こうこう": {
   "c": "Where you go after junior high, with uniforms and club activities",
@@ -814,6 +824,11 @@
   "t": "Atmosphere",
   "tj": "雰囲気"
  },
+ "じようはつ": {
+  "c": "What a puddle does on a hot summer afternoon",
+  "t": "Science",
+  "tj": "理科"
+ },
  "じようひん": {
   "c": "Describes someone who sips tea with a raised pinky",
   "t": "Manners",
@@ -1124,6 +1139,11 @@
   "t": "Helping out",
   "tj": "助け合い"
  },
+ "てんいん": {
+  "c": "The one calling \"Irasshaimase!\" as you walk into the konbini",
+  "t": "Jobs",
+  "tj": "職業"
+ },
  "てんたい": {
   "c": "A star, a planet or a moon, seen through a telescope",
   "t": "Space",
@@ -1243,6 +1263,11 @@
   "c": "Steadily and quickly, like drums pounding or work piling up",
   "t": "Speed",
   "tj": "速さ"
+ },
+ "なかほど": {
+  "c": "Partway along, like the seats halfway down the bus",
+  "t": "Position",
+  "tj": "位置"
  },
  "なこうど": {
   "c": "The person who introduced the couple, or arranged the match",
@@ -1533,6 +1558,11 @@
   "c": "The system of lords, samurai and peasants in old Japan",
   "t": "History",
   "tj": "歴史"
+ },
+ "ほうせき": {
+  "c": "Rubies and sapphires, e.g.",
+  "t": "Jewelry",
+  "tj": "アクセサリー"
  },
  "ほつそく": {
   "c": "The launch of a new organization",
