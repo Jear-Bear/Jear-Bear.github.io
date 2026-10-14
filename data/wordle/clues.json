@@ -494,6 +494,11 @@
   "t": "Good judgment",
   "tj": "判断"
  },
+ "げきじよう": {
+  "c": "Curtain up! Where the audience sits for a play",
+  "t": "Stage arts",
+  "tj": "舞台"
+ },
  "げんだい": {
   "c": "The present age, with smartphones",
   "t": "Eras",
@@ -584,6 +589,11 @@
   "t": "Life in Japan",
   "tj": "いまどきの日本"
  },
+ "こんさーと": {
+  "c": "Glow sticks waving, encore chants, sold-out arena",
+  "t": "Live music",
+  "tj": "音楽イベント"
+ },
  "ごうせい": {
   "c": "Combining parts into one, like a fake photo or plastic fibers",
   "t": "Science",
@@ -603,6 +613,11 @@
   "c": "Whether a project actually pays for itself",
   "t": "Business",
   "tj": "商売"
+ },
+ "さいしよ": {
+  "c": "Square one, the very start",
+  "t": "Order & sequence",
+  "tj": "順番"
  },
  "さいなん": {
   "c": "A disaster or misfortune",
@@ -669,10 +684,20 @@
   "t": "Cities",
   "tj": "都市"
  },
+ "しやせつ": {
+  "c": "The newspaper speaking its own mind on the opinion page",
+  "t": "Newspapers",
+  "tj": "新聞"
+ },
  "しやぶる": {
   "c": "What a baby does with its thumb",
   "t": "Eating",
   "tj": "食べること"
+ },
+ "しゆうえき": {
+  "c": "What the company actually took home this quarter",
+  "t": "Business money",
+  "tj": "もうけ"
  },
  "しゆうかん": {
   "c": "Something you do so regularly you don't even think about it",
@@ -1328,6 +1353,11 @@
   "c": "Circles in a stump that tell you how old it is",
   "t": "Trees",
   "tj": "木"
+ },
+ "のきなみ": {
+  "c": "Across the board: when every shop on the street raises prices at once",
+  "t": "Street of houses",
+  "tj": "通りの家々"
  },
  "のみもの": {
   "c": "Tea, juice or soda: anything you sip",
