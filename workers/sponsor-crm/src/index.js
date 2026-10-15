@@ -66,7 +66,7 @@ import { availability, inquiry } from './public.js';
 import { joinWaitlist, leaveWaitlist, listWaitlist } from './waitlist.js';
 import { loginGoogle, loginEmail, loginVerify, me as plusMe, logout as plusLogout, dayArchive, bonusPuzzle, listPlus, grantPlus, updatePlus, deletePlus } from './plus.js';
 import { deckUse, loadSave, putSave } from './plussync.js';
-import { plusInfo, plusCheckout, plusSync, plusPortal, stripeWebhook, stripeSetup, stripeStatus } from './stripe.js';
+import { plusInfo, plusCheckout, plusSync, plusPortal, stripeWebhook, stripeSetup, stripeStatus, stripeResync } from './stripe.js';
 import { publicKey, bonusBacklog, openSealed } from './sealed.js';
 import { pullTraffic, loadTraffic, trafficConfigured } from './traffic.js';
 
@@ -184,6 +184,7 @@ async function route(request, env, url) {
   if (a === 'waitlist' && !b && m === 'GET') return listWaitlist(db);
   if (a === 'plus' && !b && m === 'GET') return { ...(await listPlus(db)), stripe: await stripeStatus(env, db) };
   if (a === 'plus' && b === 'stripe-setup' && !c && m === 'POST') return stripeSetup(env, db, url.origin);
+  if (a === 'plus' && b === 'stripe-sync' && !c && m === 'POST') return stripeResync(env, db, await readJson(request));
   if (a === 'plus' && !b && m === 'POST') return grantPlus(env, db, await readJson(request));
   if (a === 'plus' && b && !c && m === 'PATCH') return updatePlus(db, b, await readJson(request));
   if (a === 'plus' && b && !c && m === 'DELETE') return deletePlus(db, b);
