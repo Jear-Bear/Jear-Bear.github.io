@@ -318,6 +318,7 @@ export async function listPlus(db) {
       id: r.id, email: r.email, name: r.name, google: Boolean(r.google_sub), created_at: r.created_at, last_login: r.last_login,
       granted: Boolean(r.granted), grant_note: r.grant_note, revoked: Boolean(r.revoked), paid: Boolean(r.stripe_subscription),
       status: r.status, plan: r.plan, period_end: r.period_end, member: isMember(r),
+      checkout: Boolean(r.stripe_customer),     // has a Stripe customer: opened the payment form at least once
     })),
   };
 }

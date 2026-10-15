@@ -261,6 +261,21 @@ function membersSection(m, reload) {
     toast(`Stripe connected (${r.mode} mode)`, { kind: 'ok', ms: 3000 });
     reload(false);
   }, { kind: st.connected ? 'chip' : 'primary', disabled: !st.key });
+  // Read every subscription from Stripe again (in case a webhook was missed)
+  const resync = button('Update from Stripe', async () => {
+    const r = await busy(resync, async () => {
+      let offset = 0; let checked = 0; let updated = 0;
+      for (;;) {
+        const x = await request('POST', 'plus/stripe-sync', { offset });
+        checked += x.checked; updated += x.updated;
+        if (x.next == null) break;
+        offset = x.next;
+      }
+      return { checked, updated };
+    });
+    toast(`Checked ${r.checked} with Stripe · ${r.updated} with a subscription`, { kind: 'ok', ms: 3000 });
+    reload(false);
+  }, { kind: 'chip', disabled: !st.connected });
   const email = h('input', { type: 'email', placeholder: 'Email', 'aria-label': 'Email', maxlength: '254' });
   const note = h('input', { type: 'text', placeholder: 'Note (optional)', 'aria-label': 'Note', maxlength: '120' });
   const give = button('Give free access', async () => {
@@ -281,11 +296,12 @@ function membersSection(m, reload) {
       tile('Paying members', num.format(paid.length), `${monthly} monthly · ${yearly} yearly`),
       tile('Monthly revenue', `$${(monthly * 2.99 + yearly * 24.99 / 12).toFixed(2)}`, 'before Stripe’s fees (yearly spread over 12)'),
       tile('On a free trial', num.format(trialing.length), 'pay when it ends, unless they cancel'),
+      tile('Opened checkout, didn’t finish', num.format(users.filter((u) => u.checkout && !u.paid).length), 'Stripe lists them as customers too'),
       tile('Free access', num.format(users.filter((u) => u.member && !u.paid).length), 'given here'),
       tile('Accounts', num.format(users.length), 'signed in at least once')),
     h('div', { class: 'crm-traffic-bar' },
       h('span', { class: st.connected ? 'crm-muted' : 'crm-note is-error' }, !st.key ? 'Stripe: add the STRIPE_SECRET_KEY GitHub secret, then run the deploy.' : st.connected ? `Stripe: connected (${st.mode} mode)` : `Stripe: key found (${st.mode} mode), not connected yet`),
-      connect),
+      connect, resync),
     h('div', { class: 'crm-traffic-bar' }, email, note, give),
     users.length ? h('ul', { class: 'crm-waitlist' }, users.map((u) => h('li', {},
       h('span', {}, u.email, u.google ? h('span', { class: 'crm-muted' }, ' · Google') : null),

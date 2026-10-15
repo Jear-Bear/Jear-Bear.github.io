@@ -10,6 +10,7 @@
 //   POST /public/plus/portal {}               → { url }    manage or cancel (Stripe's page), signed in
 //   POST /public/stripe/webhook                            Stripe → here (signed)
 //   POST /api/plus/stripe-setup                            Sponsor desk: "Connect Stripe"
+//   POST /api/plus/stripe-sync { offset }                  Sponsor desk: "Update from Stripe"
 //
 // The only secret is STRIPE_SECRET_KEY (a GitHub secret, pushed to the Worker
 // on deploy). "Connect Stripe" makes the prices (found by lookup key, so it's
@@ -170,6 +171,28 @@ async function applySubscription(env, db, sub) {
     .bind(sub.id, sub.status, planOf(sub), iso(sub.current_period_end), u.id).run();
   // A new member: the one welcome email (sendWelcome makes sure it's only once)
   if (['active', 'trialing'].includes(sub.status)) await sendWelcome(env, db, u.id, sub.status === 'trialing' ? 'trial' : 'paid');
+}
+
+// "Update from Stripe" in the desk: read every account's subscription from Stripe again,
+// in case a webhook was missed. 40 accounts per call (the Worker's limit on outgoing
+// requests); the desk calls again with next until it's null.
+export async function stripeResync(env, db, body) {
+  if (!env.STRIPE_SECRET_KEY) throw new HttpError(400, 'Stripe isn’t set up');
+  const mode = stripeMode(env);
+  const offset = Math.max(0, Number(body && body.offset) || 0);
+  const { results } = await db.prepare("SELECT id, stripe_customer FROM plus_users WHERE stripe_customer IS NOT NULL AND COALESCE(stripe_mode, 'test') = ? ORDER BY created_at LIMIT 41 OFFSET ?").bind(mode, offset).all();
+  const batch = results.slice(0, 40);
+  let updated = 0;
+  for (const u of batch) {
+    const list = await stripe(env, 'GET', 'subscriptions', { customer: u.stripe_customer, status: 'all', limit: 10 });
+    const subs = (list.data || []).filter((x) => x.metadata && x.metadata.product === PRODUCT_TAG);
+    if (!subs.length) continue;
+    // The live one if there is one, else the newest
+    const sub = subs.find((x) => ['active', 'trialing', 'past_due'].includes(x.status)) || subs.sort((a, b) => b.created - a.created)[0];
+    await applySubscription(env, db, sub);
+    updated++;
+  }
+  return { ok: true, checked: batch.length, updated, next: results.length > 40 ? offset + 40 : null };
 }
 
 // One Stripe customer per account and mode: a test-mode customer doesn't exist in live mode
