@@ -1903,5 +1903,35 @@
     "t": "Living things",
     "tj": "いきもの",
     "c": "Ferns, cacti and bonsai all belong to this kingdom"
+  },
+  "てじゆん": {
+    "t": "Ways of doing things",
+    "tj": "物事の進め方",
+    "c": "Step one, step two, step three: the order you follow to get it done right"
+  },
+  "ちゆうけい": {
+    "t": "Broadcasting",
+    "tj": "放送",
+    "c": "Live coverage passed along from the stadium to your TV, or a baton handoff"
+  },
+  "まつちや": {
+    "t": "Japanese tea",
+    "tj": "日本の緑のお飲み物",
+    "c": "Bright green powder whisked in a tea ceremony, and a favorite latte or soft-serve flavor"
+  },
+  "いそがしい": {
+    "t": "Having no free time",
+    "tj": "ひまがない様子",
+    "c": "How you feel in December, with year-end parties and deadlines piling up"
+  },
+  "くわわる": {
+    "t": "Joining a group",
+    "tj": "仲間になること",
+    "c": "What you do when you hop into a game of tag already underway"
+  },
+  "おめでたい": {
+    "t": "Celebrations",
+    "tj": "お祝いごと",
+    "c": "Fitting for a wedding, a birth, or New Year with red-and-white decorations"
   }
 }
