@@ -132,6 +132,20 @@ export const loadSave = () => call('load');
 export const putSave = (data) => call('save', { data });
 export const archiveDay = (date) => call('day', { date });
 
+// The Crossword+ funnel in the Sponsor desk: a count of visit / solve / offer, at most once
+// per step per browser per day. Just the step's name is sent: nothing about the person.
+const SENT = 'jareddesu.crossword.funnel';
+export function track(e) {
+  try {
+    const day = localDate();
+    const s = JSON.parse(localStorage.getItem(SENT) || '{}');
+    const done = s.day === day ? s.e || [] : [];
+    if (done.includes(e)) return;
+    localStorage.setItem(SENT, JSON.stringify({ day, e: [...done, e] }));
+  } catch { return; }          // no storage (private mode): can't tell repeats apart, so don't count
+  fetch(`${API}/event`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ e }), keepalive: true }).catch(() => {});
+}
+
 // "Sign in with Google": Google's own button, from Google's script
 let gis = null;
 function loadGoogle() {

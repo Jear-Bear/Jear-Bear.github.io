@@ -16,12 +16,13 @@
 import { toHiragana } from '../kanji/romaji.js?v=1';
 import { gridKana, cycleDakuten, romaji } from './kana.js?v=1';
 import { translator, lang, setLang, dateLocale } from '../games/i18n.js?v=1';
-import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=15';
-import { mountDeck } from './deck.js?v=15';
+import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=16';
+import { mountDeck } from './deck.js?v=16';
 import { openBrowse } from './browse.js?v=2';
-import { initSync, schedulePush, flush } from './sync.js?v=2';
-import { handleReturn, refresh, isMember, onAccount, archiveDay, currentUser, signedIn, logout, info as plusInfo } from './account.js?v=4';
+import { initSync, schedulePush, flush } from './sync.js?v=3';
+import { handleReturn, refresh, isMember, onAccount, archiveDay, currentUser, signedIn, logout, track, info as plusInfo } from './account.js?v=5';
 import { rng } from './construct.mjs?v=1';
+import { dailyStreak, addDays } from './streak.js?v=1';
 
 const $ = (id) => document.getElementById(id);
 // replaceChildren() would print null/false as text
@@ -41,7 +42,7 @@ const t = translator({
     'kanji.type': 'Type with a Japanese keyboard (IME) and convert to kanji, or tap the tiles under the grid.',
     modeGroup: 'Mode', 'mode.kana': 'Kana', 'mode.kanji': 'Kanji', 'mode.deck': 'Crossword',
     'acct.signIn': 'Sign in', 'acct.as': 'Signed in as {email}', 'acct.out': 'Sign out',
-    locked: '<b>Past puzzles are part of Crossword+</b>, along with unlimited My deck crosswords and weekly bonus puzzles. Today’s puzzles are always free.', plusName: 'Crossword+', toToday: 'Go to today’s puzzle', seePlus: 'See Crossword+',
+    locked: '<b>Older puzzles are part of Crossword+</b>, along with unlimited deck crosswords and weekly bonus puzzles. Today’s and yesterday’s puzzles are always free.', plusName: 'Crossword+', toToday: 'Go to today’s puzzle', seePlus: 'See Crossword+',
     tiles: 'Kanji tiles', 'empty.deck': '',
     level: 'Level', bar: 'Puzzle options', sizeGroup: 'Size', prev: 'Previous puzzle', next: 'Next puzzle', settings: 'Settings',
     today: 'Today · {date}',
@@ -60,7 +61,9 @@ const t = translator({
     'toast.off': 'Not quite. Something’s off — try Check.',
     'confirm.clear': 'Clear this puzzle and start over? Your time resets too.',
     copied: 'Copied.',
-    stats: ({ level, size, solved, best, streak, longest }) => `${level} ${size}: ${solved} solved · best ${best} · streak ${streak} (longest ${longest}).`,
+    stats: ({ level, size, solved, best, streak, longest }) => `${level} ${size}: ${solved} solved · best ${best} · daily streak ${streak} (longest ${longest}).`,
+    streak: '🔥 {n}-day streak', streakRisk: 'Solve yesterday’s puzzle before midnight to keep your {n}-day streak.', playYesterday: 'Play yesterday’s →',
+    doneStreak: '🔥 {n}-day streak!', doneStreak1: '🔥 Day 1 of your streak. See you tomorrow!', streakTitle: 'Solve a daily puzzle every day. Each day’s puzzles count until midnight the next day.',
     withReveals: ' · with reveals',
     listed: 'Every answer, with its kanji and meaning, is listed under the puzzle.',
     nextIn: 'Next puzzle in {time} (your midnight)',
@@ -93,7 +96,7 @@ const t = translator({
     'kanji.type': '日本語入力（IME）で漢字に変換して入力するか、盤面の下のタイルをタップしてください。',
     modeGroup: 'モード', 'mode.kana': 'かな', 'mode.kanji': '漢字', 'mode.deck': 'クロスワード',
     'acct.signIn': 'ログイン', 'acct.as': '{email} でログイン中', 'acct.out': 'ログアウト',
-    locked: '<b>過去のパズルはクロスワード＋の特典です</b>。デッキのクロスワード作り放題、毎週のボーナスパズルも。今日のパズルはいつでも無料です。', plusName: 'クロスワード＋', toToday: '今日のパズルへ', seePlus: 'クロスワード＋を見る',
+    locked: '<b>それより前のパズルはクロスワード＋の特典です</b>。デッキのクロスワード作り放題、毎週のボーナスパズルも。今日と昨日のパズルはいつでも無料です。', plusName: 'クロスワード＋', toToday: '今日のパズルへ', seePlus: 'クロスワード＋を見る',
     tiles: '漢字タイル', 'empty.deck': '',
     level: 'レベル', bar: 'パズルの設定', sizeGroup: 'サイズ', prev: '前のパズル', next: '次のパズル', settings: '設定',
     today: '今日 · {date}',
@@ -112,7 +115,9 @@ const t = translator({
     'toast.off': '惜しい！どこかが違います。チェックを使ってみて。',
     'confirm.clear': 'このパズルを最初からやり直しますか？タイムもリセットされます。',
     copied: 'コピーしました。',
-    stats: ({ level, size, solved, best, streak, longest }) => `${level}${size}：${solved}回クリア · ベスト ${best} · 連続 ${streak}日（最長 ${longest}日）`,
+    stats: ({ level, size, solved, best, streak, longest }) => `${level}${size}：${solved}回クリア · ベスト ${best} · 毎日の連続 ${streak}日（最長 ${longest}日）`,
+    streak: '🔥 {n}日連続', streakRisk: '今夜0時までに昨日のパズルを解くと、{n}日連続をキープできます。', playYesterday: '昨日のパズルへ →',
+    doneStreak: '🔥 {n}日連続！', doneStreak1: '🔥 連続1日目。また明日！', streakTitle: '毎日どれか一つ解くと続きます。各日のパズルは翌日の0時まで有効です。',
     withReveals: ' · 答えを見て',
     listed: '答えの漢字と意味は、パズルの下に並んでいます。',
     nextIn: '次のパズルまで {time}（あなたの時間で0時）',
@@ -212,6 +217,7 @@ async function init() {
   // Future puzzles are published early (so every time zone gets one at its midnight) but stay hidden
   date = asked && pastOrToday.includes(asked) ? asked : (pastOrToday[pastOrToday.length - 1] || null);
   t.apply();
+  track('visit');
   deck = mountDeck({ root: $('deck'), play: (p) => { settings.mode = 'deck'; save(); openPuzzle(p); $('play').scrollIntoView({ block: 'start', behavior: 'smooth' }); } });
   // Signed in: progress, stats and deck puzzles follow the account between devices (sync.js)
   initSync({
@@ -280,8 +286,9 @@ const untilMidnight = () => {
 async function openDay() {
   if (settings.mode === 'deck') { openPuzzle(); return; }
   if (!date) { showEmpty(t('empty.soon')); return; }
-  // Past days are for Crossword+ members (today's are free)
-  if (date < localDate() && !isMember()) { day = null; showLocked(); return; }
+  // Older days are for Crossword+ members. Today's and yesterday's are free: a day's puzzles
+  // count for the streak for 48 hours, until midnight the next day (streak.js)
+  if (date < addDays(localDate(), -1) && !isMember()) { day = null; showLocked(); return; }
   const want = date;
   day = null;
   let d;
@@ -300,6 +307,7 @@ const rich = (s) => String(s).split(/(<b>.*?<\/b>)/).filter(Boolean).map((x) => 
 
 function showLocked() {
   stopClock();
+  track('offer');
   renderBar();
   $('play').hidden = true;
   $('words-sec').hidden = true;
@@ -396,7 +404,8 @@ function renderBar() {
   });
   ['size-seg', 'level-wrap', 'date-nav'].forEach((id) => { $(id).hidden = deckMode; });
   document.querySelector('.cw-bar').hidden = deckMode;
-  if (deckMode) { $('theme').hidden = true; return; }
+  if (deckMode) { $('theme').hidden = true; $('streak').hidden = true; return; }
+  renderStreak();
   $('level').value = settings.level;
   const today = localDate();
   fill($('date-label'), CAL_ICON(), h('span', {}, date ? (date === today ? t('today', { date: fmtDate(date, false) }) : fmtDate(date)) : ''));
@@ -562,7 +571,7 @@ function openDates(go) {
     start: date,
     items: dates.filter((d) => d <= today).map((d) => {
       const done = ['mini', 'daily'].filter((s) => (store.progress[`${d}${settings.mode === 'kanji' ? '-kanji' : ''}-${settings.level}-${s}`] || {}).done);
-      return { date: d, label: fmtDate(d), sub: done.map((s) => `${SIZE_NAME(s)} ✓`).join(' · '), done: done.length === 2, some: done.length > 0, locked: d < today && !isMember(), current: d === date };
+      return { date: d, label: fmtDate(d), sub: done.map((s) => `${SIZE_NAME(s)} ✓`).join(' · '), done: done.length === 2, some: done.length > 0, locked: d < addDays(today, -1) && !isMember(), current: d === date };
     }),
     onPick: (x) => go(x.date),
   });
@@ -955,6 +964,7 @@ function checkSolved() {
   if (!open.every((x) => val(x.r, x.c) === x.answer)) { toast(t('toast.off')); return; }
   st.done = true;
   st.solvedAt = Date.now();
+  track('solve');
   stopClock();
   const assisted = Object.keys(st.revealed).length > 0;
   recordStats(assisted);
@@ -1020,9 +1030,25 @@ function recordStats(assisted) {
 
 function renderStats() {
   const s = pz.deck ? null : store.stats[statsKey()];
+  const ds = dailyStreak(store.progress);
   $('stats').textContent = s
-    ? t('stats', { level: LEVEL_NAME(pz.level), size: SIZE_NAME(pz.size), solved: s.solved, best: s.best != null ? fmtTime(s.best) : '—', streak: s.streak, longest: s.longest })
+    ? t('stats', { level: LEVEL_NAME(pz.level), size: SIZE_NAME(pz.size), solved: s.solved, best: s.best != null ? fmtTime(s.best) : '—', streak: ds.current, longest: ds.longest })
     : '';
+  renderStreak();
+}
+
+// The daily streak above the puzzle, and a nudge when yesterday's puzzle is what keeps it going
+function renderStreak() {
+  const el = $('streak');
+  const ds = dailyStreak(store.progress);
+  const yesterday = addDays(localDate(), -1);
+  const canYesterday = ds.atRisk && dates.includes(yesterday) && date !== yesterday;
+  if (settings.mode === 'deck' || (!ds.current && !ds.atRisk)) { el.hidden = true; return; }
+  el.hidden = false;
+  el.title = t('streakTitle');
+  fill(el, h('strong', {}, t('streak', { n: ds.current })),
+    ds.atRisk ? h('span', { class: 'cw-streak-risk' }, ' ', t('streakRisk', { n: ds.riding })) : null,
+    canYesterday ? h('button', { type: 'button', class: 'btn-link', onclick: () => { date = yesterday; history.replaceState(null, '', `?date=${yesterday}`); openDay(); } }, t('playYesterday')) : null);
 }
 
 let nextTimer = null;
@@ -1034,7 +1060,8 @@ function celebrate(assisted) {
       : h('p', {}, `${pz.mode === 'kanji' ? `${t('mode.kanji')} · ` : ''}${LEVEL_NAME(pz.level)} ${SIZE_NAME(pz.size)} · ${fmtDate(date)}`),
     kw ? h('p', { class: 'cw-done-kw' }, t('kwLine'), h('strong', { lang: 'ja' }, kw.word), ` (${kw.reading})`, settings.words ? h('span', { lang: 'en' }, ` · ${kw.meaning}`) : null) : null,
     settings.words ? h('p', { class: 'cw-muted' }, t('listed')) : null,
-    !pz.deck && date === localDate() ? h('p', { class: 'cw-next', id: 'cw-next' }, t('nextIn', { time: untilMidnight() })) : null);
+    !pz.deck && date === localDate() ? h('p', { class: 'cw-next', id: 'cw-next' }, t('nextIn', { time: untilMidnight() })) : null,
+    !pz.deck && /^\d{4}-\d{2}-\d{2}-/.test(pz.id) ? (() => { const ds = dailyStreak(store.progress); return ds.current ? h('p', { class: 'cw-done-streak' }, ds.current === 1 ? t('doneStreak1') : t('doneStreak', { n: ds.current })) : null; })() : null);
   // The Crossword+ question (or "you're on the list"); see plus.js for when it shows
   fill($('done-plus'), plusEligible() ? plusCard() : null);
   clearInterval(nextTimer);

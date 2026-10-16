@@ -12,7 +12,7 @@
 // Emails go to the sponsor Worker's private database (waitlist.js), never the repo.
 
 import { lang } from '../games/i18n.js?v=1';
-import { info, isMember, onAccount, currentUser } from './account.js?v=4';
+import { info, isMember, onAccount, currentUser, track } from './account.js?v=5';
 
 const API = 'https://sponsor-crm.jared-65b.workers.dev';
 const KEY = 'jareddesu.crossword.plus';
@@ -205,6 +205,7 @@ export function plusForm({ compact = false } = {}) {
 // For the solved screen: the short form, or "you’re on the list" once signed up
 export function plusCard() {
   if (open && open.open) {
+    track('offer');
     const box = h('div', { class: 'cw-plus is-compact is-open' },
       plusBadge(),
       h('p', { class: 'cw-plus-title' }, t('sectionTitle')),

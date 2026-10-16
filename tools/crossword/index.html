@@ -17,7 +17,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Klee+One:wght@600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="../../styles/base.css?v=4">
-  <link rel="stylesheet" href="../../styles/crossword.css?v=20">
+  <link rel="stylesheet" href="../../styles/crossword.css?v=21">
   <link rel="stylesheet" href="../../styles/partner.css?v=4">
   <!-- Cloudflare Web Analytics (cookieless) -->
   <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
@@ -126,6 +126,7 @@
 
       <section class="cw-deck" id="deck" hidden></section>
 
+      <p class="cw-streak" id="streak" hidden></p>
       <p class="cw-theme" id="theme" hidden><span class="cw-theme-k" id="theme-k">Today’s theme</span><strong class="cw-theme-name" id="theme-name"></strong><span class="cw-theme-ja" id="theme-ja" lang="ja"></span></p>
 
       <div class="cw-play" id="play">
@@ -175,6 +176,7 @@
           <li><strong>Small kana are full size.</strong> きゃ is written きや, がっこう is がつこう. The long-vowel mark ー gets its own square.</li>
           <li><strong>Tap a square twice</strong> (or press space) to switch between across and down. Tab moves to the next clue.</li>
           <li><strong>Double-boxed squares</strong> (<span lang="ja">二重マス</span>) spell a bonus keyword, read in order A, B, C…. You’ll see it when you solve.</li>
+          <li><strong>Streak</strong> 🔥: solve at least one daily puzzle each day. Like the New York Times crossword, each day’s puzzles count for 48 hours, until midnight (your time) the next day, so yesterday’s puzzle is free to play and can still keep your streak going.</li>
           <li><strong>Settings</strong> (⚙) switch the page to Japanese, add romaji to the keys, hide Check and Reveal, keep the answer list hidden after you solve, or change how typing moves (arrow keys, spacebar, backspace, skipping filled squares).</li>
           <li>Beginner uses JLPT N5–N4 words, intermediate N3–N2, advanced N1 plus slang and idioms. <strong>Mixed</strong> uses words from every level with clues in Japanese, like a newspaper crossword. Each puzzle mixes in food, pop culture and other fun words.</li>
         </ul>
@@ -184,12 +186,13 @@
           <li><strong>小さいかなは大きく書きます。</strong>きゃ は きや、がっこう は がつこう。長音の「ー」も1マスです。</li>
           <li><strong>同じマスを2回タップ</strong>（またはスペース）でヨコとタテを切り替え。Tabで次のカギへ進みます。</li>
           <li><strong>二重マス</strong>の文字をA、B、C…の順に読むと、キーワードになります。解いたときに表示されます。</li>
+          <li><strong>連続記録</strong>🔥：毎日どれか一つのパズルを解くと続きます。ニューヨーク・タイムズのクロスワードと同じく、各日のパズルは配信から48時間（翌日の0時まで）有効なので、昨日のパズルも無料で遊べて、連続記録にも数えられます。</li>
           <li><strong>設定</strong>（⚙）で、英語表示への切り替え、かなキーのローマ字、チェックと答え表示の非表示、解いた後の単語リストの表示、入力の動き（矢印キー、スペース、バックスペース、入力済みマスの飛ばし）を変えられます。</li>
           <li>初級はJLPT N5–N4、中級はN3–N2、上級はN1の単語にスラングや慣用句も。<strong>一般</strong>は全レベルの単語に日本語のカギで、新聞のクロスワードのように解けます。どのパズルにも食べ物やポップカルチャーなど、楽しい言葉が入っています。</li>
         </ul>
         <p class="cw-stats" id="stats"></p>
-        <p class="cw-credit" data-ui-only="en">Word lists: JLPT vocabulary from <a href="https://github.com/jamsinclair/open-anki-jlpt-decks" target="_blank" rel="noopener">open-anki-jlpt-decks</a> (MIT), based on Jonathan Waller’s JLPT lists (CC BY). Clues written with Claude. Questions or problems: <a href="mailto:support@jareddesu.com">support@jareddesu.com</a>.</p>
-        <p class="cw-credit" data-ui-only="ja" lang="ja">単語リスト：<a href="https://github.com/jamsinclair/open-anki-jlpt-decks" target="_blank" rel="noopener">open-anki-jlpt-decks</a>（MIT）のJLPT語彙。Jonathan WallerさんのJLPTリスト（CC BY）が元です。カギはClaudeと一緒に作っています。ご質問・不具合は <a href="mailto:support@jareddesu.com">support@jareddesu.com</a> へ。</p>
+        <p class="cw-credit" data-ui-only="en">Word lists: JLPT vocabulary from <a href="https://github.com/jamsinclair/open-anki-jlpt-decks" target="_blank" rel="noopener">open-anki-jlpt-decks</a> (MIT), based on Jonathan Waller’s JLPT lists (CC BY). Questions or problems: <a href="mailto:support@jareddesu.com">support@jareddesu.com</a>.</p>
+        <p class="cw-credit" data-ui-only="ja" lang="ja">単語リスト：<a href="https://github.com/jamsinclair/open-anki-jlpt-decks" target="_blank" rel="noopener">open-anki-jlpt-decks</a>（MIT）のJLPT語彙。Jonathan WallerさんのJLPTリスト（CC BY）が元です。ご質問・不具合は <a href="mailto:support@jareddesu.com">support@jareddesu.com</a> へ。</p>
       </section>
 
       <section class="cw-section" id="plus-sec">
@@ -299,7 +302,7 @@
   </footer>
 
   <script src="../../scripts/site.js?v=3"></script>
-  <script type="module" src="../../scripts/crossword/app.js?v=27"></script>
+  <script type="module" src="../../scripts/crossword/app.js?v=28"></script>
   <script src="../../scripts/partner.js?v=5"></script>
 </body>
 </html>

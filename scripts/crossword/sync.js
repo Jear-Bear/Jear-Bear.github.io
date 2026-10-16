@@ -8,7 +8,7 @@
 // account (account.js deckKey), and the progress is cleared when that account signs out
 // or another one signs in, so nobody sees (or merges in) someone else's puzzles.
 
-import { signedIn, onAccount, accountId, deckKey, deckKeyFor, loadSave, putSave } from './account.js?v=4';
+import { signedIn, onAccount, accountId, deckKey, deckKeyFor, loadSave, putSave } from './account.js?v=5';
 
 const OWNER = 'jareddesu.crossword.owner';       // whose progress this browser holds
 const LEGACY_DECK = 'jareddesu.crossword.deck';   // before decks were kept per account

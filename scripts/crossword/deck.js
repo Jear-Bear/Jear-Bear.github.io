@@ -13,9 +13,9 @@
 
 import { lang } from '../games/i18n.js?v=1';
 import { gridKana, toHira } from './kana.js?v=1';
-import { info, refresh, currentUser, onAccount, signedIn, sendEmailLink, googleButton, checkout, portal, bonusPuzzle, deckUse, deckKey } from './account.js?v=4';
-import { schedulePush } from './sync.js?v=2';
-import { plusPerks, plusPrice, plusBadge, supportLine, nudge } from './plus.js?v=15';
+import { info, refresh, currentUser, onAccount, signedIn, sendEmailLink, googleButton, checkout, portal, bonusPuzzle, deckUse, deckKey, track } from './account.js?v=5';
+import { schedulePush } from './sync.js?v=3';
+import { plusPerks, plusPrice, plusBadge, supportLine, nudge } from './plus.js?v=16';
 import { openBrowse } from './browse.js?v=2';
 
 const PENDING = 'jareddesu.crossword.pendingPlan';   // a plan picked before signing in
@@ -727,6 +727,7 @@ export function mountDeck({ root, play }) {
 
   // Crossword+ for everyone else, in one card: the three perks, the price, the plans
   function plusBlock() {
+    track('offer');
     return h('div', { class: 'cw-plusblock', id: 'cw-plusblock' },
       h('div', { class: 'cw-plusblock-head' }, plusBadge(), cfg && cfg.open ? plusPrice(cfg.prices, cfg.trialDays) : null),
       plusPerks({ order: ['deck', 'archive', 'bonus'], bonusN: bonus ? bonus.length : 0 }),
