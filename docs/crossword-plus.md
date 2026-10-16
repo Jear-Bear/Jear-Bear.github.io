@@ -151,6 +151,9 @@ Oct 2026 My deck was members only.)
 
 ## Past puzzles (the archive)
 
+Today's and yesterday's puzzles are free (yesterday's still counts for the daily
+streak, docs/crossword.md); older days are Crossword+.
+
 Every day ever published stays in `data/crossword/puzzles/` (one file per
 day, kana and kanji, about 100 KB) and is listed in `index.json`: about
 40 MB a year, far under GitHub's 1 GB guideline for decades.
@@ -220,6 +223,21 @@ Check the waitlist after 3 to 4 weeks next to the crossword's daily visits
 (Lemon Squeezy handles the overseas VAT) and moving puzzles older than 7 days
 out of the public repo into the Worker. Under about 50 means keep it free and
 grow the audience first.
+
+## The funnel (Sponsor desk)
+
+Traffic tab → **Crossword+ funnel**, for the same range as the rest of the tab: how many
+did each step, and what share made it from the step before.
+
+1. Visited the crossword, 2. finished a puzzle, 3. saw a Crossword+ offer (the solved
+   screen's card, the Crossword+ tab's card, a locked day): sent by the page
+   (`POST /public/plus/event`), at most once per browser per day per step, just the
+   step's name.
+4. Made an account (first sign-in), 5. opened checkout, 6. started a free trial,
+   7. paid (a trial that converted, or paying right away): counted by the Worker.
+
+Stored as daily totals in `plus_funnel` (migration 0019), no people. The biggest drop
+between two steps is the one to work on.
 
 ## Sync between devices
 

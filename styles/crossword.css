@@ -525,3 +525,11 @@ html.cw-lock, html.cw-lock body { overflow: hidden; }
 
 /* The free trial, above the plan buttons */
 .cw-deck .cw-trial-line { margin: 12px 0 0; font-size: 14px; font-weight: 600; color: var(--plus-ink); }
+
+/* The daily streak (streak.js) above the puzzle */
+.cw-streak { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 0 0 10px; font-size: 14px; color: var(--ink-soft); }
+.cw-streak strong { color: var(--ink); font-weight: 700; }
+.cw-streak-risk { color: #b45309; }
+:root[data-theme="dark"] .cw-streak-risk { color: #f0a85a; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cw-streak-risk { color: #f0a85a; } }
+.cw-done-streak { font-weight: 700; color: var(--ink); }

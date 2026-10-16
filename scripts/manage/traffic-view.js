@@ -252,6 +252,33 @@ function waitlistSection(w) {
 // People sign in with Google or an email link; a Stripe subscription, or free
 // access you give here, makes them a member. "Connect Stripe" sets up the
 // prices, the customer portal and the webhook (safe to press again).
+// --- The Crossword+ funnel: each step and how many made it from the one before
+const FUNNEL_STEPS = {
+  visit: ['Visited the crossword', 'browsers a day, summed'],
+  solve: ['Finished a puzzle', ''],
+  offer: ['Saw a Crossword+ offer', 'solved screen, Crossword+ tab, a locked day'],
+  account: ['Made an account', 'first sign-in'],
+  checkout: ['Opened checkout', 'the payment form'],
+  trial: ['Started a free trial', ''],
+  paid: ['Paid', 'a trial that converted, or paying right away'],
+};
+function funnelSection(f) {
+  if (!f) return null;
+  if (f.error) return section('Crossword+ funnel', h('p', { class: 'crm-note is-error' }, `Couldn’t load the funnel: ${f.error}`));
+  const steps = f.steps || [];
+  const top = steps[0] ? steps[0].n : 0;
+  const pct = (a, b) => (b ? `${Math.round((a / b) * 1000) / 10}%` : '—');
+  return section(`Crossword+ funnel · last ${f.days} days`,
+    h('div', { class: 'crm-table-wrap' }, h('table', { class: 'crm-table is-compact crm-funnel' },
+      h('thead', {}, h('tr', {}, h('th', {}, 'Step'), h('th', {}, 'Count'), h('th', {}, 'Of the step before'), h('th', {}, 'Of visits'))),
+      h('tbody', {}, steps.map((s, i) => h('tr', {},
+        h('td', {}, FUNNEL_STEPS[s.event] ? FUNNEL_STEPS[s.event][0] : s.event, FUNNEL_STEPS[s.event] && FUNNEL_STEPS[s.event][1] ? h('span', { class: 'crm-muted' }, ` · ${FUNNEL_STEPS[s.event][1]}`) : null),
+        h('td', {}, num.format(s.n)),
+        h('td', {}, i ? pct(s.n, steps[i - 1].n) : ''),
+        h('td', {}, i ? pct(s.n, top) : '')))))),
+    h('p', { class: 'crm-method' }, 'Counts only, nothing about who: the page sends each of the first three steps at most once per browser per day; the rest come from sign-ins and Stripe. The biggest drop between two steps is the one to work on. Counting started when this was added, so the first weeks are partial.'));
+}
+
 function membersSection(m, reload) {
   if (!m) return null;
   if (m.error) return section('Crossword+ members', h('p', { class: 'crm-note is-error' }, `Couldn’t load Crossword+: ${m.error}`));
@@ -322,6 +349,7 @@ export function trafficView(root) {
   let insights = [];
   let waitlist = null;
   let members = null;
+  let funnelData = null;
   let error = null;
   const loadMembers = async (all = true) => {
     members = await request('GET', 'plus').catch((err) => ({ error: err.message }));
@@ -332,6 +360,7 @@ export function trafficView(root) {
       const [d, ins, wl] = await Promise.all([request('GET', `traffic?days=${range}`), insightData().catch(() => ({ insights: [] })), request('GET', 'waitlist').catch((err) => ({ error: err.message })), loadMembers()]);
       data = d; insights = ins.insights || []; waitlist = wl; error = null;
       if (wl && !wl.error) wl.bonus = await request('GET', 'crossword-bonus').catch((err) => ({ error: err.message }));
+      funnelData = await request('GET', `plus/funnel?days=${range}`).catch((err) => ({ error: err.message }));
     } catch (err) { error = err; }
     render();
   };
@@ -393,6 +422,7 @@ export function trafficView(root) {
           h('h3', { class: 'crm-subhead' }, DIM_LABELS.browser), barList(x.browser, { limit: 5 }),
           h('h3', { class: 'crm-subhead' }, DIM_LABELS.os), barList(x.os, { limit: 5 }))),
       waitlistSection(waitlist),
+      funnelSection(funnelData),
       membersSection(members, loadMembers),
       h('p', { class: 'crm-method' }, 'From Cloudflare Web Analytics: no cookies and no individual visitors, only totals. Cloudflare samples busy periods, so small numbers can be estimates. A visit is someone arriving from another site or typing the address; page views count every page they open. The private Sponsor desk isn’t tracked.'),
     ].filter(Boolean));

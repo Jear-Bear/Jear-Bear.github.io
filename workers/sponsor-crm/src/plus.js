@@ -93,6 +93,34 @@ export async function needUser(request, env) {
   return u;
 }
 
+// --- the funnel (Sponsor desk → Crossword+ funnel) -------------------------------------------
+// One counter per step per day; never fails what it's counting.
+export const FUNNEL = ['visit', 'solve', 'offer', 'account', 'checkout', 'trial', 'paid'];
+const PAGE_EVENTS = new Set(['visit', 'solve', 'offer']);
+export async function funnel(db, event) {
+  try {
+    await db.prepare('INSERT INTO plus_funnel (day, event, n) VALUES (?, ?, 1) ON CONFLICT(day, event) DO UPDATE SET n = n + 1')
+      .bind(new Date().toISOString().slice(0, 10), event).run();
+  } catch (e) { console.error('funnel', e && e.message); }
+}
+// POST /public/plus/event { e }: from the page, once per browser per day per step
+export async function trackEvent(request, env) {
+  const b = await readBody(request);
+  if (!PAGE_EVENTS.has(b.e)) throw new HttpError(400, 'Unknown event');
+  await limit(request, env, 'plus-event', 30);
+  await funnel(env.DB, b.e);
+  return { ok: true };
+}
+// GET /api/plus/funnel?days=30: each step's total over the last N days, and by day
+export async function funnelReport(db, days) {
+  const n = Math.min(365, Math.max(1, Number(days) || 30));
+  const since = new Date(Date.now() - (n - 1) * 86400000).toISOString().slice(0, 10);
+  const { results } = await db.prepare('SELECT day, event, n FROM plus_funnel WHERE day >= ? ORDER BY day').bind(since).all();
+  const totals = Object.fromEntries(FUNNEL.map((e) => [e, 0]));
+  results.forEach((r) => { if (r.event in totals) totals[r.event] += r.n; });
+  return { days: n, since, steps: FUNNEL.map((e) => ({ event: e, n: totals[e] })), daily: results };
+}
+
 // The account for an email (made on first sign-in)
 async function userFor(db, email, extra = {}) {
   email = email.toLowerCase();
@@ -101,6 +129,7 @@ async function userFor(db, email, extra = {}) {
     u = { id: crypto.randomUUID(), email, name: extra.name || null, google_sub: extra.google_sub || null, session_ver: 1 };
     await db.prepare('INSERT INTO plus_users (id, email, name, google_sub, created_at) VALUES (?, ?, ?, ?, ?)')
       .bind(u.id, email, u.name, u.google_sub, new Date().toISOString()).run();
+    await funnel(db, 'account');
     return u;
   }
   if ((extra.google_sub && !u.google_sub) || (extra.name && !u.name)) {

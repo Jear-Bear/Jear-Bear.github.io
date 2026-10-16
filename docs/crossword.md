@@ -47,6 +47,25 @@ Beginner and Advanced 9×9s keep entries to 5 kana (Intermediate and Mixed go
 up to 7). Each level has only ~10–45 words of seven kana, and long slots were
 the main reason those grids failed to fill.
 
+## Daily streak
+
+One streak for the whole page (`scripts/crossword/streak.js`): a day counts when at
+least one of that day's puzzles (any mode, level or size) is finished **within 48 hours
+of its release**, the New York Times rule. Puzzles come out at the player's midnight, so
+a day's puzzles count until midnight at the end of the next day; order doesn't matter.
+Finishing later is still a solve, just not for the streak. It's worked out from the
+saved progress (each solve's `solvedAt`), so it follows a signed-in player between
+devices.
+
+- Above the puzzle: "🔥 3-day streak". When yesterday's puzzle is still open and the
+  streak depends on it: "Solve yesterday's puzzle before midnight to keep your 3-day
+  streak. Play yesterday's →".
+- The solved screen shows the new streak; the stats line under How to play says
+  "daily streak N (longest M)".
+- So that rule works for everyone, **yesterday's puzzles are free** too (older days are
+  Crossword+). Their files aren't sealed yet anyway: a day is sealed once it's past
+  everywhere (see crossword-plus.md).
+
 ## Kanji mode
 
 Answers are words written entirely in kanji (2–4 characters) from the same

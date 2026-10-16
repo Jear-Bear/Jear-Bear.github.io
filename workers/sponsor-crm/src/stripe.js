@@ -24,7 +24,7 @@
 
 import { HttpError } from './data.js';
 import { text } from './public.js';
-import { sessionUser, publicUser, siteFor, sendWelcome, sendTrialReminder } from './plus.js';
+import { sessionUser, publicUser, siteFor, sendWelcome, sendTrialReminder, funnel } from './plus.js';
 
 const API_VERSION = '2024-06-20';                 // pinned: subscription.current_period_end lives on the subscription
 export const PLANS = {
@@ -169,6 +169,9 @@ async function applySubscription(env, db, sub) {
   if (u.stripe_subscription && u.stripe_subscription !== sub.id && !live && ['active', 'trialing', 'past_due'].includes(u.status)) return;
   await db.prepare('UPDATE plus_users SET stripe_subscription = ?, status = ?, plan = ?, period_end = ? WHERE id = ?')
     .bind(sub.id, sub.status, planOf(sub), iso(sub.current_period_end), u.id).run();
+  // The funnel: a trial starting, and the first time it's paid (a trial that converts, or paying right away)
+  if (sub.status === 'trialing' && u.status !== 'trialing' && u.stripe_subscription !== sub.id) await funnel(db, 'trial');
+  if (sub.status === 'active' && u.status !== 'active' && u.status !== 'past_due') await funnel(db, 'paid');
   // A new member: the one welcome email (sendWelcome makes sure it's only once)
   if (['active', 'trialing'].includes(sub.status)) await sendWelcome(env, db, u.id, sub.status === 'trialing' ? 'trial' : 'paid');
 }
@@ -223,6 +226,7 @@ export async function plusCheckout(request, env, origin) {
   const embedded = Boolean(body.embedded && env.STRIPE_PUBLISHABLE_KEY);
   const back = `${site}/tools/crossword/?plus=success&session_id={CHECKOUT_SESSION_ID}`;
   const trial = trialOk(u) ? trialDays(env) : 0;
+  await funnel(env.DB, 'checkout');
   const policies = `By subscribing you agree to the [Terms](${SITE}/terms/), [Refund policy](${SITE}/refunds/) and [Privacy policy](${SITE}/privacy/).`;
   const s = await stripe(env, 'POST', 'checkout/sessions', {
     mode: 'subscription',
