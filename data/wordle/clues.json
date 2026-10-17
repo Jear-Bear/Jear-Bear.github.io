@@ -69,6 +69,11 @@
     "t": "Mix-ups",
     "tj": "かみ合わないこと"
   },
+  "いそがしい": {
+    "t": "Having no free time",
+    "tj": "ひまがない様子",
+    "c": "How you feel in December, with year-end parties and deadlines piling up"
+  },
   "いたつて": {
     "c": "Extremely, quite, as in 'perfectly healthy'",
     "t": "How much",
@@ -239,10 +244,20 @@
     "t": "Travel",
     "tj": "旅行"
   },
+  "おめでたい": {
+    "t": "Celebrations",
+    "tj": "お祝いごと",
+    "c": "Fitting for a wedding, a birth, or New Year with red-and-white decorations"
+  },
   "おもいこむ": {
     "c": "To get it firmly into your head, even if it's wrong",
     "t": "Beliefs",
     "tj": "考え"
+  },
+  "おもんずる": {
+    "t": "Respect",
+    "tj": "敬意",
+    "c": "What a samurai does with honor: place it above everything"
   },
   "おんがく": {
     "c": "What comes through your headphones",
@@ -469,6 +484,11 @@
     "t": "Dairy",
     "tj": "乳製品"
   },
+  "くわわる": {
+    "t": "Joining a group",
+    "tj": "仲間になること",
+    "c": "What you do when you hop into a game of tag already underway"
+  },
   "けしよう": {
     "c": "Foundation, lipstick and mascara",
     "t": "Beauty",
@@ -543,6 +563,11 @@
     "c": "The younger student or coworker who joined after you",
     "t": "School and work",
     "tj": "学校と職場"
+  },
+  "こうばい": {
+    "t": "Shopping",
+    "tj": "ショッピング",
+    "c": "The school store where you fight for yakisoba bread at lunch"
   },
   "こうひよう": {
     "c": "Well received, with great reviews",
@@ -669,6 +694,11 @@
     "t": "Making things",
     "tj": "ものづくり"
   },
+  "ざだんかい": {
+    "c": "A few guests chat around a table, often printed in a magazine",
+    "t": "Panel discussions",
+    "tj": "話し合いの場"
+  },
   "しおから": {
     "c": "Fermented squid guts, salty and great with sake",
     "t": "Japanese food",
@@ -713,6 +743,11 @@
     "c": "Adding up all the votes or sales",
     "t": "Numbers",
     "tj": "数字"
+  },
+  "しゆうせい": {
+    "c": "What an editor does with a red pen, or a patch for a typo",
+    "t": "Editing",
+    "tj": "文章の手直し"
   },
   "しゆうり": {
     "c": "What a mechanic does to a broken car",
@@ -769,10 +804,20 @@
     "t": "Places to eat",
     "tj": "ランチ"
   },
+  "しよくぶつ": {
+    "t": "Living things",
+    "tj": "いきもの",
+    "c": "Ferns, cacti and bonsai all belong to this kingdom"
+  },
   "しよじゆん": {
     "c": "The early part of a month",
     "t": "The calendar",
     "tj": "暦"
+  },
+  "しよつき": {
+    "c": "Plates, bowls and cups you wash after dinner",
+    "t": "Kitchen things",
+    "tj": "台所のもの"
   },
   "しんしゆつ": {
     "c": "Moving into a new market, like a chain opening its first store abroad",
@@ -788,6 +833,11 @@
     "c": "Just caught or just picked, like sashimi-grade fish",
     "t": "Food quality",
     "tj": "食べ物の質"
+  },
+  "しんだい": {
+    "t": "Furniture for sleeping",
+    "tj": "眠るための家具",
+    "c": "Overnight trains like the Sunrise Izumo have berths of this kind"
   },
   "しんでん": {
     "c": "The main hall of a shrine, or a Greek temple to the gods",
@@ -823,6 +873,11 @@
     "c": "Rock, paper, scissors",
     "t": "Games",
     "tj": "遊び"
+  },
+  "じゆうどう": {
+    "t": "Martial arts",
+    "tj": "武術",
+    "c": "Olympic sport in a white gi, won by ippon"
   },
   "じゆうぶん": {
     "c": "Plenty; no more is needed",
@@ -863,6 +918,11 @@
     "c": "Blue denim trousers",
     "t": "Clothes",
     "tj": "服"
+  },
+  "すいえい": {
+    "c": "Freestyle, butterfly and backstroke are all events in it",
+    "t": "Pool sports",
+    "tj": "プールのスポーツ"
   },
   "すいようび": {
     "c": "Hump day, in the middle of the week",
@@ -908,6 +968,11 @@
     "c": "The seven days before this one",
     "t": "Recent time",
     "tj": "最近"
+  },
+  "せんそう": {
+    "t": "Conflict between nations",
+    "tj": "国どうしの武力衝突",
+    "c": "Tolstoy paired it with peace"
   },
   "せんぱい": {
     "c": "The older student or coworker you look up to (notice me!)",
@@ -1089,6 +1154,11 @@
     "t": "Transport",
     "tj": "交通"
   },
+  "ちゆうけい": {
+    "t": "Broadcasting",
+    "tj": "放送",
+    "c": "Live coverage passed along from the stadium to your TV, or a baton handoff"
+  },
   "ちゆうこく": {
     "c": "A friendly word of warning",
     "t": "Advice",
@@ -1158,6 +1228,11 @@
     "c": "To handle or work on personally",
     "t": "Work",
     "tj": "仕事"
+  },
+  "てじゆん": {
+    "t": "Ways of doing things",
+    "tj": "物事の進め方",
+    "c": "Step one, step two, step three: the order you follow to get it done right"
   },
   "てつだう": {
     "c": "What you do when a friend is moving house",
@@ -1484,6 +1559,11 @@
     "t": "Fame",
     "tj": "うわさ"
   },
+  "ひるごはん": {
+    "c": "Bento time when the clock strikes twelve",
+    "t": "Daily meals",
+    "tj": "一日の食事"
+  },
   "ひろげる": {
     "c": "To unfold a map or spread out a picnic blanket",
     "t": "Making bigger",
@@ -1558,6 +1638,11 @@
     "c": "A dispute between countries or groups",
     "t": "Conflict",
     "tj": "対立"
+  },
+  "ふんだん": {
+    "c": "Used with ni: lavishly, like the toppings piled on a deluxe ramen",
+    "t": "Plenty",
+    "tj": "量の多さ"
   },
   "ぶらうす": {
     "c": "A light top, often with buttons and a soft collar",
@@ -1643,6 +1728,11 @@
     "c": "Pitch black, with no light at all",
     "t": "Light and dark",
     "tj": "明るさ"
+  },
+  "まつちや": {
+    "t": "Japanese tea",
+    "tj": "日本の緑のお飲み物",
+    "c": "Bright green powder whisked in a tea ceremony, and a favorite latte or soft-serve flavor"
   },
   "まねきねこ": {
     "c": "A ceramic figure with one paw raised in a shop window",
@@ -1873,65 +1963,5 @@
     "c": "Finding beauty in the old, worn and imperfect",
     "t": "Japanese aesthetics",
     "tj": "日本の美意識"
-  },
-  "こうばい": {
-    "t": "Shopping",
-    "tj": "ショッピング",
-    "c": "The school store where you fight for yakisoba bread at lunch"
-  },
-  "おもんずる": {
-    "t": "Respect",
-    "tj": "敬意",
-    "c": "What a samurai does with honor: place it above everything"
-  },
-  "せんそう": {
-    "t": "Conflict between nations",
-    "tj": "国どうしの武力衝突",
-    "c": "Tolstoy paired it with peace"
-  },
-  "じゆうどう": {
-    "t": "Martial arts",
-    "tj": "武術",
-    "c": "Olympic sport in a white gi, won by ippon"
-  },
-  "しんだい": {
-    "t": "Furniture for sleeping",
-    "tj": "眠るための家具",
-    "c": "Overnight trains like the Sunrise Izumo have berths of this kind"
-  },
-  "しよくぶつ": {
-    "t": "Living things",
-    "tj": "いきもの",
-    "c": "Ferns, cacti and bonsai all belong to this kingdom"
-  },
-  "てじゆん": {
-    "t": "Ways of doing things",
-    "tj": "物事の進め方",
-    "c": "Step one, step two, step three: the order you follow to get it done right"
-  },
-  "ちゆうけい": {
-    "t": "Broadcasting",
-    "tj": "放送",
-    "c": "Live coverage passed along from the stadium to your TV, or a baton handoff"
-  },
-  "まつちや": {
-    "t": "Japanese tea",
-    "tj": "日本の緑のお飲み物",
-    "c": "Bright green powder whisked in a tea ceremony, and a favorite latte or soft-serve flavor"
-  },
-  "いそがしい": {
-    "t": "Having no free time",
-    "tj": "ひまがない様子",
-    "c": "How you feel in December, with year-end parties and deadlines piling up"
-  },
-  "くわわる": {
-    "t": "Joining a group",
-    "tj": "仲間になること",
-    "c": "What you do when you hop into a game of tag already underway"
-  },
-  "おめでたい": {
-    "t": "Celebrations",
-    "tj": "お祝いごと",
-    "c": "Fitting for a wedding, a birth, or New Year with red-and-white decorations"
   }
 }
