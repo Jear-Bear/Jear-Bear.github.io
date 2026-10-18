@@ -289,6 +289,11 @@
     "t": "Buildings",
     "tj": "建物"
   },
+  "かいがい": {
+    "c": "Across the sea, where you need a passport",
+    "t": "Travel",
+    "tj": "旅行"
+  },
   "かいきよう": {
     "c": "A narrow stretch of sea between two lands, like Tsugaru or Dover",
     "t": "Geography",
@@ -458,6 +463,11 @@
     "c": "Mending broken pottery so the cracks shine",
     "t": "Japanese crafts",
     "tj": "工芸"
+  },
+  "きんようび": {
+    "c": "The day before the weekend: TGI-this!",
+    "t": "Days of the week",
+    "tj": "週の予定"
   },
   "きんろう": {
     "c": "Hard work, honored by a national holiday in November",
@@ -914,6 +924,11 @@
     "t": "Manners",
     "tj": "マナー"
   },
+  "じよどうし": {
+    "c": "Grammar term for helpers like -masu and -tai tacked onto a verb",
+    "t": "Grammar",
+    "tj": "文法"
+  },
   "じーぱん": {
     "c": "Blue denim trousers",
     "t": "Clothes",
@@ -933,6 +948,11 @@
     "c": "The big white surface a film is projected onto",
     "t": "At the movies",
     "tj": "映画館"
+  },
+  "すつかり": {
+    "c": "Totally, through and through, as in a fully forgotten promise",
+    "t": "Degree",
+    "tj": "程度"
   },
   "すてれお": {
     "c": "Two-speaker sound system on a 1980s shelf, left and right channels",
@@ -1944,6 +1964,11 @@
     "t": "Romance",
     "tj": "ロマンス"
   },
+  "れんたい": {
+    "c": "Standing together, arm in arm, like workers on strike",
+    "t": "Unity",
+    "tj": "団結"
+  },
   "ろうりよく": {
     "c": "The work and trouble something takes",
     "t": "Effort",
@@ -1963,5 +1988,10 @@
     "c": "Finding beauty in the old, worn and imperfect",
     "t": "Japanese aesthetics",
     "tj": "日本の美意識"
+  },
+  "わんぴーす": {
+    "c": "A frock from shoulders to hem in a single garment; also Luffy's manga",
+    "t": "Clothing",
+    "tj": "衣服"
   }
 }
