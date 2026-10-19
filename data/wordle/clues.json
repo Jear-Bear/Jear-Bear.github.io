@@ -254,6 +254,11 @@
     "t": "Beliefs",
     "tj": "考え"
   },
+  "おもしろい": {
+    "t": "Feelings about a show",
+    "tj": "番組の感想",
+    "c": "How you would describe a manga you cannot put down"
+  },
   "おもんずる": {
     "t": "Respect",
     "tj": "敬意",
@@ -804,6 +809,16 @@
     "t": "Holidays",
     "tj": "祝日"
   },
+  "しようきよ": {
+    "t": "Deleting things",
+    "tj": "データをなくすこと",
+    "c": "What the eraser tool or a factory reset does"
+  },
+  "しようずる": {
+    "t": "Things that happen",
+    "tj": "起こること",
+    "c": "Come into being, like a problem or doubt (formal)"
+  },
   "しようひん": {
     "c": "Items for sale on store shelves",
     "t": "Shopping",
@@ -1093,6 +1108,11 @@
     "c": "Who something is aimed at, like 'for ages 6 and up'",
     "t": "Targets",
     "tj": "ねらい"
+  },
+  "たいせき": {
+    "t": "Measurements",
+    "tj": "はかるもの",
+    "c": "Length times width times height gives you this"
   },
   "たくしー": {
     "c": "A car with a driver and a meter, with doors that open by themselves in Japan",
@@ -1539,6 +1559,11 @@
     "t": "Numbers",
     "tj": "数字"
   },
+  "ばんのう": {
+    "t": "Versatility",
+    "tj": "なんでもこなす力",
+    "c": "Like a jack-of-all-trades, or a seasoning that goes on everything"
+  },
   "ぱちんこ": {
     "c": "Noisy parlors full of little steel balls",
     "t": "Gambling",
@@ -1748,6 +1773,11 @@
     "c": "Pitch black, with no light at all",
     "t": "Light and dark",
     "tj": "明るさ"
+  },
+  "まつすぐ": {
+    "t": "Directions",
+    "tj": "道案内の言葉",
+    "c": "No turns, no detours: just keep going ahead"
   },
   "まつちや": {
     "t": "Japanese tea",
