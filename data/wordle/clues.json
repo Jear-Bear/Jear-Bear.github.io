@@ -399,6 +399,11 @@
     "t": "Around town",
     "tj": "町の中"
   },
+  "きやくせき": {
+    "c": "Where the audience sits, from the front row to the balcony",
+    "t": "Theater",
+    "tj": "劇場"
+  },
   "きやりあ": {
     "c": "Your path through jobs over a lifetime",
     "t": "Work",
@@ -528,6 +533,11 @@
     "c": "Wise, sensible: the smart choice",
     "t": "Good judgment",
     "tj": "判断"
+  },
+  "げいのう": {
+    "c": "The world of TV stars, idols and comedians that tabloids love",
+    "t": "Show business",
+    "tj": "エンタメ"
   },
   "げきじよう": {
     "c": "Curtain up! Where the audience sits for a play",
@@ -904,6 +914,11 @@
     "tj": "武術",
     "c": "Olympic sport in a white gi, won by ippon"
   },
+  "じゆうふく": {
+    "c": "Same thing showing up twice, like a double-booked meeting or a copied file",
+    "t": "Repeats & overlaps",
+    "tj": "かさなり"
+  },
   "じゆうぶん": {
     "c": "Plenty; no more is needed",
     "t": "Enough",
@@ -1188,6 +1203,11 @@
     "c": "An organized group, like a tour party or a club",
     "t": "Groups",
     "tj": "グループ"
+  },
+  "だんぼう": {
+    "c": "What the kotatsu and radiator provide when it is freezing outside",
+    "t": "Keeping warm",
+    "tj": "寒さ対策"
   },
   "ちかてつ": {
     "c": "The trains that run under the city streets",
@@ -1769,6 +1789,11 @@
     "t": "Confusion",
     "tj": "迷い"
   },
+  "まちがえる": {
+    "c": "Write the wrong kanji or hop on the wrong train",
+    "t": "Slip-ups",
+    "tj": "失敗"
+  },
   "まつくら": {
     "c": "Pitch black, with no light at all",
     "t": "Light and dark",
@@ -1788,6 +1813,11 @@
     "c": "A ceramic figure with one paw raised in a shop window",
     "t": "Lucky charms",
     "tj": "縁起物"
+  },
+  "まるめる": {
+    "c": "What you do to scrap paper before tossing it, or to dough for dango",
+    "t": "Shaping things",
+    "tj": "形づくり"
   },
   "まわりみち": {
     "c": "The long way around",
