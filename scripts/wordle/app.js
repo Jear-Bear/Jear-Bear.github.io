@@ -53,7 +53,7 @@ const t = translator({
     keyClean: ' without hints   ', keyHint: ' 💡 with hints',
     statsEyebrow: 'statistics', statsTitle: 'Your daily record',
     solvedIn: 'solved in {n}/{tries}', lost: 'out of guesses', usedHints: ({ n }) => (n ? ` · ${n} hint${n === 1 ? '' : 's'}` : ' · no hints'),
-    copy: 'Copy result', nextWord: 'Next word →', keepPlaying: 'Keep playing in practice →',
+    copy: 'Share result', nextWord: 'Next word →', keepPlaying: 'Keep playing in practice →',
     nextIn: 'Next daily word in {time}', copied: 'Copied. Paste it anywhere.',
     shareDaily: 'Kana Wordle #{day} {level} {len}', sharePractice: 'Kana Wordle practice {level} {len}',
     'set.title': 'Settings', 'set.lang': 'Language',
@@ -88,7 +88,7 @@ const t = translator({
     keyClean: ' ヒントなし   ', keyHint: ' 💡 ヒントあり',
     statsEyebrow: '記録', statsTitle: 'デイリーの成績',
     solvedIn: '{n}/{tries}回で正解', lost: '回数切れ', usedHints: ({ n }) => (n ? ` · ヒント${n}回` : ' · ヒントなし'),
-    copy: '結果をコピー', nextWord: '次の単語 →', keepPlaying: '練習モードで続ける →',
+    copy: '結果をシェア', nextWord: '次の単語 →', keepPlaying: '練習モードで続ける →',
     nextIn: '次の単語まで {time}', copied: 'コピーしました。どこにでも貼り付けられます。',
     shareDaily: 'かなWordle #{day} {level} {len}文字', sharePractice: 'かなWordle 練習 {level} {len}文字',
     'set.title': '設定', 'set.lang': '表示言語',
@@ -530,11 +530,26 @@ function tickCountdown() {
   countdown = setInterval(run, 1000);
 }
 
+// The share counts in the Sponsor desk (same as the crossword's), once a day per browser
+function count(e) {
+  try {
+    const k = 'jareddesu.wordle.funnel'; const day = new Date().toDateString();
+    const x = JSON.parse(localStorage.getItem(k) || '{}'); const done = x.day === day ? x.e || [] : [];
+    if (done.includes(e)) return;
+    localStorage.setItem(k, JSON.stringify({ day, e: [...done, e] }));
+  } catch { return; }
+  fetch('https://sponsor-crm.jared-65b.workers.dev/public/plus/event', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ e }), keepalive: true }).catch(() => {});
+}
+if (new URLSearchParams(location.search).get('ref') === 'share') { count('shared_in'); history.replaceState(null, '', location.pathname); }
+
 function share() {
   const head = game.mode === 'daily' ? t('shareDaily', { day: game.day, level: LEVEL_NAME(game.level), len: game.len }) : t('sharePractice', { level: LEVEL_NAME(game.level), len: game.len });
   const grid = game.guesses.map((g) => score(g, game.answer).map((m) => EMOJI[m]).join('')).join('\n');
   const hints = game.hints ? ` ${'💡'.repeat(game.hints)}` : '';
-  const text = `${head} ${game.won ? game.guesses.length : 'X'}/${TRIES}${settings.hard ? '*' : ''}${hints}\n${grid}\nhttps://www.jareddesu.com/tools/wordle/`;
+  // jareddesu.com/w counts arrivals from shares (the Sponsor desk's funnel)
+  const text = `${head} ${game.won ? game.guesses.length : 'X'}/${TRIES}${settings.hard ? '*' : ''}${hints}\n${grid}\njareddesu.com/w`;
+  count('share');
+  if (navigator.share && window.matchMedia('(pointer: coarse)').matches) { navigator.share({ text }).catch(() => {}); return; }
   (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => toast(t('copied')), () => toast(text));
 }
 

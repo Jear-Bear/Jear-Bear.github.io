@@ -533,3 +533,12 @@ html.cw-lock, html.cw-lock body { overflow: hidden; }
 :root[data-theme="dark"] .cw-streak-risk { color: #f0a85a; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cw-streak-risk { color: #f0a85a; } }
 .cw-done-streak { font-weight: 700; color: var(--ink); }
+
+/* Questions and the by-level links (for search, under How to play) */
+.cw-faq { max-width: var(--measure); margin: 0; }
+.cw-faq dt { margin-top: 12px; font-weight: 600; color: var(--ink); }
+.cw-faq dd { margin: 4px 0 0; line-height: 1.75; color: var(--ink-soft); }
+.cw-levels-title { margin: 22px 0 8px; font-weight: 600; color: var(--ink); }
+.cw-levels { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.cw-levels a { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border: 1px solid var(--border); border-radius: 999px; color: var(--page-ink); font-size: 14px; text-decoration: none; }
+.cw-levels a:hover { border-color: var(--page-ink); }
