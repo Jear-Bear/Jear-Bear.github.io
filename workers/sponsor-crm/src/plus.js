@@ -96,7 +96,9 @@ export async function needUser(request, env) {
 // --- the funnel (Sponsor desk → Crossword+ funnel) -------------------------------------------
 // One counter per step per day; never fails what it's counting.
 export const FUNNEL = ['visit', 'solve', 'offer', 'account', 'checkout', 'trial', 'paid'];
-const PAGE_EVENTS = new Set(['visit', 'solve', 'offer']);
+// Not steps, but counted the same way: someone shared a result, and someone arrived from one
+export const SHARING = ['share', 'shared_in'];
+const PAGE_EVENTS = new Set(['visit', 'solve', 'offer', ...SHARING]);
 export async function funnel(db, event) {
   try {
     await db.prepare('INSERT INTO plus_funnel (day, event, n) VALUES (?, ?, 1) ON CONFLICT(day, event) DO UPDATE SET n = n + 1')
@@ -116,9 +118,9 @@ export async function funnelReport(db, days) {
   const n = Math.min(365, Math.max(1, Number(days) || 30));
   const since = new Date(Date.now() - (n - 1) * 86400000).toISOString().slice(0, 10);
   const { results } = await db.prepare('SELECT day, event, n FROM plus_funnel WHERE day >= ? ORDER BY day').bind(since).all();
-  const totals = Object.fromEntries(FUNNEL.map((e) => [e, 0]));
+  const totals = Object.fromEntries([...FUNNEL, ...SHARING].map((e) => [e, 0]));
   results.forEach((r) => { if (r.event in totals) totals[r.event] += r.n; });
-  return { days: n, since, steps: FUNNEL.map((e) => ({ event: e, n: totals[e] })), daily: results };
+  return { days: n, since, steps: FUNNEL.map((e) => ({ event: e, n: totals[e] })), sharing: { share: totals.share, shared_in: totals.shared_in }, daily: results };
 }
 
 // The account for an email (made on first sign-in)

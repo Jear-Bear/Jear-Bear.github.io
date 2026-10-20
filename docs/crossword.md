@@ -66,6 +66,16 @@ devices.
   Crossword+). Their files aren't sealed yet anyway: a day is sealed once it's past
   everywhere (see crossword-plus.md).
 
+## Sharing and short links
+
+"Share result" (crossword and Kana Wordle) opens the phone's share sheet, or copies the result on a computer. The crossword result is an emoji grid: 🟦 solved square, 🟨 revealed, ⬛ black (⬜ for the empty squares of kanji and deck puzzles), with the time and the streak. It ends with `jareddesu.com/c` (Wordle: `jareddesu.com/w`). Those are noindex redirect pages (`c/`, `w/`) to the game with `?ref=share`, so the desk's Crossword+ funnel can count "shared a result" and "arrived from a shared result". Each counts once a day per browser.
+
+The crossword also takes deep links: `?mode=kana|kanji`, `?level=beginner|intermediate|advanced|mixed`, `?size=mini|daily`. The page applies them and then removes them from the address bar.
+
+## Landing pages (search)
+
+`tools/crossword/{hiragana,jlpt-n5,jlpt-n4,jlpt-n3,jlpt-n2,jlpt-n1,kanji}/` are static pages for search, made by `node scripts/crossword/seo-pages.mjs`. Each has an intro, a play button deep-linked to the right level, a sample of words from `data/crossword/words.json`, questions (with FAQ JSON-LD) and links to the others (`styles/learn.css`). Re-run the script after changing the copy or the word list, and keep them in `sitemap.xml`. Share previews use `images/og/crossword.jpg` and `images/og/wordle.jpg` (1200×630).
+
 ## Kanji mode
 
 Answers are words written entirely in kanji (2–4 characters) from the same
