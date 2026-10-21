@@ -4,6 +4,11 @@
     "t": "Wishes",
     "tj": "願い"
   },
+  "あさつて": {
+    "c": "Not tomorrow, but the one after",
+    "t": "Days ahead",
+    "tj": "これから先"
+  },
   "あさましい": {
     "c": "Shameless and greedy",
     "t": "Bad behavior",
@@ -70,9 +75,9 @@
     "tj": "かみ合わないこと"
   },
   "いそがしい": {
+    "c": "How you feel in December, with year-end parties and deadlines piling up",
     "t": "Having no free time",
-    "tj": "ひまがない様子",
-    "c": "How you feel in December, with year-end parties and deadlines piling up"
+    "tj": "ひまがない様子"
   },
   "いたつて": {
     "c": "Extremely, quite, as in 'perfectly healthy'",
@@ -83,6 +88,11 @@
     "c": "Even more than before; noticeably more",
     "t": "How much",
     "tj": "程度"
+  },
+  "いつきよに": {
+    "c": "In one fell swoop, no waiting around",
+    "t": "All at once",
+    "tj": "いっぺんに"
   },
   "いつしよう": {
     "c": "From birth to death; a whole lifetime",
@@ -144,6 +154,11 @@
     "t": "Music",
     "tj": "音楽"
   },
+  "えんだん": {
+    "c": "A matchmaker's talk of tying the knot, often after an omiai",
+    "t": "Marriage",
+    "tj": "結婚"
+  },
   "えんぴつ": {
     "c": "Sharpen it, write with it, erase it",
     "t": "Stationery",
@@ -204,6 +219,11 @@
     "t": "Grandparents",
     "tj": "祖父母"
   },
+  "おそろしい": {
+    "c": "Spine-chilling, like a haunted house at midnight",
+    "t": "Fear",
+    "tj": "こわさ"
+  },
   "おてあらい": {
     "c": "The polite way to ask where the restroom is",
     "t": "Polite words",
@@ -223,6 +243,11 @@
     "c": "A triangle of rice wrapped in seaweed",
     "t": "Japanese food",
     "tj": "和食"
+  },
+  "おのおの": {
+    "c": "Each person on their own, as in 'bring your own lunch'",
+    "t": "Each and every",
+    "tj": "ひとりひとり"
   },
   "おびやかす": {
     "c": "To threaten or endanger",
@@ -245,9 +270,9 @@
     "tj": "旅行"
   },
   "おめでたい": {
+    "c": "Fitting for a wedding, a birth, or New Year with red-and-white decorations",
     "t": "Celebrations",
-    "tj": "お祝いごと",
-    "c": "Fitting for a wedding, a birth, or New Year with red-and-white decorations"
+    "tj": "お祝いごと"
   },
   "おもいこむ": {
     "c": "To get it firmly into your head, even if it's wrong",
@@ -255,14 +280,14 @@
     "tj": "考え"
   },
   "おもしろい": {
+    "c": "How you would describe a manga you cannot put down",
     "t": "Feelings about a show",
-    "tj": "番組の感想",
-    "c": "How you would describe a manga you cannot put down"
+    "tj": "番組の感想"
   },
   "おもんずる": {
+    "c": "What a samurai does with honor: place it above everything",
     "t": "Respect",
-    "tj": "敬意",
-    "c": "What a samurai does with honor: place it above everything"
+    "tj": "敬意"
   },
   "おんがく": {
     "c": "What comes through your headphones",
@@ -505,9 +530,9 @@
     "tj": "乳製品"
   },
   "くわわる": {
+    "c": "What you do when you hop into a game of tag already underway",
     "t": "Joining a group",
-    "tj": "仲間になること",
-    "c": "What you do when you hop into a game of tag already underway"
+    "tj": "仲間になること"
   },
   "けしよう": {
     "c": "Foundation, lipstick and mascara",
@@ -590,9 +615,9 @@
     "tj": "学校と職場"
   },
   "こうばい": {
+    "c": "The school store where you fight for yakisoba bread at lunch",
     "t": "Shopping",
-    "tj": "ショッピング",
-    "c": "The school store where you fight for yakisoba bread at lunch"
+    "tj": "ショッピング"
   },
   "こうひよう": {
     "c": "Well received, with great reviews",
@@ -820,14 +845,14 @@
     "tj": "祝日"
   },
   "しようきよ": {
+    "c": "What the eraser tool or a factory reset does",
     "t": "Deleting things",
-    "tj": "データをなくすこと",
-    "c": "What the eraser tool or a factory reset does"
+    "tj": "データをなくすこと"
   },
   "しようずる": {
+    "c": "Come into being, like a problem or doubt (formal)",
     "t": "Things that happen",
-    "tj": "起こること",
-    "c": "Come into being, like a problem or doubt (formal)"
+    "tj": "起こること"
   },
   "しようひん": {
     "c": "Items for sale on store shelves",
@@ -840,9 +865,9 @@
     "tj": "ランチ"
   },
   "しよくぶつ": {
+    "c": "Ferns, cacti and bonsai all belong to this kingdom",
     "t": "Living things",
-    "tj": "いきもの",
-    "c": "Ferns, cacti and bonsai all belong to this kingdom"
+    "tj": "いきもの"
   },
   "しよじゆん": {
     "c": "The early part of a month",
@@ -870,9 +895,9 @@
     "tj": "食べ物の質"
   },
   "しんだい": {
+    "c": "Overnight trains like the Sunrise Izumo have berths of this kind",
     "t": "Furniture for sleeping",
-    "tj": "眠るための家具",
-    "c": "Overnight trains like the Sunrise Izumo have berths of this kind"
+    "tj": "眠るための家具"
   },
   "しんでん": {
     "c": "The main hall of a shrine, or a Greek temple to the gods",
@@ -910,9 +935,9 @@
     "tj": "遊び"
   },
   "じゆうどう": {
+    "c": "Olympic sport in a white gi, won by ippon",
     "t": "Martial arts",
-    "tj": "武術",
-    "c": "Olympic sport in a white gi, won by ippon"
+    "tj": "武術"
   },
   "じゆうふく": {
     "c": "Same thing showing up twice, like a double-booked meeting or a copied file",
@@ -1020,9 +1045,9 @@
     "tj": "最近"
   },
   "せんそう": {
+    "c": "Tolstoy paired it with peace",
     "t": "Conflict between nations",
-    "tj": "国どうしの武力衝突",
-    "c": "Tolstoy paired it with peace"
+    "tj": "国どうしの武力衝突"
   },
   "せんぱい": {
     "c": "The older student or coworker you look up to (notice me!)",
@@ -1125,9 +1150,9 @@
     "tj": "ねらい"
   },
   "たいせき": {
+    "c": "Length times width times height gives you this",
     "t": "Measurements",
-    "tj": "はかるもの",
-    "c": "Length times width times height gives you this"
+    "tj": "はかるもの"
   },
   "たくしー": {
     "c": "A car with a driver and a meter, with doors that open by themselves in Japan",
@@ -1215,9 +1240,9 @@
     "tj": "交通"
   },
   "ちゆうけい": {
+    "c": "Live coverage passed along from the stadium to your TV, or a baton handoff",
     "t": "Broadcasting",
-    "tj": "放送",
-    "c": "Live coverage passed along from the stadium to your TV, or a baton handoff"
+    "tj": "放送"
   },
   "ちゆうこく": {
     "c": "A friendly word of warning",
@@ -1290,9 +1315,9 @@
     "tj": "仕事"
   },
   "てじゆん": {
+    "c": "Step one, step two, step three: the order you follow to get it done right",
     "t": "Ways of doing things",
-    "tj": "物事の進め方",
-    "c": "Step one, step two, step three: the order you follow to get it done right"
+    "tj": "物事の進め方"
   },
   "てつだう": {
     "c": "What you do when a friend is moving house",
@@ -1580,9 +1605,9 @@
     "tj": "数字"
   },
   "ばんのう": {
+    "c": "Like a jack-of-all-trades, or a seasoning that goes on everything",
     "t": "Versatility",
-    "tj": "なんでもこなす力",
-    "c": "Like a jack-of-all-trades, or a seasoning that goes on everything"
+    "tj": "なんでもこなす力"
   },
   "ぱちんこ": {
     "c": "Noisy parlors full of little steel balls",
@@ -1800,14 +1825,14 @@
     "tj": "明るさ"
   },
   "まつすぐ": {
+    "c": "No turns, no detours: just keep going ahead",
     "t": "Directions",
-    "tj": "道案内の言葉",
-    "c": "No turns, no detours: just keep going ahead"
+    "tj": "道案内の言葉"
   },
   "まつちや": {
+    "c": "Bright green powder whisked in a tea ceremony, and a favorite latte or soft-serve flavor",
     "t": "Japanese tea",
-    "tj": "日本の緑のお飲み物",
-    "c": "Bright green powder whisked in a tea ceremony, and a favorite latte or soft-serve flavor"
+    "tj": "日本の緑のお飲み物"
   },
   "まねきねこ": {
     "c": "A ceramic figure with one paw raised in a shop window",
@@ -1963,6 +1988,11 @@
     "c": "Paris, Rome and Berlin are all here",
     "t": "Continents",
     "tj": "大陸"
+  },
+  "らいしゆう": {
+    "c": "Seven days from now, give or take: when the next anime episode drops",
+    "t": "Weeks",
+    "tj": "七日間"
   },
   "らじおかせ": {
     "c": "The 80s boombox with a tape deck and an antenna",
