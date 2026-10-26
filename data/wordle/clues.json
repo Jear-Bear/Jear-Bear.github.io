@@ -54,6 +54,11 @@
     "t": "Golf",
     "tj": "ゴルフ"
   },
+  "あらたまる": {
+    "c": "Turning fresh or very formal, like a new year or a stiff greeting",
+    "t": "Changing",
+    "tj": "変化"
+  },
   "あらつぽい": {
     "c": "Rough and rowdy, not gentle",
     "t": "Personality",
@@ -88,6 +93,16 @@
     "c": "Even more than before; noticeably more",
     "t": "How much",
     "tj": "程度"
+  },
+  "いちどに": {
+    "c": "Not one by one, but everything together",
+    "t": "Timing",
+    "tj": "タイミング"
+  },
+  "いちぶぶん": {
+    "c": "Only a slice of the whole",
+    "t": "Parts",
+    "tj": "全体のかけら"
   },
   "いつきよに": {
     "c": "In one fell swoop, no waiting around",
@@ -133,6 +148,11 @@
     "c": "To appeal, complain, or take someone to court",
     "t": "Complaining",
     "tj": "不満"
+  },
+  "うるさい": {
+    "c": "What a loud neighbor or a barking dog is",
+    "t": "Sounds",
+    "tj": "音"
   },
   "えいがかん": {
     "c": "Where you eat popcorn in the dark",
@@ -189,6 +209,11 @@
     "t": "Learning",
     "tj": "学び"
   },
+  "おおすじ": {
+    "c": "The broad strokes of a story, without the small details",
+    "t": "Summaries",
+    "tj": "要約"
+  },
   "おおみず": {
     "c": "When the river bursts its banks after heavy rain",
     "t": "Natural disasters",
@@ -219,6 +244,11 @@
     "t": "Grandparents",
     "tj": "祖父母"
   },
+  "おそれいる": {
+    "c": "What you say with a bow when someone is too kind",
+    "t": "Politeness",
+    "tj": "礼儀"
+  },
   "おそろしい": {
     "c": "Spine-chilling, like a haunted house at midnight",
     "t": "Fear",
@@ -232,6 +262,11 @@
   "おとうさん": {
     "c": "Who you call Dad, said politely",
     "t": "Family members",
+    "tj": "家族"
+  },
+  "おとうと": {
+    "c": "The little guy in the family, to his older sibling",
+    "t": "Family",
     "tj": "家族"
   },
   "おどろく": {
@@ -329,6 +364,11 @@
     "t": "Geography",
     "tj": "地理"
   },
+  "かいぜん": {
+    "c": "Fixing flaws so the next version works better",
+    "t": "Making things better",
+    "tj": "向上"
+  },
   "かいにゆう": {
     "c": "Stepping into a conflict to try to settle it",
     "t": "Getting involved",
@@ -364,10 +404,20 @@
     "t": "Success",
     "tj": "成功"
   },
+  "かなわない": {
+    "c": "How you feel facing someone far stronger than you",
+    "t": "Being outmatched",
+    "tj": "力くらべ"
+  },
   "かはんすう": {
     "c": "More than half of the votes",
     "t": "Voting",
     "tj": "選挙"
+  },
+  "かみくず": {
+    "c": "Crumpled scraps you toss in the bin",
+    "t": "Trash",
+    "tj": "ごみ"
   },
   "かようび": {
     "c": "The day after Monday",
@@ -423,6 +473,11 @@
     "c": "An old-style place for coffee and a slice of toast",
     "t": "Around town",
     "tj": "町の中"
+  },
+  "きびしい": {
+    "c": "Like a teacher who never lets anything slide",
+    "t": "Personalities",
+    "tj": "性格"
   },
   "きやくせき": {
     "c": "Where the audience sits, from the front row to the balcony",
@@ -679,6 +734,11 @@
     "t": "Temples and shrines",
     "tj": "寺社"
   },
+  "ごしゆじん": {
+    "c": "Polite way to refer to someone else's husband",
+    "t": "Family",
+    "tj": "家族"
+  },
   "さいかい": {
     "c": "Seeing an old friend again after many years",
     "t": "Meeting people",
@@ -819,6 +879,11 @@
     "t": "Celebrations",
     "tj": "おめでたいこと"
   },
+  "しゆくだい": {
+    "c": "Work a teacher sends home with you",
+    "t": "School life",
+    "tj": "学校生活"
+  },
   "しゆくはく": {
     "c": "Staying the night at a hotel or inn",
     "t": "Travel",
@@ -828,6 +893,11 @@
     "c": "The head of the cabinet",
     "t": "Government",
     "tj": "政府"
+  },
+  "しゆじゆつ": {
+    "c": "What a doctor in a mask does in an operating room",
+    "t": "Hospital",
+    "tj": "病院"
   },
   "しゆだい": {
     "c": "The central idea of a novel or song",
@@ -853,6 +923,11 @@
     "c": "Come into being, like a problem or doubt (formal)",
     "t": "Things that happen",
     "tj": "起こること"
+  },
+  "しようたい": {
+    "c": "What a masked person hides until the unmasking",
+    "t": "Mysteries",
+    "tj": "なぞ"
   },
   "しようひん": {
     "c": "Items for sale on store shelves",
@@ -953,6 +1028,11 @@
     "c": "Where planes fly, high above the city",
     "t": "The sky",
     "tj": "天気と高さ"
+  },
+  "じようけん": {
+    "c": "Terms you must meet before an agreement counts",
+    "t": "Deals",
+    "tj": "取り決め"
   },
   "じようげ": {
     "c": "Up and down together, like a two-piece outfit",
@@ -1083,6 +1163,16 @@
     "c": "A big commotion, like a riot in the streets",
     "t": "Trouble",
     "tj": "もめごと"
+  },
+  "そうなん": {
+    "c": "Getting lost in the mountains or at sea and needing rescue",
+    "t": "Mountain safety",
+    "tj": "山の安全"
+  },
+  "そうりよう": {
+    "c": "The extra fee to get a package to your door",
+    "t": "Shopping online",
+    "tj": "ネット通販"
   },
   "そくてい": {
     "c": "Using a ruler, a scale or a thermometer",
@@ -1234,6 +1324,11 @@
     "t": "Keeping warm",
     "tj": "寒さ対策"
   },
+  "ちいさな": {
+    "c": "Describes a mouse or a grain of rice",
+    "t": "Size",
+    "tj": "大きさ"
+  },
   "ちかてつ": {
     "c": "The trains that run under the city streets",
     "t": "Transport",
@@ -1288,6 +1383,11 @@
     "c": "Going out for drinks with coworkers because you should",
     "t": "Relationships",
     "tj": "人間関係"
+  },
+  "つつぱる": {
+    "c": "To brace stiffly against something, or act tough",
+    "t": "Posture",
+    "tj": "姿勢"
   },
   "つまずく": {
     "c": "To catch your foot on a step and nearly fall",
@@ -1393,6 +1493,16 @@
     "c": "To blend in with a new group, like sugar in tea",
     "t": "Fitting in",
     "tj": "なじむこと"
+  },
+  "ところで": {
+    "c": "Handy phrase to change the topic",
+    "t": "Conversation",
+    "tj": "会話"
+  },
+  "としよかん": {
+    "c": "Quiet place with shelves of borrowable books",
+    "t": "Around town",
+    "tj": "町"
   },
   "とつきゆう": {
     "c": "The fastest train before the bullet train, with a surcharge",
@@ -1514,6 +1624,11 @@
     "t": "Trees",
     "tj": "木"
   },
+  "のうみん": {
+    "c": "People who work the rice paddies",
+    "t": "Jobs",
+    "tj": "仕事"
+  },
   "のきなみ": {
     "c": "Across the board: when every shop on the street raises prices at once",
     "t": "Street of houses",
@@ -1623,6 +1738,11 @@
     "c": "Where you wait before going on stage or being called in",
     "t": "Behind the scenes",
     "tj": "舞台裏"
+  },
+  "ひさしぶり": {
+    "c": "What you say to a friend you haven't seen in ages",
+    "t": "Greetings",
+    "tj": "あいさつ"
   },
   "ひじように": {
     "c": "Extremely, very, in formal speech",
@@ -1869,10 +1989,25 @@
     "t": "Nature",
     "tj": "自然"
   },
+  "みつもり": {
+    "c": "A rough price a contractor gives before the job",
+    "t": "Money matters",
+    "tj": "お金"
+  },
+  "むすびつき": {
+    "c": "A bond that ties two people or ideas together",
+    "t": "Links between things",
+    "tj": "つながり"
+  },
   "むすびつく": {
     "c": "To be linked, as hard work is to good results",
     "t": "Connections",
     "tj": "つながり"
+  },
+  "むずかしい": {
+    "c": "Not easy; a tough exam question is this",
+    "t": "Describing tasks",
+    "tj": "ものごとの様子"
   },
   "めつせーじ": {
     "c": "What you leave after the beep",
@@ -1979,6 +2114,11 @@
     "t": "Know-how",
     "tj": "コツ"
   },
+  "よしゆう": {
+    "c": "Going over tomorrow's lesson the night before",
+    "t": "School life",
+    "tj": "学校生活"
+  },
   "よろしい": {
     "c": "A polite 'that's fine', 'very well'",
     "t": "Polite speech",
@@ -2023,6 +2163,11 @@
     "c": "Mom and Dad together",
     "t": "Family members",
     "tj": "家族"
+  },
+  "りよかく": {
+    "c": "Someone with a ticket on a plane, train or ship",
+    "t": "Getting around",
+    "tj": "乗り物"
   },
   "れいぞうこ": {
     "c": "The cold box where leftovers go",
@@ -2078,6 +2223,11 @@
     "c": "Finding beauty in the old, worn and imperfect",
     "t": "Japanese aesthetics",
     "tj": "日本の美意識"
+  },
+  "わりあいに": {
+    "c": "More than you'd expect, all things considered",
+    "t": "Degrees",
+    "tj": "程度"
   },
   "わんぴーす": {
     "c": "A frock from shoulders to hem in a single garment; also Luffy's manga",
