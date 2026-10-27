@@ -1,27 +1,27 @@
 {
-  "version": "0.2.6",
-  "notes": "Release scripts fixes",
-  "released": "2026-10-27T19:53:04Z",
+  "version": "0.2.7",
+  "notes": "Cleaner settings with an Update now button; updates work on office networks",
+  "released": "2026-10-27T20:40:10Z",
   "assets": {
     "windows-x64": {
-      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.6/hako-windows-setup.exe",
-      "sha256": "0353cd458cd115f7d04040ccf60af7f276c91264668975854de6e83c813021eb",
-      "size": 42848827
+      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.7/hako-windows-setup.exe",
+      "sha256": "9693a89eebab9be9f54fc1b44902d7a62913aefb7eb2ae54c6b3d92052289349",
+      "size": 42870467
     },
     "macos-arm64": {
-      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.6/hako-macos-arm64.dmg",
-      "sha256": "bc296cee1f915a23eff15af7a91c32f8aaf113253254a80962ea049a2af68d30",
-      "size": 49370562
+      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.7/hako-macos-arm64.dmg",
+      "sha256": "482cc406a66f694384cb92287fba779f1d2383eea6706d3d301f91f6d4adec50",
+      "size": 49421804
     },
     "macos-x64": {
-      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.6/hako-macos-x64.dmg",
-      "sha256": "19aac55b47b48aaac3183564839f98c09184910b9c299c4af4150a53ea407d6e",
-      "size": 54347517
+      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.7/hako-macos-x64.dmg",
+      "sha256": "68d4f26843c4800db114e98ba54b8ad396d4656ffaf6670b0bee3da8d9f31aa4",
+      "size": 54872301
     },
     "linux-x64": {
-      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.6/hako-linux-x64.tar.gz",
-      "sha256": "c646b8848410707edf0a31a0c89f3045f84f3e72fbaf852c6d3d0149c5f158c7",
-      "size": 101107542
+      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.7/hako-linux-x64.tar.gz",
+      "sha256": "ac3e9506d60f5a8b0e200e2d51e689ddd5332d1fc9617916342c9f48a9d005e4",
+      "size": 101104653
     }
   }
 }
