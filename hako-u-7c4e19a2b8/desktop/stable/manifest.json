@@ -1,27 +1,27 @@
 {
-  "version": "0.2.5",
-  "notes": "The app can now update itself; pets look exactly like on the hako",
-  "released": "2026-10-27T19:24:21Z",
+  "version": "0.2.6",
+  "notes": "notes",
+  "released": "2026-10-27T19:45:05Z",
   "assets": {
     "windows-x64": {
-      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.5/hako-windows-setup.exe",
-      "sha256": "7472309b3be574872603ee71eeaf37be76b96631ff1e8c685ec18f0f27784b62",
-      "size": 42856963
+      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.6/hako-windows-setup.exe",
+      "sha256": "0353cd458cd115f7d04040ccf60af7f276c91264668975854de6e83c813021eb",
+      "size": 42848827
     },
     "macos-arm64": {
-      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.5/hako-macos-arm64.dmg",
-      "sha256": "05e0c97bfb5eed2648011a2dfda07be2d2cc9f5e55fbc52048c6b1ffe7dbb812",
-      "size": 49374942
+      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.6/hako-macos-arm64.dmg",
+      "sha256": "bc296cee1f915a23eff15af7a91c32f8aaf113253254a80962ea049a2af68d30",
+      "size": 49370562
     },
     "macos-x64": {
-      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.5/hako-macos-x64.dmg",
-      "sha256": "857eff60f9f26cc2fb3a61c7ded23489fe818e8513005f8060377e8df9782243",
-      "size": 54345781
+      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.6/hako-macos-x64.dmg",
+      "sha256": "19aac55b47b48aaac3183564839f98c09184910b9c299c4af4150a53ea407d6e",
+      "size": 54347517
     },
     "linux-x64": {
-      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.5/hako-linux-x64.tar.gz",
-      "sha256": "2ec8c075bcb0966f286528ee446c98464032bef8df41ffa776e1446ff95312ea",
-      "size": 101095743
+      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.6/hako-linux-x64.tar.gz",
+      "sha256": "c646b8848410707edf0a31a0c89f3045f84f3e72fbaf852c6d3d0149c5f158c7",
+      "size": 101107542
     }
   }
 }
