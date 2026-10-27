@@ -1,27 +1,27 @@
 {
-  "version": "0.2.8",
-  "notes": "New settings design for Mac and Windows; Health screen fits big collections",
-  "released": "2026-10-27T21:25:25Z",
+  "version": "0.2.9",
+  "notes": "Cleaner Health screen numbers; macOS glass polish",
+  "released": "2026-10-27T21:42:20Z",
   "assets": {
     "windows-x64": {
-      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.8/hako-windows-setup.exe",
-      "sha256": "33ea0349c322baf6d2d80bd94dd53b0a96575b909c1409ced8a988f73376d516",
-      "size": 42893587
+      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.9/hako-windows-setup.exe",
+      "sha256": "2ba9747f02159792accc71501641a4fcbd3e55d36ab063f4dcf57e24077be295",
+      "size": 42895548
     },
     "macos-arm64": {
-      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.8/hako-macos-arm64.dmg",
-      "sha256": "8ecb02f01f35eba60771af700f71978fd37aedafdd04e5696033cd8887a0dba3",
-      "size": 49551949
+      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.9/hako-macos-arm64.dmg",
+      "sha256": "4c02d1c5c744bada4d257a944b9abbd57ef6c4522d062485487687ae4fc99ee3",
+      "size": 49553134
     },
     "macos-x64": {
-      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.8/hako-macos-x64.dmg",
-      "sha256": "a1e97f97fa26f0ed7cf6b37750d5a55924800a21f46295d082b7ff3dbbb26a46",
-      "size": 54509467
+      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.9/hako-macos-x64.dmg",
+      "sha256": "e6a807341c4c7a670b45b78d930e0baaf338c3b3a003d456e2bf9c3bb72e3bf1",
+      "size": 54510866
     },
     "linux-x64": {
-      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.8/hako-linux-x64.tar.gz",
-      "sha256": "aff2c6b21320cb5d79670d8dd3f87f98b8ed685da03a1325ac68f8e66439abef",
-      "size": 101132917
+      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.9/hako-linux-x64.tar.gz",
+      "sha256": "2b5fd997b749dbb05dd89ba25262670338abc7e16860e3fae5d76e962d7faa62",
+      "size": 101143399
     }
   }
 }
