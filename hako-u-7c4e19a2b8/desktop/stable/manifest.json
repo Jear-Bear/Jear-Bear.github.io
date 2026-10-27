@@ -1,7 +1,7 @@
 {
   "version": "0.2.5",
   "notes": "The app can now update itself; pets look exactly like on the hako",
-  "released": "2026-10-27T19:01:17Z",
+  "released": "2026-10-27T19:24:21Z",
   "assets": {
     "windows-x64": {
       "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.5/hako-windows-setup.exe",
