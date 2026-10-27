@@ -1,27 +1,27 @@
 {
-  "version": "0.2.7",
-  "notes": "Cleaner settings with an Update now button; updates work on office networks",
-  "released": "2026-10-27T20:40:10Z",
+  "version": "0.2.8",
+  "notes": "New settings design for Mac and Windows; Health screen fits big collections",
+  "released": "2026-10-27T21:25:25Z",
   "assets": {
     "windows-x64": {
-      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.7/hako-windows-setup.exe",
-      "sha256": "9693a89eebab9be9f54fc1b44902d7a62913aefb7eb2ae54c6b3d92052289349",
-      "size": 42870467
+      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.8/hako-windows-setup.exe",
+      "sha256": "33ea0349c322baf6d2d80bd94dd53b0a96575b909c1409ced8a988f73376d516",
+      "size": 42893587
     },
     "macos-arm64": {
-      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.7/hako-macos-arm64.dmg",
-      "sha256": "482cc406a66f694384cb92287fba779f1d2383eea6706d3d301f91f6d4adec50",
-      "size": 49421804
+      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.8/hako-macos-arm64.dmg",
+      "sha256": "8ecb02f01f35eba60771af700f71978fd37aedafdd04e5696033cd8887a0dba3",
+      "size": 49551949
     },
     "macos-x64": {
-      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.7/hako-macos-x64.dmg",
-      "sha256": "68d4f26843c4800db114e98ba54b8ad396d4656ffaf6670b0bee3da8d9f31aa4",
-      "size": 54872301
+      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.8/hako-macos-x64.dmg",
+      "sha256": "a1e97f97fa26f0ed7cf6b37750d5a55924800a21f46295d082b7ff3dbbb26a46",
+      "size": 54509467
     },
     "linux-x64": {
-      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.7/hako-linux-x64.tar.gz",
-      "sha256": "ac3e9506d60f5a8b0e200e2d51e689ddd5332d1fc9617916342c9f48a9d005e4",
-      "size": 101104653
+      "url": "https://github.com/TeamHako/hako-desktop/releases/download/v0.2.8/hako-linux-x64.tar.gz",
+      "sha256": "aff2c6b21320cb5d79670d8dd3f87f98b8ed685da03a1325ac68f8e66439abef",
+      "size": 101132917
     }
   }
 }
