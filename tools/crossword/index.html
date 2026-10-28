@@ -5,9 +5,22 @@
   <script>/* theme: set before paint (auto follows the system) */(function(){var d=document.documentElement,k='jareddesu.theme',m=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)');function p(){try{return localStorage.getItem(k)||'auto'}catch(e){return'auto'}}function a(){var t=p();d.dataset.theme=t==='light'||t==='dark'?t:(m&&m.matches?'dark':'light');d.dataset.themePref=t}a();if(m&&m.addEventListener)m.addEventListener('change',a);window.jdTheme={get:p,set:function(t){try{t==='auto'?localStorage.removeItem(k):localStorage.setItem(k,t)}catch(e){}a()}}})();</script>
   <script>/* games: interface language before paint */try{if(localStorage.getItem('jareddesu.games.lang')==='ja'){document.documentElement.dataset.ui='ja';document.documentElement.lang='ja'}}catch(e){}</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-  <title>Japanese Crossword · Jared P.</title>
-  <meta name="description" content="A free daily Japanese crossword in two modes: kana (English clues, hiragana answers) and kanji (write the word in kanji). A mini and a daily at beginner (N5–N4), intermediate (N3–N2) or advanced (N1+) level, plus a mixed-level puzzle with Japanese clues." />
+  <title>Japanese Crossword Puzzles: Free Daily Kana & Kanji (JLPT N5–N1) · Jared P.</title>
+  <meta name="description" content="Free daily Japanese crossword puzzles. Kana mode: English clues, hiragana answers. Kanji mode: write the word in kanji. A mini and a daily at JLPT N5–N4, N3–N2 or N1 level, plus a mixed puzzle with Japanese clues. Type in romaji, no Japanese keyboard needed." />
   <link rel="canonical" href="https://www.jareddesu.com/tools/crossword/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="まだまだJared" />
+  <meta property="og:title" content="Japanese Crossword: free daily kana & kanji puzzles" />
+  <meta property="og:description" content="Free daily Japanese crossword puzzles. Kana mode: English clues, hiragana answers. Kanji mode: write the word in kanji. A mini and a daily at JLPT N5–N4, N3–N2 or N1 level, plus a mixed puzzle with Japanese clues. Type in romaji, no Japanese keyboard needed." />
+  <meta property="og:url" content="https://www.jareddesu.com/tools/crossword/" />
+  <meta property="og:image" content="https://www.jareddesu.com/images/og/crossword.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Japanese Crossword: free daily kana & kanji puzzles" />
+  <meta name="twitter:description" content="Free daily Japanese crossword puzzles. Kana mode: English clues, hiragana answers. Kanji mode: write the word in kanji. A mini and a daily at JLPT N5–N4, N3–N2 or N1 level, plus a mixed puzzle with Japanese clues. Type in romaji, no Japanese keyboard needed." />
+  <meta name="twitter:image" content="https://www.jareddesu.com/images/og/crossword.jpg" />
+  <script type="application/ld+json">[{"@context":"https://schema.org","@type":"WebApplication","name":"Japanese Crossword","url":"https://www.jareddesu.com/tools/crossword/","applicationCategory":"GameApplication","operatingSystem":"Any (web browser)","inLanguage":["en","ja"],"description":"Free daily Japanese crossword puzzles. Kana mode: English clues, hiragana answers. Kanji mode: write the word in kanji. A mini and a daily at JLPT N5–N4, N3–N2 or N1 level, plus a mixed puzzle with Japanese clues. Type in romaji, no Japanese keyboard needed.","image":"https://www.jareddesu.com/images/og/crossword.jpg","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Jared P.","url":"https://www.jareddesu.com/"}},{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is the Japanese crossword free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Today’s and yesterday’s puzzles, in every mode, level and size, are free to play with no account. Crossword+ adds the full archive of past puzzles and more."}},{"@type":"Question","name":"Which JLPT levels are there?","acceptedAnswer":{"@type":"Answer","text":"Beginner uses JLPT N5–N4 words, intermediate N3–N2, and advanced N1 plus slang and idioms. Mixed uses every level with clues in Japanese, like a newspaper crossword."}},{"@type":"Question","name":"Do I need a Japanese keyboard?","acceptedAnswer":{"@type":"Answer","text":"No. Type romaji (ka → か) on any keyboard, or use the kana keys under the grid on a phone. A Japanese IME works too."}},{"@type":"Question","name":"What is kanji mode?","acceptedAnswer":{"@type":"Answer","text":"In kanji mode you write each answer in kanji, one kanji per square, so it practices reading and writing kanji words instead of kana."}},{"@type":"Question","name":"When do new puzzles come out?","acceptedAnswer":{"@type":"Answer","text":"Every day at midnight, your time. Each day’s puzzles count toward your streak for 48 hours, like the New York Times crossword."}}]}]</script>
 
   <link rel="icon" href="../../images/logo.png">
 
@@ -17,7 +30,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Klee+One:wght@600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="../../styles/base.css?v=4">
-  <link rel="stylesheet" href="../../styles/crossword.css?v=21">
+  <link rel="stylesheet" href="../../styles/crossword.css?v=22">
   <link rel="stylesheet" href="../../styles/partner.css?v=4">
   <!-- Cloudflare Web Analytics (cookieless) -->
   <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
@@ -195,6 +208,26 @@
         <p class="cw-credit" data-ui-only="ja" lang="ja">単語リスト：<a href="https://github.com/jamsinclair/open-anki-jlpt-decks" target="_blank" rel="noopener">open-anki-jlpt-decks</a>（MIT）のJLPT語彙。Jonathan WallerさんのJLPTリスト（CC BY）が元です。ご質問・不具合は <a href="mailto:support@jareddesu.com">support@jareddesu.com</a> へ。</p>
       </section>
 
+      <section class="sec cw-section" id="faq">
+        <p class="sec-mark"><span class="sec-num" lang="ja">問</span><span class="sec-label">Questions / <span lang="ja"><ruby>質問<rt>しつもん</rt></ruby></span></span></p>
+        <dl class="cw-faq" data-ui-only="en">
+          <dt>Is the Japanese crossword free?</dt><dd>Yes. Today’s and yesterday’s puzzles, in every mode, level and size, are free to play with no account. Crossword+ adds the full archive of past puzzles and more.</dd>
+          <dt>Which JLPT levels are there?</dt><dd>Beginner uses JLPT N5–N4 words, intermediate N3–N2, and advanced N1 plus slang and idioms. Mixed uses every level with clues in Japanese, like a newspaper crossword.</dd>
+          <dt>Do I need a Japanese keyboard?</dt><dd>No. Type romaji (ka → か) on any keyboard, or use the kana keys under the grid on a phone. A Japanese IME works too.</dd>
+          <dt>What is kanji mode?</dt><dd>In kanji mode you write each answer in kanji, one kanji per square, so it practices reading and writing kanji words instead of kana.</dd>
+          <dt>When do new puzzles come out?</dt><dd>Every day at midnight, your time. Each day’s puzzles count toward your streak for 48 hours, like the New York Times crossword.</dd>
+        </dl>
+        <dl class="cw-faq" data-ui-only="ja" lang="ja">
+          <dt>無料ですか？</dt><dd>はい。今日と昨日のパズルは、どのモード・レベル・サイズでも、アカウントなしで無料で遊べます。Crossword+では過去のパズルすべてなどが遊べます。</dd>
+          <dt>レベルは？</dt><dd>初級はJLPT N5–N4、中級はN3–N2、上級はN1の単語にスラングや慣用句も。一般は全レベルの単語に日本語のカギです。</dd>
+          <dt>日本語キーボードは必要？</dt><dd>いりません。どのキーボードでもローマ字（ka → か）で入力できます。スマホではマスの下のかなキー、日本語入力（IME）も使えます。</dd>
+          <dt>漢字モードとは？</dt><dd>答えを漢字で書くモードです。1マスに漢字1字で、漢字の単語の読み書きを練習できます。</dd>
+          <dt>新しいパズルはいつ？</dt><dd>毎日、あなたの時間の0時に出ます。各日のパズルは48時間、連続記録に数えられます。</dd>
+        </dl>
+        <p class="cw-levels-title"><span data-ui-only="en">Japanese crosswords by level</span><span data-ui-only="ja" lang="ja">レベル別のクロスワード</span></p>
+        <ul class="cw-levels"><li><a href="hiragana/"><span data-ui-only="en">Hiragana crosswords</span><span data-ui-only="ja" lang="ja">ひらがなクロスワード</span></a></li><li><a href="jlpt-n5/"><span data-ui-only="en">JLPT N5</span><span data-ui-only="ja" lang="ja">JLPT N5</span></a></li><li><a href="jlpt-n4/"><span data-ui-only="en">JLPT N4</span><span data-ui-only="ja" lang="ja">JLPT N4</span></a></li><li><a href="jlpt-n3/"><span data-ui-only="en">JLPT N3</span><span data-ui-only="ja" lang="ja">JLPT N3</span></a></li><li><a href="jlpt-n2/"><span data-ui-only="en">JLPT N2</span><span data-ui-only="ja" lang="ja">JLPT N2</span></a></li><li><a href="jlpt-n1/"><span data-ui-only="en">JLPT N1</span><span data-ui-only="ja" lang="ja">JLPT N1</span></a></li><li><a href="kanji/"><span data-ui-only="en">Kanji crosswords</span><span data-ui-only="ja" lang="ja">漢字クロスワード</span></a></li><li><a href="../wordle/"><span data-ui-only="en">Kana Wordle</span><span data-ui-only="ja" lang="ja">かなWordle</span></a></li></ul>
+      </section>
+
       <section class="cw-section" id="plus-sec">
         <div id="plus-form"></div>
       </section>
@@ -302,7 +335,7 @@
   </footer>
 
   <script src="../../scripts/site.js?v=3"></script>
-  <script type="module" src="../../scripts/crossword/app.js?v=28"></script>
+  <script type="module" src="../../scripts/crossword/app.js?v=29"></script>
   <script src="../../scripts/partner.js?v=5"></script>
 </body>
 </html>

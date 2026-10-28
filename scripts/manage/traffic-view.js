@@ -276,6 +276,7 @@ function funnelSection(f) {
         h('td', {}, num.format(s.n)),
         h('td', {}, i ? pct(s.n, steps[i - 1].n) : ''),
         h('td', {}, i ? pct(s.n, top) : '')))))),
+    f.sharing ? h('p', { class: 'crm-muted' }, `Sharing: ${num.format(f.sharing.share)} shared a result (crossword or Wordle) · ${num.format(f.sharing.shared_in)} arrived from a shared result (jareddesu.com/c or /w).`) : null,
     h('p', { class: 'crm-method' }, 'Counts only, nothing about who: the page sends each of the first three steps at most once per browser per day; the rest come from sign-ins and Stripe. The biggest drop between two steps is the one to work on. Counting started when this was added, so the first weeks are partial.'));
 }
 

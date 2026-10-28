@@ -1,0 +1,12 @@
+/* Crossword landing pages (tools/crossword/<level>/, scripts/crossword/seo-pages.mjs): legal.css's reading layout, in the crossword's blue */
+body[data-page="crossword-learn"] { --page-color: #4c6cb3; }
+.learn-crumb { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
+.learn-crumb a { color: inherit; }
+.learn .btn.learn-play { background: var(--page-color); border-color: var(--page-color); color: #fff; margin-top: 6px; }
+.learn .btn.learn-play:hover { filter: brightness(.92); }
+.learn-free { margin-top: 8px; font-size: 13px; color: var(--muted); }
+.learn-words td:first-child, .learn-words td:nth-child(2) { white-space: nowrap; font-family: var(--font-mincho); font-size: 16px; color: var(--ink); }
+.learn-faq dt { margin-top: 14px; font-weight: 600; color: var(--ink); }
+.learn-faq dd { margin: 4px 0 0; line-height: 1.8; color: var(--ink-soft); }
+.learn-more { columns: 2; column-gap: 24px; }
+@media (max-width: 560px) { .learn-more { columns: 1; } .learn-words td:first-child, .learn-words td:nth-child(2) { white-space: normal; } }

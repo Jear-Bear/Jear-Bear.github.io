@@ -67,9 +67,11 @@ const t = translator({
     withReveals: ' · with reveals',
     listed: 'Every answer, with its kanji and meaning, is listed under the puzzle.',
     nextIn: 'Next puzzle in {time} (your midnight)',
-    solved: 'solved', share: 'Copy result', doneClose: 'Keep looking', pastTitle: 'Past puzzles', close: 'Close',
+    solved: 'solved', share: 'Share result', doneClose: 'Keep looking', pastTitle: 'Past puzzles', close: 'Close',
     'th.word': 'Word', 'th.reading': 'Reading', 'th.meaning': 'Meaning', 'th.clue': 'Clue',
     shareText: ({ mode, size, level, date, time, reveals }) => `Japanese Crossword · ${mode ? `${mode} · ` : ''}${size} · ${level} · ${date}\nSolved in ${time}${reveals ? ' (with reveals)' : ''} ✅`,
+    shareHead: ({ mode, size, level, date }) => `Japanese Crossword ${mode ? `${mode} ` : ''}${level} ${size} · ${date}`,
+    shareTime: ({ time, reveals }) => `⏱️ ${time}${reveals ? ' (with a little help)' : ''}`, shareStreak: '🔥 {n}', shared: 'Shared!',
     deckLine: ({ name }) => `From your deck: ${name}`,
     'set.title': 'Settings', 'set.lang': 'Language',
     'set.romaji': 'Show romaji', 'set.romaji.d': 'under the kana keys.',
@@ -121,9 +123,11 @@ const t = translator({
     withReveals: ' · 答えを見て',
     listed: '答えの漢字と意味は、パズルの下に並んでいます。',
     nextIn: '次のパズルまで {time}（あなたの時間で0時）',
-    solved: 'クリア', share: '結果をコピー', doneClose: '閉じる', pastTitle: '過去のパズル', close: '閉じる',
+    solved: 'クリア', share: '結果をシェア', doneClose: '閉じる', pastTitle: '過去のパズル', close: '閉じる',
     'th.word': '単語', 'th.reading': '読み', 'th.meaning': '意味', 'th.clue': 'カギ',
     shareText: ({ mode, size, level, date, time, reveals }) => `日本語クロスワード · ${mode ? `${mode} · ` : ''}${size} · ${level} · ${date}\n${time}でクリア${reveals ? '（答えを見て）' : ''} ✅`,
+    shareHead: ({ mode, size, level, date }) => `日本語クロスワード ${mode ? `${mode} ` : ''}${level}${size} · ${date}`,
+    shareTime: ({ time, reveals }) => `⏱️ ${time}${reveals ? '（ちょっと答えを見て）' : ''}`, shareStreak: '🔥 {n}日', shared: 'シェアしました！',
     deckLine: ({ name }) => `マイデッキ：${name}`,
     'set.title': '設定', 'set.lang': '表示言語',
     'set.romaji': 'ローマ字を表示', 'set.romaji.d': '（かなキーの下に）',
@@ -212,7 +216,16 @@ Object.entries(TYPING_DEFAULTS).forEach(([k, v]) => { if (settings[k] == null) s
 async function init() {
   try { dates = (await getJson('index.json')).dates || []; } catch { dates = []; }
   const today = localDate();
-  const asked = new URLSearchParams(location.search).get('date');
+  const q = new URLSearchParams(location.search);
+  const asked = q.get('date');
+  // Links from the landing pages (/tools/crossword/hiragana/ etc.): ?mode=&level=&size=
+  if (['kana', 'kanji'].includes(q.get('mode'))) settings.mode = q.get('mode');
+  if (['beginner', 'intermediate', 'advanced', 'mixed'].includes(q.get('level'))) settings.level = q.get('level');
+  if (['mini', 'daily'].includes(q.get('size'))) settings.size = q.get('size');
+  // Came from someone's shared result (jareddesu.com/c): count it, then tidy the address
+  if (q.get('ref') === 'share') track('shared_in');
+  ['mode', 'level', 'size', 'ref'].forEach((k) => q.delete(k));
+  if (location.search && q.toString() !== location.search.slice(1)) history.replaceState(null, '', `${location.pathname}${q.toString() ? `?${q}` : ''}${location.hash}`);
   const pastOrToday = dates.filter((d) => d <= today);
   // Future puzzles are published early (so every time zone gets one at its midnight) but stay hidden
   date = asked && pastOrToday.includes(asked) ? asked : (pastOrToday[pastOrToday.length - 1] || null);
@@ -1070,8 +1083,33 @@ function celebrate(assisted) {
   $('done-share').focus();
 }
 
+// The result, spoiler-free like Wordle's: the grid's shape in squares (🟦 solved,
+// 🟨 revealed), the time and the streak, and a short link (jareddesu.com/c counts
+// arrivals from shares). The phone's share sheet where there is one, else copy.
+function shareText() {
+  const reveals = Object.keys(st.revealed).length > 0;
+  const free = pz.mode === 'kanji' || pz.deck;          // freeform grids: empty squares are paper, not black
+  const rows = [];
+  for (let r = 0; r < pz.height; r++) {
+    let row = '';
+    for (let c = 0; c < pz.width; c++) {
+      const x = cell(r, c);
+      row += x.black ? (free ? '⬜' : '⬛') : st.revealed[`${r},${c}`] ? '🟨' : '🟦';
+    }
+    rows.push(row);
+  }
+  const ds = pz.deck ? null : dailyStreak(store.progress);
+  const head = t('shareHead', { mode: pz.deck ? t('mode.deck') : pz.mode === 'kanji' ? '漢字' : '', size: SIZE_NAME(pz.size), level: pz.deck ? pz.deck.name : LEVEL_NAME(pz.level), date: pz.deck ? fmtDate(localDate(), false) : fmtDate(date, false) });
+  const stats = [t('shareTime', { time: fmtTime(st.time), reveals }), ds && ds.current > 1 ? t('shareStreak', { n: ds.current }) : null].filter(Boolean).join('  ');
+  return `${head}\n${stats}\n${rows.join('\n')}\njareddesu.com/c`;
+}
 function share() {
-  const text = `${t('shareText', { mode: pz.deck ? t('mode.deck') : pz.mode === 'kanji' ? '漢字' : '', size: SIZE_NAME(pz.size), level: pz.deck ? pz.deck.name : LEVEL_NAME(pz.level), date: pz.deck ? fmtDate(localDate()) : fmtDate(date), time: fmtTime(st.time), reveals: Object.keys(st.revealed).length > 0 })}\nhttps://www.jareddesu.com/tools/crossword/`;
+  const text = shareText();
+  track('share');
+  if (navigator.share && coarse) {
+    navigator.share({ text }).then(() => toast(t('shared')), () => {});
+    return;
+  }
   (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => toast(t('copied')), () => toast(text));
 }
 
