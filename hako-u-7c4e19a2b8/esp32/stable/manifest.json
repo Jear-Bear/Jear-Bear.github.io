@@ -3,6 +3,6 @@
   "file": "hako-s3-0.1.4.bin",
   "sha256": "43de2485f78c2870d1518ad76489a7cc239678868cb63eb00012661ee39dc896",
   "size": 4980656,
-  "released": "2026-10-28T03:59:22Z",
+  "released": "2026-10-28T03:59:54Z",
   "notes": "Fixes running out of memory with large Anki collections; live view of the panel"
 }
