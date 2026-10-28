@@ -1,8 +1,8 @@
 {
-  "version": "0.1.4",
-  "file": "hako-s3-0.1.4.bin",
-  "sha256": "43de2485f78c2870d1518ad76489a7cc239678868cb63eb00012661ee39dc896",
-  "size": 4980656,
-  "released": "2026-10-28T04:00:12Z",
-  "notes": "Fixes running out of memory with large Anki collections; live view of the panel"
+  "version": "0.1.6",
+  "file": "hako-s3-0.1.6.bin",
+  "sha256": "1bab594e6dd71d89570c89da6ac93a10f3a7c958d3761ecd68742bf4c591e7bc",
+  "size": 4983424,
+  "released": "2026-10-28T05:04:41Z",
+  "notes": "Faster city search, steadier Wi-Fi, more responsive web page"
 }
