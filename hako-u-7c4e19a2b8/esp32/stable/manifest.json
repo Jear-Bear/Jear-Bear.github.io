@@ -1,8 +1,8 @@
 {
-  "version": "0.1.7",
-  "file": "hako-s3-0.1.7.bin",
-  "sha256": "34e0a6814674b85be23de64a1b8c44b0177d1ecfd3fd401b7f80bd548f2e1c04",
-  "size": 4988384,
-  "released": "2026-10-30T05:37:06Z",
-  "notes": "Reading field on the cards screen, smoother pets, Check for updates says how it went"
+  "version": "0.1.8",
+  "file": "hako-s3-0.1.8.bin",
+  "sha256": "b6545aee0061daa19298886ea7264a992d0bb3d4bee41fc2ccbb489b34a780b2",
+  "size": 5031744,
+  "released": "2026-11-02T15:22:44Z",
+  "notes": "Peggle-style boards, kana and reading fonts, nearby hakos, less network traffic"
 }
