@@ -2233,5 +2233,245 @@
     "c": "A frock from shoulders to hem in a single garment; also Luffy's manga",
     "t": "Clothing",
     "tj": "衣服"
+  },
+  "どひよう": {
+    "c": "Circle of packed clay where wrestlers shove each other out",
+    "t": "Sumo",
+    "tj": "相撲"
+  },
+  "ありのまま": {
+    "c": "Just as it is, with no makeup or spin",
+    "t": "Honest expressions",
+    "tj": "正直な言い方"
+  },
+  "なくなる": {
+    "c": "What your snacks do way too fast",
+    "t": "Vanishing",
+    "tj": "消えること"
+  },
+  "りようほう": {
+    "c": "Not just one or the other, but each of the two",
+    "t": "Choices",
+    "tj": "選択"
+  },
+  "まどぐち": {
+    "c": "Where you queue to buy a ticket or file paperwork, behind glass",
+    "t": "Service spots",
+    "tj": "お店や役所の受付"
+  },
+  "ちゆうもん": {
+    "c": "What you place with the waiter after reading the menu",
+    "t": "At a restaurant",
+    "tj": "お店で"
+  },
+  "とりかえ": {
+    "c": "Trading your faulty gadget for a working one",
+    "t": "Swapping",
+    "tj": "交換"
+  },
+  "もしかして": {
+    "c": "Opening word of a hunch: \"___ you ate my pudding?\"",
+    "t": "Maybe",
+    "tj": "かもしれない"
+  },
+  "ほとんど": {
+    "c": "Nearly all, but not quite",
+    "t": "Amounts",
+    "tj": "割合"
+  },
+  "じゆうしよ": {
+    "c": "What you write on an envelope below the recipient's name",
+    "t": "Mail",
+    "tj": "郵便"
+  },
+  "こくばん": {
+    "c": "Where the teacher scrawls with chalk",
+    "t": "Classroom",
+    "tj": "教室"
+  },
+  "にゆうしや": {
+    "c": "Day one at a new company, with a name card and a bow",
+    "t": "Careers",
+    "tj": "就職"
+  },
+  "けつかく": {
+    "c": "A lung infection once called \"consumption\"",
+    "t": "Medical history",
+    "tj": "医学の歴史"
+  },
+  "かむばつく": {
+    "c": "What a retired singer stages with a surprise new tour",
+    "t": "Return of a star",
+    "tj": "復活"
+  },
+  "おおきい": {
+    "c": "Opposite of tiny",
+    "t": "Size",
+    "tj": "サイズ"
+  },
+  "きよういく": {
+    "c": "What teachers and textbooks provide",
+    "t": "School",
+    "tj": "学校"
+  },
+  "にこにこ": {
+    "c": "Beaming with a happy grin",
+    "t": "Facial expressions",
+    "tj": "顔つき"
+  },
+  "ちゆうしん": {
+    "c": "The bullseye, or the heart of a city",
+    "t": "Positions",
+    "tj": "位置"
+  },
+  "すちーむ": {
+    "c": "What rises from a kettle and warms old radiators",
+    "t": "Heating",
+    "tj": "暖房"
+  },
+  "りようしき": {
+    "c": "Common sense that keeps you from doing silly things",
+    "t": "Judgment",
+    "tj": "分別"
+  },
+  "ふいるむ": {
+    "c": "Roll that goes inside an old camera",
+    "t": "Cameras",
+    "tj": "写真"
+  },
+  "ふあつくす": {
+    "c": "Machine that sends a paper copy over the phone line",
+    "t": "Office gear",
+    "tj": "事務機器"
+  },
+  "たいがく": {
+    "c": "Leaving school before graduating",
+    "t": "School life",
+    "tj": "進路"
+  },
+  "はなしあう": {
+    "c": "What two people do at a table to sort things out",
+    "t": "Communication",
+    "tj": "おしゃべり"
+  },
+  "ひやかす": {
+    "c": "Tease someone, or browse shops without buying",
+    "t": "Teasing",
+    "tj": "からかい"
+  },
+  "せんにゆう": {
+    "c": "Sneaking quietly into enemy territory",
+    "t": "Spy stuff",
+    "tj": "スパイ"
+  },
+  "かちよう": {
+    "c": "Boss one step above a team lead and below a department head",
+    "t": "Office ranks",
+    "tj": "会社の役職"
+  },
+  "こうじよう": {
+    "c": "Where assembly lines hum and products roll out",
+    "t": "Industry",
+    "tj": "ものづくり"
+  },
+  "へいきん": {
+    "c": "Add them up and divide by how many there are",
+    "t": "Math",
+    "tj": "算数"
+  },
+  "じゆうたく": {
+    "c": "Homes in a neighborhood, collectively",
+    "t": "Housing",
+    "tj": "家"
+  },
+  "こつこう": {
+    "c": "Ties between two countries' governments",
+    "t": "Foreign affairs",
+    "tj": "外務省の仕事"
+  },
+  "かーぺつと": {
+    "c": "Soft cover for the floor, wall-to-wall",
+    "t": "Floor coverings",
+    "tj": "床"
+  },
+  "ゆうはん": {
+    "c": "Evening meal at home",
+    "t": "Meals",
+    "tj": "食事"
+  },
+  "きようだい": {
+    "c": "Your brothers and sisters, collectively",
+    "t": "Family",
+    "tj": "家族"
+  },
+  "ものさし": {
+    "c": "Marked with centimeters, found in your pencil case",
+    "t": "Stationery",
+    "tj": "文房具"
+  },
+  "りゆうこう": {
+    "c": "Something everyone's into this season",
+    "t": "Trends",
+    "tj": "はやり"
+  },
+  "げつしや": {
+    "c": "What you pay each month for piano or swim classes",
+    "t": "Lessons",
+    "tj": "習い事"
+  },
+  "しゆうよう": {
+    "c": "Fitting people or things inside a hall",
+    "t": "Capacity",
+    "tj": "入れもの"
+  },
+  "かねもち": {
+    "c": "Someone with deep pockets",
+    "t": "Wealth",
+    "tj": "財産"
+  },
+  "ばんごはん": {
+    "c": "Meal after sunset",
+    "t": "Meals",
+    "tj": "食事"
+  },
+  "しよせき": {
+    "c": "Library shelf filler",
+    "t": "Reading",
+    "tj": "読み物"
+  },
+  "じようほう": {
+    "c": "Data, news and facts you look up online",
+    "t": "Knowledge",
+    "tj": "知識"
+  },
+  "どうかん": {
+    "c": "\"I feel exactly the same way\"",
+    "t": "Opinions",
+    "tj": "考え"
+  },
+  "きゆうでん": {
+    "c": "Where a king or queen holds court",
+    "t": "Royalty",
+    "tj": "王様の家"
+  },
+  "すくない": {
+    "c": "Not many; scarce",
+    "t": "Amounts",
+    "tj": "量"
+  },
+  "ぴかちゆう": {
+    "c": "Yellow electric mouse with red cheeks",
+    "t": "Pocket monsters",
+    "tj": "ゲーム"
+  },
+  "ゆいいつ": {
+    "c": "Number-one and the only one",
+    "t": "Numbers",
+    "tj": "数"
+  },
+  "たちあがる": {
+    "c": "Rise from your chair",
+    "t": "Movements",
+    "tj": "動作"
   }
 }
