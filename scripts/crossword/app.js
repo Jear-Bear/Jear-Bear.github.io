@@ -16,11 +16,11 @@
 import { toHiragana } from '../kanji/romaji.js?v=1';
 import { gridKana, cycleDakuten, romaji } from './kana.js?v=1';
 import { translator, lang, setLang, dateLocale } from '../games/i18n.js?v=1';
-import { plusEligible, plusCard, mountPlusSection } from './plus.js?v=16';
-import { mountDeck } from './deck.js?v=16';
+import { plusEligible, plusCard, mountPlusSection, plusCta } from './plus.js?v=17';
+import { mountDeck } from './deck.js?v=17';
 import { openBrowse } from './browse.js?v=2';
-import { initSync, schedulePush, flush } from './sync.js?v=3';
-import { handleReturn, refresh, isMember, onAccount, archiveDay, currentUser, signedIn, logout, track, info as plusInfo } from './account.js?v=5';
+import { initSync, schedulePush, flush } from './sync.js?v=4';
+import { handleReturn, refresh, isMember, onAccount, archiveDay, currentUser, signedIn, logout, track, info as plusInfo } from './account.js?v=6';
 import { rng } from './construct.mjs?v=1';
 import { dailyStreak, addDays } from './streak.js?v=1';
 
@@ -235,9 +235,12 @@ async function init() {
   // Back from an email sign-in link or from Stripe: open the Crossword+ panel and say what happened
   const back = await handleReturn();
   if (back) { settings.mode = 'deck'; save(); } else await refresh();
-  // detail.signIn: the Sign in button up top (open the sign-in box instead of the plans)
-  document.addEventListener('crossword:plus', (e) => {
+  // detail.signIn: the Sign in button up top (open the sign-in box instead of the plans).
+  // detail.week: "Try it free for a week": start it (signing in first if need be) right
+  // here, so a locked past day just opens; deck.tryWeek says if it couldn't (then: the plans)
+  document.addEventListener('crossword:plus', async (e) => {
     if (e.detail && e.detail.signIn) { deck.openSignIn(); return; }      // a popup, on whatever tab they're on
+    if (e.detail && e.detail.week && await deck.tryWeek()) return;
     $('done').hidden = true;
     settings.mode = 'deck';
     save();
@@ -314,7 +317,7 @@ function showLocked() {
   $('empty').hidden = false;
   fill($('empty'), h('span', { class: 'cw-locked' }, h('span', { class: 'cw-plus-badge' }, '🔒 ', t('plusName')), h('span', { class: 'cw-locked-msg' }, rich(t('locked')))), h('span', { class: 'cw-locked-actions' },
     h('button', { type: 'button', class: 'btn', onclick: () => { const today = dates.filter((d) => d <= localDate()).pop(); if (today) { date = today; history.replaceState(null, '', location.pathname); openDay(); } } }, t('toToday')),
-    h('button', { type: 'button', class: 'btn btn-plus', onclick: () => document.dispatchEvent(new CustomEvent('crossword:plus')) }, t('seePlus'))));
+    plusCta()));
 }
 
 function showEmpty(msg) {

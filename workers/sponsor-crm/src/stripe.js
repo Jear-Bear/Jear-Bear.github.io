@@ -18,13 +18,15 @@
 // webhook's signing secret in D1 (stripe_config), never in the repo.
 // Card details never touch this Worker: Stripe's own pages take them.
 //
-// Free trial: an account that has never had a subscription gets TRIAL_DAYS free (the
-// STRIPE_TRIAL_DAYS variable, 0 turns it off). Stripe still takes the card at the start
-// and charges it when the trial ends, unless they cancel first.
+// Free trial: while the free week is on (plus.js, FREE_WEEK_DAYS), it replaces Stripe's
+// trial and Checkout is a plain purchase: people try Crossword+ without a card first.
+// With FREE_WEEK_DAYS = 0, an account that has never had a subscription gets TRIAL_DAYS
+// free instead (the STRIPE_TRIAL_DAYS variable, 0 turns it off); Stripe takes the card at
+// the start and charges it when that trial ends, unless they cancel first.
 
 import { HttpError } from './data.js';
 import { text } from './public.js';
-import { sessionUser, publicUser, siteFor, sendWelcome, sendTrialReminder, funnel } from './plus.js';
+import { sessionUser, publicUser, siteFor, sendWelcome, sendTrialReminder, funnel, freeWeekDays } from './plus.js';
 
 const API_VERSION = '2024-06-20';                 // pinned: subscription.current_period_end lives on the subscription
 export const PLANS = {
@@ -140,7 +142,8 @@ export async function stripeStatus(env, db) {
   return { connected: Boolean(cfg && cfg.webhook_secret && cfg.prices && cfg.prices.month), key: true, mode };
 }
 
-export const trialDays = (env) => { const n = Number(env.STRIPE_TRIAL_DAYS ?? 7); return Number.isFinite(n) && n > 0 ? Math.min(30, Math.round(n)) : 0; };
+// Stripe's card trial: off while the free week is on (that's the try-it-first now)
+export const trialDays = (env) => { if (freeWeekDays(env)) return 0; const n = Number(env.STRIPE_TRIAL_DAYS ?? 7); return Number.isFinite(n) && n > 0 ? Math.min(30, Math.round(n)) : 0; };
 // Only once per account: never for one that has had a subscription
 export const trialOk = (u) => Boolean(u) && !u.stripe_subscription;
 
@@ -152,6 +155,7 @@ export async function plusInfo(env) {
     google: env.GOOGLE_CLIENT_ID || null, email: Boolean(env.RESEND_API_KEY), embedded: Boolean(env.STRIPE_PUBLISHABLE_KEY),
     prices: Object.fromEntries(Object.entries(PLANS).map(([k, p]) => [k, p.label])),
     trialDays: trialDays(env),
+    freeWeekDays: freeWeekDays(env),
   };
 }
 
@@ -259,7 +263,7 @@ export async function plusSync(request, env) {
     if (customer && customer === u.stripe_customer && s.status === 'complete') await applySubscription(env, env.DB, s.subscription);
   }
   const fresh = await env.DB.prepare('SELECT * FROM plus_users WHERE id = ?').bind(u.id).first();
-  return { user: await publicUser(env.DB, fresh, body.day) };
+  return { user: publicUser(env, fresh) };
 }
 
 export async function plusPortal(request, env, origin) {

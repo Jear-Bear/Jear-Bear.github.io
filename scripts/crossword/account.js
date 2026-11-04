@@ -49,7 +49,7 @@ function signIn(r) {
   return user;
 }
 
-// What's set up: { open, test, google (client ID), email, prices }
+// What's set up: { open, test, google (client ID), email, prices, trialDays, freeWeekDays }
 export async function info() {
   if (!infoCache) infoCache = fetch(`${API}/info`).then((r) => (r.ok ? r.json() : { open: false })).catch(() => ({ open: false }));
   return infoCache;
@@ -64,6 +64,12 @@ export async function refresh() {
 }
 
 export const sendEmailLink = (email) => call('login/email', { email });
+// The free week (no card, once per account): { ok, user }; ok is false if it can't start
+export async function startWeek() {
+  const r = await call('week');
+  if (r.user) { user = r.user; emit(); }
+  return r;
+}
 export async function logout() {
   try { await call('logout'); } catch { /* signed out here either way */ }
   write({});
@@ -132,7 +138,7 @@ export const loadSave = () => call('load');
 export const putSave = (data) => call('save', { data });
 export const archiveDay = (date) => call('day', { date });
 
-// The Crossword+ funnel in the Sponsor desk: a count of visit / solve / offer, at most once
+// The Crossword+ funnel in the Sponsor desk: a count of visit / solve / offer / plan, at most once
 // per step per browser per day. Just the step's name is sent: nothing about the person.
 const SENT = 'jareddesu.crossword.funnel';
 export function track(e) {

@@ -10,15 +10,22 @@
 //    words only, then counted against today's free one by the Worker (members: no limit).
 // The deck stays in this browser (localStorage); made puzzles also sync to the
 // account (sync.js). The deck's word list itself is never sent anywhere. Everything from the deck is inserted as text.
+//
+// The free week (no card, once per account; the Worker's plus.js): a new account gets it
+// when it first signs in; an older one starts it with "Start my free week" here or "Try it
+// free for a week" anywhere on the page (tryWeek). A short message at the bottom says when
+// it starts, offers it once to older accounts, and says once when it has ended. While it's
+// on, this box shows when it ends and the plans to keep it.
 
 import { lang } from '../games/i18n.js?v=1';
 import { gridKana, toHira } from './kana.js?v=1';
-import { info, refresh, currentUser, onAccount, signedIn, sendEmailLink, googleButton, checkout, portal, bonusPuzzle, deckUse, deckKey, track } from './account.js?v=5';
-import { schedulePush } from './sync.js?v=3';
-import { plusPerks, plusPrice, plusBadge, supportLine, nudge } from './plus.js?v=16';
+import { info, refresh, currentUser, onAccount, signedIn, sendEmailLink, googleButton, checkout, portal, bonusPuzzle, deckUse, deckKey, track, startWeek } from './account.js?v=6';
+import { schedulePush } from './sync.js?v=4';
+import { plusPerks, plusPrice, plusBadge, supportLine, nudge, weekOffered } from './plus.js?v=17';
 import { openBrowse } from './browse.js?v=2';
 
-const PENDING = 'jareddesu.crossword.pendingPlan';   // a plan picked before signing in
+const PENDING = 'jareddesu.crossword.pendingPlan';   // a plan picked before signing in ('week': the free week)
+const WEEK_SEEN = 'jareddesu.crossword.week';         // which free-week messages each account has seen here
 const KEEP = 60;                 // puzzles kept to replay (the list shows the newest few; the rest are under "See all")
 const SHOW = 3;
 const FREE_PER_DAY = 1;
@@ -70,6 +77,19 @@ const T = {
     failed: 'Couldn’t reach the server. Please try again in a bit.',
     recent: 'Your deck puzzles', solved: 'solved',
     replace: 'Import a different deck', confirmReplace: 'Replace this deck? Your deck puzzles stay.', words: '{n} words',
+    weekBtn: 'Start my free week', weekBtnOut: 'Sign in to start your free week',
+    weekLine: 'A week of everything in Crossword+, no card needed. When it ends, it just ends: nothing to cancel.',
+    weekOr: 'Or subscribe now:',
+    weekPopTitle: 'Start your free week', weekPop1: 'Sign in (it’s free), so it works on all your devices', weekPop2: 'Your free week starts: no card, nothing to cancel',
+    sentWeek: 'Check your inbox for a sign-in link (it works for 20 minutes; check spam too). Open it on this device and your free week starts.',
+    weekOn: 'Your free week of Crossword+ has started! Past puzzles, unlimited deck puzzles and the bonus puzzles are open until {date}. No card, nothing to cancel.',
+    weekOffer: 'New: try Crossword+ free for a week. No card, nothing to cancel.', startShort: 'Start it',
+    weekOver: 'Your free week of Crossword+ ended on {date}. Want to keep it? It’s {price} a month.', seeKeep: 'See the plans',
+    weekHad: 'You’ve already had your free week, but you can still subscribe.',
+    memberWeek: 'Crossword+ · free week', weekUntil: 'Until {date} · no card',
+    keepTitle: 'Keep Crossword+ after {date}?',
+    keepLine: 'Your free week just ends; nothing is charged. To keep it, pick a plan (it starts the day you pay).',
+    weekEnded: 'Your free week ended on {date}.',
   },
   ja: {
     title: 'クロスワード＋',
@@ -116,6 +136,19 @@ const T = {
     failed: 'サーバーにつながりませんでした。少し待ってからもう一度どうぞ。',
     recent: 'デッキのパズル', solved: 'クリア',
     replace: '別のデッキを読み込む', confirmReplace: 'デッキを入れ替えますか？作ったパズルは残ります。', words: '{n}語',
+    weekBtn: '無料の1週間を始める', weekBtnOut: 'ログインして無料の1週間を始める',
+    weekLine: 'クロスワード＋の全部を1週間、カード不要で。期間が終わればそのまま終了、解約の手続きもいりません。',
+    weekOr: 'すぐに登録する場合：',
+    weekPopTitle: '無料の1週間を始める', weekPop1: 'ログイン（無料）：どの端末でも使えるように', weekPop2: '無料の1週間がスタート：カード不要、解約も不要',
+    sentWeek: 'ログインリンクを送りました（20分間有効。迷惑メールも確認してください）。この端末で開くと、無料の1週間が始まります。',
+    weekOn: 'クロスワード＋の無料の1週間が始まりました！{date}まで、過去のパズル、デッキパズル作り放題、ボーナスパズルが遊べます。カード不要、解約も不要です。',
+    weekOffer: 'クロスワード＋を1週間無料で試せるようになりました。カード不要、解約も不要です。', startShort: '始める',
+    weekOver: 'クロスワード＋の無料期間は{date}に終わりました。続けたい場合は月{price}です。', seeKeep: 'プランを見る',
+    weekHad: '無料の1週間はすでに使われていますが、プランから登録できます。',
+    memberWeek: 'クロスワード＋（無料期間）', weekUntil: '{date}まで・カード不要',
+    keepTitle: '{date}以降も続けますか？',
+    keepLine: '無料期間はそのまま終わるだけで、請求はありません。続ける場合はプランを選んでください（お支払いの日から始まります）。',
+    weekEnded: '無料期間は{date}に終わりました。',
   },
 };
 const t = (k, vars = {}) => String((T[lang()] || T.en)[k] ?? T.en[k] ?? k).replace(/\{(\w+)\}/g, (_, x) => vars[x] ?? '');
@@ -149,12 +182,22 @@ function pendingPlan() {
   try { const p = JSON.parse(localStorage.getItem(PENDING) || 'null'); return p && Date.now() - p.at < 2 * 3600 * 1000 ? p.plan : null; } catch { return null; }
 }
 
-// A message that floats at the bottom of the screen, wherever the page is scrolled
+// The free-week messages (started, offered, ended) are each shown once per account in a browser.
+// No storage (private mode): say nothing rather than repeat it on every visit.
+function weekSeen(email) { try { return (JSON.parse(localStorage.getItem(WEEK_SEEN) || '{}')[email]) || {}; } catch { return null; } }
+function markWeek(email, k) {
+  try { const all = JSON.parse(localStorage.getItem(WEEK_SEEN) || '{}'); all[email] = { ...(all[email] || {}), [k]: Date.now() }; localStorage.setItem(WEEK_SEEN, JSON.stringify(all)); } catch { /* private mode */ }
+}
+const fmtLong = (iso) => new Date(iso).toLocaleDateString(lang() === 'ja' ? 'ja-JP' : 'en-US', { month: 'long', day: 'numeric' });
+
+// A message that floats at the bottom of the screen, wherever the page is scrolled.
+// action: [label, run] for one button in it (pressing it closes the message)
 let noticeTimer = null;
-function notice(text, { error = false, ms = 7000 } = {}) {
+function notice(text, { error = false, ms = 7000, action = null } = {}) {
   document.querySelector('.cw-notice')?.remove();
   const el = h('div', { class: `cw-notice${error ? ' is-error' : ''}`, role: error ? 'alert' : 'status', 'aria-live': 'polite' },
     h('span', {}, text),
+    action ? h('button', { type: 'button', class: 'btn btn-plus cw-notice-act', onclick: () => { el.remove(); action[1](); } }, action[0]) : null,
     h('button', { type: 'button', class: 'cw-notice-x', 'aria-label': t('close'), onclick: () => el.remove() }, '×'));
   document.body.append(el);
   clearTimeout(noticeTimer);
@@ -382,14 +425,16 @@ export function mountDeck({ root, play }) {
   }
   // Sign in, in a popup over the page. plan: they picked a plan first, so it says
   // "1 Sign in, 2 Pay" and the payment form opens as soon as they're signed in.
+  // plan 'week': "Start your free week": "1 Sign in, 2 Your free week starts".
   async function openSignIn({ plan = null } = {}) {
     if (!cfg) cfg = await info();
     if (signInPop) signInPop.close();
     if (plan) setPending(plan); else clearPending();
+    const week = plan === 'week';
     const msg = h('p', { class: 'cw-deck-status', role: 'status', 'aria-live': 'polite' });
     const say = (text, error = false) => { msg.textContent = text; msg.classList.toggle('is-error', error); };
     const form = signInForm(say, plan);
-    const price = plan && cfg.prices ? t(plan === 'year' ? 'perYear' : 'perMonth', { price: cfg.prices[plan] }) : '';
+    const price = plan && !week && cfg.prices ? t(plan === 'year' ? 'perYear' : 'perMonth', { price: cfg.prices[plan] }) : '';
     const days = trialDays();
     const overlay = h('div', { class: 'cw-overlay cw-signin-pop' });
     const close = () => { overlay.remove(); signInPop = null; document.removeEventListener('keydown', esc); };
@@ -397,8 +442,9 @@ export function mountDeck({ root, play }) {
     overlay.append(h('div', { class: 'cw-sheet cw-signin-sheet', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'cw-signin-title' },
       h('button', { type: 'button', class: 'cw-pop-x', 'aria-label': t('close'), onclick: close }, '×'),
       plan ? h('div', {}, plusBadge()) : null,
-      h('h2', { class: 'cw-sheet-title', id: 'cw-signin-title' }, t(plan ? 'getPlus' : 'signInTitle')),
-      plan ? h('ol', { class: 'cw-pop-steps' }, h('li', { class: 'is-now' }, t('popStep1')), h('li', {}, days ? t('popStep2t', { days, price }) : t('popStep2', { price }))) : null,
+      h('h2', { class: 'cw-sheet-title', id: 'cw-signin-title' }, t(week ? 'weekPopTitle' : plan ? 'getPlus' : 'signInTitle')),
+      week ? h('ol', { class: 'cw-pop-steps' }, h('li', { class: 'is-now' }, t('weekPop1')), h('li', {}, t('weekPop2')))
+        : plan ? h('ol', { class: 'cw-pop-steps' }, h('li', { class: 'is-now' }, t('popStep1')), h('li', {}, days ? t('popStep2t', { days, price }) : t('popStep2', { price }))) : null,
       form.nodes, msg));
     overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
     document.addEventListener('keydown', esc);
@@ -420,11 +466,62 @@ export function mountDeck({ root, play }) {
       const plan = pendingPlan();
       if (plan && currentUser()) {
         clearPending();
-        if (!member()) { notice(t('toPay')); startCheckout(plan); }
-      }
+        if (plan === 'week') afterWeekSignIn();
+        else if (!member()) { notice(t('toPay')); startCheckout(plan); }
+        else accountNotices();             // a brand-new account: its free week started instead
+      } else if (currentUser()) accountNotices();
     }
     render();
   });
+
+  // The free week. tryWeek: "Try it free for a week" / "Start my free week", here or from the
+  // page's other Crossword+ boxes (app.js): signs in first if need be (a new account gets it
+  // at sign-in), then starts it. Returns false when there's nothing to start (they've had it,
+  // or they're a member), so the caller shows the Crossword+ tab instead.
+  async function tryWeek() {
+    if (!cfg) cfg = await info();
+    if (!signedIn()) { openSignIn({ plan: 'week' }); return true; }
+    const u = currentUser() || await refresh();
+    if (!u) { openSignIn({ plan: 'week' }); return true; }
+    if (u.member || !u.freeWeekOk) { if (!u.member) notice(t('weekHad')); return false; }
+    return beginWeek();
+  }
+  async function beginWeek() {
+    busy = true; render();
+    let ok = true;
+    try {
+      const r = await startWeek();             // the account updates, and accountNotices says it's started
+      if (!r.ok) { ok = false; notice(t('weekHad')); }
+    } catch (err) { notice(err.message || t('failed'), { error: true }); }
+    busy = false; render();
+    return ok;
+  }
+  // Signed in from "Start your free week": a new account already has it; an older one starts it now
+  function afterWeekSignIn() {
+    const u = currentUser();
+    if (u.member) accountNotices();
+    else if (u.freeWeekOk) beginWeek();
+    else notice(t('weekHad'), { action: [t('seeKeep'), () => document.dispatchEvent(new CustomEvent('crossword:plus'))], ms: 12000 });
+  }
+  // The free-week messages, once each per account in this browser: it's started; it's
+  // there to try (accounts from before it existed); it's ended (and what keeping it costs)
+  let accountNoticeAt = 0;
+  async function accountNotices() {
+    const u = currentUser();
+    const seen = u && u.email ? weekSeen(u.email) : null;
+    if (!seen) return;
+    const say = (k, text, opts) => { markWeek(u.email, k); accountNoticeAt = Date.now(); notice(text, { ms: 14000, ...opts }); };
+    if (u.freeWeek && !u.paid && !u.granted) {
+      if (!seen.started) say('started', t('weekOn', { date: fmtLong(u.freeWeek) }));
+    } else if (u.freeWeekEnded && !u.member) {
+      if (!seen.ended) {
+        const i = cfg || await info();
+        if (i && i.open) say('ended', t('weekOver', { date: fmtLong(u.freeWeekEnded), price: i.prices.month }), { action: [t('seeKeep'), () => document.dispatchEvent(new CustomEvent('crossword:plus'))] });
+      }
+    } else if (u.freeWeekOk && !seen.offered && !seen.started) {
+      say('offered', t('weekOffer'), { action: [t('startShort'), () => beginWeek()] });
+    }
+  }
 
   async function load() {
     if (loaded) return;
@@ -438,13 +535,13 @@ export function mountDeck({ root, play }) {
   // --- views
   function plans() {
     if (!cfg || !cfg.open) return [h('p', { class: 'cw-deck-muted' }, t('notOpen'), ' ', h('a', { href: '#plus-sec' }, t('joinList')))];
-    const go = (plan) => () => (signedIn() ? startCheckout(plan) : openSignIn({ plan }));
+    const go = (plan) => () => { track('plan'); if (signedIn()) startCheckout(plan); else openSignIn({ plan }); };
     const days = trialDays();
     const label = (price) => (days ? t('planTrial', { price }) : price);
     return [
       days ? h('p', { class: 'cw-trial-line' }, t('trialLine', { days })) : null,
       h('div', { class: 'cw-deck-row cw-plans' },
-        h('button', { type: 'button', class: 'btn btn-plus', disabled: busy, onclick: go('month') }, label(t('perMonth', { price: cfg.prices.month }))),
+        h('button', { type: 'button', class: weekOffered() ? 'btn' : 'btn btn-plus', disabled: busy, onclick: go('month') }, label(t('perMonth', { price: cfg.prices.month }))),
         h('button', { type: 'button', class: 'btn', disabled: busy, onclick: go('year') }, label(t('perYear', { price: cfg.prices.year })), h('span', { class: 'cw-seg-sub' }, ` · ${t('yearNote')}`))),
       h('p', { class: 'cw-deck-muted' }, t('secure'), cfg.test ? ` ${t('test')}` : ''),
       legalLine('agreePay'),
@@ -467,7 +564,7 @@ export function mountDeck({ root, play }) {
       const v = email.value.trim();
       if (!v) { email.focus(); return; }
       send.disabled = true; say(t('sending'));
-      try { await sendEmailLink(v); say(t(plan ? 'sentPlan' : 'sent')); } catch (e) { say(e.message || t('failed'), true); }
+      try { await sendEmailLink(v); say(t(plan === 'week' ? 'sentWeek' : plan ? 'sentPlan' : 'sent')); } catch (e) { say(e.message || t('failed'), true); }
       send.disabled = false;
     } }, t('sendLink'));
     email.addEventListener('keydown', (e) => { if (e.key === 'Enter') send.click(); });
@@ -487,10 +584,13 @@ export function mountDeck({ root, play }) {
   }
 
   // Members: their status and Manage subscription, top right of the box
+  const onWeek = (u) => Boolean(u && u.freeWeek && !u.paid && !u.granted);
   function membership(u) {
-    const when = !(u.granted && !u.paid) && u.renews ? t(u.status === 'trialing' ? 'trialEnds' : u.status === 'canceled' ? 'ends' : 'renews', { date: fmtDay(u.renews) }) : '';
+    const week = onWeek(u);
+    const when = week ? t('weekUntil', { date: fmtDay(u.freeWeek) })
+      : !(u.granted && !u.paid) && u.renews ? t(u.status === 'trialing' ? 'trialEnds' : u.status === 'canceled' ? 'ends' : 'renews', { date: fmtDay(u.renews) }) : '';
     return h('div', { class: 'cw-deck-acct' },
-      h('span', { class: 'cw-deck-member' }, '✓ ', t(u.granted && !u.paid ? 'memberFree' : 'member')),
+      h('span', { class: 'cw-deck-member' }, '✓ ', t(week ? 'memberWeek' : u.granted && !u.paid ? 'memberFree' : 'member')),
       h('span', { class: 'cw-deck-muted' }, when,
         when && u.paid ? ' · ' : '',
         u.paid ? h('button', { type: 'button', class: 'btn-link', onclick: async () => { try { await portal(); } catch (e) { setStatus(e.message || t('failed'), true); } } }, t('manage')) : null));
@@ -725,12 +825,30 @@ export function mountDeck({ root, play }) {
     play(p);
   }
 
-  // Crossword+ for everyone else, in one card: the three perks, the price, the plans
+  // Crossword+ for everyone else, in one card: the three perks, the price, the free week
+  // when it's open to them (then the plans as the other way in), the plans
   function plusBlock() {
     track('offer');
+    const u = currentUser();
+    const week = cfg && cfg.open && weekOffered();
+    const ended = u && u.freeWeekEnded;
     return h('div', { class: 'cw-plusblock', id: 'cw-plusblock' },
       h('div', { class: 'cw-plusblock-head' }, plusBadge(), cfg && cfg.open ? plusPrice(cfg.prices, cfg.trialDays) : null),
       plusPerks({ order: ['deck', 'archive', 'bonus'], bonusN: bonus ? bonus.length : 0 }),
+      week ? [
+        h('div', { class: 'cw-deck-row' }, h('button', { type: 'button', class: 'btn btn-plus', disabled: busy, onclick: () => tryWeek() }, t(signedIn() ? 'weekBtn' : 'weekBtnOut'))),
+        h('p', { class: 'cw-trial-line' }, t('weekLine')),
+        h('p', { class: 'cw-deck-muted cw-week-or' }, t('weekOr'))] : null,
+      ended ? h('p', { class: 'cw-trial-line' }, t('weekEnded', { date: fmtLong(ended) })) : null,
+      ...plans(),
+      supportLine());
+  }
+  // On the free week: when it ends, and the plans to keep it
+  function keepBlock(u) {
+    track('offer');
+    return h('div', { class: 'cw-plusblock', id: 'cw-plusblock' },
+      h('div', { class: 'cw-plusblock-head' }, plusBadge(), h('p', { class: 'cw-plus-price' }, h('strong', {}, t('keepTitle', { date: fmtLong(u.freeWeek) })))),
+      h('p', { class: 'cw-deck-muted' }, t('keepLine')),
       ...plans(),
       supportLine());
   }
@@ -759,7 +877,7 @@ export function mountDeck({ root, play }) {
         h('p', {}, t('intro')),
         isMember ? null : freeStrip()];
       body.push(...steps(s));
-      body.push(statusLine(), ...(isMember ? [...bonusView(), supportLine()] : [plusBlock()]));
+      body.push(statusLine(), ...(!isMember ? [plusBlock()] : onWeek(u) && cfg.open ? [...bonusView(), keepBlock(u)] : [...bonusView(), supportLine()]));
     }
     root.replaceChildren(head, ...body.filter(Boolean));
   }
@@ -774,9 +892,11 @@ export function mountDeck({ root, play }) {
     },
     showPlus,
     openSignIn,
+    tryWeek,
     // Back from Stripe or an email link: a floating message, wherever the page is scrolled
     message(kind, text) {
       if (kind === 'signedIn' && (pendingPlan() || busy)) return;       // straight on to paying instead
+      if (kind === 'signedIn' && Date.now() - accountNoticeAt < 5000) return;   // the free-week message is up
       notice(kind === 'paid' ? t('welcome') : kind === 'signedIn' ? t('signedInMsg') : kind === 'cancelled' ? t('cancelled') : text || t('failed'), { error: kind === 'error', ms: kind === 'paid' ? 10000 : 7000 });
     },
     current() { return null; },

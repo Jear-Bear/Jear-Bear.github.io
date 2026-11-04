@@ -12,14 +12,41 @@ a few bonus puzzles a week.
 
 **Price:** $2.99/month or $24.99/year (about $2.08/month, roughly 30% off).
 
-**Free trial:** 7 days free for an account that has never had a subscription
-(one per account; `STRIPE_TRIAL_DAYS` on the Worker changes the length, 0 turns it
-off). Stripe takes the card at the start and charges the chosen plan when the
-trial ends unless they cancel. The plans, the price lines and Stripe's form all
-say so; the account shows "Free trial until {date}", and the Sponsor desk counts
-trials separately from paying members.
+**Free week (added Nov 2026):** every account gets 7 days of Crossword+ free,
+**no card**, once. A new account gets it the moment it first signs in; an account
+from before (or one that skipped it) starts it with **Start my free week** in the
+Crossword+ tab, or **Try it free for a week** in the page section, on the solved
+screen or on a locked past day (that one opens the day right there). When it ends,
+Crossword+ just stops: nothing is charged and there's nothing to cancel. No email
+is sent for it. Not for accounts that have had a subscription, free access, or are
+turned off. `FREE_WEEK_DAYS` on the Worker changes the length; 0 turns it off.
+Column `plus_users.free_week_until` (migration 0020); `POST /public/plus/week`
+starts it.
 
-Emails: the welcome email says the trial has started and that one reminder will
+Why: in Oct 2026 the funnel showed 47 new accounts → 3 opened checkout → 0 card
+trials (5 people ever opened the payment form and left, 1 paid). People signed in
+for the free deck puzzle and never tried Crossword+, and the few who wanted it
+stopped at "enter a card for a free trial".
+
+On the page, while it's open to someone: the price lines say "Free for a week, no
+card needed", the Crossword+ button says "Try it free for a week", and the
+Crossword+ tab's card leads with **Start my free week**, then "Or subscribe now"
+and the plans. During the week the tab shows "Crossword+ · free week, until
+{date}" and a "Keep Crossword+ after {date}?" card with the plans (paying starts
+the plan that day). After it, the card says when it ended, above the plans.
+
+A message at the bottom of the screen (once per account per browser, never by
+email): "Your free week has started… until {date}" (when it starts); "New: try
+Crossword+ free for a week" with **Start it** (older accounts, once); "Your free
+week ended on {date}. Want to keep it? It's $2.99 a month" with **See the plans**.
+
+**Card trial (only with the free week off):** with `FREE_WEEK_DAYS=0`, an account
+that has never had a subscription gets `STRIPE_TRIAL_DAYS` (default 7) free
+instead. Stripe takes the card at the start and charges the chosen plan when the
+trial ends unless they cancel; the account shows "Free trial until {date}". While
+the free week is on, Checkout is a plain purchase with no trial.
+
+Emails (card trial only): the welcome email says the trial has started and that one reminder will
 come. Three days before the trial ends, Stripe sends the Worker
 `customer.subscription.trial_will_end` and it emails a reminder (once per account,
 `plus_users.trial_reminded_at`, migration 0018; not if they've already cancelled):
@@ -66,7 +93,8 @@ sponsor ad (orange, labelled **AD**).
   from the email link (the chosen plan waits in the browser for 2 hours).
 - **Messages** after Stripe or an email link (welcome, no charge was made,
   signed in) float at the bottom of the screen, wherever the page is scrolled.
-- **Past day** (🔒): the same purple box with **See Crossword+**.
+- **Past day** (🔒): the same purple box with **See Crossword+** (or **Try it free
+  for a week** while that's open to them: it starts the week and opens the day).
 - **Hitting a limit** (the free deck puzzle used up, bonus puzzles): a purple
   box with what happened in bold, the perks and **See Crossword+**. Pressing
   **Make a puzzle** again scrolls to it and shakes it once.
@@ -233,8 +261,18 @@ did each step, and what share made it from the step before.
    screen's card, the Crossword+ tab's card, a locked day): sent by the page
    (`POST /public/plus/event`), at most once per browser per day per step, just the
    step's name.
-4. Made an account (first sign-in), 5. opened checkout, 6. started a free trial,
-   7. paid (a trial that converted, or paying right away): counted by the Worker.
+4. Made an account (first sign-in) and 5. started a free week: counted by the Worker.
+6. Picked a plan (pressed $2.99/month or $24.99/year, signed in or not): sent by the
+   page like 1–3.
+7. Opened checkout (the payment form, after signing in), 8. started a card trial
+   (only with the free week off), 9. paid (a trial that converted, or paying right
+   away): counted by the Worker.
+
+After the offer it splits, so each row says what it's compared with: an account and
+a picked plan against offers seen, the free week against accounts, checkout against
+plans picked (the gap there is people lost at sign-in), trial and paid against
+checkouts. The desk's members card also shows **On a free week** (now, ended, and
+how many who had one went on to pay).
 
 Stored as daily totals in `plus_funnel` (migration 0019), no people. The biggest drop
 between two steps is the one to work on.

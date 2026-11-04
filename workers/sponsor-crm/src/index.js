@@ -33,7 +33,7 @@
 //   GET  /public/availability       open sponsor slots by month (public, counts only)
 //   POST /public/inquiry            the sponsor-page form → Review (public, rate-limited)
 //   POST /public/click              a click on a sponsor card on the site (counts only)
-//   /public/plus/…                  Crossword+ accounts (sign in with Google or an email link), past days, bonus puzzles (plus.js)
+//   /public/plus/…                  Crossword+ accounts (sign in with Google or an email link), the free week, past days, bonus puzzles (plus.js)
 //   /public/plus/checkout|sync|portal, POST /public/stripe/webhook    payments (stripe.js)
 //   /public/plus/deck-use|load|save  the free deck puzzle per account, progress synced between devices (plussync.js)
 //
@@ -64,7 +64,7 @@ import { handleGo, recordClick, createInvoice } from './growth.js';
 import { listDrafts, requestDraft, closeDraft } from './drafts.js';
 import { availability, inquiry } from './public.js';
 import { joinWaitlist, leaveWaitlist, listWaitlist } from './waitlist.js';
-import { loginGoogle, loginEmail, loginVerify, me as plusMe, logout as plusLogout, dayArchive, bonusPuzzle, listPlus, grantPlus, updatePlus, deletePlus, trackEvent, funnelReport } from './plus.js';
+import { loginGoogle, loginEmail, loginVerify, me as plusMe, logout as plusLogout, startWeek, dayArchive, bonusPuzzle, listPlus, grantPlus, updatePlus, deletePlus, trackEvent, funnelReport } from './plus.js';
 import { deckUse, loadSave, putSave } from './plussync.js';
 import { plusInfo, plusCheckout, plusSync, plusPortal, stripeWebhook, stripeSetup, stripeStatus, stripeResync } from './stripe.js';
 import { publicKey, bonusBacklog, openSealed } from './sealed.js';
@@ -317,6 +317,7 @@ const app = {
           'login/verify': () => loginVerify(request, env),
           me: () => plusMe(request, env),
           logout: () => plusLogout(request, env),
+          week: () => startWeek(request, env),
           day: () => dayArchive(request, env, openSealed, env.CROSSWORD_SITE || 'https://www.jareddesu.com'),
           bonus: () => bonusPuzzle(request, env, openSealed, env.CROSSWORD_SITE || 'https://www.jareddesu.com'),
           checkout: () => plusCheckout(request, env, origin),
