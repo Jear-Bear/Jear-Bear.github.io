@@ -8,11 +8,12 @@
 //     (hidden for 30 days);
 //   - it never covers the grid or interrupts a puzzle;
 //   - the page section (always there, below How to play) never pops up.
-// Once sales open, the same places link to the Crossword+ panel instead.
+// Once sales open, the same places link to the Crossword+ panel instead, and while the
+// free week (no card) is open to someone, they offer that first: "Try it free for a week".
 // Emails go to the sponsor Worker's private database (waitlist.js), never the repo.
 
 import { lang } from '../games/i18n.js?v=1';
-import { info, isMember, onAccount, currentUser, track } from './account.js?v=5';
+import { info, isMember, onAccount, currentUser, track } from './account.js?v=6';
 
 const API = 'https://sponsor-crm.jared-65b.workers.dev';
 const KEY = 'jareddesu.crossword.plus';
@@ -41,10 +42,13 @@ const T = {
     badge: 'Crossword+',
     sectionTitle: 'Want more puzzles?',
     'perk.archive': 'Every past puzzle', 'perk.archive.sub': 'The whole archive, kana and kanji',
-    'perk.deck': 'Unlimited deck puzzles', 'perk.deck.sub': 'From your own Anki deck (free: 1 a day, signed in)',
+    'perk.deck': 'Unlimited deck puzzles', 'perk.deck.sub': 'From your own Anki deck (1 free to try, signed in)',
     'perk.bonus': 'Bonus puzzles', 'perk.bonus.sub': 'New ones every week', 'perk.bonus.n': '{n} waiting, more every week',
     price: '<b>{month}/month</b> or {year}/year · cancel anytime',
     priceTrial: '<b>{days} days free</b>, then {month}/month or {year}/year · cancel anytime',
+    priceWeek: '<b>Free for a week</b>, no card needed · then {month}/month or {year}/year if you want to keep it',
+    weekCta: 'Try it free for a week',
+    memberWeek: 'Your free week of Crossword+ runs until {date}. Enjoy!',
     free: 'Today’s puzzles are always free, no account needed.',
     member: 'You’re a Crossword+ member. Thank you!',
     memberCta: 'Open Crossword+',
@@ -70,10 +74,13 @@ const T = {
     badge: 'クロスワード＋',
     sectionTitle: 'もっと解きたい？',
     'perk.archive': '過去のパズル全部', 'perk.archive.sub': 'かなも漢字も、全部の日',
-    'perk.deck': 'デッキパズル作り放題', 'perk.deck.sub': '自分のAnkiデッキから（無料はログインで1日1つ）',
+    'perk.deck': 'デッキパズル作り放題', 'perk.deck.sub': '自分のAnkiデッキから（ログインで1つ無料）',
     'perk.bonus': 'ボーナスパズル', 'perk.bonus.sub': '毎週追加', 'perk.bonus.n': '今{n}個、毎週追加',
     price: '<b>月{month}</b>または年{year}・いつでも解約OK',
     priceTrial: '<b>{days}日間無料</b>、その後は月{month}または年{year}・いつでも解約OK',
+    priceWeek: '<b>1週間無料</b>・カード不要。続けたい場合は月{month}または年{year}',
+    weekCta: '1週間無料で試す',
+    memberWeek: 'クロスワード＋の無料期間は{date}までです。楽しんでください！',
     free: '今日のパズルはいつでも無料。登録も不要です。',
     member: 'クロスワード＋のメンバーです。いつもありがとう！',
     memberCta: 'クロスワード＋を開く',
@@ -112,12 +119,27 @@ export function nudge(el) {
   void el.offsetWidth;
   el.classList.add('is-nudge');
 }
-// days: the free trial (info().trialDays), shown unless this account has had one
+// days: the card trial (info().trialDays), shown unless this account has had one.
+// The free week (no card) comes first when it's open to them.
 export function plusPrice(prices, days = 0) {
   const u = currentUser();
   const trial = days && !(u && u.trialOk === false);
-  return h('p', { class: 'cw-plus-price' }, rich(trial ? 'priceTrial' : 'price', {}, { ...prices, days }));
+  return h('p', { class: 'cw-plus-price' }, rich(weekOffered() ? 'priceWeek' : trial ? 'priceTrial' : 'price', {}, { ...prices, days }));
 }
+// Is the free week open to this person? Signed out: yes (a new account gets it at sign-in;
+// an older one is told on signing in if it's had it). Signed in: the Worker says.
+export function weekOffered() {
+  if (!(open && open.open && open.freeWeekDays)) return false;
+  const u = currentUser();
+  return u ? Boolean(u.freeWeekOk) : true;
+}
+// The Crossword+ button: "Try it free for a week" (starts it, or signs in first, without
+// leaving the page) when that's open to them, else "See Crossword+" (the Crossword+ tab)
+export function plusCta() {
+  const week = weekOffered();
+  return h('button', { type: 'button', class: 'btn btn-plus', onclick: () => document.dispatchEvent(new CustomEvent('crossword:plus', { detail: week ? { week: true } : {} })) }, t(week ? 'weekCta' : 'openCta'));
+}
+const fmtDay = (iso) => new Date(iso).toLocaleDateString(lang() === 'ja' ? 'ja-JP' : 'en-US', { month: 'long', day: 'numeric' });
 export function plusBadge() { return h('span', { class: 'cw-plus-badge' }, t('badge')); }
 export function supportLine() {
   return h('p', { class: 'cw-plus-help' }, rich('help', { email: h('a', { href: `mailto:${SUPPORT_EMAIL}` }, SUPPORT_EMAIL) }));
@@ -211,7 +233,7 @@ export function plusCard() {
       h('p', { class: 'cw-plus-title' }, t('sectionTitle')),
       plusPerks(),
       plusPrice(open.prices, open.trialDays),
-      h('p', { class: 'cw-plus-fine' }, h('button', { type: 'button', class: 'btn btn-plus', onclick: openPanel }, t('openCta')), ' ',
+      h('p', { class: 'cw-plus-fine' }, plusCta(), ' ',
         h('button', { type: 'button', class: 'btn-link cw-plus-not', onclick: () => { write({ hideUntil: Date.now() + HIDE_DAYS * 86400000 }); box.replaceChildren(h('p', { class: 'cw-plus-thanks' }, t('hidden'))); } }, t('not'))));
     return box;
   }
@@ -226,12 +248,14 @@ export function mountPlusSection() {
   const fill = () => {
     if (!slot) return;
     let kids;
+    const u = currentUser();
     if (isMember()) {
-      kids = [plusBadge(), h('p', { class: 'cw-plus-title' }, t('member')),
+      const week = u && u.freeWeek && !u.paid && !u.granted;
+      kids = [plusBadge(), h('p', { class: 'cw-plus-title' }, week ? t('memberWeek', { date: fmtDay(u.freeWeek) }) : t('member')),
         h('p', {}, h('button', { type: 'button', class: 'btn btn-plus', onclick: () => { openPanel(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }, t('memberCta')))];
     } else if (open && open.open) {
       kids = [plusBadge(), h('p', { class: 'cw-plus-title' }, t('sectionTitle')), plusPerks(), plusPrice(open.prices, open.trialDays),
-        h('p', {}, h('button', { type: 'button', class: 'btn btn-plus', onclick: () => { openPanel(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }, t('openCta'))),
+        h('p', {}, weekOffered() ? plusCta() : h('button', { type: 'button', class: 'btn btn-plus', onclick: () => { openPanel(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }, t('openCta'))),
         h('p', { class: 'cw-plus-fine' }, t('free'))];
     } else {
       const form = plusForm();

@@ -252,31 +252,44 @@ function waitlistSection(w) {
 // People sign in with Google or an email link; a Stripe subscription, or free
 // access you give here, makes them a member. "Connect Stripe" sets up the
 // prices, the customer portal and the webhook (safe to press again).
-// --- The Crossword+ funnel: each step and how many made it from the one before
+// --- The Crossword+ funnel: each step and how many made it from the step it follows.
+// Two paths split after the offer: sign in → free week, and pick a plan → (sign in) →
+// checkout. from: the step each one is compared with (the one before, if not given);
+// short: how that step reads in "x% of …".
 const FUNNEL_STEPS = {
-  visit: ['Visited the crossword', 'browsers a day, summed'],
-  solve: ['Finished a puzzle', ''],
-  offer: ['Saw a Crossword+ offer', 'solved screen, Crossword+ tab, a locked day'],
-  account: ['Made an account', 'first sign-in'],
-  checkout: ['Opened checkout', 'the payment form'],
-  trial: ['Started a free trial', ''],
-  paid: ['Paid', 'a trial that converted, or paying right away'],
+  visit: ['Visited the crossword', 'browsers a day, summed', null, 'visits'],
+  solve: ['Finished a puzzle', '', null, 'visits'],
+  offer: ['Saw a Crossword+ offer', 'solved screen, Crossword+ tab, a locked day', 'solve', 'solves'],
+  account: ['Made an account', 'first sign-in', 'offer', 'offers'],
+  week: ['Started a free week', 'no card; new accounts get it at sign-in', 'account', 'accounts'],
+  plan: ['Picked a plan', 'pressed a plan button, signed in or not', 'offer', 'offers'],
+  checkout: ['Opened checkout', 'the payment form, after signing in', 'plan', 'plans picked'],
+  trial: ['Started a card trial', 'only when the free week is off', 'checkout', 'checkouts'],
+  paid: ['Paid', 'a trial that converted, or paying right away', 'checkout', 'checkouts'],
 };
 function funnelSection(f) {
   if (!f) return null;
   if (f.error) return section('Crossword+ funnel', h('p', { class: 'crm-note is-error' }, `Couldn’t load the funnel: ${f.error}`));
   const steps = f.steps || [];
   const top = steps[0] ? steps[0].n : 0;
+  const count = Object.fromEntries(steps.map((s) => [s.event, s.n]));
   const pct = (a, b) => (b ? `${Math.round((a / b) * 1000) / 10}%` : '—');
+  // Compared with its own step (FUNNEL_STEPS[…][2]), else the row above
+  const vs = (s, i) => {
+    if (!i) return '';
+    const from = (FUNNEL_STEPS[s.event] && FUNNEL_STEPS[s.event][2]) || steps[i - 1].event;
+    const name = FUNNEL_STEPS[from] ? FUNNEL_STEPS[from][3] : from;
+    return [pct(s.n, count[from] || 0), h('span', { class: 'crm-muted' }, ` of ${name}`)];
+  };
   return section(`Crossword+ funnel · last ${f.days} days`,
     h('div', { class: 'crm-table-wrap' }, h('table', { class: 'crm-table is-compact crm-funnel' },
-      h('thead', {}, h('tr', {}, h('th', {}, 'Step'), h('th', {}, 'Count'), h('th', {}, 'Of the step before'), h('th', {}, 'Of visits'))),
+      h('thead', {}, h('tr', {}, h('th', {}, 'Step'), h('th', {}, 'Count'), h('th', {}, 'Of the step it follows'), h('th', {}, 'Of visits'))),
       h('tbody', {}, steps.map((s, i) => h('tr', {},
         h('td', {}, FUNNEL_STEPS[s.event] ? FUNNEL_STEPS[s.event][0] : s.event, FUNNEL_STEPS[s.event] && FUNNEL_STEPS[s.event][1] ? h('span', { class: 'crm-muted' }, ` · ${FUNNEL_STEPS[s.event][1]}`) : null),
         h('td', {}, num.format(s.n)),
-        h('td', {}, i ? pct(s.n, steps[i - 1].n) : ''),
+        h('td', {}, vs(s, i)),
         h('td', {}, i ? pct(s.n, top) : '')))))),
-    h('p', { class: 'crm-method' }, 'Counts only, nothing about who: the page sends each of the first three steps at most once per browser per day; the rest come from sign-ins and Stripe. The biggest drop between two steps is the one to work on. Counting started when this was added, so the first weeks are partial.'));
+    h('p', { class: 'crm-method' }, 'Counts only, nothing about who: the page sends visit, solve, offer and plan at most once per browser per day; the rest come from sign-ins and Stripe. After the offer it splits: signing in (and the free week), or picking a plan, then signing in, then the payment form. The gap between “Picked a plan” and “Opened checkout” is people lost at sign-in. The biggest drop is the one to work on. Steps added later (free week, picked a plan) count from the day they were added.'));
 }
 
 function membersSection(m, reload) {
@@ -314,17 +327,23 @@ function membersSection(m, reload) {
   const users = m.users || [];
   const trialing = users.filter((u) => u.member && u.paid && u.status === 'trialing');
   const paid = users.filter((u) => u.member && u.paid && u.status !== 'trialing');
+  // The free week (no card): on now, ended, and how many of those who had one went on to pay
+  const inWeek = users.filter((u) => u.in_week && !u.revoked);
+  const hadWeek = users.filter((u) => u.free_week_until);
+  const keptIt = hadWeek.filter((u) => u.paid && u.member);
   const monthly = paid.filter((u) => u.plan === 'month').length;
   const yearly = paid.filter((u) => u.plan === 'year').length;
   const act = (u, label, body) => button(label, async (ev) => { await busy(ev.currentTarget, () => request('PATCH', `plus/${u.id}`, body)); reload(false); }, { kind: 'chip' });
-  const statusOf = (u) => (u.revoked ? 'turned off' : u.paid && u.status === 'trialing' ? `free trial${u.plan ? ` · ${u.plan}ly after` : ''}${u.period_end ? ` · ends ${fmtDate(u.period_end.slice(0, 10))}` : ''}` : u.paid ? `${u.status}${u.plan ? ` · ${u.plan}ly` : ''}${u.period_end ? ` · ${u.status === 'canceled' ? 'ended' : 'renews'} ${fmtDate(u.period_end.slice(0, 10))}` : ''}` : u.granted ? 'free access' : 'signed up, not a member');
+  const week = (u) => (u.free_week_until ? ` · free week ${u.in_week ? 'until' : 'ended'} ${fmtDate(u.free_week_until.slice(0, 10))}` : '');
+  const statusOf = (u) => (u.revoked ? 'turned off' : !u.paid && !u.granted && u.in_week ? `free week · ends ${fmtDate(u.free_week_until.slice(0, 10))}` : u.paid && u.status === 'trialing' ? `free trial${u.plan ? ` · ${u.plan}ly after` : ''}${u.period_end ? ` · ends ${fmtDate(u.period_end.slice(0, 10))}` : ''}` : u.paid ? `${u.status}${u.plan ? ` · ${u.plan}ly` : ''}${u.period_end ? ` · ${u.status === 'canceled' ? 'ended' : 'renews'} ${fmtDate(u.period_end.slice(0, 10))}` : ''}` : u.granted ? 'free access' : `signed up, not a member${week(u)}`);
   return section('Crossword+ members',
     h('div', { class: 'crm-tiles' },
       tile('Paying members', num.format(paid.length), `${monthly} monthly · ${yearly} yearly`),
       tile('Monthly revenue', `$${(monthly * 2.99 + yearly * 24.99 / 12).toFixed(2)}`, 'before Stripe’s fees (yearly spread over 12)'),
-      tile('On a free trial', num.format(trialing.length), 'pay when it ends, unless they cancel'),
+      tile('On a free week', num.format(inWeek.length), `no card · ${num.format(hadWeek.length - inWeek.length)} ended · ${num.format(keptIt.length)} of ${num.format(hadWeek.length)} kept it`),
+      trialing.length ? tile('On a card trial', num.format(trialing.length), 'pay when it ends, unless they cancel') : null,
       tile('Opened checkout, didn’t finish', num.format(users.filter((u) => u.checkout && !u.paid).length), 'Stripe lists them as customers too'),
-      tile('Free access', num.format(users.filter((u) => u.member && !u.paid).length), 'given here'),
+      tile('Free access', num.format(users.filter((u) => u.granted && !u.revoked).length), 'given here'),
       tile('Accounts', num.format(users.length), 'signed in at least once')),
     h('div', { class: 'crm-traffic-bar' },
       h('span', { class: st.connected ? 'crm-muted' : 'crm-note is-error' }, !st.key ? 'Stripe: add the STRIPE_SECRET_KEY GitHub secret, then run the deploy.' : st.connected ? `Stripe: connected (${st.mode} mode)` : `Stripe: key found (${st.mode} mode), not connected yet`),

@@ -9,9 +9,14 @@
 // are on different domains, so it's sent as a header, not a cookie).
 //
 // Membership is on the account: a Stripe subscription tied to the email
-// (stripe.js), or free access given in the Sponsor desk. Members get past
-// days (sealed in the repo, opened here), bonus puzzles, and unlimited deck
-// puzzles (everyone gets 1 a day; that's counted in the browser).
+// (stripe.js), free access given in the Sponsor desk, or the free week. Members
+// get past days (sealed in the repo, opened here), bonus puzzles, and unlimited
+// deck puzzles (everyone gets 1 a day; plussync.js counts it).
+//
+// The free week: Crossword+ for FREE_WEEK_DAYS (default 7, 0 turns it off) with no
+// card, once per account. A new account gets it on its first sign-in; an older one
+// starts it from the page (POST /public/plus/week). When it ends, nothing is charged
+// and there's nothing to cancel. While it's on, Stripe's card trial is off (stripe.js).
 //
 //   GET  /public/plus/info                           what's set up (sale open, Google, email links, prices)
 //   POST /public/plus/login/google  { credential }   → { token, user }
@@ -19,6 +24,7 @@
 //   POST /public/plus/login/verify  { token }        → { token, user }  (from the link)
 //   POST /public/plus/me            {}               → { user } (membership)
 //   POST /public/plus/logout        {}               signs this account out everywhere
+//   POST /public/plus/week          {}               → { user } starts the free week (once per account)
 //   POST /public/plus/day           { date }         → a past day's puzzles, opened (members)
 //   POST /public/plus/bonus         { id }           → a sealed bonus puzzle, opened (members)
 //   GET  /api/plus                                   accounts for the Sponsor desk (signed in)
@@ -38,7 +44,12 @@ const EMAIL = /^[^\s@<>"]{1,64}@[A-Za-z0-9.-]{1,190}\.[A-Za-z]{2,24}$/;
 const ACTIVE = new Set(['active', 'trialing', 'past_due']);    // past_due: Stripe is still retrying the card
 const SITE = 'https://www.jareddesu.com';
 
-export const isMember = (u) => Boolean(u) && !u.revoked && (Boolean(u.granted) || ACTIVE.has(u.status));
+export const freeWeekDays = (env) => { const n = Number((env && env.FREE_WEEK_DAYS) ?? 7); return Number.isFinite(n) && n > 0 ? Math.min(30, Math.round(n)) : 0; };
+export const inFreeWeek = (u) => Boolean(u && u.free_week_until) && Date.parse(u.free_week_until) > Date.now();
+// Can start the free week: never had one, and never a member any other way
+export const freeWeekOk = (env, u) => freeWeekDays(env) > 0 && Boolean(u) && !u.free_week_until && !u.stripe_subscription && !u.granted && !u.revoked;
+const weekEnd = (days) => new Date(Date.now() + days * 86400000).toISOString();
+export const isMember = (u) => Boolean(u) && !u.revoked && (Boolean(u.granted) || ACTIVE.has(u.status) || inFreeWeek(u));
 // Links back to the page (email sign-in, Stripe): local testing and the staging site get their own
 export const STAGING = 'https://staging.jareddesu.com';
 export const siteFor = (origin) => (origin && (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) || origin === STAGING) ? origin : SITE);
@@ -95,8 +106,10 @@ export async function needUser(request, env) {
 
 // --- the funnel (Sponsor desk → Crossword+ funnel) -------------------------------------------
 // One counter per step per day; never fails what it's counting.
-export const FUNNEL = ['visit', 'solve', 'offer', 'account', 'checkout', 'trial', 'paid'];
-const PAGE_EVENTS = new Set(['visit', 'solve', 'offer']);
+// week: a free week started; plan: a plan button pressed (signed in or not), so the desk
+// can show how many give up between picking a plan and the payment form (signing in).
+export const FUNNEL = ['visit', 'solve', 'offer', 'account', 'week', 'plan', 'checkout', 'trial', 'paid'];
+const PAGE_EVENTS = new Set(['visit', 'solve', 'offer', 'plan']);
 export async function funnel(db, event) {
   try {
     await db.prepare('INSERT INTO plus_funnel (day, event, n) VALUES (?, ?, 1) ON CONFLICT(day, event) DO UPDATE SET n = n + 1')
@@ -121,15 +134,17 @@ export async function funnelReport(db, days) {
   return { days: n, since, steps: FUNNEL.map((e) => ({ event: e, n: totals[e] })), daily: results };
 }
 
-// The account for an email (made on first sign-in)
-async function userFor(db, email, extra = {}) {
+// The account for an email (made on first sign-in). weekDays: a new account's free week
+// (from signing in; not for accounts made in the Sponsor desk)
+async function userFor(db, email, extra = {}, weekDays = 0) {
   email = email.toLowerCase();
   let u = await db.prepare('SELECT * FROM plus_users WHERE email = ?').bind(email).first();
   if (!u) {
-    u = { id: crypto.randomUUID(), email, name: extra.name || null, google_sub: extra.google_sub || null, session_ver: 1 };
-    await db.prepare('INSERT INTO plus_users (id, email, name, google_sub, created_at) VALUES (?, ?, ?, ?, ?)')
-      .bind(u.id, email, u.name, u.google_sub, new Date().toISOString()).run();
+    u = { id: crypto.randomUUID(), email, name: extra.name || null, google_sub: extra.google_sub || null, session_ver: 1, free_week_until: weekDays ? weekEnd(weekDays) : null };
+    await db.prepare('INSERT INTO plus_users (id, email, name, google_sub, created_at, free_week_until) VALUES (?, ?, ?, ?, ?, ?)')
+      .bind(u.id, email, u.name, u.google_sub, new Date().toISOString(), u.free_week_until).run();
     await funnel(db, 'account');
+    if (u.free_week_until) await funnel(db, 'week');
     return u;
   }
   if ((extra.google_sub && !u.google_sub) || (extra.name && !u.name)) {
@@ -139,12 +154,17 @@ async function userFor(db, email, extra = {}) {
   return u;
 }
 
-export async function publicUser(db, u) {
+export function publicUser(env, u) {
+  const week = inFreeWeek(u);
   return {
     email: u.email, name: u.name || null, google: Boolean(u.google_sub),
     member: isMember(u), granted: Boolean(u.granted) && !u.revoked, paid: Boolean(u.stripe_subscription),
     status: u.status || null, plan: u.plan || null, renews: u.period_end || null,
-    trialOk: !u.stripe_subscription,              // a free trial is still open to them (stripe.js)
+    trialOk: !freeWeekDays(env) && !u.stripe_subscription,   // Stripe's card trial is still open to them (off while the free week is on)
+    // The free week: when it ends (while it's on), when it ended, or whether it can be started
+    freeWeek: week ? u.free_week_until : null,
+    freeWeekEnded: u.free_week_until && !week ? u.free_week_until : null,
+    freeWeekOk: freeWeekOk(env, u),
   };
 }
 
@@ -176,8 +196,8 @@ export async function loginGoogle(request, env) {
     || !(claims.exp > now) || !claims.email || claims.email_verified !== true) throw new HttpError(401, 'Google sign-in didn’t check out');
   // The same Google account keeps its account even if its email changes
   let u = await env.DB.prepare('SELECT * FROM plus_users WHERE google_sub = ?').bind(String(claims.sub)).first();
-  if (!u) u = await userFor(env.DB, claims.email, { google_sub: String(claims.sub), name: claims.given_name || null });
-  return { token: await issue(env, u), user: await publicUser(env.DB, u, body.day) };
+  if (!u) u = await userFor(env.DB, claims.email, { google_sub: String(claims.sub), name: claims.given_name || null }, freeWeekDays(env));
+  return { token: await issue(env, u), user: publicUser(env, u) };
 }
 
 // --- email ------------------------------------------------------------------------------------------
@@ -297,15 +317,26 @@ export async function loginVerify(request, env) {
   const now = Math.floor(Date.now() / 1000);
   const row = await env.DB.prepare('DELETE FROM plus_logins WHERE token_hash = ? RETURNING email, expires_at').bind(await sha256(token)).first();
   if (!row || row.expires_at < now) throw new HttpError(400, 'That sign-in link has expired or was already used. Ask for a new one.');
-  const u = await userFor(env.DB, row.email);
-  return { token: await issue(env, u), user: await publicUser(env.DB, u, body.day) };
+  const u = await userFor(env.DB, row.email, {}, freeWeekDays(env));
+  return { token: await issue(env, u), user: publicUser(env, u) };
 }
 
 // --- the signed-in account ---------------------------------------------------------------------
 export async function me(request, env) {
   const u = await needUser(request, env);
-  const body = await readBody(request);
-  return { user: await publicUser(env.DB, u, body.day) };
+  return { user: publicUser(env, u) };
+}
+
+// Start the free week (an account made before it existed, or one that skipped it).
+// Once per account; asking again just returns the account as it is.
+export async function startWeek(request, env) {
+  const u = await needUser(request, env);
+  if (!freeWeekOk(env, u)) return { ok: false, user: publicUser(env, u) };
+  const r = await env.DB.prepare('UPDATE plus_users SET free_week_until = ? WHERE id = ? AND free_week_until IS NULL AND stripe_subscription IS NULL AND granted = 0 AND revoked = 0 RETURNING *')
+    .bind(weekEnd(freeWeekDays(env)), u.id).first();
+  if (!r) return { ok: false, user: publicUser(env, u) };       // two taps at once: the first one started it
+  await funnel(env.DB, 'week');
+  return { ok: true, user: publicUser(env, r) };
 }
 
 export async function logout(request, env) {
@@ -348,6 +379,7 @@ export async function listPlus(db) {
       granted: Boolean(r.granted), grant_note: r.grant_note, revoked: Boolean(r.revoked), paid: Boolean(r.stripe_subscription),
       status: r.status, plan: r.plan, period_end: r.period_end, member: isMember(r),
       checkout: Boolean(r.stripe_customer),     // has a Stripe customer: opened the payment form at least once
+      free_week_until: r.free_week_until || null, in_week: inFreeWeek(r),
     })),
   };
 }

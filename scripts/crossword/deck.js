@@ -1,5 +1,5 @@
 // deck.js — the My deck panel on the crossword page: crosswords from your
-// own Anki deck (1 free a day when signed in, unlimited with Crossword+),
+// own Anki deck (1 free per account when signed in, unlimited with Crossword+),
 // bonus puzzles for members, and Crossword+ itself: sign in and plans
 // (account.js; the sponsor Worker's plus.js and stripe.js).
 //
@@ -7,21 +7,29 @@
 //    paste), or an .apkg deck package. Every deck has different fields, so the player picks which field
 //    is the word, the meaning, and (optionally) the reading.
 // 3. Make a puzzle: built here in a Web Worker (deck-worker.js) from the deck's
-//    words only, then counted against today's free one by the Worker (members: no limit).
+//    words only, then counted by the Worker: an account's first one is its free one
+//    (made as a member or not), after that it's members only.
 // The deck stays in this browser (localStorage); made puzzles also sync to the
 // account (sync.js). The deck's word list itself is never sent anywhere. Everything from the deck is inserted as text.
+//
+// The free week (no card, once per account; the Worker's plus.js): a new account gets it
+// when it first signs in; an older one starts it with "Start my free week" here or "Try it
+// free for a week" anywhere on the page (tryWeek). A short message at the bottom says when
+// it starts, offers it once to older accounts, and says once when it has ended. While it's
+// on, this box shows when it ends and the plans to keep it.
 
 import { lang } from '../games/i18n.js?v=1';
 import { gridKana, toHira } from './kana.js?v=1';
-import { info, refresh, currentUser, onAccount, signedIn, sendEmailLink, googleButton, checkout, portal, bonusPuzzle, deckUse, deckKey, track } from './account.js?v=5';
-import { schedulePush } from './sync.js?v=3';
-import { plusPerks, plusPrice, plusBadge, supportLine, nudge } from './plus.js?v=16';
+import { info, refresh, currentUser, onAccount, signedIn, sendEmailLink, googleButton, checkout, portal, bonusPuzzle, deckUse, deckKey, accountId, track, startWeek } from './account.js?v=6';
+import { schedulePush } from './sync.js?v=4';
+import { plusPerks, plusPrice, plusBadge, supportLine, nudge, weekOffered } from './plus.js?v=17';
 import { openBrowse } from './browse.js?v=2';
 
-const PENDING = 'jareddesu.crossword.pendingPlan';   // a plan picked before signing in
+const PENDING = 'jareddesu.crossword.pendingPlan';   // a plan picked before signing in ('week': the free week)
+const WEEK_SEEN = 'jareddesu.crossword.week';         // which free-week messages each account has seen here
 const KEEP = 60;                 // puzzles kept to replay (the list shows the newest few; the rest are under "See all")
 const SHOW = 3;
-const FREE_PER_DAY = 1;
+const FREE_DECK = 1;            // deck puzzles free per account, ever (the Worker's plussync.js counts)
 const MAX_NOTES = 20000;
 
 const T = {
@@ -33,11 +41,11 @@ const T = {
     trialLine: 'Try it free for {days} days. Cancel before it ends and you won’t be charged.', trialEnds: 'Free trial until {date}', planTrial: 'Free trial, then {price}',
     sentPlan: 'Check your inbox for a sign-in link (it works for 20 minutes; check spam too). Open it on this device and you’ll go straight to paying.',
     toPay: 'You’re signed in. Opening the payment form…',
-    freeTag: 'Free', freeHead: '1 deck puzzle a day',
+    freeTag: 'Free', freeHead: '1 free deck puzzle',
     freeOut: 'Sign in (it’s free) to make it. Your puzzles then follow you to any device.',
-    freeReady: 'Today’s is ready to make.', freeUsed: 'You’ve made today’s. More tomorrow, or as many as you like with Crossword+.',
+    freeReady: 'Yours is ready to make.', freeUsed: 'You’ve made your free one. Make as many as you like with Crossword+.',
     signInBtn: 'Sign in',
-    makeOut: 'Sign in to make your free one', freeLeft: '1 free puzzle today', freeUsedHint: 'Today’s free one is made',
+    makeOut: 'Sign in to make your free one', freeLeft: '1 free puzzle to try', freeUsedHint: 'Your free one is made',
     seeAll: 'See all {n}', seePlans: 'Get Crossword+ ↓',
     unlimited: 'Unlimited with Crossword+',
     perMonth: '{price} / month', perYear: '{price} / year', yearNote: 'about 30% off',
@@ -65,11 +73,24 @@ const T = {
     tooFew: 'Only {n} words can be used. A puzzle needs at least {min}; try another field for the word or reading.',
     tooBig: 'This deck is too big to keep in this browser. Try exporting part of it.',
     size: 'Size', mini: 'Mini', daily: 'Daily', answers: 'Answers', kana: 'Kana', kanji: 'Kanji',
-    make: 'Make a puzzle', making: 'Building your puzzle…', left: '{n} left today', none_left: 'That’s today’s 2. More tomorrow!',
-    limit: 'That’s your 2 deck puzzles for today. More tomorrow!', buildFail: 'Couldn’t fit enough of these words together. Try the Mini, or kana answers.',
+    make: 'Make a puzzle', making: 'Building your puzzle…',
+    buildFail: 'Couldn’t fit enough of these words together. Try the Mini, or kana answers.',
     failed: 'Couldn’t reach the server. Please try again in a bit.',
     recent: 'Your deck puzzles', solved: 'solved',
     replace: 'Import a different deck', confirmReplace: 'Replace this deck? Your deck puzzles stay.', words: '{n} words',
+    weekBtn: 'Start my free week', weekBtnOut: 'Sign in to start your free week',
+    weekLine: 'A week of everything in Crossword+, no card needed. When it ends, it just ends: nothing to cancel.',
+    weekOr: 'Or subscribe now:',
+    weekPopTitle: 'Start your free week', weekPop1: 'Sign in (it’s free), so it works on all your devices', weekPop2: 'Your free week starts: no card, nothing to cancel',
+    sentWeek: 'Check your inbox for a sign-in link (it works for 20 minutes; check spam too). Open it on this device and your free week starts.',
+    weekOn: 'Your free week of Crossword+ has started! Past puzzles, unlimited deck puzzles and the bonus puzzles are open until {date}. No card, nothing to cancel.',
+    weekOffer: 'New: try Crossword+ free for a week. No card, nothing to cancel.', startShort: 'Start it',
+    weekOver: 'Your free week of Crossword+ ended on {date}. Want to keep it? It’s {price} a month.', seeKeep: 'See the plans',
+    weekHad: 'You’ve already had your free week, but you can still subscribe.',
+    memberWeek: 'Crossword+ · free week', weekUntil: 'Until {date} · no card',
+    keepTitle: 'Keep Crossword+ after {date}?',
+    keepLine: 'Your free week just ends; nothing is charged. To keep it, pick a plan (it starts the day you pay).',
+    weekEnded: 'Your free week ended on {date}.',
   },
   ja: {
     title: 'クロスワード＋',
@@ -79,11 +100,11 @@ const T = {
     trialLine: '{days}日間無料でお試しいただけます。期間内に解約すれば料金はかかりません。', trialEnds: '{date}まで無料体験', planTrial: '無料体験、その後{price}',
     sentPlan: 'ログインリンクを送りました（20分間有効。迷惑メールも確認してください）。この端末で開くと、そのままお支払いに進みます。',
     toPay: 'ログインしました。お支払い画面を開いています…',
-    freeTag: '無料', freeHead: '1日1つデッキパズル',
+    freeTag: '無料', freeHead: '無料のデッキパズル1つ',
     freeOut: 'ログイン（無料）で作れます。作ったパズルはどの端末でも続きから。',
-    freeReady: '今日の1つはまだ作れます。', freeUsed: '今日の1つは作りました。また明日、またはクロスワード＋で作り放題。',
+    freeReady: '無料の1つはまだ作れます。', freeUsed: '無料の1つは作りました。クロスワード＋なら作り放題です。',
     signInBtn: 'ログイン',
-    makeOut: 'ログインで今日の無料パズル', freeLeft: '今日の無料：あと1つ', freeUsedHint: '今日の無料分は作成済み',
+    makeOut: 'ログインで無料パズルを1つ', freeLeft: '無料で1つ作れます', freeUsedHint: '無料の1つは作成済み',
     seeAll: '全部見る（{n}）', seePlans: 'クロスワード＋を見る ↓',
     unlimited: 'クロスワード＋で作り放題',
     perMonth: '月{price}', perYear: '年{price}', yearNote: '約30%お得',
@@ -111,11 +132,24 @@ const T = {
     tooFew: '使える単語が{n}語しかありません（{min}語以上必要）。単語や読みのフィールドを変えてみてください。',
     tooBig: 'このデッキはブラウザに保存するには大きすぎます。一部だけ書き出してみてください。',
     size: 'サイズ', mini: 'ミニ', daily: 'デイリー', answers: '答え', kana: 'かな', kanji: '漢字',
-    make: 'パズルを作る', making: 'パズルを作っています…', left: '今日はあと{n}つ', none_left: '今日の2つを作りました。また明日！',
-    limit: '今日のデッキパズル（2つ）を作りました。また明日！', buildFail: 'この単語ではうまく組めませんでした。ミニか、かなの答えを試してください。',
+    make: 'パズルを作る', making: 'パズルを作っています…',
+    buildFail: 'この単語ではうまく組めませんでした。ミニか、かなの答えを試してください。',
     failed: 'サーバーにつながりませんでした。少し待ってからもう一度どうぞ。',
     recent: 'デッキのパズル', solved: 'クリア',
     replace: '別のデッキを読み込む', confirmReplace: 'デッキを入れ替えますか？作ったパズルは残ります。', words: '{n}語',
+    weekBtn: '無料の1週間を始める', weekBtnOut: 'ログインして無料の1週間を始める',
+    weekLine: 'クロスワード＋の全部を1週間、カード不要で。期間が終わればそのまま終了、解約の手続きもいりません。',
+    weekOr: 'すぐに登録する場合：',
+    weekPopTitle: '無料の1週間を始める', weekPop1: 'ログイン（無料）：どの端末でも使えるように', weekPop2: '無料の1週間がスタート：カード不要、解約も不要',
+    sentWeek: 'ログインリンクを送りました（20分間有効。迷惑メールも確認してください）。この端末で開くと、無料の1週間が始まります。',
+    weekOn: 'クロスワード＋の無料の1週間が始まりました！{date}まで、過去のパズル、デッキパズル作り放題、ボーナスパズルが遊べます。カード不要、解約も不要です。',
+    weekOffer: 'クロスワード＋を1週間無料で試せるようになりました。カード不要、解約も不要です。', startShort: '始める',
+    weekOver: 'クロスワード＋の無料期間は{date}に終わりました。続けたい場合は月{price}です。', seeKeep: 'プランを見る',
+    weekHad: '無料の1週間はすでに使われていますが、プランから登録できます。',
+    memberWeek: 'クロスワード＋（無料期間）', weekUntil: '{date}まで・カード不要',
+    keepTitle: '{date}以降も続けますか？',
+    keepLine: '無料期間はそのまま終わるだけで、請求はありません。続ける場合はプランを選んでください（お支払いの日から始まります）。',
+    weekEnded: '無料期間は{date}に終わりました。',
   },
 };
 const t = (k, vars = {}) => String((T[lang()] || T.en)[k] ?? T.en[k] ?? k).replace(/\{(\w+)\}/g, (_, x) => vars[x] ?? '');
@@ -149,12 +183,22 @@ function pendingPlan() {
   try { const p = JSON.parse(localStorage.getItem(PENDING) || 'null'); return p && Date.now() - p.at < 2 * 3600 * 1000 ? p.plan : null; } catch { return null; }
 }
 
-// A message that floats at the bottom of the screen, wherever the page is scrolled
+// The free-week messages (started, offered, ended) are each shown once per account in a browser.
+// No storage (private mode): say nothing rather than repeat it on every visit.
+function weekSeen(email) { try { return (JSON.parse(localStorage.getItem(WEEK_SEEN) || '{}')[email]) || {}; } catch { return null; } }
+function markWeek(email, k) {
+  try { const all = JSON.parse(localStorage.getItem(WEEK_SEEN) || '{}'); all[email] = { ...(all[email] || {}), [k]: Date.now() }; localStorage.setItem(WEEK_SEEN, JSON.stringify(all)); } catch { /* private mode */ }
+}
+const fmtLong = (iso) => new Date(iso).toLocaleDateString(lang() === 'ja' ? 'ja-JP' : 'en-US', { month: 'long', day: 'numeric' });
+
+// A message that floats at the bottom of the screen, wherever the page is scrolled.
+// action: [label, run] for one button in it (pressing it closes the message)
 let noticeTimer = null;
-function notice(text, { error = false, ms = 7000 } = {}) {
+function notice(text, { error = false, ms = 7000, action = null } = {}) {
   document.querySelector('.cw-notice')?.remove();
   const el = h('div', { class: `cw-notice${error ? ' is-error' : ''}`, role: error ? 'alert' : 'status', 'aria-live': 'polite' },
     h('span', {}, text),
+    action ? h('button', { type: 'button', class: 'btn btn-plus cw-notice-act', onclick: () => { el.remove(); action[1](); } }, action[0]) : null,
     h('button', { type: 'button', class: 'cw-notice-x', 'aria-label': t('close'), onclick: () => el.remove() }, '×'));
   document.body.append(el);
   clearTimeout(noticeTimer);
@@ -367,29 +411,32 @@ export function mountDeck({ root, play }) {
   const member = () => Boolean(currentUser() && currentUser().member);
   // The free trial's length, or 0 when there isn't one or this account has had it
   const trialDays = () => (cfg && cfg.trialDays && !(currentUser() && currentUser().trialOk === false) ? cfg.trialDays : 0);
-  // One free deck puzzle a day per account, counted by the Worker (so a private window
-  // doesn't reset it); signing in is free. Members make as many as they like.
-  let free = { day: null, left: null };
+  // One free deck puzzle per account, ever, counted by the Worker (so a private window
+  // or another device doesn't reset it); signing in is free. Members make as many as they
+  // like. who: the account the count is for (signing in as someone else asks again).
+  let free = { who: null, left: null };
   let signInPop = null;         // the sign-in popup, while it's open
-  const freeLeft = () => (free.day === localDate() && free.left != null ? free.left : null);
+  const freeLeft = () => (free.who && free.who === accountId() && free.left != null ? free.left : null);
   async function peekFree() {
     if (!signedIn() || member()) return;
-    const day = localDate();
-    if (free.day === day && free.left != null) return;
-    free = { day, left: null };
-    try { const r = await deckUse(day, true); free = { day, left: r.unlimited ? Infinity : r.left }; } catch { free = { day, left: FREE_PER_DAY }; }
+    const who = accountId();
+    if (free.who === who && (free.left != null || free.asking)) return;
+    free = { who, left: null, asking: true };
+    try { const r = await deckUse(true); free = { who, left: r.unlimited ? Infinity : r.left }; } catch { free = { who, left: FREE_DECK }; }
     render();
   }
   // Sign in, in a popup over the page. plan: they picked a plan first, so it says
   // "1 Sign in, 2 Pay" and the payment form opens as soon as they're signed in.
+  // plan 'week': "Start your free week": "1 Sign in, 2 Your free week starts".
   async function openSignIn({ plan = null } = {}) {
     if (!cfg) cfg = await info();
     if (signInPop) signInPop.close();
     if (plan) setPending(plan); else clearPending();
+    const week = plan === 'week';
     const msg = h('p', { class: 'cw-deck-status', role: 'status', 'aria-live': 'polite' });
     const say = (text, error = false) => { msg.textContent = text; msg.classList.toggle('is-error', error); };
     const form = signInForm(say, plan);
-    const price = plan && cfg.prices ? t(plan === 'year' ? 'perYear' : 'perMonth', { price: cfg.prices[plan] }) : '';
+    const price = plan && !week && cfg.prices ? t(plan === 'year' ? 'perYear' : 'perMonth', { price: cfg.prices[plan] }) : '';
     const days = trialDays();
     const overlay = h('div', { class: 'cw-overlay cw-signin-pop' });
     const close = () => { overlay.remove(); signInPop = null; document.removeEventListener('keydown', esc); };
@@ -397,8 +444,9 @@ export function mountDeck({ root, play }) {
     overlay.append(h('div', { class: 'cw-sheet cw-signin-sheet', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'cw-signin-title' },
       h('button', { type: 'button', class: 'cw-pop-x', 'aria-label': t('close'), onclick: close }, '×'),
       plan ? h('div', {}, plusBadge()) : null,
-      h('h2', { class: 'cw-sheet-title', id: 'cw-signin-title' }, t(plan ? 'getPlus' : 'signInTitle')),
-      plan ? h('ol', { class: 'cw-pop-steps' }, h('li', { class: 'is-now' }, t('popStep1')), h('li', {}, days ? t('popStep2t', { days, price }) : t('popStep2', { price }))) : null,
+      h('h2', { class: 'cw-sheet-title', id: 'cw-signin-title' }, t(week ? 'weekPopTitle' : plan ? 'getPlus' : 'signInTitle')),
+      week ? h('ol', { class: 'cw-pop-steps' }, h('li', { class: 'is-now' }, t('weekPop1')), h('li', {}, t('weekPop2')))
+        : plan ? h('ol', { class: 'cw-pop-steps' }, h('li', { class: 'is-now' }, t('popStep1')), h('li', {}, days ? t('popStep2t', { days, price }) : t('popStep2', { price }))) : null,
       form.nodes, msg));
     overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
     document.addEventListener('keydown', esc);
@@ -420,11 +468,62 @@ export function mountDeck({ root, play }) {
       const plan = pendingPlan();
       if (plan && currentUser()) {
         clearPending();
-        if (!member()) { notice(t('toPay')); startCheckout(plan); }
-      }
+        if (plan === 'week') afterWeekSignIn();
+        else if (!member()) { notice(t('toPay')); startCheckout(plan); }
+        else accountNotices();             // a brand-new account: its free week started instead
+      } else if (currentUser()) accountNotices();
     }
     render();
   });
+
+  // The free week. tryWeek: "Try it free for a week" / "Start my free week", here or from the
+  // page's other Crossword+ boxes (app.js): signs in first if need be (a new account gets it
+  // at sign-in), then starts it. Returns false when there's nothing to start (they've had it,
+  // or they're a member), so the caller shows the Crossword+ tab instead.
+  async function tryWeek() {
+    if (!cfg) cfg = await info();
+    if (!signedIn()) { openSignIn({ plan: 'week' }); return true; }
+    const u = currentUser() || await refresh();
+    if (!u) { openSignIn({ plan: 'week' }); return true; }
+    if (u.member || !u.freeWeekOk) { if (!u.member) notice(t('weekHad')); return false; }
+    return beginWeek();
+  }
+  async function beginWeek() {
+    busy = true; render();
+    let ok = true;
+    try {
+      const r = await startWeek();             // the account updates, and accountNotices says it's started
+      if (!r.ok) { ok = false; notice(t('weekHad')); }
+    } catch (err) { notice(err.message || t('failed'), { error: true }); }
+    busy = false; render();
+    return ok;
+  }
+  // Signed in from "Start your free week": a new account already has it; an older one starts it now
+  function afterWeekSignIn() {
+    const u = currentUser();
+    if (u.member) accountNotices();
+    else if (u.freeWeekOk) beginWeek();
+    else notice(t('weekHad'), { action: [t('seeKeep'), () => document.dispatchEvent(new CustomEvent('crossword:plus'))], ms: 12000 });
+  }
+  // The free-week messages, once each per account in this browser: it's started; it's
+  // there to try (accounts from before it existed); it's ended (and what keeping it costs)
+  let accountNoticeAt = 0;
+  async function accountNotices() {
+    const u = currentUser();
+    const seen = u && u.email ? weekSeen(u.email) : null;
+    if (!seen) return;
+    const say = (k, text, opts) => { markWeek(u.email, k); accountNoticeAt = Date.now(); notice(text, { ms: 14000, ...opts }); };
+    if (u.freeWeek && !u.paid && !u.granted) {
+      if (!seen.started) say('started', t('weekOn', { date: fmtLong(u.freeWeek) }));
+    } else if (u.freeWeekEnded && !u.member) {
+      if (!seen.ended) {
+        const i = cfg || await info();
+        if (i && i.open) say('ended', t('weekOver', { date: fmtLong(u.freeWeekEnded), price: i.prices.month }), { action: [t('seeKeep'), () => document.dispatchEvent(new CustomEvent('crossword:plus'))] });
+      }
+    } else if (u.freeWeekOk && !seen.offered && !seen.started) {
+      say('offered', t('weekOffer'), { action: [t('startShort'), () => beginWeek()] });
+    }
+  }
 
   async function load() {
     if (loaded) return;
@@ -438,13 +537,13 @@ export function mountDeck({ root, play }) {
   // --- views
   function plans() {
     if (!cfg || !cfg.open) return [h('p', { class: 'cw-deck-muted' }, t('notOpen'), ' ', h('a', { href: '#plus-sec' }, t('joinList')))];
-    const go = (plan) => () => (signedIn() ? startCheckout(plan) : openSignIn({ plan }));
+    const go = (plan) => () => { track('plan'); if (signedIn()) startCheckout(plan); else openSignIn({ plan }); };
     const days = trialDays();
     const label = (price) => (days ? t('planTrial', { price }) : price);
     return [
       days ? h('p', { class: 'cw-trial-line' }, t('trialLine', { days })) : null,
       h('div', { class: 'cw-deck-row cw-plans' },
-        h('button', { type: 'button', class: 'btn btn-plus', disabled: busy, onclick: go('month') }, label(t('perMonth', { price: cfg.prices.month }))),
+        h('button', { type: 'button', class: weekOffered() ? 'btn' : 'btn btn-plus', disabled: busy, onclick: go('month') }, label(t('perMonth', { price: cfg.prices.month }))),
         h('button', { type: 'button', class: 'btn', disabled: busy, onclick: go('year') }, label(t('perYear', { price: cfg.prices.year })), h('span', { class: 'cw-seg-sub' }, ` · ${t('yearNote')}`))),
       h('p', { class: 'cw-deck-muted' }, t('secure'), cfg.test ? ` ${t('test')}` : ''),
       legalLine('agreePay'),
@@ -467,7 +566,7 @@ export function mountDeck({ root, play }) {
       const v = email.value.trim();
       if (!v) { email.focus(); return; }
       send.disabled = true; say(t('sending'));
-      try { await sendEmailLink(v); say(t(plan ? 'sentPlan' : 'sent')); } catch (e) { say(e.message || t('failed'), true); }
+      try { await sendEmailLink(v); say(t(plan === 'week' ? 'sentWeek' : plan ? 'sentPlan' : 'sent')); } catch (e) { say(e.message || t('failed'), true); }
       send.disabled = false;
     } }, t('sendLink'));
     email.addEventListener('keydown', (e) => { if (e.key === 'Enter') send.click(); });
@@ -487,19 +586,23 @@ export function mountDeck({ root, play }) {
   }
 
   // Members: their status and Manage subscription, top right of the box
+  const onWeek = (u) => Boolean(u && u.freeWeek && !u.paid && !u.granted);
   function membership(u) {
-    const when = !(u.granted && !u.paid) && u.renews ? t(u.status === 'trialing' ? 'trialEnds' : u.status === 'canceled' ? 'ends' : 'renews', { date: fmtDay(u.renews) }) : '';
+    const week = onWeek(u);
+    const when = week ? t('weekUntil', { date: fmtDay(u.freeWeek) })
+      : !(u.granted && !u.paid) && u.renews ? t(u.status === 'trialing' ? 'trialEnds' : u.status === 'canceled' ? 'ends' : 'renews', { date: fmtDay(u.renews) }) : '';
     return h('div', { class: 'cw-deck-acct' },
-      h('span', { class: 'cw-deck-member' }, '✓ ', t(u.granted && !u.paid ? 'memberFree' : 'member')),
+      h('span', { class: 'cw-deck-member' }, '✓ ', t(week ? 'memberWeek' : u.granted && !u.paid ? 'memberFree' : 'member')),
       h('span', { class: 'cw-deck-muted' }, when,
         when && u.paid ? ' · ' : '',
         u.paid ? h('button', { type: 'button', class: 'btn-link', onclick: async () => { try { await portal(); } catch (e) { setStatus(e.message || t('failed'), true); } } }, t('manage')) : null));
   }
 
-  // Everyone else: what's free (one a day, signed in), and today's state
+  // Everyone else: what's free (one deck puzzle, signed in), and whether it's been made
   function freeStrip() {
     const out = !signedIn();
     const left = out ? null : freeLeft();
+    if (!out && left == null) peekFree();           // ask the Worker once (it renders again with the answer)
     const sub = out ? t('freeOut') : left == null ? '…' : left ? t('freeReady') : t('freeUsed');
     return h('div', { class: 'cw-free' },
       h('div', { class: 'cw-free-row' },
@@ -712,11 +815,11 @@ export function mountDeck({ root, play }) {
     busy = false;
     if (!member()) {
       try {
-        const r = await deckUse(localDate());
-        free = { day: localDate(), left: 0 };
-        if (!r.ok && !r.unlimited) { setStatus(''); return; }       // already used today (another device): the strip says so
+        const r = await deckUse();
+        free = { who: accountId(), left: 0 };
+        if (!r.ok && !r.unlimited) { setStatus(''); render(); return; }       // already made (on another device): the strip says so
       } catch (err) { setStatus(err.message || t('failed'), true); return; }
-    }
+    } else deckUse().catch(() => {});          // a member's first one is their free one too (the Worker notes it)
     const p = toPuzzle(draftPuzzle, { kind, size, name: s.name, seed });
     const x = state();
     x.made = [...(x.made || []), p].slice(-KEEP);
@@ -725,12 +828,30 @@ export function mountDeck({ root, play }) {
     play(p);
   }
 
-  // Crossword+ for everyone else, in one card: the three perks, the price, the plans
+  // Crossword+ for everyone else, in one card: the three perks, the price, the free week
+  // when it's open to them (then the plans as the other way in), the plans
   function plusBlock() {
     track('offer');
+    const u = currentUser();
+    const week = cfg && cfg.open && weekOffered();
+    const ended = u && u.freeWeekEnded;
     return h('div', { class: 'cw-plusblock', id: 'cw-plusblock' },
       h('div', { class: 'cw-plusblock-head' }, plusBadge(), cfg && cfg.open ? plusPrice(cfg.prices, cfg.trialDays) : null),
       plusPerks({ order: ['deck', 'archive', 'bonus'], bonusN: bonus ? bonus.length : 0 }),
+      week ? [
+        h('div', { class: 'cw-deck-row' }, h('button', { type: 'button', class: 'btn btn-plus', disabled: busy, onclick: () => tryWeek() }, t(signedIn() ? 'weekBtn' : 'weekBtnOut'))),
+        h('p', { class: 'cw-trial-line' }, t('weekLine')),
+        h('p', { class: 'cw-deck-muted cw-week-or' }, t('weekOr'))] : null,
+      ended ? h('p', { class: 'cw-trial-line' }, t('weekEnded', { date: fmtLong(ended) })) : null,
+      ...plans(),
+      supportLine());
+  }
+  // On the free week: when it ends, and the plans to keep it
+  function keepBlock(u) {
+    track('offer');
+    return h('div', { class: 'cw-plusblock', id: 'cw-plusblock' },
+      h('div', { class: 'cw-plusblock-head' }, plusBadge(), h('p', { class: 'cw-plus-price' }, h('strong', {}, t('keepTitle', { date: fmtLong(u.freeWeek) })))),
+      h('p', { class: 'cw-deck-muted' }, t('keepLine')),
       ...plans(),
       supportLine());
   }
@@ -759,7 +880,7 @@ export function mountDeck({ root, play }) {
         h('p', {}, t('intro')),
         isMember ? null : freeStrip()];
       body.push(...steps(s));
-      body.push(statusLine(), ...(isMember ? [...bonusView(), supportLine()] : [plusBlock()]));
+      body.push(statusLine(), ...(!isMember ? [plusBlock()] : onWeek(u) && cfg.open ? [...bonusView(), keepBlock(u)] : [...bonusView(), supportLine()]));
     }
     root.replaceChildren(head, ...body.filter(Boolean));
   }
@@ -774,9 +895,11 @@ export function mountDeck({ root, play }) {
     },
     showPlus,
     openSignIn,
+    tryWeek,
     // Back from Stripe or an email link: a floating message, wherever the page is scrolled
     message(kind, text) {
       if (kind === 'signedIn' && (pendingPlan() || busy)) return;       // straight on to paying instead
+      if (kind === 'signedIn' && Date.now() - accountNoticeAt < 5000) return;   // the free-week message is up
       notice(kind === 'paid' ? t('welcome') : kind === 'signedIn' ? t('signedInMsg') : kind === 'cancelled' ? t('cancelled') : text || t('failed'), { error: kind === 'error', ms: kind === 'paid' ? 10000 : 7000 });
     },
     current() { return null; },

@@ -1,5 +1,5 @@
 // plussync.js — things tied to a signed-in crossword account (any account, member or not):
-//   POST /public/plus/deck-use  { day, peek }  the free My deck puzzle: one per account per day
+//   POST /public/plus/deck-use  { peek }       the free My deck puzzle: one per account, ever
 //   POST /public/plus/load                     this account's saved progress
 //   POST /public/plus/save      { data }       replace it (the page merges before saving)
 // The page builds deck puzzles itself, so this is a fair-use check (no more resetting the
@@ -9,7 +9,6 @@ import { needUser, isMember } from './plus.js';
 import { HttpError } from './data.js';
 
 const MAX_SAVE = 700 * 1024;          // about 60 deck puzzles plus every solve, with room to spare
-const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 async function body(request, max) {
   const t = await request.text();
@@ -17,28 +16,18 @@ async function body(request, max) {
   try { return JSON.parse(t) || {}; } catch { return {}; }
 }
 
-// The person's own calendar day, as long as it's a real one somewhere on Earth right now
-function checkDay(day) {
-  if (!DAY.test(day || '')) throw new HttpError(400, 'Bad date');
-  const now = Date.now();
-  const ok = [-12, 0, 14].some((h) => new Date(now + h * 3600000).toISOString().slice(0, 10) === day);
-  if (!ok) throw new HttpError(400, 'Check the date on this device');
-  return day;
-}
-
+// One free deck puzzle per account, ever (plus_users.deck_free_at, migration 0021). The
+// first deck puzzle an account makes is its free one, whether it's a member then or not
+// (on the free week, say), so after that deck puzzles are for members. peek: just ask.
 export async function deckUse(request, env) {
   const u = await needUser(request, env);
   const b = await body(request, 2000);
-  const day = checkDay(b.day);
-  if (isMember(u)) return { ok: true, unlimited: true };
-  if (b.peek) {
-    const r = await env.DB.prepare('SELECT 1 FROM plus_deck_uses WHERE user_id = ? AND day = ?').bind(u.id, day).first();
-    return { ok: true, left: r ? 0 : 1 };
-  }
-  const r = await env.DB.prepare('INSERT OR IGNORE INTO plus_deck_uses (user_id, day) VALUES (?, ?)').bind(u.id, day).run();
-  // Old rows are no use to anyone
-  await env.DB.prepare("DELETE FROM plus_deck_uses WHERE day < date('now', '-3 days')").run();
-  return r.meta && r.meta.changes ? { ok: true, left: 0 } : { ok: false, used: true, left: 0 };
+  const member = isMember(u);
+  if (b.peek) return member ? { ok: true, unlimited: true } : { ok: true, left: u.deck_free_at ? 0 : 1 };
+  // Claimed in one step, so two tabs at once can't both have it
+  const r = await env.DB.prepare('UPDATE plus_users SET deck_free_at = ? WHERE id = ? AND deck_free_at IS NULL RETURNING id').bind(new Date().toISOString(), u.id).first();
+  if (member) return { ok: true, unlimited: true };
+  return r ? { ok: true, left: 0 } : { ok: false, used: true, left: 0 };
 }
 
 export async function loadSave(request, env) {
