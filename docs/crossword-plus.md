@@ -5,7 +5,7 @@ once Stripe is connected (see "Accounts and payments"); until then the page
 shows the waitlist.
 
 **What's free:** today's puzzles, kana and kanji, every level and size, plus
-one My deck puzzle a day for anyone signed in (signing in is free).
+one My deck puzzle per account, ever, for anyone signed in (signing in is free).
 
 **What's in Crossword+:** every past puzzle, unlimited My deck puzzles, and
 a few bonus puzzles a week.
@@ -151,14 +151,18 @@ Add this to the nightly crossword task (after publishing the dailies):
 ## My deck
 
 Crosswords made from your own Anki deck, on the crossword page under
-the **Crossword+** tab. **One a day is free** with a (free) account, and members can make
-as many as they like. The box says so up top (a blue **Free** strip: sign in,
-then today's one is ready or used), and the Crossword+ card under it has the
-three perks as tiles, the price and the plans. The free one is counted by the
-Worker per account (`POST /public/plus/deck-use`, table `plus_deck_uses`,
-migration 0016), so a private window doesn't reset it. Puzzles are still built
-in the browser, so this is a fair-use limit, not a lock. (For a few days in
-Oct 2026 My deck was members only.)
+the **Crossword+** tab. **One is free per account, ever** (a free account is
+enough), and members can make as many as they like. The box says so up top (a
+blue **Free** strip: sign in, then your free one is ready or made), and the
+Crossword+ card under it has the three perks as tiles, the price and the plans.
+An account's first deck puzzle is its free one, whether it's a member then or not
+(on its free week, say), so once the week or a subscription ends, deck puzzles are
+for members. The Worker counts it per account (`POST /public/plus/deck-use`,
+`plus_users.deck_free_at`, migration 0021), so a private window or another device
+doesn't reset it. Puzzles are still built in the browser, so this is a fair-use
+limit, not a lock. (History: members only for a few days in Oct 2026, then one a
+day until Nov 2026. Switching to one ever, accounts that had already made a deck
+puzzle counted as having had theirs.)
 
 - **Import:** an **.apkg** (Anki → File → Export → Anki Deck Package, or a
   deck from AnkiWeb; a whole-collection .colpkg works too), or "Notes in

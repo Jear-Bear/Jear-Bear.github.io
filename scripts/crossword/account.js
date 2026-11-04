@@ -132,8 +132,8 @@ export async function portal() {
   location.href = r.url;
 }
 export const bonusPuzzle = (id) => call('bonus', { id });
-// My deck's free puzzle (one per account per day) and progress synced between devices
-export const deckUse = (day, peek = false) => call('deck-use', { day, peek });
+// My deck's free puzzle (one per account, ever) and progress synced between devices
+export const deckUse = (peek = false) => call('deck-use', { peek });
 export const loadSave = () => call('load');
 export const putSave = (data) => call('save', { data });
 export const archiveDay = (date) => call('day', { date });

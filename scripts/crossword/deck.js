@@ -1,5 +1,5 @@
 // deck.js — the My deck panel on the crossword page: crosswords from your
-// own Anki deck (1 free a day when signed in, unlimited with Crossword+),
+// own Anki deck (1 free per account when signed in, unlimited with Crossword+),
 // bonus puzzles for members, and Crossword+ itself: sign in and plans
 // (account.js; the sponsor Worker's plus.js and stripe.js).
 //
@@ -7,7 +7,8 @@
 //    paste), or an .apkg deck package. Every deck has different fields, so the player picks which field
 //    is the word, the meaning, and (optionally) the reading.
 // 3. Make a puzzle: built here in a Web Worker (deck-worker.js) from the deck's
-//    words only, then counted against today's free one by the Worker (members: no limit).
+//    words only, then counted by the Worker: an account's first one is its free one
+//    (made as a member or not), after that it's members only.
 // The deck stays in this browser (localStorage); made puzzles also sync to the
 // account (sync.js). The deck's word list itself is never sent anywhere. Everything from the deck is inserted as text.
 //
@@ -19,7 +20,7 @@
 
 import { lang } from '../games/i18n.js?v=1';
 import { gridKana, toHira } from './kana.js?v=1';
-import { info, refresh, currentUser, onAccount, signedIn, sendEmailLink, googleButton, checkout, portal, bonusPuzzle, deckUse, deckKey, track, startWeek } from './account.js?v=6';
+import { info, refresh, currentUser, onAccount, signedIn, sendEmailLink, googleButton, checkout, portal, bonusPuzzle, deckUse, deckKey, accountId, track, startWeek } from './account.js?v=6';
 import { schedulePush } from './sync.js?v=4';
 import { plusPerks, plusPrice, plusBadge, supportLine, nudge, weekOffered } from './plus.js?v=17';
 import { openBrowse } from './browse.js?v=2';
@@ -28,7 +29,7 @@ const PENDING = 'jareddesu.crossword.pendingPlan';   // a plan picked before sig
 const WEEK_SEEN = 'jareddesu.crossword.week';         // which free-week messages each account has seen here
 const KEEP = 60;                 // puzzles kept to replay (the list shows the newest few; the rest are under "See all")
 const SHOW = 3;
-const FREE_PER_DAY = 1;
+const FREE_DECK = 1;            // deck puzzles free per account, ever (the Worker's plussync.js counts)
 const MAX_NOTES = 20000;
 
 const T = {
@@ -40,11 +41,11 @@ const T = {
     trialLine: 'Try it free for {days} days. Cancel before it ends and you won’t be charged.', trialEnds: 'Free trial until {date}', planTrial: 'Free trial, then {price}',
     sentPlan: 'Check your inbox for a sign-in link (it works for 20 minutes; check spam too). Open it on this device and you’ll go straight to paying.',
     toPay: 'You’re signed in. Opening the payment form…',
-    freeTag: 'Free', freeHead: '1 deck puzzle a day',
+    freeTag: 'Free', freeHead: '1 free deck puzzle',
     freeOut: 'Sign in (it’s free) to make it. Your puzzles then follow you to any device.',
-    freeReady: 'Today’s is ready to make.', freeUsed: 'You’ve made today’s. More tomorrow, or as many as you like with Crossword+.',
+    freeReady: 'Yours is ready to make.', freeUsed: 'You’ve made your free one. Make as many as you like with Crossword+.',
     signInBtn: 'Sign in',
-    makeOut: 'Sign in to make your free one', freeLeft: '1 free puzzle today', freeUsedHint: 'Today’s free one is made',
+    makeOut: 'Sign in to make your free one', freeLeft: '1 free puzzle to try', freeUsedHint: 'Your free one is made',
     seeAll: 'See all {n}', seePlans: 'Get Crossword+ ↓',
     unlimited: 'Unlimited with Crossword+',
     perMonth: '{price} / month', perYear: '{price} / year', yearNote: 'about 30% off',
@@ -72,8 +73,8 @@ const T = {
     tooFew: 'Only {n} words can be used. A puzzle needs at least {min}; try another field for the word or reading.',
     tooBig: 'This deck is too big to keep in this browser. Try exporting part of it.',
     size: 'Size', mini: 'Mini', daily: 'Daily', answers: 'Answers', kana: 'Kana', kanji: 'Kanji',
-    make: 'Make a puzzle', making: 'Building your puzzle…', left: '{n} left today', none_left: 'That’s today’s 2. More tomorrow!',
-    limit: 'That’s your 2 deck puzzles for today. More tomorrow!', buildFail: 'Couldn’t fit enough of these words together. Try the Mini, or kana answers.',
+    make: 'Make a puzzle', making: 'Building your puzzle…',
+    buildFail: 'Couldn’t fit enough of these words together. Try the Mini, or kana answers.',
     failed: 'Couldn’t reach the server. Please try again in a bit.',
     recent: 'Your deck puzzles', solved: 'solved',
     replace: 'Import a different deck', confirmReplace: 'Replace this deck? Your deck puzzles stay.', words: '{n} words',
@@ -99,11 +100,11 @@ const T = {
     trialLine: '{days}日間無料でお試しいただけます。期間内に解約すれば料金はかかりません。', trialEnds: '{date}まで無料体験', planTrial: '無料体験、その後{price}',
     sentPlan: 'ログインリンクを送りました（20分間有効。迷惑メールも確認してください）。この端末で開くと、そのままお支払いに進みます。',
     toPay: 'ログインしました。お支払い画面を開いています…',
-    freeTag: '無料', freeHead: '1日1つデッキパズル',
+    freeTag: '無料', freeHead: '無料のデッキパズル1つ',
     freeOut: 'ログイン（無料）で作れます。作ったパズルはどの端末でも続きから。',
-    freeReady: '今日の1つはまだ作れます。', freeUsed: '今日の1つは作りました。また明日、またはクロスワード＋で作り放題。',
+    freeReady: '無料の1つはまだ作れます。', freeUsed: '無料の1つは作りました。クロスワード＋なら作り放題です。',
     signInBtn: 'ログイン',
-    makeOut: 'ログインで今日の無料パズル', freeLeft: '今日の無料：あと1つ', freeUsedHint: '今日の無料分は作成済み',
+    makeOut: 'ログインで無料パズルを1つ', freeLeft: '無料で1つ作れます', freeUsedHint: '無料の1つは作成済み',
     seeAll: '全部見る（{n}）', seePlans: 'クロスワード＋を見る ↓',
     unlimited: 'クロスワード＋で作り放題',
     perMonth: '月{price}', perYear: '年{price}', yearNote: '約30%お得',
@@ -131,8 +132,8 @@ const T = {
     tooFew: '使える単語が{n}語しかありません（{min}語以上必要）。単語や読みのフィールドを変えてみてください。',
     tooBig: 'このデッキはブラウザに保存するには大きすぎます。一部だけ書き出してみてください。',
     size: 'サイズ', mini: 'ミニ', daily: 'デイリー', answers: '答え', kana: 'かな', kanji: '漢字',
-    make: 'パズルを作る', making: 'パズルを作っています…', left: '今日はあと{n}つ', none_left: '今日の2つを作りました。また明日！',
-    limit: '今日のデッキパズル（2つ）を作りました。また明日！', buildFail: 'この単語ではうまく組めませんでした。ミニか、かなの答えを試してください。',
+    make: 'パズルを作る', making: 'パズルを作っています…',
+    buildFail: 'この単語ではうまく組めませんでした。ミニか、かなの答えを試してください。',
     failed: 'サーバーにつながりませんでした。少し待ってからもう一度どうぞ。',
     recent: 'デッキのパズル', solved: 'クリア',
     replace: '別のデッキを読み込む', confirmReplace: 'デッキを入れ替えますか？作ったパズルは残ります。', words: '{n}語',
@@ -410,17 +411,18 @@ export function mountDeck({ root, play }) {
   const member = () => Boolean(currentUser() && currentUser().member);
   // The free trial's length, or 0 when there isn't one or this account has had it
   const trialDays = () => (cfg && cfg.trialDays && !(currentUser() && currentUser().trialOk === false) ? cfg.trialDays : 0);
-  // One free deck puzzle a day per account, counted by the Worker (so a private window
-  // doesn't reset it); signing in is free. Members make as many as they like.
-  let free = { day: null, left: null };
+  // One free deck puzzle per account, ever, counted by the Worker (so a private window
+  // or another device doesn't reset it); signing in is free. Members make as many as they
+  // like. who: the account the count is for (signing in as someone else asks again).
+  let free = { who: null, left: null };
   let signInPop = null;         // the sign-in popup, while it's open
-  const freeLeft = () => (free.day === localDate() && free.left != null ? free.left : null);
+  const freeLeft = () => (free.who && free.who === accountId() && free.left != null ? free.left : null);
   async function peekFree() {
     if (!signedIn() || member()) return;
-    const day = localDate();
-    if (free.day === day && free.left != null) return;
-    free = { day, left: null };
-    try { const r = await deckUse(day, true); free = { day, left: r.unlimited ? Infinity : r.left }; } catch { free = { day, left: FREE_PER_DAY }; }
+    const who = accountId();
+    if (free.who === who && (free.left != null || free.asking)) return;
+    free = { who, left: null, asking: true };
+    try { const r = await deckUse(true); free = { who, left: r.unlimited ? Infinity : r.left }; } catch { free = { who, left: FREE_DECK }; }
     render();
   }
   // Sign in, in a popup over the page. plan: they picked a plan first, so it says
@@ -596,10 +598,11 @@ export function mountDeck({ root, play }) {
         u.paid ? h('button', { type: 'button', class: 'btn-link', onclick: async () => { try { await portal(); } catch (e) { setStatus(e.message || t('failed'), true); } } }, t('manage')) : null));
   }
 
-  // Everyone else: what's free (one a day, signed in), and today's state
+  // Everyone else: what's free (one deck puzzle, signed in), and whether it's been made
   function freeStrip() {
     const out = !signedIn();
     const left = out ? null : freeLeft();
+    if (!out && left == null) peekFree();           // ask the Worker once (it renders again with the answer)
     const sub = out ? t('freeOut') : left == null ? '…' : left ? t('freeReady') : t('freeUsed');
     return h('div', { class: 'cw-free' },
       h('div', { class: 'cw-free-row' },
@@ -812,11 +815,11 @@ export function mountDeck({ root, play }) {
     busy = false;
     if (!member()) {
       try {
-        const r = await deckUse(localDate());
-        free = { day: localDate(), left: 0 };
-        if (!r.ok && !r.unlimited) { setStatus(''); return; }       // already used today (another device): the strip says so
+        const r = await deckUse();
+        free = { who: accountId(), left: 0 };
+        if (!r.ok && !r.unlimited) { setStatus(''); render(); return; }       // already made (on another device): the strip says so
       } catch (err) { setStatus(err.message || t('failed'), true); return; }
-    }
+    } else deckUse().catch(() => {});          // a member's first one is their free one too (the Worker notes it)
     const p = toPuzzle(draftPuzzle, { kind, size, name: s.name, seed });
     const x = state();
     x.made = [...(x.made || []), p].slice(-KEEP);
