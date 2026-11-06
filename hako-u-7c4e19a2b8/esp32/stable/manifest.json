@@ -1,8 +1,8 @@
 {
   "version": "0.2.2",
   "file": "hako-s3-0.2.2.bin",
-  "sha256": "ca6090d6538c4850be033ab1aa66b9d7e50b6b457d4cf2d1e64e2704582859d2",
-  "size": 5168864,
-  "released": "2026-11-06T07:34:11Z",
-  "notes": "Settings page: a search bar, and settings grouped (Anki, screens, pet, time & place, this hako); Settings page: a \"What's new\" list of every version; A second update screen, \"Updating\" with a bar; each update picks it or the ring at random; Development units: the filming tools work on the ESP32 (shoot mode, setup rehearsal, moods, quirks, reactions, the new-friend party, jump to screen, hold the clock)"
+  "sha256": "449302451a2e401502285c4b3f6970904556e24f01402ca9e44664236e9e09d3",
+  "size": 5196224,
+  "released": "2026-11-06T16:19:20Z",
+  "notes": "Focus timer (Pomodoro): knob menu \u2192 Timer. Set focus, break and rounds with the knob; leave it and it keeps running, with a small ring in the corner of every screen counting down; When a focus or a break ends, ripples, a soft flash and a light along the edges take over the screen (waking hako if it's asleep) until you press the knob; Settings page: the timer as a ring or big digits, and its ring color; American spelling (color, gray, center\u2026)"
 }
