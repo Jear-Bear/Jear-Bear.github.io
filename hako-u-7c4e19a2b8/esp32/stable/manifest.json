@@ -1,8 +1,8 @@
 {
-  "version": "0.1.9",
-  "file": "hako-s3-0.1.9.bin",
-  "sha256": "c82eb41f5a0b11c35ee43dc8c4ced8536981ef932a7cc1639975d088289c77f7",
-  "size": 5128224,
-  "released": "2026-11-06T06:04:24Z",
-  "notes": "Heatmap gradients and a rainbow style; sand and colour-mixing liquid; weeks can start on Sunday; automatic location for time zone and weather"
+  "version": "0.2.0",
+  "file": "hako-s3-0.2.0.bin",
+  "sha256": "e3c979f221cd00923e443b3e81d844e71ad09580640ebc646788c4f63ba1ffe5",
+  "size": 5131712,
+  "released": "2026-11-06T06:19:05Z",
+  "notes": "Added progress bar for updates while they're installing..."
 }
