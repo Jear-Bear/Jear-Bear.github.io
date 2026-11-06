@@ -1,8 +1,8 @@
 {
   "version": "0.2.2",
   "file": "hako-s3-0.2.2.bin",
-  "sha256": "0a915ef9c11eefcf7c4715fa0eaa1c3bfb853a3c8e5fc9a4c1a9807b64d3ebf9",
+  "sha256": "ca6090d6538c4850be033ab1aa66b9d7e50b6b457d4cf2d1e64e2704582859d2",
   "size": 5168864,
-  "released": "2026-11-06T07:03:57Z",
+  "released": "2026-11-06T07:34:11Z",
   "notes": "Settings page: a search bar, and settings grouped (Anki, screens, pet, time & place, this hako); Settings page: a \"What's new\" list of every version; A second update screen, \"Updating\" with a bar; each update picks it or the ring at random; Development units: the filming tools work on the ESP32 (shoot mode, setup rehearsal, moods, quirks, reactions, the new-friend party, jump to screen, hold the clock)"
 }
