@@ -3,6 +3,6 @@
   "file": "hako-s3-0.2.1.bin",
   "sha256": "f2aafb3fc06b9deec69d4c85b6698e6055661c3549a701fb09fd8b4099b7fc0e",
   "size": 5168400,
-  "released": "2026-11-06T07:00:33Z",
+  "released": "2026-11-06T07:02:08Z",
   "notes": "Settings page: a search bar, and settings grouped (Anki, screens, pet, time & place, this hako); Settings page: a \"What's new\" list of every version; A second update screen, \"Updating\" with a bar; each update picks it or the ring at random; Development units: the filming tools work on the ESP32 (shoot mode, setup rehearsal, moods, quirks, reactions, the new-friend party, jump to screen, hold the clock)"
 }
