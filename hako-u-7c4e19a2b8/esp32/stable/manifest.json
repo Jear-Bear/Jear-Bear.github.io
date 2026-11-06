@@ -1,8 +1,8 @@
 {
-  "version": "0.1.8",
-  "file": "hako-s3-0.1.8.bin",
-  "sha256": "b6545aee0061daa19298886ea7264a992d0bb3d4bee41fc2ccbb489b34a780b2",
-  "size": 5031744,
-  "released": "2026-11-02T15:22:44Z",
-  "notes": "Peggle-style boards, kana and reading fonts, nearby hakos, less network traffic"
+  "version": "0.1.9",
+  "file": "hako-s3-0.1.9.bin",
+  "sha256": "c82eb41f5a0b11c35ee43dc8c4ced8536981ef932a7cc1639975d088289c77f7",
+  "size": 5128224,
+  "released": "2026-11-06T06:04:24Z",
+  "notes": "Heatmap gradients and a rainbow style; sand and colour-mixing liquid; weeks can start on Sunday; automatic location for time zone and weather"
 }
