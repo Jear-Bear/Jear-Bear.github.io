@@ -2473,5 +2473,185 @@
     "c": "Rise from your chair",
     "t": "Movements",
     "tj": "動作"
+  },
+  "ぶんれつ": {
+    "c": "A cell does this to become two, or a party over a feud",
+    "t": "Breaking up",
+    "tj": "ふたつになること"
+  },
+  "ちようてい": {
+    "c": "A neutral third party steps in to help two sides agree",
+    "t": "Settling disputes",
+    "tj": "もめごと"
+  },
+  "おととし": {
+    "c": "Two calendar years before this one",
+    "t": "Years back",
+    "tj": "過ぎた年"
+  },
+  "おもいだす": {
+    "c": "What you do when a forgotten name suddenly comes back to you",
+    "t": "Memory",
+    "tj": "記憶"
+  },
+  "とらんぷ": {
+    "c": "A deck of 52 for poker, solitaire or magic tricks",
+    "t": "Games",
+    "tj": "遊び"
+  },
+  "でんちゆう": {
+    "c": "Tall pole beside the road carrying wires overhead",
+    "t": "Street sights",
+    "tj": "街角"
+  },
+  "しんそう": {
+    "c": "What a detective finally uncovers behind the case",
+    "t": "Mysteries",
+    "tj": "なぞ"
+  },
+  "かんしゆう": {
+    "c": "Habits a community keeps up for generations",
+    "t": "Traditions",
+    "tj": "しきたり"
+  },
+  "ちつとも": {
+    "c": "Emphatic \"not one bit\" when someone is unimpressed",
+    "t": "Not at all",
+    "tj": "少しも"
+  },
+  "かいじよう": {
+    "c": "Where a concert or conference is held",
+    "t": "Event spaces",
+    "tj": "催し"
+  },
+  "しんけい": {
+    "c": "Cable that carries signals from the brain; also what a tactless person lacks",
+    "t": "The body",
+    "tj": "からだ"
+  },
+  "げいじゆつ": {
+    "c": "Paintings, music and theater fall under this broad heading",
+    "t": "Culture",
+    "tj": "文化"
+  },
+  "とうみん": {
+    "c": "Bears do this through the coldest months",
+    "t": "Animal habits",
+    "tj": "動物のくらし"
+  },
+  "しゆつさん": {
+    "c": "The arrival of a new baby",
+    "t": "Family events",
+    "tj": "家族の慶事"
+  },
+  "おととい": {
+    "c": "Two days before today",
+    "t": "Days past",
+    "tj": "少し前"
+  },
+  "おばあさん": {
+    "c": "A kind elder who may knit and spoil the grandkids",
+    "t": "Family",
+    "tj": "家族"
+  },
+  "たいさく": {
+    "c": "Steps prepared in advance to deal with a problem",
+    "t": "Plans",
+    "tj": "計画"
+  },
+  "おおざつぱ": {
+    "c": "Not careful with details; just a rough sketch",
+    "t": "Style of work",
+    "tj": "仕事ぶり"
+  },
+  "しんどう": {
+    "c": "What a phone does when set to silent mode",
+    "t": "Shaking",
+    "tj": "ゆれ"
+  },
+  "りんぎよう": {
+    "c": "Work involving woods, logging and tree planting",
+    "t": "Industries",
+    "tj": "お仕事"
+  },
+  "もちろん": {
+    "c": "\"Obviously!\" when someone asks if you want dessert",
+    "t": "Agreeing",
+    "tj": "賛成"
+  },
+  "しやちよう": {
+    "c": "The person at the top of a company's org chart",
+    "t": "Office roles",
+    "tj": "職場の役"
+  },
+  "うんてん": {
+    "c": "Sitting behind the wheel and steering a car",
+    "t": "Everyday skills",
+    "tj": "身につける技"
+  },
+  "ようするに": {
+    "c": "Words that introduce the short version of a long story",
+    "t": "Summing up",
+    "tj": "まとめ"
+  },
+  "かんれき": {
+    "c": "Milestone when people traditionally wear red to mark a full cycle of the zodiac",
+    "t": "Birthdays",
+    "tj": "誕生日"
+  },
+  "ほころびる": {
+    "c": "What stitches do when loose, or a face when happy news arrives",
+    "t": "Smiles and seams",
+    "tj": "ほほえみ"
+  },
+  "がくせい": {
+    "c": "Someone who carries a backpack to class and cram for exams",
+    "t": "School life",
+    "tj": "教室"
+  },
+  "あるばいと": {
+    "c": "Side gig at a convenience store or cafe",
+    "t": "Making money",
+    "tj": "お金かせぎ"
+  },
+  "おこたる": {
+    "c": "To slack off on your duties",
+    "t": "Bad habits",
+    "tj": "悪いくせ"
+  },
+  "じゆうだい": {
+    "c": "Describes a mistake, news or decision that matters a lot",
+    "t": "Importance",
+    "tj": "要点"
+  },
+  "ひとがら": {
+    "c": "Someone's overall nature, as others see it",
+    "t": "Character",
+    "tj": "性格"
+  },
+  "ちようほう": {
+    "c": "Worth having around because it keeps coming in useful",
+    "t": "Handy things",
+    "tj": "便利"
+  },
+  "たいふう": {
+    "c": "Big spinning storm that hits Japan in late summer and autumn",
+    "t": "Weather",
+    "tj": "天気"
+  },
+  "かれんだー": {
+    "c": "Hang it up to see the days and holidays of the month",
+    "t": "On the wall",
+    "tj": "かべにかけるもの"
+  },
+  "りようじ": {
+    "c": "Official who helps citizens abroad from a branch of an embassy",
+    "t": "Diplomats",
+    "tj": "外交"
+  },
+  "きようじゆ": {
+    "c": "Senior lecturer at a campus",
+    "t": "University staff",
+    "tj": "大学"
   }
 }
