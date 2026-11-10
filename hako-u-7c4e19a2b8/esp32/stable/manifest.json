@@ -1,8 +1,8 @@
 {
-  "version": "0.2.2",
-  "file": "hako-s3-0.2.2.bin",
-  "sha256": "449302451a2e401502285c4b3f6970904556e24f01402ca9e44664236e9e09d3",
-  "size": 5196224,
-  "released": "2026-11-06T16:19:20Z",
-  "notes": "Focus timer (Pomodoro): knob menu \u2192 Timer. Set focus, break and rounds with the knob; leave it and it keeps running, with a small ring in the corner of every screen counting down; When a focus or a break ends, ripples, a soft flash and a light along the edges take over the screen (waking hako if it's asleep) until you press the knob; Settings page: the timer as a ring or big digits, and its ring color; American spelling (color, gray, center\u2026)"
+  "version": "0.2.3",
+  "file": "hako-s3-0.2.3.bin",
+  "sha256": "7553651ca83cedfd2e79fb31d2765fb9900595608929aac4a25ae35537c1bafa",
+  "size": 5218000,
+  "released": "2026-11-10T13:49:22Z",
+  "notes": "The pet's mood is fairer and follows the day: in the morning it compares your cards left with a typical day's (not every button press); by evening it checks whether the Today screen's minutes left fit before 11 pm, so a short pile late is \"behind\" and a long one \"drowning\"; Weather on networks that hide where they are (public, corporate): hako uses your time zone's city, and tries again in 15 minutes instead of 6 hours; The focus timer's ring sits in the top-left corner; Updates always show the progress ring (the bar is retired); The corner dot stays green through one slow answer from Anki and only blinks yellow after two missed checks; the settings page explains what each color means and shows Anki's last error"
 }
