@@ -1,4 +1,14 @@
 {
+  "あいそう": {
+    "c": "Friendly charm a shop clerk shows with a smile",
+    "t": "Manners",
+    "tj": "人あたり"
+  },
+  "あかんぼう": {
+    "c": "Tiny human who cries to ask for milk",
+    "t": "Little ones",
+    "tj": "小さな子"
+  },
   "あこがれる": {
     "c": "To yearn for a place or a person you admire",
     "t": "Wishes",
@@ -18,6 +28,11 @@
     "c": "How a spring day or a kotatsu feels",
     "t": "Temperature",
     "tj": "ぬくもり"
+  },
+  "あたらしい": {
+    "c": "Fresh out of the box, just launched",
+    "t": "Opposites of old",
+    "tj": "古いの反対"
   },
   "あたりまえ": {
     "c": "Of course! Nothing surprising about it",
@@ -69,15 +84,35 @@
     "t": "Signs",
     "tj": "しるし"
   },
+  "ありのまま": {
+    "c": "Just as it is, with no makeup or spin",
+    "t": "Honest expressions",
+    "tj": "正直な言い方"
+  },
   "あるこーる": {
     "c": "What makes beer and sake more than just a drink",
     "t": "Drinks",
     "tj": "飲み物"
   },
+  "あるばいと": {
+    "c": "Side gig at a convenience store or cafe",
+    "t": "Making money",
+    "tj": "お金かせぎ"
+  },
+  "あんぜん": {
+    "c": "Free from danger, like a seatbelt promises",
+    "t": "Protection",
+    "tj": "守り"
+  },
   "いきちがい": {
     "c": "When two letters cross in the mail, or two people wait at different exits",
     "t": "Mix-ups",
     "tj": "かみ合わないこと"
+  },
+  "いじよう": {
+    "c": "\"That's all, folks!\" in a formal speech, or a number's lower limit",
+    "t": "Finishing words",
+    "tj": "おわりの言葉"
   },
   "いそがしい": {
     "c": "How you feel in December, with year-end parties and deadlines piling up",
@@ -154,10 +189,20 @@
     "t": "Sounds",
     "tj": "音"
   },
+  "うんてん": {
+    "c": "Sitting behind the wheel and steering a car",
+    "t": "Everyday skills",
+    "tj": "身につける技"
+  },
   "えいがかん": {
     "c": "Where you eat popcorn in the dark",
     "t": "Entertainment",
     "tj": "娯楽"
+  },
+  "えいきよう": {
+    "c": "What a friend or a storm leaves behind on you",
+    "t": "Cause and effect",
+    "tj": "ものごとの結果"
   },
   "えいゆう": {
     "c": "Someone admired for brave deeds",
@@ -209,6 +254,16 @@
     "t": "Learning",
     "tj": "学び"
   },
+  "おおきい": {
+    "c": "Opposite of tiny",
+    "t": "Size",
+    "tj": "サイズ"
+  },
+  "おおざつぱ": {
+    "c": "Not careful with details; just a rough sketch",
+    "t": "Style of work",
+    "tj": "仕事ぶり"
+  },
   "おおすじ": {
     "c": "The broad strokes of a story, without the small details",
     "t": "Summaries",
@@ -224,10 +279,20 @@
     "t": "Society",
     "tj": "社会"
   },
+  "おかあさん": {
+    "c": "Polite way to call the woman who raised you",
+    "t": "Family",
+    "tj": "家族"
+  },
   "おかえり": {
     "c": "What family says back when you walk in the door",
     "t": "Greetings",
     "tj": "あいさつ"
+  },
+  "おくりがな": {
+    "c": "The tail of kana that follows a kanji stem",
+    "t": "Writing Japanese",
+    "tj": "日本語の書き方"
   },
   "おくれる": {
     "c": "What happens when the train is delayed and you miss the start",
@@ -238,6 +303,11 @@
     "c": "What you say to a friend who's moving away: take care!",
     "t": "Goodbyes",
     "tj": "別れのあいさつ"
+  },
+  "おこたる": {
+    "c": "To slack off on your duties",
+    "t": "Bad habits",
+    "tj": "悪いくせ"
   },
   "おじいさん": {
     "c": "In the folktale he heads to the mountains for firewood while she does laundry by the river",
@@ -269,6 +339,21 @@
     "t": "Family",
     "tj": "家族"
   },
+  "おとこのこ": {
+    "c": "A lad, with a toy robot or a soccer ball",
+    "t": "Kids",
+    "tj": "ちびっこ"
+  },
+  "おととい": {
+    "c": "Two days before today",
+    "t": "Days past",
+    "tj": "少し前"
+  },
+  "おととし": {
+    "c": "Two calendar years before this one",
+    "t": "Years back",
+    "tj": "過ぎた年"
+  },
   "おどろく": {
     "c": "What you do when someone jumps out and says boo",
     "t": "Reactions",
@@ -279,10 +364,20 @@
     "t": "Japanese food",
     "tj": "和食"
   },
+  "おねえさん": {
+    "c": "Polite way to address a girl older than you in the family",
+    "t": "Family",
+    "tj": "家族"
+  },
   "おのおの": {
     "c": "Each person on their own, as in 'bring your own lunch'",
     "t": "Each and every",
     "tj": "ひとりひとり"
+  },
+  "おばあさん": {
+    "c": "A kind elder who may knit and spoil the grandkids",
+    "t": "Family",
+    "tj": "家族"
   },
   "おびやかす": {
     "c": "To threaten or endanger",
@@ -313,6 +408,11 @@
     "c": "To get it firmly into your head, even if it's wrong",
     "t": "Beliefs",
     "tj": "考え"
+  },
+  "おもいだす": {
+    "c": "What you do when a forgotten name suddenly comes back to you",
+    "t": "Memory",
+    "tj": "記憶"
   },
   "おもしろい": {
     "c": "How you would describe a manga you cannot put down",
@@ -364,6 +464,11 @@
     "t": "Geography",
     "tj": "地理"
   },
+  "かいじよう": {
+    "c": "Where a concert or conference is held",
+    "t": "Event spaces",
+    "tj": "催し"
+  },
   "かいぜん": {
     "c": "Fixing flaws so the next version works better",
     "t": "Making things better",
@@ -394,6 +499,16 @@
     "t": "Checking",
     "tj": "チェック"
   },
+  "かたづける": {
+    "c": "Clear the table and put the toys away",
+    "t": "Chores",
+    "tj": "おそうじ"
+  },
+  "かちよう": {
+    "c": "Boss one step above a team lead and below a department head",
+    "t": "Office ranks",
+    "tj": "会社の役職"
+  },
   "かつこう": {
     "c": "How you look in that outfit",
     "t": "Appearance",
@@ -409,6 +524,11 @@
     "t": "Being outmatched",
     "tj": "力くらべ"
   },
+  "かねもち": {
+    "c": "Someone with deep pockets",
+    "t": "Wealth",
+    "tj": "財産"
+  },
   "かはんすう": {
     "c": "More than half of the votes",
     "t": "Voting",
@@ -419,10 +539,20 @@
     "t": "Trash",
     "tj": "ごみ"
   },
+  "かむばつく": {
+    "c": "What a retired singer stages with a surprise new tour",
+    "t": "Return of a star",
+    "tj": "復活"
+  },
   "かようび": {
     "c": "The day after Monday",
     "t": "Days of the week",
     "tj": "一週間"
+  },
+  "かれんだー": {
+    "c": "Hang it up to see the days and holidays of the month",
+    "t": "On the wall",
+    "tj": "かべにかけるもの"
   },
   "かわいい": {
     "c": "How you'd describe a kitten or a Sanrio character",
@@ -439,6 +569,11 @@
     "t": "Jobs",
     "tj": "職業"
   },
+  "かんしゆう": {
+    "c": "Habits a community keeps up for generations",
+    "t": "Traditions",
+    "tj": "しきたり"
+  },
   "かんしよう": {
     "c": "Sticking your nose into someone else's business",
     "t": "Meddling",
@@ -454,10 +589,25 @@
     "t": "Caring for others",
     "tj": "世話"
   },
+  "かんれき": {
+    "c": "Milestone when people traditionally wear red to mark a full cycle of the zodiac",
+    "t": "Birthdays",
+    "tj": "誕生日"
+  },
+  "かーぺつと": {
+    "c": "Soft cover for the floor, wall-to-wall",
+    "t": "Floor coverings",
+    "tj": "床"
+  },
   "がくげい": {
     "c": "Scholarship and the arts together, as in a school's culture festival",
     "t": "Learning",
     "tj": "教養"
+  },
+  "がくせい": {
+    "c": "Someone who carries a backpack to class and cram for exams",
+    "t": "School life",
+    "tj": "教室"
   },
   "がんばる": {
     "c": "Do your best!",
@@ -514,10 +664,25 @@
     "t": "Emergencies",
     "tj": "緊急"
   },
+  "きゆうでん": {
+    "c": "Where a king or queen holds court",
+    "t": "Royalty",
+    "tj": "王様の家"
+  },
+  "きよういく": {
+    "c": "What teachers and textbooks provide",
+    "t": "School",
+    "tj": "学校"
+  },
   "きようかい": {
     "c": "Where you hear a choir and church bells",
     "t": "Places of worship",
     "tj": "祈りの場所"
+  },
+  "きようかん": {
+    "c": "\"I totally get how you feel!\"",
+    "t": "Feelings",
+    "tj": "気持ち"
   },
   "きようがく": {
     "c": "Boys and girls studying at the same school",
@@ -534,6 +699,11 @@
     "t": "School",
     "tj": "学校"
   },
+  "きようじゆ": {
+    "c": "Senior lecturer at a campus",
+    "t": "University staff",
+    "tj": "大学"
+  },
   "きようそう": {
     "c": "A race to see who's best",
     "t": "Winning and losing",
@@ -543,6 +713,21 @@
     "c": "Living side by side in peace",
     "t": "Getting along",
     "tj": "仲良く"
+  },
+  "きようだい": {
+    "c": "Your brothers and sisters, collectively",
+    "t": "Family",
+    "tj": "家族"
+  },
+  "きようよう": {
+    "c": "Well-rounded knowledge from reading and travel",
+    "t": "Learning",
+    "tj": "学び"
+  },
+  "きよくげん": {
+    "c": "Narrow something down to a small range",
+    "t": "Limits",
+    "tj": "せまいはんい"
   },
   "きよぜつ": {
     "c": "A flat, firm no",
@@ -589,10 +774,20 @@
     "t": "Joining a group",
     "tj": "仲間になること"
   },
+  "けがする": {
+    "c": "Scrape your knee on the playground",
+    "t": "Mishaps",
+    "tj": "うっかり"
+  },
   "けしよう": {
     "c": "Foundation, lipstick and mascara",
     "t": "Beauty",
     "tj": "美容"
+  },
+  "けつかく": {
+    "c": "A lung infection once called \"consumption\"",
+    "t": "Medical history",
+    "tj": "医学の歴史"
   },
   "けつだん": {
     "c": "Making up your mind once and for all",
@@ -614,6 +809,11 @@
     "t": "Good judgment",
     "tj": "判断"
   },
+  "げいじゆつ": {
+    "c": "Paintings, music and theater fall under this broad heading",
+    "t": "Culture",
+    "tj": "文化"
+  },
   "げいのう": {
     "c": "The world of TV stars, idols and comedians that tabloids love",
     "t": "Show business",
@@ -624,10 +824,20 @@
     "t": "Stage arts",
     "tj": "舞台"
   },
+  "げつしや": {
+    "c": "What you pay each month for piano or swim classes",
+    "t": "Lessons",
+    "tj": "習い事"
+  },
   "げんだい": {
     "c": "The present age, with smartphones",
     "t": "Eras",
     "tj": "今の世の中"
+  },
+  "こいする": {
+    "c": "Butterflies in your stomach for someone special",
+    "t": "Romance",
+    "tj": "ときめき"
   },
   "こうきよう": {
     "c": "For everyone's use, like parks and libraries",
@@ -653,6 +863,11 @@
     "c": "Haggling back and forth until both sides agree",
     "t": "Business",
     "tj": "ビジネス"
+  },
+  "こうじよう": {
+    "c": "Where assembly lines hum and products roll out",
+    "t": "Industry",
+    "tj": "ものづくり"
   },
   "こうたく": {
     "c": "The shine on polished wood or a glossy photo",
@@ -689,6 +904,16 @@
     "t": "Productivity",
     "tj": "生産性"
   },
+  "こくばん": {
+    "c": "Where the teacher scrawls with chalk",
+    "t": "Classroom",
+    "tj": "教室"
+  },
+  "こつこう": {
+    "c": "Ties between two countries' governments",
+    "t": "Foreign affairs",
+    "tj": "外務省の仕事"
+  },
   "ことなる": {
     "c": "To be unlike each other",
     "t": "Differences",
@@ -718,6 +943,11 @@
     "c": "Going to parties and apps in search of a spouse",
     "t": "Life in Japan",
     "tj": "いまどきの日本"
+  },
+  "こんげつ": {
+    "c": "The month you're living in right now",
+    "t": "Calendar",
+    "tj": "暦"
   },
   "こんさーと": {
     "c": "Glow sticks waving, encore chants, sold-out arena",
@@ -829,6 +1059,11 @@
     "t": "Newspapers",
     "tj": "新聞"
   },
+  "しやちよう": {
+    "c": "The person at the top of a company's org chart",
+    "t": "Office roles",
+    "tj": "職場の役"
+  },
   "しやぶる": {
     "c": "What a baby does with its thumb",
     "t": "Eating",
@@ -858,6 +1093,11 @@
     "c": "What an editor does with a red pen, or a patch for a typo",
     "t": "Editing",
     "tj": "文章の手直し"
+  },
+  "しゆうよう": {
+    "c": "Fitting people or things inside a hall",
+    "t": "Capacity",
+    "tj": "入れもの"
   },
   "しゆうり": {
     "c": "What a mechanic does to a broken car",
@@ -904,6 +1144,11 @@
     "t": "Stories",
     "tj": "物語"
   },
+  "しゆつさん": {
+    "c": "The arrival of a new baby",
+    "t": "Family events",
+    "tj": "家族の慶事"
+  },
   "しゆつどう": {
     "c": "What fire trucks and police do when the call comes in",
     "t": "Emergency services",
@@ -923,6 +1168,11 @@
     "c": "Come into being, like a problem or doubt (formal)",
     "t": "Things that happen",
     "tj": "起こること"
+  },
+  "しようせつ": {
+    "c": "Long story with chapters, no pictures",
+    "t": "Books",
+    "tj": "本"
   },
   "しようたい": {
     "c": "What a masked person hides until the unmasking",
@@ -949,10 +1199,20 @@
     "t": "The calendar",
     "tj": "暦"
   },
+  "しよせき": {
+    "c": "Library shelf filler",
+    "t": "Reading",
+    "tj": "読み物"
+  },
   "しよつき": {
     "c": "Plates, bowls and cups you wash after dinner",
     "t": "Kitchen things",
     "tj": "台所のもの"
+  },
+  "しんけい": {
+    "c": "Cable that carries signals from the brain; also what a tactless person lacks",
+    "t": "The body",
+    "tj": "からだ"
   },
   "しんしゆつ": {
     "c": "Moving into a new market, like a chain opening its first store abroad",
@@ -969,6 +1229,11 @@
     "t": "Food quality",
     "tj": "食べ物の質"
   },
+  "しんそう": {
+    "c": "What a detective finally uncovers behind the case",
+    "t": "Mysteries",
+    "tj": "なぞ"
+  },
   "しんだい": {
     "c": "Overnight trains like the Sunrise Izumo have berths of this kind",
     "t": "Furniture for sleeping",
@@ -978,6 +1243,11 @@
     "c": "The main hall of a shrine, or a Greek temple to the gods",
     "t": "Sacred places",
     "tj": "聖地"
+  },
+  "しんどう": {
+    "c": "What a phone does when set to silent mode",
+    "t": "Shaking",
+    "tj": "ゆれ"
   },
   "しんぶん": {
     "c": "Printed every morning and delivered to your door",
@@ -1008,6 +1278,21 @@
     "c": "Rock, paper, scissors",
     "t": "Games",
     "tj": "遊び"
+  },
+  "じゆうしよ": {
+    "c": "What you write on an envelope below the recipient's name",
+    "t": "Mail",
+    "tj": "郵便"
+  },
+  "じゆうたく": {
+    "c": "Homes in a neighborhood, collectively",
+    "t": "Housing",
+    "tj": "家"
+  },
+  "じゆうだい": {
+    "c": "Describes a mistake, news or decision that matters a lot",
+    "t": "Importance",
+    "tj": "要点"
   },
   "じゆうどう": {
     "c": "Olympic sport in a white gi, won by ippon",
@@ -1059,6 +1344,11 @@
     "t": "Manners",
     "tj": "マナー"
   },
+  "じようほう": {
+    "c": "Data, news and facts you look up online",
+    "t": "Knowledge",
+    "tj": "知識"
+  },
   "じよどうし": {
     "c": "Grammar term for helpers like -masu and -tai tacked onto a verb",
     "t": "Grammar",
@@ -1079,20 +1369,45 @@
     "t": "Days of the week",
     "tj": "一週間"
   },
+  "すくない": {
+    "c": "Not many; scarce",
+    "t": "Amounts",
+    "tj": "量"
+  },
   "すくりーん": {
     "c": "The big white surface a film is projected onto",
     "t": "At the movies",
     "tj": "映画館"
+  },
+  "すこやか": {
+    "c": "Wishing a newborn to grow up this way",
+    "t": "Wellness",
+    "tj": "元気"
+  },
+  "すちーむ": {
+    "c": "What rises from a kettle and warms old radiators",
+    "t": "Heating",
+    "tj": "暖房"
   },
   "すつかり": {
     "c": "Totally, through and through, as in a fully forgotten promise",
     "t": "Degree",
     "tj": "程度"
   },
+  "すつきり": {
+    "c": "How you feel after a good cleanup or a long sleep",
+    "t": "Feelings",
+    "tj": "気分"
+  },
   "すてれお": {
     "c": "Two-speaker sound system on a 1980s shelf, left and right channels",
     "t": "Audio equipment",
     "tj": "音響機器"
+  },
+  "すとらいき": {
+    "c": "When workers stop work together to demand better pay",
+    "t": "Labor disputes",
+    "tj": "働く人のもめごと"
   },
   "すとーぶ": {
     "c": "The thing you huddle around in a cold room in winter",
@@ -1128,6 +1443,11 @@
     "c": "Tolstoy paired it with peace",
     "t": "Conflict between nations",
     "tj": "国どうしの武力衝突"
+  },
+  "せんにゆう": {
+    "c": "Sneaking quietly into enemy territory",
+    "t": "Spy stuff",
+    "tj": "スパイ"
   },
   "せんぱい": {
     "c": "The older student or coworker you look up to (notice me!)",
@@ -1173,6 +1493,11 @@
     "c": "The extra fee to get a package to your door",
     "t": "Shopping online",
     "tj": "ネット通販"
+  },
+  "そくする": {
+    "c": "Fit your plan to the facts on the ground",
+    "t": "Matching things up",
+    "tj": "合わせること"
   },
   "そくてい": {
     "c": "Using a ruler, a scale or a thermometer",
@@ -1229,6 +1554,16 @@
     "t": "Sound words",
     "tj": "擬態語"
   },
+  "たいがく": {
+    "c": "Leaving school before graduating",
+    "t": "School life",
+    "tj": "進路"
+  },
+  "たいさく": {
+    "c": "Steps prepared in advance to deal with a problem",
+    "t": "Plans",
+    "tj": "計画"
+  },
   "たいしかん": {
     "c": "Where you go to renew your passport abroad",
     "t": "Around town",
@@ -1244,6 +1579,11 @@
     "t": "Measurements",
     "tj": "はかるもの"
   },
+  "たいふう": {
+    "c": "Big spinning storm that hits Japan in late summer and autumn",
+    "t": "Weather",
+    "tj": "天気"
+  },
   "たくしー": {
     "c": "A car with a driver and a meter, with doors that open by themselves in Japan",
     "t": "Getting around",
@@ -1253,6 +1593,11 @@
     "c": "To ask someone the way",
     "t": "Asking",
     "tj": "質問"
+  },
+  "たちあがる": {
+    "c": "Rise from your chair",
+    "t": "Movements",
+    "tj": "動作"
   },
   "たつぷり": {
     "c": "Plenty and then some, like a generous scoop of sauce",
@@ -1268,6 +1613,16 @@
     "c": "What you say before giving an example",
     "t": "Linking words",
     "tj": "つなぎの言葉"
+  },
+  "たべもの": {
+    "c": "Anything edible that goes on your plate",
+    "t": "Meals",
+    "tj": "ごはんの時間"
+  },
+  "たんけん": {
+    "c": "Trek into the jungle with a map and a headlamp",
+    "t": "Adventures",
+    "tj": "冒険"
   },
   "たんじゆん": {
     "c": "Not complicated at all",
@@ -1309,6 +1664,16 @@
     "t": "Amounts",
     "tj": "量"
   },
+  "だいめい": {
+    "c": "The label on a novel, a film or a song",
+    "t": "Names on covers",
+    "tj": "表紙のことば"
+  },
+  "だつする": {
+    "c": "Break free from a bad habit or a trap",
+    "t": "Leaving",
+    "tj": "ぬけ出すこと"
+  },
   "だんせい": {
     "c": "A man, in polite or formal language",
     "t": "People",
@@ -1334,6 +1699,21 @@
     "t": "Transport",
     "tj": "交通"
   },
+  "ちつとも": {
+    "c": "Emphatic \"not one bit\" when someone is unimpressed",
+    "t": "Not at all",
+    "tj": "少しも"
+  },
+  "ちやいろい": {
+    "c": "Shade of a bear, a toasted bun or strong tea",
+    "t": "Colors",
+    "tj": "いろどり"
+  },
+  "ちゆうおう": {
+    "c": "Right in the middle, like the hub of a city",
+    "t": "Locations",
+    "tj": "場所"
+  },
   "ちゆうけい": {
     "c": "Live coverage passed along from the stadium to your TV, or a baton handoff",
     "t": "Broadcasting",
@@ -1349,6 +1729,11 @@
     "t": "At the doctor",
     "tj": "病院で"
   },
+  "ちゆうしん": {
+    "c": "The bullseye, or the heart of a city",
+    "t": "Positions",
+    "tj": "位置"
+  },
   "ちゆうせん": {
     "c": "How concert tickets get handed out when too many people apply",
     "t": "Luck",
@@ -1359,10 +1744,25 @@
     "t": "Health risks",
     "tj": "健康の危険"
   },
+  "ちゆうもん": {
+    "c": "What you place with the waiter after reading the menu",
+    "t": "At a restaurant",
+    "tj": "お店で"
+  },
   "ちようせい": {
     "c": "Tweaking the settings until it's just right",
     "t": "Fine-tuning",
     "tj": "合わせること"
+  },
+  "ちようてい": {
+    "c": "A neutral third party steps in to help two sides agree",
+    "t": "Settling disputes",
+    "tj": "もめごと"
+  },
+  "ちようほう": {
+    "c": "Worth having around because it keeps coming in useful",
+    "t": "Handy things",
+    "tj": "便利"
   },
   "ちよつかん": {
     "c": "A gut feeling you can't explain",
@@ -1424,6 +1824,11 @@
     "t": "Helping out",
     "tj": "助け合い"
   },
+  "てれつくす": {
+    "c": "Teletype messaging machine from before email",
+    "t": "Old office tech",
+    "tj": "昔の事務機器"
+  },
   "てんいん": {
     "c": "The one calling \"Irasshaimase!\" as you walk into the konbini",
     "t": "Jobs",
@@ -1449,6 +1854,11 @@
     "t": "How much",
     "tj": "程度"
   },
+  "でんちゆう": {
+    "c": "Tall pole beside the road carrying wires overhead",
+    "t": "Street sights",
+    "tj": "街角"
+  },
   "でんとう": {
     "c": "Customs handed down from one generation to the next",
     "t": "Culture",
@@ -1459,10 +1869,20 @@
     "t": "Tests",
     "tj": "テスト"
   },
+  "とういつ": {
+    "c": "Bring many parts into one, as in a country or a standard",
+    "t": "Combining",
+    "tj": "まとめること"
+  },
   "とうしよ": {
     "c": "A reader's letter sent in to the paper",
     "t": "Newspapers",
     "tj": "新聞"
+  },
+  "とうじよう": {
+    "c": "Walking onto the scene as a new character",
+    "t": "Stage",
+    "tj": "舞台"
   },
   "とうせん": {
     "c": "Getting elected, or having your lottery ticket come up",
@@ -1478,6 +1898,11 @@
     "c": "Pouring money or people into a project",
     "t": "Putting in",
     "tj": "つぎこむこと"
+  },
+  "とうみん": {
+    "c": "Bears do this through the coldest months",
+    "t": "Animal habits",
+    "tj": "動物のくらし"
   },
   "とおざかる": {
     "c": "To get farther away, like a ship sailing off",
@@ -1519,6 +1944,16 @@
     "t": "Catching",
     "tj": "つかむこと"
   },
+  "とらんぷ": {
+    "c": "A deck of 52 for poker, solitaire or magic tricks",
+    "t": "Games",
+    "tj": "遊び"
+  },
+  "とりかえ": {
+    "c": "Trading your faulty gadget for a working one",
+    "t": "Swapping",
+    "tj": "交換"
+  },
   "とりかえる": {
     "c": "What you do with a dead light bulb",
     "t": "Swapping",
@@ -1544,10 +1979,20 @@
     "t": "Roads and rails",
     "tj": "道路と線路"
   },
+  "どうかん": {
+    "c": "\"I feel exactly the same way\"",
+    "t": "Opinions",
+    "tj": "考え"
+  },
   "どうしても": {
     "c": "No matter what",
     "t": "Determination",
     "tj": "決意"
+  },
+  "どひよう": {
+    "c": "Circle of packed clay where wrestlers shove each other out",
+    "t": "Sumo",
+    "tj": "相撲"
   },
   "どらえもん": {
     "c": "A blue earless cat from the 22nd century with a magic pocket",
@@ -1559,10 +2004,20 @@
     "t": "Speed",
     "tj": "速さ"
   },
+  "ないよう": {
+    "c": "The substance of a book, a speech or a contract",
+    "t": "What's inside",
+    "tj": "中身"
+  },
   "なかほど": {
     "c": "Partway along, like the seats halfway down the bus",
     "t": "Position",
     "tj": "位置"
+  },
+  "なくなる": {
+    "c": "What your snacks do way too fast",
+    "t": "Vanishing",
+    "tj": "消えること"
   },
   "なこうど": {
     "c": "The person who introduced the couple, or arranged the match",
@@ -1594,10 +2049,25 @@
     "t": "Dislike",
     "tj": "嫌い"
   },
+  "にこにこ": {
+    "c": "Beaming with a happy grin",
+    "t": "Facial expressions",
+    "tj": "顔つき"
+  },
+  "にちじよう": {
+    "c": "Regular routine, nothing special going on",
+    "t": "Daily life",
+    "tj": "ふだんのくらし"
+  },
   "にちようび": {
     "c": "The day before Monday",
     "t": "Days of the week",
     "tj": "一週間"
+  },
+  "にゆうしや": {
+    "c": "Day one at a new company, with a name card and a bow",
+    "t": "Careers",
+    "tj": "就職"
   },
   "にんぎよう": {
     "c": "Hina dolls and Barbie are both this",
@@ -1608,6 +2078,11 @@
     "c": "Describes the student who always sits in the front row",
     "t": "Attitude",
     "tj": "態度"
+  },
+  "ねんかん": {
+    "c": "Twelve months in a row, like a sales report",
+    "t": "Time spans",
+    "tj": "ときのながさ"
   },
   "ねんじゆう": {
     "c": "All year round, without a break",
@@ -1649,10 +2124,20 @@
     "t": "Sharing",
     "tj": "割り当て"
   },
+  "はくがい": {
+    "c": "Cruel harassment of a group, often over beliefs",
+    "t": "Injustice",
+    "tj": "ひどい仕打ち"
+  },
   "はくしゆ": {
     "c": "What an audience does at the end of a show",
     "t": "Reactions",
     "tj": "反応"
+  },
+  "はくじよう": {
+    "c": "Admit it when the detective corners you",
+    "t": "Confessions",
+    "tj": "打ち明けること"
   },
   "はじめる": {
     "c": "To start: 'Ready, set, go!'",
@@ -1678,6 +2163,11 @@
     "c": "Sitting down to talk things out",
     "t": "Communication",
     "tj": "コミュニケーション"
+  },
+  "はなしあう": {
+    "c": "What two people do at a table to sort things out",
+    "t": "Communication",
+    "tj": "おしゃべり"
   },
   "はらいこむ": {
     "c": "To pay a bill into an account, at the bank or a convenience store",
@@ -1719,6 +2209,11 @@
     "t": "Numbers",
     "tj": "数字"
   },
+  "ばんごはん": {
+    "c": "Meal after sunset",
+    "t": "Meals",
+    "tj": "食事"
+  },
   "ばんのう": {
     "c": "Like a jack-of-all-trades, or a seasoning that goes on everything",
     "t": "Versatility",
@@ -1754,10 +2249,20 @@
     "t": "Getting stuck",
     "tj": "つかまること"
   },
+  "ひとがら": {
+    "c": "Someone's overall nature, as others see it",
+    "t": "Character",
+    "tj": "性格"
+  },
   "ひとやすみ": {
     "c": "A short pause to catch your breath before carrying on",
     "t": "Taking a break",
     "tj": "息抜き"
+  },
+  "ひやかす": {
+    "c": "Tease someone, or browse shops without buying",
+    "t": "Teasing",
+    "tj": "からかい"
   },
   "ひようし": {
     "c": "What you shouldn't judge a book by",
@@ -1804,10 +2309,25 @@
     "t": "Fairness",
     "tj": "公正さ"
   },
+  "ぴかちゆう": {
+    "c": "Yellow electric mouse with red cheeks",
+    "t": "Pocket monsters",
+    "tj": "ゲーム"
+  },
   "ふあすなー": {
     "c": "Pull its tab up and down to open your jacket or bag",
     "t": "Clothes parts",
     "tj": "服の部品"
+  },
+  "ふあつくす": {
+    "c": "Machine that sends a paper copy over the phone line",
+    "t": "Office gear",
+    "tj": "事務機器"
+  },
+  "ふいるむ": {
+    "c": "Roll that goes inside an old camera",
+    "t": "Cameras",
+    "tj": "写真"
   },
   "ふうしゆう": {
     "c": "The way things are done in a particular region",
@@ -1869,10 +2389,20 @@
     "t": "School supplies",
     "tj": "学用品"
   },
+  "ぶんれつ": {
+    "c": "A cell does this to become two, or a party over a feud",
+    "t": "Breaking up",
+    "tj": "ふたつになること"
+  },
   "ぷれぜんと": {
     "c": "What you wrap in paper for a birthday",
     "t": "Celebrations",
     "tj": "お祝い"
+  },
+  "へいきん": {
+    "c": "Add them up and divide by how many there are",
+    "t": "Math",
+    "tj": "算数"
   },
   "ぺこぺこ": {
     "c": "Your stomach's state right before lunch, or a bowing salaryman",
@@ -1889,10 +2419,20 @@
     "t": "Jewelry",
     "tj": "アクセサリー"
   },
+  "ほころびる": {
+    "c": "What stitches do when loose, or a face when happy news arrives",
+    "t": "Smiles and seams",
+    "tj": "ほほえみ"
+  },
   "ほつそく": {
     "c": "The launch of a new organization",
     "t": "Beginnings",
     "tj": "始まり"
+  },
+  "ほとんど": {
+    "c": "Nearly all, but not quite",
+    "t": "Amounts",
+    "tj": "割合"
   },
   "ほんだな": {
     "c": "Where novels stand side by side",
@@ -1903,6 +2443,11 @@
     "c": "'Really?!' you say, when you can't believe it",
     "t": "Truth",
     "tj": "真実"
+  },
+  "ほんらい": {
+    "c": "How things should be at heart, before any changes",
+    "t": "Original nature",
+    "tj": "もともとの姿"
   },
   "ぼーるぺん": {
     "c": "It clicks, it writes in ink, and it's always borrowed",
@@ -1953,6 +2498,11 @@
     "c": "Bright green powder whisked in a tea ceremony, and a favorite latte or soft-serve flavor",
     "t": "Japanese tea",
     "tj": "日本の緑のお飲み物"
+  },
+  "まどぐち": {
+    "c": "Where you queue to buy a ticket or file paperwork, behind glass",
+    "t": "Service spots",
+    "tj": "お店や役所の受付"
   },
   "まねきねこ": {
     "c": "A ceramic figure with one paw raised in a shop window",
@@ -2014,6 +2564,11 @@
     "t": "Communication",
     "tj": "連絡"
   },
+  "めろでいー": {
+    "c": "The tune you hum in the shower",
+    "t": "Music",
+    "tj": "音楽"
+  },
   "めろんぱん": {
     "c": "A sweet bun with a crackly top that looks like a fruit it doesn't contain",
     "t": "Bakery",
@@ -2038,6 +2593,26 @@
     "c": "To come forward and volunteer or report something",
     "t": "Offering",
     "tj": "提案"
+  },
+  "もしかして": {
+    "c": "Opening word of a hunch: \"___ you ate my pudding?\"",
+    "t": "Maybe",
+    "tj": "かもしれない"
+  },
+  "もしもし": {
+    "c": "What you say when you pick up the receiver",
+    "t": "Phone calls",
+    "tj": "電話"
+  },
+  "もちろん": {
+    "c": "\"Obviously!\" when someone asks if you want dessert",
+    "t": "Agreeing",
+    "tj": "賛成"
+  },
+  "ものさし": {
+    "c": "Marked with centimeters, found in your pencil case",
+    "t": "Stationery",
+    "tj": "文房具"
   },
   "ものれーる": {
     "c": "A train running on a single rail, like the one to Haneda",
@@ -2069,6 +2644,11 @@
     "t": "Texture",
     "tj": "手ざわり"
   },
+  "ゆいいつ": {
+    "c": "Number-one and the only one",
+    "t": "Numbers",
+    "tj": "数"
+  },
   "ゆうがた": {
     "c": "When the sky goes orange and kids head home",
     "t": "Times of day",
@@ -2078,6 +2658,11 @@
     "c": "Winning the whole tournament",
     "t": "Sports",
     "tj": "スポーツ"
+  },
+  "ゆうはん": {
+    "c": "Evening meal at home",
+    "t": "Meals",
+    "tj": "食事"
   },
   "ゆうめい": {
     "c": "Known by everyone, like a celebrity",
@@ -2109,6 +2694,11 @@
     "t": "Asking",
     "tj": "頼むこと"
   },
+  "ようするに": {
+    "c": "Words that introduce the short version of a long story",
+    "t": "Summing up",
+    "tj": "まとめ"
+  },
   "ようりよう": {
     "c": "The knack of doing things efficiently",
     "t": "Know-how",
@@ -2129,6 +2719,11 @@
     "t": "Continents",
     "tj": "大陸"
   },
+  "らいげつ": {
+    "c": "The month that follows this one",
+    "t": "Calendar",
+    "tj": "暦"
+  },
   "らいしゆう": {
     "c": "Seven days from now, give or take: when the next anime episode drops",
     "t": "Weeks",
@@ -2144,10 +2739,20 @@
     "t": "Measurements",
     "tj": "単位"
   },
+  "りぽーと": {
+    "c": "Essay due on Friday for the professor",
+    "t": "School work",
+    "tj": "学校の宿題"
+  },
   "りやくだつ": {
     "c": "Plundering shops during chaos",
     "t": "Crime",
     "tj": "犯罪"
+  },
+  "りゆうこう": {
+    "c": "Something everyone's into this season",
+    "t": "Trends",
+    "tj": "はやり"
   },
   "りようがわ": {
     "c": "Left and right at the same time, like trees lining a road",
@@ -2159,15 +2764,35 @@
     "t": "Condition",
     "tj": "状態"
   },
+  "りようしき": {
+    "c": "Common sense that keeps you from doing silly things",
+    "t": "Judgment",
+    "tj": "分別"
+  },
   "りようしん": {
     "c": "Mom and Dad together",
     "t": "Family members",
     "tj": "家族"
   },
+  "りようじ": {
+    "c": "Official who helps citizens abroad from a branch of an embassy",
+    "t": "Diplomats",
+    "tj": "外交"
+  },
+  "りようほう": {
+    "c": "Not just one or the other, but each of the two",
+    "t": "Choices",
+    "tj": "選択"
+  },
   "りよかく": {
     "c": "Someone with a ticket on a plane, train or ship",
     "t": "Getting around",
     "tj": "乗り物"
+  },
+  "りんぎよう": {
+    "c": "Work involving woods, logging and tree planting",
+    "t": "Industries",
+    "tj": "お仕事"
   },
   "れいぞうこ": {
     "c": "The cold box where leftovers go",
@@ -2233,425 +2858,5 @@
     "c": "A frock from shoulders to hem in a single garment; also Luffy's manga",
     "t": "Clothing",
     "tj": "衣服"
-  },
-  "どひよう": {
-    "c": "Circle of packed clay where wrestlers shove each other out",
-    "t": "Sumo",
-    "tj": "相撲"
-  },
-  "ありのまま": {
-    "c": "Just as it is, with no makeup or spin",
-    "t": "Honest expressions",
-    "tj": "正直な言い方"
-  },
-  "なくなる": {
-    "c": "What your snacks do way too fast",
-    "t": "Vanishing",
-    "tj": "消えること"
-  },
-  "りようほう": {
-    "c": "Not just one or the other, but each of the two",
-    "t": "Choices",
-    "tj": "選択"
-  },
-  "まどぐち": {
-    "c": "Where you queue to buy a ticket or file paperwork, behind glass",
-    "t": "Service spots",
-    "tj": "お店や役所の受付"
-  },
-  "ちゆうもん": {
-    "c": "What you place with the waiter after reading the menu",
-    "t": "At a restaurant",
-    "tj": "お店で"
-  },
-  "とりかえ": {
-    "c": "Trading your faulty gadget for a working one",
-    "t": "Swapping",
-    "tj": "交換"
-  },
-  "もしかして": {
-    "c": "Opening word of a hunch: \"___ you ate my pudding?\"",
-    "t": "Maybe",
-    "tj": "かもしれない"
-  },
-  "ほとんど": {
-    "c": "Nearly all, but not quite",
-    "t": "Amounts",
-    "tj": "割合"
-  },
-  "じゆうしよ": {
-    "c": "What you write on an envelope below the recipient's name",
-    "t": "Mail",
-    "tj": "郵便"
-  },
-  "こくばん": {
-    "c": "Where the teacher scrawls with chalk",
-    "t": "Classroom",
-    "tj": "教室"
-  },
-  "にゆうしや": {
-    "c": "Day one at a new company, with a name card and a bow",
-    "t": "Careers",
-    "tj": "就職"
-  },
-  "けつかく": {
-    "c": "A lung infection once called \"consumption\"",
-    "t": "Medical history",
-    "tj": "医学の歴史"
-  },
-  "かむばつく": {
-    "c": "What a retired singer stages with a surprise new tour",
-    "t": "Return of a star",
-    "tj": "復活"
-  },
-  "おおきい": {
-    "c": "Opposite of tiny",
-    "t": "Size",
-    "tj": "サイズ"
-  },
-  "きよういく": {
-    "c": "What teachers and textbooks provide",
-    "t": "School",
-    "tj": "学校"
-  },
-  "にこにこ": {
-    "c": "Beaming with a happy grin",
-    "t": "Facial expressions",
-    "tj": "顔つき"
-  },
-  "ちゆうしん": {
-    "c": "The bullseye, or the heart of a city",
-    "t": "Positions",
-    "tj": "位置"
-  },
-  "すちーむ": {
-    "c": "What rises from a kettle and warms old radiators",
-    "t": "Heating",
-    "tj": "暖房"
-  },
-  "りようしき": {
-    "c": "Common sense that keeps you from doing silly things",
-    "t": "Judgment",
-    "tj": "分別"
-  },
-  "ふいるむ": {
-    "c": "Roll that goes inside an old camera",
-    "t": "Cameras",
-    "tj": "写真"
-  },
-  "ふあつくす": {
-    "c": "Machine that sends a paper copy over the phone line",
-    "t": "Office gear",
-    "tj": "事務機器"
-  },
-  "たいがく": {
-    "c": "Leaving school before graduating",
-    "t": "School life",
-    "tj": "進路"
-  },
-  "はなしあう": {
-    "c": "What two people do at a table to sort things out",
-    "t": "Communication",
-    "tj": "おしゃべり"
-  },
-  "ひやかす": {
-    "c": "Tease someone, or browse shops without buying",
-    "t": "Teasing",
-    "tj": "からかい"
-  },
-  "せんにゆう": {
-    "c": "Sneaking quietly into enemy territory",
-    "t": "Spy stuff",
-    "tj": "スパイ"
-  },
-  "かちよう": {
-    "c": "Boss one step above a team lead and below a department head",
-    "t": "Office ranks",
-    "tj": "会社の役職"
-  },
-  "こうじよう": {
-    "c": "Where assembly lines hum and products roll out",
-    "t": "Industry",
-    "tj": "ものづくり"
-  },
-  "へいきん": {
-    "c": "Add them up and divide by how many there are",
-    "t": "Math",
-    "tj": "算数"
-  },
-  "じゆうたく": {
-    "c": "Homes in a neighborhood, collectively",
-    "t": "Housing",
-    "tj": "家"
-  },
-  "こつこう": {
-    "c": "Ties between two countries' governments",
-    "t": "Foreign affairs",
-    "tj": "外務省の仕事"
-  },
-  "かーぺつと": {
-    "c": "Soft cover for the floor, wall-to-wall",
-    "t": "Floor coverings",
-    "tj": "床"
-  },
-  "ゆうはん": {
-    "c": "Evening meal at home",
-    "t": "Meals",
-    "tj": "食事"
-  },
-  "きようだい": {
-    "c": "Your brothers and sisters, collectively",
-    "t": "Family",
-    "tj": "家族"
-  },
-  "ものさし": {
-    "c": "Marked with centimeters, found in your pencil case",
-    "t": "Stationery",
-    "tj": "文房具"
-  },
-  "りゆうこう": {
-    "c": "Something everyone's into this season",
-    "t": "Trends",
-    "tj": "はやり"
-  },
-  "げつしや": {
-    "c": "What you pay each month for piano or swim classes",
-    "t": "Lessons",
-    "tj": "習い事"
-  },
-  "しゆうよう": {
-    "c": "Fitting people or things inside a hall",
-    "t": "Capacity",
-    "tj": "入れもの"
-  },
-  "かねもち": {
-    "c": "Someone with deep pockets",
-    "t": "Wealth",
-    "tj": "財産"
-  },
-  "ばんごはん": {
-    "c": "Meal after sunset",
-    "t": "Meals",
-    "tj": "食事"
-  },
-  "しよせき": {
-    "c": "Library shelf filler",
-    "t": "Reading",
-    "tj": "読み物"
-  },
-  "じようほう": {
-    "c": "Data, news and facts you look up online",
-    "t": "Knowledge",
-    "tj": "知識"
-  },
-  "どうかん": {
-    "c": "\"I feel exactly the same way\"",
-    "t": "Opinions",
-    "tj": "考え"
-  },
-  "きゆうでん": {
-    "c": "Where a king or queen holds court",
-    "t": "Royalty",
-    "tj": "王様の家"
-  },
-  "すくない": {
-    "c": "Not many; scarce",
-    "t": "Amounts",
-    "tj": "量"
-  },
-  "ぴかちゆう": {
-    "c": "Yellow electric mouse with red cheeks",
-    "t": "Pocket monsters",
-    "tj": "ゲーム"
-  },
-  "ゆいいつ": {
-    "c": "Number-one and the only one",
-    "t": "Numbers",
-    "tj": "数"
-  },
-  "たちあがる": {
-    "c": "Rise from your chair",
-    "t": "Movements",
-    "tj": "動作"
-  },
-  "ぶんれつ": {
-    "c": "A cell does this to become two, or a party over a feud",
-    "t": "Breaking up",
-    "tj": "ふたつになること"
-  },
-  "ちようてい": {
-    "c": "A neutral third party steps in to help two sides agree",
-    "t": "Settling disputes",
-    "tj": "もめごと"
-  },
-  "おととし": {
-    "c": "Two calendar years before this one",
-    "t": "Years back",
-    "tj": "過ぎた年"
-  },
-  "おもいだす": {
-    "c": "What you do when a forgotten name suddenly comes back to you",
-    "t": "Memory",
-    "tj": "記憶"
-  },
-  "とらんぷ": {
-    "c": "A deck of 52 for poker, solitaire or magic tricks",
-    "t": "Games",
-    "tj": "遊び"
-  },
-  "でんちゆう": {
-    "c": "Tall pole beside the road carrying wires overhead",
-    "t": "Street sights",
-    "tj": "街角"
-  },
-  "しんそう": {
-    "c": "What a detective finally uncovers behind the case",
-    "t": "Mysteries",
-    "tj": "なぞ"
-  },
-  "かんしゆう": {
-    "c": "Habits a community keeps up for generations",
-    "t": "Traditions",
-    "tj": "しきたり"
-  },
-  "ちつとも": {
-    "c": "Emphatic \"not one bit\" when someone is unimpressed",
-    "t": "Not at all",
-    "tj": "少しも"
-  },
-  "かいじよう": {
-    "c": "Where a concert or conference is held",
-    "t": "Event spaces",
-    "tj": "催し"
-  },
-  "しんけい": {
-    "c": "Cable that carries signals from the brain; also what a tactless person lacks",
-    "t": "The body",
-    "tj": "からだ"
-  },
-  "げいじゆつ": {
-    "c": "Paintings, music and theater fall under this broad heading",
-    "t": "Culture",
-    "tj": "文化"
-  },
-  "とうみん": {
-    "c": "Bears do this through the coldest months",
-    "t": "Animal habits",
-    "tj": "動物のくらし"
-  },
-  "しゆつさん": {
-    "c": "The arrival of a new baby",
-    "t": "Family events",
-    "tj": "家族の慶事"
-  },
-  "おととい": {
-    "c": "Two days before today",
-    "t": "Days past",
-    "tj": "少し前"
-  },
-  "おばあさん": {
-    "c": "A kind elder who may knit and spoil the grandkids",
-    "t": "Family",
-    "tj": "家族"
-  },
-  "たいさく": {
-    "c": "Steps prepared in advance to deal with a problem",
-    "t": "Plans",
-    "tj": "計画"
-  },
-  "おおざつぱ": {
-    "c": "Not careful with details; just a rough sketch",
-    "t": "Style of work",
-    "tj": "仕事ぶり"
-  },
-  "しんどう": {
-    "c": "What a phone does when set to silent mode",
-    "t": "Shaking",
-    "tj": "ゆれ"
-  },
-  "りんぎよう": {
-    "c": "Work involving woods, logging and tree planting",
-    "t": "Industries",
-    "tj": "お仕事"
-  },
-  "もちろん": {
-    "c": "\"Obviously!\" when someone asks if you want dessert",
-    "t": "Agreeing",
-    "tj": "賛成"
-  },
-  "しやちよう": {
-    "c": "The person at the top of a company's org chart",
-    "t": "Office roles",
-    "tj": "職場の役"
-  },
-  "うんてん": {
-    "c": "Sitting behind the wheel and steering a car",
-    "t": "Everyday skills",
-    "tj": "身につける技"
-  },
-  "ようするに": {
-    "c": "Words that introduce the short version of a long story",
-    "t": "Summing up",
-    "tj": "まとめ"
-  },
-  "かんれき": {
-    "c": "Milestone when people traditionally wear red to mark a full cycle of the zodiac",
-    "t": "Birthdays",
-    "tj": "誕生日"
-  },
-  "ほころびる": {
-    "c": "What stitches do when loose, or a face when happy news arrives",
-    "t": "Smiles and seams",
-    "tj": "ほほえみ"
-  },
-  "がくせい": {
-    "c": "Someone who carries a backpack to class and cram for exams",
-    "t": "School life",
-    "tj": "教室"
-  },
-  "あるばいと": {
-    "c": "Side gig at a convenience store or cafe",
-    "t": "Making money",
-    "tj": "お金かせぎ"
-  },
-  "おこたる": {
-    "c": "To slack off on your duties",
-    "t": "Bad habits",
-    "tj": "悪いくせ"
-  },
-  "じゆうだい": {
-    "c": "Describes a mistake, news or decision that matters a lot",
-    "t": "Importance",
-    "tj": "要点"
-  },
-  "ひとがら": {
-    "c": "Someone's overall nature, as others see it",
-    "t": "Character",
-    "tj": "性格"
-  },
-  "ちようほう": {
-    "c": "Worth having around because it keeps coming in useful",
-    "t": "Handy things",
-    "tj": "便利"
-  },
-  "たいふう": {
-    "c": "Big spinning storm that hits Japan in late summer and autumn",
-    "t": "Weather",
-    "tj": "天気"
-  },
-  "かれんだー": {
-    "c": "Hang it up to see the days and holidays of the month",
-    "t": "On the wall",
-    "tj": "かべにかけるもの"
-  },
-  "りようじ": {
-    "c": "Official who helps citizens abroad from a branch of an embassy",
-    "t": "Diplomats",
-    "tj": "外交"
-  },
-  "きようじゆ": {
-    "c": "Senior lecturer at a campus",
-    "t": "University staff",
-    "tj": "大学"
   }
 }
