@@ -44,6 +44,21 @@
       "shape": "steps",
       "theme": "Sports & games",
       "made": "2026-11-04"
+    },
+    {
+      "id": "bonus-007",
+      "level": "advanced",
+      "size": "daily",
+      "shape": "snake",
+      "theme": "At work",
+      "made": "2026-11-16"
+    },
+    {
+      "id": "bonus-008",
+      "level": "mixed",
+      "size": "daily",
+      "theme": "At work",
+      "made": "2026-11-16"
     }
   ],
   "about": "Crossword+ bonus puzzles. Each file is sealed (encrypted) for the sponsor Worker; this list has no clues or answers."
