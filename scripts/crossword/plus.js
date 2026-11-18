@@ -14,6 +14,7 @@
 
 import { lang } from '../games/i18n.js?v=1';
 import { info, isMember, onAccount, currentUser, track } from './account.js?v=6';
+import { adsOn } from './ads.js?v=1';
 
 const API = 'https://sponsor-crm.jared-65b.workers.dev';
 const KEY = 'jareddesu.crossword.plus';
@@ -44,6 +45,7 @@ const T = {
     'perk.archive': 'Every past puzzle', 'perk.archive.sub': 'The whole archive, kana and kanji',
     'perk.deck': 'Unlimited deck puzzles', 'perk.deck.sub': 'From your own Anki deck (1 free to try, signed in)',
     'perk.bonus': 'Bonus puzzles', 'perk.bonus.sub': 'New ones every week', 'perk.bonus.n': '{n} waiting, more every week',
+    'perk.adfree': 'No ads', 'perk.adfree.sub': 'No ads or sponsor cards on the page',
     price: '<b>{month}/month</b> or {year}/year · cancel anytime',
     priceTrial: '<b>{days} days free</b>, then {month}/month or {year}/year · cancel anytime',
     priceWeek: '<b>Free for a week</b>, no card needed · then {month}/month or {year}/year if you want to keep it',
@@ -76,6 +78,7 @@ const T = {
     'perk.archive': '過去のパズル全部', 'perk.archive.sub': 'かなも漢字も、全部の日',
     'perk.deck': 'デッキパズル作り放題', 'perk.deck.sub': '自分のAnkiデッキから（ログインで1つ無料）',
     'perk.bonus': 'ボーナスパズル', 'perk.bonus.sub': '毎週追加', 'perk.bonus.n': '今{n}個、毎週追加',
+    'perk.adfree': '広告なし', 'perk.adfree.sub': '広告もスポンサー枠も表示しません',
     price: '<b>月{month}</b>または年{year}・いつでも解約OK',
     priceTrial: '<b>{days}日間無料</b>、その後は月{month}または年{year}・いつでも解約OK',
     priceWeek: '<b>1週間無料</b>・カード不要。続けたい場合は月{month}または年{year}',
@@ -104,10 +107,12 @@ function rich(k, nodes = {}, vars = {}) {
   return out;
 }
 
-// The selling points, as three tiles readable at a glance; shared by the page section,
-// the solved screen and My deck. order: which comes first; bonusN: how many are waiting
+// The selling points, as tiles readable at a glance; shared by the page section,
+// the solved screen and My deck. order: which comes first; bonusN: how many are waiting.
+// "No ads" joins them only while the page shows ads (ads.js), so it's never an empty promise.
 export function plusPerks({ order = ['archive', 'deck', 'bonus'], bonusN = 0 } = {}) {
-  return h('ul', { class: 'cw-perks' }, order.map((k) => h('li', {},
+  const keys = adsOn() && !order.includes('adfree') ? [...order, 'adfree'] : order;
+  return h('ul', { class: 'cw-perks' }, keys.map((k) => h('li', {},
     h('strong', {}, t(`perk.${k}`)),
     h('span', {}, k === 'bonus' && bonusN ? t('perk.bonus.n', { n: bonusN }) : t(`perk.${k}.sub`)))));
 }
