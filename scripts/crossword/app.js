@@ -18,13 +18,13 @@ import { gridKana, cycleDakuten, romaji } from './kana.js?v=1';
 import { translator, lang, setLang, dateLocale } from '../games/i18n.js?v=1';
 import { plusEligible, plusNudge, mountPlusSection, plusCta } from './plus.js?v=23';
 import { mountAds } from './ads.js?v=5';
-import { mountDeck } from './deck.js?v=22';
+import { mountDeck } from './deck.js?v=23';
 import { openBrowse } from './browse.js?v=2';
 import { initSync, schedulePush, flush } from './sync.js?v=6';
 import { handleReturn, refresh, isMember, onAccount, archiveDay, currentUser, signedIn, logout, track, info as plusInfo } from './account.js?v=8';
 import { rng } from './construct.mjs?v=1';
 import { dailyStreak, addDays } from './streak.js?v=1';
-import { mountBoardSettings, boardInvite, sendResult } from '../games/board.js?v=2';
+import { mountBoardSettings, boardInvite, sendResult } from '../games/board.js?v=3';
 
 const $ = (id) => document.getElementById(id);
 // replaceChildren() would print null/false as text
