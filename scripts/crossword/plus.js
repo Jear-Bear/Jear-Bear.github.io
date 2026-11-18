@@ -13,8 +13,8 @@
 // Emails go to the sponsor Worker's private database (waitlist.js), never the repo.
 
 import { lang } from '../games/i18n.js?v=1';
-import { info, isMember, onAccount, currentUser, signedIn, track } from './account.js?v=6';
-import { adsOn } from './ads.js?v=3';
+import { info, isMember, onAccount, currentUser, signedIn, track } from './account.js?v=7';
+import { adsOn } from './ads.js?v=4';
 
 const API = 'https://sponsor-crm.jared-65b.workers.dev';
 const KEY = 'jareddesu.crossword.plus';

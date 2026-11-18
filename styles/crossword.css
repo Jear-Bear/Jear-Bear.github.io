@@ -561,3 +561,13 @@ html.cw-member .cw-ad, html.cw-member [data-partner] { display: none !important;
 .cw-done-nudge { margin: 4px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--ink-soft); }
 .cw-done-nudge .cw-nudge-go { color: var(--plus-ink); font-weight: 600; }
 .cw-done-nudge .cw-nudge-not { font-size: 12.5px; color: var(--muted); }
+
+/* The Discord leaderboard in Settings (scripts/games/board.js) */
+.cw-set-board { margin-top: 18px; padding-top: 4px; border-top: 1px solid var(--border); max-width: 560px; }
+.cw-set-board .cw-set-head { margin: 14px 0 6px; }
+.board-about, .board-note { margin: 0 0 6px; font-size: 13.5px; line-height: 1.7; color: var(--ink-soft); }
+.board-about a { color: var(--page-ink); font-weight: 600; }
+.board-nick { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; margin: 10px 0 6px; }
+.board-nick label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); flex: 1 1 200px; }
+.board-nick-input { font: inherit; font-size: 15px; padding: 8px 10px; border: 1px solid var(--rule-strong); border-radius: 4px; background: var(--paper, transparent); color: var(--ink); min-width: 0; }
+.board-status { min-height: 1.4em; margin: 2px 0 0; font-size: 13px; color: var(--muted); }

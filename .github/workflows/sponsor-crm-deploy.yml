@@ -15,6 +15,7 @@ on:
       - 'scripts/manage/insights.js'
       - 'scripts/manage/traffic.js'
       - 'scripts/manage/pitching.js'
+      - 'scripts/crossword/streak.js'
       - '.github/workflows/sponsor-crm-deploy.yml'
   workflow_dispatch:
 
@@ -48,6 +49,7 @@ jobs:
       LOGIN_EMAIL_FROM: ${{ vars.LOGIN_EMAIL_FROM }}           # e.g. Jared’s Crossword <crossword@jareddesu.com>
       STRIPE_AUTOMATIC_TAX: ${{ vars.STRIPE_AUTOMATIC_TAX }}   # "true" once Stripe Tax is on
       STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY || vars.STRIPE_PUBLISHABLE_KEY }}   # pk_test_…/pk_live_…: Stripe's payment form on the page (Embedded Checkout)
+      DISCORD_CROSSWORD_WEBHOOK: ${{ secrets.DISCORD_CROSSWORD_WEBHOOK }}   # optional: the leaderboard's daily results post (a Discord channel webhook URL)
     steps:
       - name: Check out
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -100,7 +102,7 @@ jobs:
           printf '%s' "$CRM_SESSION_KEY" | npx wrangler secret put CRM_SESSION_KEY
           if [ -n "$YT_API_KEY" ]; then printf '%s' "$YT_API_KEY" | npx wrangler secret put YT_API_KEY; fi
           if [ -n "$CRM_INGEST_KEY" ]; then printf '%s' "$CRM_INGEST_KEY" | npx wrangler secret put CRM_INGEST_KEY; fi
-          for name in STRIPE_SECRET_KEY STRIPE_PUBLISHABLE_KEY RESEND_API_KEY GOOGLE_CLIENT_ID LOGIN_EMAIL_FROM STRIPE_AUTOMATIC_TAX; do
+          for name in STRIPE_SECRET_KEY STRIPE_PUBLISHABLE_KEY RESEND_API_KEY GOOGLE_CLIENT_ID LOGIN_EMAIL_FROM STRIPE_AUTOMATIC_TAX DISCORD_CROSSWORD_WEBHOOK; do
             if [ -n "${!name}" ]; then printf '%s' "${!name}" | npx wrangler secret put "$name"; fi
           done
           if [ -n "$CF_ANALYTICS_TOKEN" ]; then

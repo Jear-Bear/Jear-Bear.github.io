@@ -67,7 +67,7 @@ async function readBody(request) {
 }
 
 // Rate limits per (hashed) IP per hour
-async function limit(request, env, name, max) {
+export async function limit(request, env, name, max) {
   const now = Math.floor(Date.now() / 1000);
   const ip = request.headers.get('CF-Connecting-IP') || 'local';
   await env.DB.prepare('DELETE FROM public_hits WHERE expires_at < ?').bind(now).run();
@@ -408,9 +408,9 @@ export async function updatePlus(db, id, body) {
   return { ok: true };
 }
 
-// Deleting an account: it, its saved progress, its free-puzzle count and any open sign-in
-// links. Not while it has a live Stripe subscription (cancel that in Stripe first, or it
-// would keep charging an account that's gone).
+// Deleting an account: it, its saved progress, its free-puzzle count, its leaderboard
+// profile and results, and any open sign-in links. Not while it has a live Stripe
+// subscription (cancel that in Stripe first, or it would keep charging an account that's gone).
 export async function deletePlus(db, id) {
   if (!isUuid(id)) throw new HttpError(400, 'Bad account ID');
   const u = await db.prepare('SELECT id, email, status, stripe_subscription FROM plus_users WHERE id = ?').bind(id).first();
@@ -419,6 +419,8 @@ export async function deletePlus(db, id) {
   await db.batch([
     db.prepare('DELETE FROM plus_saves WHERE user_id = ?').bind(id),
     db.prepare('DELETE FROM plus_deck_uses WHERE user_id = ?').bind(id),
+    db.prepare('DELETE FROM game_results WHERE user_id = ?').bind(id),
+    db.prepare('DELETE FROM board_profiles WHERE user_id = ?').bind(id),
     db.prepare('DELETE FROM plus_logins WHERE email = ?').bind(u.email),
     db.prepare('DELETE FROM plus_users WHERE id = ?').bind(id),
   ]);
