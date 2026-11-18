@@ -131,7 +131,7 @@ open the page with `?ads=preview` (works on staging too).
 
 1. Apply at adsense.google.com with `jareddesu.com`. AdSense gives you a publisher ID
    and an `ads.txt` line.
-2. Paste the `ads.txt` line into `ads.txt` at the site root (replacing the comment's
+2. (Done Nov 2026.) Paste the `ads.txt` line into `ads.txt` at the site root (replacing the comment's
    placeholder) and merge, so it's live at `https://www.jareddesu.com/ads.txt`.
 3. In AdSense → Ads → By ad unit, make a **Display ad** (responsive). Put its ID in
    `ADSENSE_SLOT` and the publisher ID in `ADSENSE_CLIENT`, bump `ads.js?v=` in
