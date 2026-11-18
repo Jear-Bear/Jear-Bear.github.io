@@ -59,7 +59,9 @@ function draw(slot) {
   if (!space) {
     space = h('div', { class: 'cw-ad-space' });
     if (adsLive()) {
-      space.append(h('ins', { class: 'adsbygoogle', style: 'display:block', 'data-ad-client': ADSENSE_CLIENT, 'data-ad-slot': ADSENSE_SLOT, 'data-ad-format': 'auto', 'data-full-width-responsive': 'true' }));
+      // A fixed-size box (styles/crossword.css): without a set height, responsive ads take
+      // half a phone screen. No data-ad-format, so AdSense fits an ad to the box.
+      space.append(h('ins', { class: 'adsbygoogle cw-ad-unit', style: 'display:block', 'data-ad-client': ADSENSE_CLIENT, 'data-ad-slot': ADSENSE_SLOT }));
       loadScript();
       (window.adsbygoogle = window.adsbygoogle || []).push({});
     }
