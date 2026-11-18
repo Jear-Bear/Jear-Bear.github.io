@@ -7,6 +7,8 @@
 
 import { HttpError, getSetting, createRecord } from './data.js';
 import { isUuid, isIsoDate } from '../../../scripts/manage/schema.js';
+import { hmacHex, bump } from './public.js';
+import { sessionUser, isMember } from './plus.js';
 
 const BOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|embedly|discord|slack|whatsapp|telegram|curl|wget|python|headless|monitor|scan/i;
 const SLUG = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
@@ -58,6 +60,69 @@ export async function recordClick(request, env, ctx) {
   if (!link) return { ok: false };
   countClick(env, ctx, slug, via);
   return { ok: true };
+}
+
+// A sponsor card seen on the site (scripts/partner.js): at least half on screen for a second,
+// once per card per page load. Body (text/plain, like a click):
+//   {"slug":"ohanasi","via":"tools","t":"<session token, if signed in>"}
+// Only stored links and the card places on the site count, and never a Crossword+ member's
+// view (members see no sponsor cards on the games; the token is only checked, never kept).
+// Counts only: no IPs, cookies or user agents are stored (the IP is hashed for the hourly limit).
+export const CARD_PLACES = new Set(['crossword', 'crossword-solved', 'wordle', 'wordle-solved', 'tools', 'guide', 'guide-card']);
+const VIEWS_PER_HOUR = 200;
+export async function recordView(request, env, ctx) {
+  const ua = request.headers.get('User-Agent') || '';
+  if (!ua || BOT.test(ua)) return { ok: true };
+  let body = {};
+  try { body = JSON.parse((await request.text()).slice(0, 1000)); } catch { /* ignore */ }
+  const slug = String(body.slug || '').toLowerCase();
+  const via = String(body.via || '').toLowerCase();
+  if (!SLUG.test(slug) || !CARD_PLACES.has(via)) return { ok: false };
+  const link = await env.DB.prepare('SELECT 1 FROM links WHERE slug = ? AND archived = 0').bind(slug).first();
+  if (!link) return { ok: false };
+  const now = Math.floor(Date.now() / 1000);
+  const ip = request.headers.get('CF-Connecting-IP') || 'local';
+  if (!(await bump(env.DB, `view:${await hmacHex(env, `${ip}:${Math.floor(now / 3600)}`)}`, VIEWS_PER_HOUR, 3600, now))) return { ok: false };
+  if (typeof body.t === 'string' && body.t.length < 300) {
+    const u = await sessionUser({ headers: new Headers({ Authorization: `Bearer ${body.t}` }) }, env).catch(() => null);
+    if (isMember(u)) return { ok: true, member: true };
+  }
+  const day = new Date().toISOString().slice(0, 10);
+  ctx.waitUntil(env.DB.prepare('INSERT INTO partner_views (slug, via, day, views) VALUES (?, ?, ?, 1) ON CONFLICT (slug, via, day) DO UPDATE SET views = views + 1').bind(slug, via, day).run().catch(() => {}));
+  return { ok: true };
+}
+
+// The sponsor cards by month: views, clicks and click-through rate per place and in total
+// (GET /api/sponsor-cards, and the MCP site-traffic tool). Clicks are the cards' own
+// (link_click_via for the card places), so ?via= links in videos don't skew the rate.
+const ctr = (clicks, views) => (views ? Math.round((clicks / views) * 1000) / 10 : null);
+export async function sponsorCards(db, { months = 12 } = {}) {
+  const n = Math.max(1, Math.min(24, Number(months) || 12));
+  const d = new Date();
+  const since = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - (n - 1), 1)).toISOString().slice(0, 10);
+  const places = [...CARD_PLACES];
+  const marks = places.map(() => '?').join(',');
+  const [views, clicks] = await db.batch([
+    db.prepare(`SELECT slug, via, substr(day, 1, 7) AS month, SUM(views) AS n FROM partner_views WHERE day >= ? GROUP BY slug, via, month`).bind(since),
+    db.prepare(`SELECT slug, via, substr(day, 1, 7) AS month, SUM(clicks) AS n FROM link_click_via WHERE day >= ? AND via IN (${marks}) GROUP BY slug, via, month`).bind(since, ...places),
+  ]);
+  const byMonth = new Map();
+  const row = (r) => {
+    if (!byMonth.has(r.month)) byMonth.set(r.month, new Map());
+    const m = byMonth.get(r.month);
+    const k = `${r.slug}|${r.via}`;
+    if (!m.has(k)) m.set(k, { slug: r.slug, via: r.via, views: 0, clicks: 0 });
+    return m.get(k);
+  };
+  views.results.forEach((r) => { row(r).views += r.n; });
+  clicks.results.forEach((r) => { row(r).clicks += r.n; });
+  const out = [...byMonth].sort((a, b) => b[0].localeCompare(a[0])).map(([month, m]) => {
+    const rows = [...m.values()].map((r) => ({ ...r, ctr: ctr(r.clicks, r.views) })).sort((a, b) => b.views - a.views || b.clicks - a.clicks);
+    const v = rows.reduce((x, r) => x + r.views, 0);
+    const c = rows.reduce((x, r) => x + r.clicks, 0);
+    return { month, places: rows, total: { views: v, clicks: c, ctr: ctr(c, v) } };
+  });
+  return { since, months: out };
 }
 
 // --- Invoices ---------------------------------------------------------------------------------

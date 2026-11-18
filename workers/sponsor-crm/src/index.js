@@ -33,6 +33,8 @@
 //   GET  /public/availability       open sponsor slots by month (public, counts only)
 //   POST /public/inquiry            the sponsor-page form → Review (public, rate-limited)
 //   POST /public/click              a click on a sponsor card on the site (counts only)
+//   POST /public/view               a sponsor card seen on the site (counts only; not members)
+//   GET  /api/sponsor-cards?months=12  sponsor card views, clicks and click-through rate by month
 //   /public/plus/…                  Crossword+ accounts (sign in with Google or an email link), the free week, past days, bonus puzzles (plus.js)
 //   /public/plus/checkout|sync|portal, POST /public/stripe/webhook    payments (stripe.js)
 //   /public/plus/deck-use|load|save  the free deck puzzle per account, progress synced between devices (plussync.js)
@@ -65,7 +67,7 @@ import { createServer } from './mcp.js';
 import { handleAuthorize, redirectAllowed } from './authorize.js';
 import { listReview, passProposal, dismissProposal, decideIdea } from './claude.js';
 import { ingestStats, pullPublicStats, loadInsights, putIncome, decideRateRule } from './stats.js';
-import { handleGo, recordClick, createInvoice } from './growth.js';
+import { handleGo, recordClick, recordView, sponsorCards, createInvoice } from './growth.js';
 import { listDrafts, requestDraft, closeDraft } from './drafts.js';
 import { availability, inquiry } from './public.js';
 import { joinWaitlist, leaveWaitlist, listWaitlist } from './waitlist.js';
@@ -203,6 +205,7 @@ async function route(request, env, url) {
   if (a === 'traffic' && !b && m === 'GET') return loadTraffic(env, db, { days: url.searchParams.get('days'), to: url.searchParams.get('to') });
   if (a === 'traffic' && b === 'refresh' && !c && m === 'POST') return pullTraffic(env, db);
   if (a === 'board' && b === 'preview' && !c && m === 'GET') return previewPost(env, url.searchParams.get('day'), url.searchParams.get('format'));
+  if (a === 'sponsor-cards' && !b && m === 'GET') return sponsorCards(db, { months: url.searchParams.get('months') });
   if (a === 'rate-rules' && b && (c === 'accept' || c === 'dismiss') && !d && m === 'POST') {
     const settings = await settingsFor(db);
     return decideRateRule(db, b, c === 'accept', await readJson(request), todayIn(settings.tz));
@@ -377,6 +380,11 @@ const app = {
       if (!origin) return json({ error: 'Origin not allowed' }, 403);
       if (!configured(env)) return json({ error: 'Not configured' }, 503, origin);
       return json(await recordClick(request, env, ctx), 200, origin);
+    }
+    if (url.pathname === '/public/view' && request.method === 'POST') {
+      if (!origin) return json({ error: 'Origin not allowed' }, 403);
+      if (!configured(env)) return json({ error: 'Not configured' }, 503, origin);
+      return json(await recordView(request, env, ctx), 200, origin);
     }
     if (url.pathname === '/public/crossword-interest' && request.method === 'POST') {
       if (!origin) return json({ error: 'Origin not allowed' }, 403);
