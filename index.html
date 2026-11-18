@@ -1,9 +1,12 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="utf-8">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <link rel="icon" type="image/png" href="{{ "/images/logo.png" | absolute_url }}">
-    <title>Jared P.</title>
+    <title>まだまだJared: Japanese Learning, Free Practice Tools and Guide</title>
+    <meta name="description" content="まだまだJared (Jared P.) makes Japanese learning videos and free practice tools: a daily Japanese crossword, Japanese Wordle, kana and kanji trainers, and a free guide to learning Japanese through immersion." />
+    <link rel="canonical" href="https://www.jareddesu.com/" />
   <!-- Cloudflare Web Analytics (cookieless) -->
   <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
 </head>
@@ -247,6 +250,16 @@
 </script>
 
 <body onload="initTestbed()">
+    <!-- The canvas menu, as plain links for screen readers (and search engines, which can't read the canvas) -->
+    <nav aria-label="Site" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">
+        <h1>まだまだJared: Japanese learning</h1>
+        <ul>
+            <li><a href="/about/">About</a></li>
+            <li><a href="/guide/">Jared’s free Japanese guide</a></li>
+            <li><a href="/projects/">Projects</a></li>
+            <li><a href="/contact/">Contact</a></li>
+        </ul>
+    </nav>
     <canvas id="canvas"></canvas>
     <canvas id="highResCanvas"></canvas>
     <canvas id="textCanvas"></canvas>

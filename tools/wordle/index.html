@@ -5,9 +5,24 @@
   <script>/* theme: set before paint (auto follows the system) */(function(){var d=document.documentElement,k='jareddesu.theme',m=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)');function p(){try{return localStorage.getItem(k)||'auto'}catch(e){return'auto'}}function a(){var t=p();d.dataset.theme=t==='light'||t==='dark'?t:(m&&m.matches?'dark':'light');d.dataset.themePref=t}a();if(m&&m.addEventListener)m.addEventListener('change',a);window.jdTheme={get:p,set:function(t){try{t==='auto'?localStorage.removeItem(k):localStorage.setItem(k,t)}catch(e){}a()}}})();</script>
   <script>/* games: interface language before paint */try{if(localStorage.getItem('jareddesu.games.lang')==='ja'){document.documentElement.dataset.ui='ja';document.documentElement.lang='ja'}}catch(e){}</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-  <title>Kana Wordle · Jared P.</title>
-  <meta name="description" content="Guess the hidden Japanese word in hiragana. A new 4-kana and 5-kana word every day at beginner (N5–N4), intermediate (N3–N2) or advanced (N1+) level, plus unlimited practice." />
+  <title>Japanese Wordle: Free Daily Kana Wordle (JLPT N5 to N1) · Jared P.</title>
+  <meta name="description" content="Japanese Wordle in hiragana, free every day. Guess the hidden 4- or 5-kana word in 8 tries at JLPT N5–N4, N3–N2 or N1 level, with a theme and hints, plus unlimited practice. Type in romaji, no account needed." />
   <link rel="canonical" href="https://www.jareddesu.com/tools/wordle/" />
+  <!-- Link previews (Open Graph / X). The image is images/og/wordle.jpg, 1200×630. -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="まだまだJared" />
+  <meta property="og:title" content="Japanese Wordle: guess the word in hiragana" />
+  <meta property="og:description" content="A new Japanese word every day at your JLPT level, plus unlimited practice. Free, no account needed." />
+  <meta property="og:url" content="https://www.jareddesu.com/tools/wordle/" />
+  <meta property="og:image" content="https://www.jareddesu.com/images/og/wordle.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Kana Wordle (かなWordle): guesses さくらい, たのじい, たのしい in coloured tiles" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:locale:alternate" content="ja_JP" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://www.jareddesu.com/images/og/wordle.jpg" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Japanese Wordle (Kana Wordle)","alternateName":["Kana Wordle","かなWordle"],"url":"https://www.jareddesu.com/tools/wordle/","description":"Japanese Wordle in hiragana, free every day. Guess the hidden 4- or 5-kana word in 8 tries at JLPT N5–N4, N3–N2 or N1 level, with a theme and hints, plus unlimited practice. Type in romaji, no account needed.","applicationCategory":"GameApplication","operatingSystem":"Any (web browser)","inLanguage":["en","ja"],"image":"https://www.jareddesu.com/images/og/wordle.jpg","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Jared P.","url":"https://www.jareddesu.com/"}}</script>
 
   <link rel="icon" href="../../images/logo.png">
 
@@ -68,13 +83,13 @@
     <div class="container wd">
       <header class="page-head">
         <div class="page-head-copy">
-          <h1 class="page-title"><span data-ui-only="en">Kana <em>Wordle</em>.</span><span data-ui-only="ja" lang="ja">かな<em>Wordle</em>。</span></h1>
+          <h1 class="page-title"><span data-ui-only="en">Japanese <em>Wordle</em>.</span><span data-ui-only="ja" lang="ja">日本語<em>Wordle</em>。</span></h1>
           <p class="page-intro" data-ui-only="ja" lang="ja">
-            ひらがなで隠れた単語を当てよう。緑は文字も位置も正解、黄色は単語のどこか別の位置にある文字、
+            かなWordleは、無料で遊べる日本語版Wordle。ひらがなで隠れた単語を当てよう。緑は文字も位置も正解、黄色は単語のどこか別の位置にある文字、
             青は濁点ひとつ違い（か と が）。毎日新しい単語が出ます。練習モードなら何回でも遊べます。
           </p>
           <p class="page-intro" data-ui-only="en">
-            Guess the hidden word in hiragana. Green is the right kana in the right spot, yellow is in the
+            Kana Wordle is a free Japanese Wordle: guess the hidden word in hiragana. Green is the right kana in the right spot, yellow is in the
             word somewhere else, and blue means you're one dakuten away (か vs が). A new word every day,
             or practice as much as you like.
           </p>
@@ -205,7 +220,7 @@
   </footer>
 
   <script src="../../scripts/site.js?v=3"></script>
-  <script type="module" src="../../scripts/wordle/app.js?v=7"></script>
+  <script type="module" src="../../scripts/wordle/app.js?v=8"></script>
   <script src="../../scripts/partner.js?v=5"></script>
 </body>
 </html>

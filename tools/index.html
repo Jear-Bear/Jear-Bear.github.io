@@ -4,8 +4,20 @@
   <meta charset="UTF-8">
   <script>/* theme: set before paint (auto follows the system) */(function(){var d=document.documentElement,k='jareddesu.theme',m=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)');function p(){try{return localStorage.getItem(k)||'auto'}catch(e){return'auto'}}function a(){var t=p();d.dataset.theme=t==='light'||t==='dark'?t:(m&&m.matches?'dark':'light');d.dataset.themePref=t}a();if(m&&m.addEventListener)m.addEventListener('change',a);window.jdTheme={get:p,set:function(t){try{t==='auto'?localStorage.removeItem(k):localStorage.setItem(k,t)}catch(e){}a()}}})();</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tools · Jared P.</title>
-  <meta name="description" content="Handcrafted tools for Japanese learners. Kana training, study utilities, and other late-night experiments by Jared P." />
+  <title>Free Japanese Practice: Daily Crossword, Wordle, Kana and Kanji Trainers · Jared P.</title>
+  <meta name="description" content="Practice Japanese for free with daily games and trainers: a Japanese crossword, Japanese Wordle in hiragana, and drills for hiragana, katakana, kanji and JIS typing. JLPT N5 to N1, no account needed." />
+  <link rel="canonical" href="https://www.jareddesu.com/tools/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="まだまだJared" />
+  <meta property="og:title" content="Free Japanese Practice: games and trainers" />
+  <meta property="og:description" content="A daily Japanese crossword, Japanese Wordle, and kana and kanji trainers. Free, no account needed." />
+  <meta property="og:url" content="https://www.jareddesu.com/tools/" />
+  <meta property="og:image" content="https://www.jareddesu.com/images/og/tools.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://www.jareddesu.com/images/og/tools.jpg" />
+  <script type="application/ld+json">[{"@context":"https://schema.org","@type":"CollectionPage","name":"Free Japanese Practice","url":"https://www.jareddesu.com/tools/","description":"Practice Japanese for free with daily games and trainers: a Japanese crossword, Japanese Wordle in hiragana, and drills for hiragana, katakana, kanji and JIS typing. JLPT N5 to N1, no account needed.","inLanguage":"en","author":{"@type":"Person","name":"Jared P.","url":"https://www.jareddesu.com/"},"mainEntity":{"@type":"ItemList","itemListElement":[{"@type":"ListItem","position":1,"name":"Japanese Crossword","url":"https://www.jareddesu.com/tools/crossword/"},{"@type":"ListItem","position":2,"name":"Japanese Wordle (Kana Wordle)","url":"https://www.jareddesu.com/tools/wordle/"},{"@type":"ListItem","position":3,"name":"Kana Trainer: Hiragana and Katakana Practice","url":"https://www.jareddesu.com/tools/kana/"},{"@type":"ListItem","position":4,"name":"Kanji Trainer","url":"https://www.jareddesu.com/tools/kanji/"},{"@type":"ListItem","position":5,"name":"Nandoku Trainer","url":"https://www.jareddesu.com/tools/nandoku/"},{"@type":"ListItem","position":6,"name":"JIS Grind","url":"https://www.jareddesu.com/tools/jis/"}]}}]</script>
 
   <link rel="icon" href="../images/logo.png">
 
@@ -14,7 +26,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="../styles/base.css?v=4">
-  <link rel="stylesheet" href="../styles/tools.css?v=3">
+  <link rel="stylesheet" href="../styles/tools.css?v=4">
   <link rel="stylesheet" href="../styles/partner.css?v=4">
   <!-- Cloudflare Web Analytics (cookieless) -->
   <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
@@ -66,19 +78,104 @@
     <div class="container">
       <header class="page-head">
         <div class="page-head-copy">
-          <h1 class="page-title">Built for <em>learners</em>.</h1>
+          <h1 class="page-title">Free Japanese <em>practice</em>.</h1>
           <p class="page-intro">
-            Small, focused utilities for studying Japanese. Made by someone who
-            actually uses them. No accounts, no tracking.
+            Games and trainers to practice Japanese every day, for free: a daily
+            Japanese crossword, Japanese Wordle in kana, and drills for hiragana,
+            katakana, kanji and typing. Made by someone who actually uses them.
+            No account needed.
           </p>
         </div>
         <p class="page-v"><span class="page-v-ja" lang="ja">ツール</span><span class="page-v-en">Tools</span></p>
       </header>
 
+      <!-- To add a tool: copy an entry (the glyph is shown large; --tile-color is the tool's own colour) -->
       <ul class="tools-grid" id="tools-grid">
-        <!-- entries rendered by tools.js from the manifest -->
-        <noscript><li>The tool list needs JavaScript — but the tools themselves are linked here: <a href="./kana/">Kana Trainer</a>.</li></noscript>
+        <li class="tool-entry" style="--tile-color:#4c6cb3">
+          <a class="tool-link" href="./crossword/">
+            <span class="tool-glyph" lang="ja" aria-hidden="true">十</span>
+            <span class="tool-body">
+              <span class="tool-title">Japanese Crossword</span>
+              <span class="tool-desc">A free Japanese crossword every day. Kana mode has English clues and hiragana answers; kanji mode has you write each word in kanji. A mini and a 9×9 daily at JLPT N5–N4, N3–N2 or N1 level.</span>
+              <span class="tool-tags"><span class="tool-tag">daily</span><span class="tool-tag">kana</span><span class="tool-tag">kanji</span><span class="tool-tag">JLPT</span></span>
+            </span>
+            <span class="tool-open">Open <span aria-hidden="true">→</span></span>
+          </a>
+        </li>
+        <li class="tool-entry" style="--tile-color:#5d8a3a">
+          <a class="tool-link" href="./wordle/">
+            <span class="tool-glyph" lang="ja" aria-hidden="true">語</span>
+            <span class="tool-body">
+              <span class="tool-title">Japanese Wordle (Kana Wordle)</span>
+              <span class="tool-desc">Wordle in Japanese: guess the hidden word in hiragana in 8 tries. A new 4- and 5-kana word every day at three JLPT levels, unlimited practice, and a blue hint when you’re one dakuten away.</span>
+              <span class="tool-tags"><span class="tool-tag">daily</span><span class="tool-tag">game</span><span class="tool-tag">vocabulary</span></span>
+            </span>
+            <span class="tool-open">Open <span aria-hidden="true">→</span></span>
+          </a>
+        </li>
+        <li class="tool-entry" style="--tile-color:#5b5bd6">
+          <a class="tool-link" href="./kana/">
+            <span class="tool-glyph" lang="ja" aria-hidden="true">あ</span>
+            <span class="tool-body">
+              <span class="tool-title">Kana Trainer: Hiragana and Katakana Practice</span>
+              <span class="tool-desc">Learn and practice hiragana and katakana with fast, adaptive drills and spaced repetition. Tracks your trouble pairs (シ↔ツ, ぬ↔め…) and lets you test into your level.</span>
+              <span class="tool-tags"><span class="tool-tag">hiragana</span><span class="tool-tag">katakana</span><span class="tool-tag">SRS</span></span>
+            </span>
+            <span class="tool-open">Open <span aria-hidden="true">→</span></span>
+          </a>
+        </li>
+        <li class="tool-entry" style="--tile-color:#42602d">
+          <a class="tool-link" href="./kanji/">
+            <span class="tool-glyph" lang="ja" aria-hidden="true">漢</span>
+            <span class="tool-body">
+              <span class="tool-title">Kanji Trainer</span>
+              <span class="tool-desc">Kanji practice by jōyō, jinmeiyō, JLPT, Kanken or your own list (paste, CSV or Excel). Meanings, readings, common words and handwriting with stroke-order checking, on a spaced-repetition schedule.</span>
+              <span class="tool-tags"><span class="tool-tag">kanji</span><span class="tool-tag">writing</span><span class="tool-tag">JLPT</span><span class="tool-tag">Kanken</span></span>
+            </span>
+            <span class="tool-open">Open <span aria-hidden="true">→</span></span>
+          </a>
+        </li>
+        <li class="tool-entry" style="--tile-color:#165e83">
+          <a class="tool-link" href="./nandoku/">
+            <span class="tool-glyph" lang="ja" aria-hidden="true">難</span>
+            <span class="tool-body">
+              <span class="tool-title">Nandoku Trainer</span>
+              <span class="tool-desc">Every level of 漢字でGO!, 1 through 8, plus the 別表記 spellings: 10,000+ hard-to-read words shown the way the game shows them. Type the reading, pick the meaning, or play a timed challenge run.</span>
+              <span class="tool-tags"><span class="tool-tag">kanji</span><span class="tool-tag">readings</span><span class="tool-tag">漢字でGO!</span></span>
+            </span>
+            <span class="tool-open">Open <span aria-hidden="true">→</span></span>
+          </a>
+        </li>
+        <li class="tool-entry" style="--tile-color:#e4332b">
+          <a class="tool-link" href="./jis/">
+            <span class="tool-glyph" lang="ja" aria-hidden="true">ぬ</span>
+            <span class="tool-body">
+              <span class="tool-title">JIS Grind</span>
+              <span class="tool-desc">Learn Japanese kana typing on a JIS keyboard. A kana appears, you hit the matching physical key (detected by position, so your IME stays put). Weak kana come up more often.</span>
+              <span class="tool-tags"><span class="tool-tag">JIS</span><span class="tool-tag">typing</span><span class="tool-tag">kana</span></span>
+            </span>
+            <span class="tool-open">Open <span aria-hidden="true">→</span></span>
+          </a>
+        </li>
+        <!-- The current sponsor, filled in by partner.js (hidden if there isn't one) -->
+        <li data-partner="entry" data-via="tools" hidden></li>
       </ul>
+
+      <section class="tools-start" aria-labelledby="start-title">
+        <h2 id="start-title">Where to start</h2>
+        <p>Every tool here is free, works in your browser on a phone or a computer, and needs no account. A good daily routine is a few minutes of drills, then a game at your level.</p>
+        <dl>
+          <dt>Just starting Japanese</dt>
+          <dd>Learn hiragana and katakana with the <a class="inline-link" href="./kana/">Kana Trainer</a>, then try the beginner <a class="inline-link" href="./wordle/">Japanese Wordle</a> to read real words in kana.</dd>
+          <dt>Beginner (JLPT N5–N4)</dt>
+          <dd>Do the beginner mini <a class="inline-link" href="./crossword/">Japanese crossword</a> every day, and start on the N5 kanji in the <a class="inline-link" href="./kanji/">Kanji Trainer</a>.</dd>
+          <dt>Intermediate (JLPT N3–N2)</dt>
+          <dd>Switch the crossword and Wordle to intermediate, try the crossword’s kanji mode, and practice writing kanji by JLPT level.</dd>
+          <dt>Advanced (N1 and beyond)</dt>
+          <dd>Advanced crosswords mix in slang and idioms, the Mixed crossword has clues in Japanese, and the <a class="inline-link" href="./nandoku/">Nandoku Trainer</a> covers the hardest readings from 漢字でGO!.</dd>
+        </dl>
+        <p>Want the bigger picture? <a class="inline-link" href="../guide/">Jared’s free Japanese guide</a> lays out what to study and in what order.</p>
+      </section>
 
       <section class="tools-soon">
         <p>
@@ -123,7 +220,6 @@
   </footer>
 
   <script src="../scripts/site.js?v=3"></script>
-  <script src="../scripts/tools.js?v=12"></script>
   <script src="../scripts/partner.js?v=5"></script>
 </body>
 </html>

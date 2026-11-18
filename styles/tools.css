@@ -64,3 +64,10 @@
   .tool-glyph { width: 4.5rem; font-size: 2.5rem; }
   .tool-open { grid-column: 2; justify-self: start; }
 }
+
+/* Where to start: plain reading text under the catalogue (also what search engines read) */
+.tools-start { max-width: 46rem; margin: 56px 0 0 clamp(0px, 9vw, 150px); font-size: 15px; line-height: 1.9; color: var(--ink-soft); }
+.tools-start h2 { font-family: var(--font-mincho); font-weight: 600; font-size: 1.5rem; color: var(--ink); margin: 0 0 10px; }
+.tools-start dt { margin-top: 14px; font-weight: 700; color: var(--ink); }
+.tools-start dd { margin: 2px 0 0; }
+.tools-start p { margin: 12px 0 0; }
