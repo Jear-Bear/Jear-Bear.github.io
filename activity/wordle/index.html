@@ -14,7 +14,7 @@
   -->
   <base href="/.proxy/site/tools/wordle/">
   <link rel="stylesheet" href="../../styles/base.css?v=4">
-  <link rel="stylesheet" href="../../styles/wordle.css?v=9">
+  <link rel="stylesheet" href="../../styles/wordle.css?v=10">
   <link rel="stylesheet" href="../../styles/activity.css?v=1">
 </head>
 <body data-page="wordle">
@@ -34,6 +34,7 @@
         <label class="wd-select-wrap">
           <span class="wd-label" data-t="level">Level</span>
           <select id="level" class="wd-select">
+            <option value="mixed" data-t="opt.mixed">Mixed · N5 to N1</option>
             <option value="beginner" data-t="opt.beginner">Beginner · N5–N4</option>
             <option value="intermediate" data-t="opt.intermediate">Intermediate · N3–N2</option>
             <option value="advanced" data-t="opt.advanced">Advanced · N1+</option>
@@ -93,6 +94,6 @@
   <div class="wd-toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 
-  <script type="module" src="../../scripts/activity/wordle.js?v=1"></script>
+  <script type="module" src="../../scripts/activity/wordle.js?v=2"></script>
 </body>
 </html>

@@ -1,7 +1,8 @@
 // board-wordle.js — Kana Wordle's entry in the leaderboard registry (board.js).
 //
 // Result: { game: 'wordle', puzzleId, guesses, hints, won, word, pattern }
-//   puzzleId  wordle-{date}-{level}-{len}: one of the six dailies (3 levels × 4 or 5 kana)
+//   puzzleId  wordle-{date}-{level}-{len}: one of the eight dailies (mixed, beginner, intermediate,
+//             advanced × 4 or 5 kana)
 //   word      the last guess; for a win it must be that day's answer, picked with the page's
 //             own code (scripts/wordle/daily.js) from the published word list. A loss used all 8.
 //   pattern   each guess's colors for the post's picture, e.g. ['apaa', 'cccc'] ('c' right spot,
@@ -12,23 +13,24 @@
 // hints, earliest. No podium bonus.
 
 import { HttpError } from './data.js';
-import { decodeAnswers, dailyAnswer } from '../../../scripts/wordle/daily.js';
+import { decodeAnswers, dailyAnswer, listFile, poolFor } from '../../../scripts/wordle/daily.js';
 
-const ID = /^wordle-(\d{4}-\d{2}-\d{2})-(beginner|intermediate|advanced)-([45])$/;
-const LEVELS = ['beginner', 'intermediate', 'advanced'];
-const LEVEL = { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' };
+const ID = /^wordle-(\d{4}-\d{2}-\d{2})-(beginner|intermediate|advanced|mixed)-([45])$/;
+const LEVELS = ['mixed', 'beginner', 'intermediate', 'advanced'];
+const LEVEL = { mixed: 'Mixed', beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' };
 const TRIES = 8;
 const HOUR = 3600000;
 
 const lists = new Map();
-async function answers(env, len) {
-  const hit = lists.get(len);
+// The word list a day was picked from (daily.js: the first lists before V2_FROM, v2 after)
+async function answers(env, file) {
+  const hit = lists.get(file);
   if (hit && hit.at > Date.now() - 30 * 60000) return hit.answers;
   const site = env.CROSSWORD_SITE || 'https://www.jareddesu.com';
-  const res = await fetch(`${site}/data/wordle/words-${len}.json?v=3`, { cf: { cacheTtl: 600 } });
+  const res = await fetch(`${site}/data/wordle/${file}?v=4`, { cf: { cacheTtl: 600 } });
   if (!res.ok) throw new HttpError(503, 'Couldn’t check that word right now');
   const a = decodeAnswers((await res.json()).answers);
-  lists.set(len, { answers: a, at: Date.now() });
+  lists.set(file, { answers: a, at: Date.now() });
   return a;
 }
 
@@ -53,7 +55,7 @@ export default {
     if (!b.won && guesses !== TRIES) throw new HttpError(400, 'Bad result');
     if (b.won) {
       const len = Number(lenS);
-      const answer = dailyAnswer((await answers(env, len))[level], level, len, day);
+      const answer = dailyAnswer(poolFor(await answers(env, listFile(len, day, level)), level), level, len, day);
       if (!answer || String(b.word || '') !== answer.a) throw new HttpError(400, 'That isn’t the word');
     }
     let pattern = null;

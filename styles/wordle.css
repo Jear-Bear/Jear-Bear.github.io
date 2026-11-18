@@ -194,6 +194,7 @@ html[data-ui="ja"] [data-ui-only="en"], html:not([data-ui="ja"]) [data-ui-only="
 .wd-invite { margin: 4px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--ink-soft); }
 /* Crossword+ members: no sponsor cards (the same promise as the crossword page) */
 html.cw-member [data-partner] { display: none !important; }
+.wd-answer-jlpt { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
 
 /* Discord linking in Settings and Discord sign-in (scripts/games/board.js, signin.js, discord.js) */
 .wd-set-board .board-discord-linked { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 6px 0; font-size: 14px; }

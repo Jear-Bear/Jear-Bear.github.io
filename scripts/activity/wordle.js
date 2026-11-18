@@ -153,7 +153,7 @@ async function main() {
     loadFinishes();
     setInterval(loadFinishes, 30000);
   }
-  await import('../wordle/app.js?v=11');
+  await import('../wordle/app.js?v=12');
 }
 
 main().catch((e) => { const s = $('act-status'); if (s) s.textContent = `Couldn’t start: ${e.message || e}`; });
