@@ -115,6 +115,44 @@ function drawLinkNote(linked) {
     h('button', { type: 'button', class: 'btn-link', onclick: async () => { try { await call('activity/forget'); finishes = finishes.filter((f) => f.id !== me.id); drawChannel(); } catch { /* try again */ } } }, 'Remove my results from this channel'));
 }
 
+// Waits at most ms for a step, so a stuck Discord call can't hold anything up
+const within = (ms, p, what) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error(`${what} timed out`)), ms))]);
+const say = (text) => { const el = $('act-status'); if (el) el.textContent = text; };
+
+// The game loads at once; Discord sign-in runs alongside it and fills in the name, the account
+// and the channel list when it's done. A daily finished before then is sent once it is.
+const pending = [];
+const activity = {
+  name: 'Discord',
+  finished(result) {
+    if (!activityToken || !sdk || !sdk.channelId) { pending.push(result); return; }
+    call('activity/finish', { ...result, channelId: sdk.channelId }).then(loadFinishes).catch(() => {});
+  },
+};
+
+async function connect() {
+  say('Connecting to Discord…');
+  const cfg = await within(15000, fetch(`${API}/discord/config`).then((r) => r.json()), 'Reaching the server');
+  if (!cfg.clientId) { say('Discord sign-in isn’t set up yet: your results stay on this device.'); return; }
+  sdk = new DiscordSDK(cfg.clientId);
+  await within(15000, sdk.ready(), 'Discord');
+  say('Signing in with Discord…');
+  const r = await within(120000, signIn(cfg.clientId), 'Discord sign-in');
+  say('');
+  activity.name = nameOf(me);
+  // A linked account: the game picks up its session (sync, leaderboard) through account.js
+  const { refresh } = await import('../crossword/account.js?v=8');
+  await refresh();
+  drawLinkNote(Boolean(r.account));
+  pending.splice(0).forEach((x) => activity.finished(x));
+  try {
+    people = (await within(10000, sdk.commands.getInstanceConnectedParticipants(), 'Participants')).participants || [];
+    sdk.subscribe('ACTIVITY_INSTANCE_PARTICIPANTS_UPDATE', (e) => { people = e.participants || []; loadFinishes(); });
+  } catch { people = []; }
+  loadFinishes();
+  setInterval(loadFinishes, 30000);
+}
+
 async function main() {
   const inDiscord = new URLSearchParams(location.search).has('frame_id');
   if (!inDiscord) return;        // the page outside Discord just says to open it there
@@ -125,35 +163,9 @@ async function main() {
   // them first, so the game's own fetches (../../data/wordle/…) keep going through /site
   const remapped = window.fetch;
   window.fetch = (input, init) => remapped(typeof input === 'string' ? new URL(input, document.baseURI).href : input, init);
-
-  const cfg = await fetch(`${API}/discord/config`).then((r) => r.json()).catch(() => ({}));
-  if (!cfg.clientId) { $('act-status').textContent = 'The Activity isn’t set up yet.'; return; }
-  sdk = new DiscordSDK(cfg.clientId);
-  await sdk.ready();
-
-  let linked = false;
-  try { linked = Boolean((await signIn(cfg.clientId)).account); } catch (e) {
-    // Not signed in (they said no, or it failed): the game still works, just not the channel list
-    $('act-status').textContent = 'Playing without Discord sign-in: your results stay on this device.';
-  }
-  window.jdActivity = {
-    name: me ? nameOf(me) : 'Discord',
-    // A finished daily → this channel's list (the game sends it to the leaderboard itself)
-    finished(result) {
-      if (!activityToken || !sdk.channelId) return;
-      call('activity/finish', { ...result, channelId: sdk.channelId }).then(loadFinishes).catch(() => {});
-    },
-  };
-  if (me) {
-    drawLinkNote(linked);
-    try {
-      people = (await sdk.commands.getInstanceConnectedParticipants()).participants || [];
-      sdk.subscribe('ACTIVITY_INSTANCE_PARTICIPANTS_UPDATE', (e) => { people = e.participants || []; loadFinishes(); });
-    } catch { people = []; }
-    loadFinishes();
-    setInterval(loadFinishes, 30000);
-  }
+  window.jdActivity = activity;
   await import('../wordle/app.js?v=12');
+  connect().catch((e) => say(`Playing without Discord sign-in (${e.message || e}): your results stay on this device.`));
 }
 
-main().catch((e) => { const s = $('act-status'); if (s) s.textContent = `Couldn’t start: ${e.message || e}`; });
+main().catch((e) => say(`Couldn’t start: ${e.message || e}`));
