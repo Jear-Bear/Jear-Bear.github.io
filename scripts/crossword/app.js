@@ -16,7 +16,7 @@
 import { toHiragana } from '../kanji/romaji.js?v=1';
 import { gridKana, cycleDakuten, romaji } from './kana.js?v=1';
 import { translator, lang, setLang, dateLocale } from '../games/i18n.js?v=1';
-import { plusEligible, plusCard, mountPlusSection, plusCta } from './plus.js?v=18';
+import { plusEligible, plusNudge, mountPlusSection, plusCta } from './plus.js?v=19';
 import { mountAds } from './ads.js?v=1';
 import { mountDeck } from './deck.js?v=18';
 import { openBrowse } from './browse.js?v=2';
@@ -1083,8 +1083,8 @@ function celebrate(assisted) {
     settings.words ? h('p', { class: 'cw-muted' }, t('listed')) : null,
     !pz.deck && date === localDate() ? h('p', { class: 'cw-next', id: 'cw-next' }, t('nextIn', { time: untilMidnight() })) : null,
     !pz.deck && /^\d{4}-\d{2}-\d{2}-/.test(pz.id) ? (() => { const ds = dailyStreak(store.progress); return ds.current ? h('p', { class: 'cw-done-streak' }, ds.current === 1 ? t('doneStreak1') : t('doneStreak', { n: ds.current })) : null; })() : null);
-  // The Crossword+ question (or "you're on the list"); see plus.js for when it shows
-  fill($('done-plus'), plusEligible() ? plusCard() : null);
+  // One quiet line offering an account or Crossword+; see plus.js for when it shows
+  fill($('done-plus'), plusEligible() ? plusNudge() : null);
   clearInterval(nextTimer);
   nextTimer = setInterval(() => { const el = $('cw-next'); if (!el || $('done').hidden) { clearInterval(nextTimer); return; } el.textContent = t('nextIn', { time: untilMidnight() }); }, 1000);
   $('done').hidden = false;

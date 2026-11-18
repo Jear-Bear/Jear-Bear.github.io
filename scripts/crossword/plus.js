@@ -13,7 +13,7 @@
 // Emails go to the sponsor Worker's private database (waitlist.js), never the repo.
 
 import { lang } from '../games/i18n.js?v=1';
-import { info, isMember, onAccount, currentUser, track } from './account.js?v=6';
+import { info, isMember, onAccount, currentUser, signedIn, track } from './account.js?v=6';
 import { adsOn } from './ads.js?v=1';
 
 const API = 'https://sponsor-crm.jared-65b.workers.dev';
@@ -50,6 +50,8 @@ const T = {
     priceTrial: '<b>{days} days free</b>, then {month}/month or {year}/year · cancel anytime',
     priceWeek: '<b>Free for a week</b>, no card needed · then {month}/month or {year}/year if you want to keep it',
     weekCta: 'Try it free for a week',
+    nudgeAccount: 'Keep your streak and progress on every device with a free account.', nudgeAccountCta: 'Make an account',
+    nudgePlus: 'Crossword+ keeps these puzzles free.', nudgePlusAds: 'Crossword+ keeps these puzzles free and removes ads.', notNow: 'Not now',
     memberWeek: 'Your free week of Crossword+ runs until {date}. Enjoy!',
     free: 'Today’s puzzles are always free, no account needed.',
     member: 'You’re a Crossword+ member. Thank you!',
@@ -83,6 +85,8 @@ const T = {
     priceTrial: '<b>{days}日間無料</b>、その後は月{month}または年{year}・いつでも解約OK',
     priceWeek: '<b>1週間無料</b>・カード不要。続けたい場合は月{month}または年{year}',
     weekCta: '1週間無料で試す',
+    nudgeAccount: '無料のアカウントで、連続記録と進み具合をどの端末でも続けられます。', nudgeAccountCta: 'アカウントを作る',
+    nudgePlus: 'クロスワード＋が、このパズルを無料で続ける支えになります。', nudgePlusAds: 'クロスワード＋が、このパズルを無料で続ける支えになります。広告も消えます。', notNow: '今はいい',
     memberWeek: 'クロスワード＋の無料期間は{date}までです。楽しんでください！',
     free: '今日のパズルはいつでも無料。登録も不要です。',
     member: 'クロスワード＋のメンバーです。いつもありがとう！',
@@ -230,20 +234,21 @@ export function plusForm({ compact = false } = {}) {
 }
 
 // For the solved screen: the short form, or "you’re on the list" once signed up
-export function plusCard() {
-  if (open && open.open) {
-    track('offer');
-    const box = h('div', { class: 'cw-plus is-compact is-open' },
-      plusBadge(),
-      h('p', { class: 'cw-plus-title' }, t('sectionTitle')),
-      plusPerks(),
-      plusPrice(open.prices, open.trialDays),
-      h('p', { class: 'cw-plus-fine' }, plusCta(), ' ',
-        h('button', { type: 'button', class: 'btn-link cw-plus-not', onclick: () => { write({ hideUntil: Date.now() + HIDE_DAYS * 86400000 }); box.replaceChildren(h('p', { class: 'cw-plus-thanks' }, t('hidden'))); } }, t('not'))));
-    return box;
-  }
-  if (read().joined) return h('p', { class: 'cw-plus-onlist' }, t('onList'));
-  return plusForm({ compact: true });
+// The solved screen's one quiet line (never a box, never in the way of the next puzzle):
+// signed out, a free account; signed in without Crossword+, Crossword+ (and, while the
+// page shows ads, that it removes them). "Not now" hides it for 30 days.
+export function plusNudge() {
+  if (!(open && open.open) || isMember()) return null;
+  const close = () => { document.getElementById('done').hidden = true; };
+  const account = !signedIn();
+  if (!account) track('offer');
+  const week = !account && weekOffered();
+  const line = h('p', { class: 'cw-done-nudge' },
+    h('span', {}, t(account ? 'nudgeAccount' : adsOn() ? 'nudgePlusAds' : 'nudgePlus')), ' ',
+    h('button', { type: 'button', class: 'btn-link cw-nudge-go', onclick: () => { close(); document.dispatchEvent(new CustomEvent('crossword:plus', { detail: account ? { signIn: true } : week ? { week: true } : {} })); } },
+      t(account ? 'nudgeAccountCta' : week ? 'weekCta' : 'openCta')), ' ',
+    h('button', { type: 'button', class: 'btn-link cw-nudge-not', onclick: () => { write({ hideUntil: Date.now() + HIDE_DAYS * 86400000 }); line.remove(); } }, t('notNow')));
+  return line;
 }
 
 // The page section (#plus-sec): the Crossword+ card, or the waitlist before it opens

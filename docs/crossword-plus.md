@@ -99,9 +99,14 @@ sponsor ad (orange, labelled **AD**).
 - **Hitting a limit** (the free deck puzzle used up, bonus puzzles): a purple
   box with what happened in bold, the perks and **See Crossword+**. Pressing
   **Make a puzzle** again scrolls to it and shakes it once.
-- **Solved screen (お見事):** a short version above the Share / Copy result / Keep
-  looking buttons, on every solve. "Not for me" hides it for 30 days. It
-  never covers the grid or interrupts a puzzle.
+- **Solved screen (お見事):** one quiet line under the result, never a box (changed
+  Nov 2026 from a short Crossword+ card). Signed out: "Keep your streak and progress on
+  every device with a free account." with **Make an account** (the sign-in popup).
+  Signed in without Crossword+: "Crossword+ keeps these puzzles free." (plus "and
+  removes ads" while ads are on) with **See Crossword+**, or **Try it free for a week**
+  while that's open to them. Members see nothing. **Not now** hides it for 30 days.
+  Nothing shows before sales open. It never covers the grid, the Share buttons or the
+  next puzzle (`plusNudge` in `plus.js`).
 - Code: `scripts/crossword/plus.js` (`plusPerks`, `supportLine`). The support
   link (`SUPPORT_URL`) points to the channel's YouTube memberships page.
 

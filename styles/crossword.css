@@ -553,3 +553,8 @@ html.cw-lock, html.cw-lock body { overflow: hidden; }
 .cw-ad-foot { margin: 6px 0 0; text-align: right; }
 .cw-ad-remove { font-size: 12.5px; color: var(--plus-ink); }
 html.cw-member .cw-ad, html.cw-member [data-partner] { display: none !important; }
+
+/* The solved screen's one quiet line (plus.js plusNudge): an account or Crossword+, never a box */
+.cw-done-nudge { margin: 4px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--ink-soft); }
+.cw-done-nudge .cw-nudge-go { color: var(--plus-ink); font-weight: 600; }
+.cw-done-nudge .cw-nudge-not { font-size: 12.5px; color: var(--muted); }
