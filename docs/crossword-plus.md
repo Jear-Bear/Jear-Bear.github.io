@@ -108,32 +108,44 @@ sponsor ad (orange, labelled **AD**).
 **Support:** `support@jareddesu.com` is on the page (How to play credits),
 in the Crossword+ boxes, and is the reply-to on every email the Worker sends.
 
-## Ads (built, off until an ad network approves the site)
+## Ads (built, off until AdSense approves the site)
 
 Free players can see one ad slot **between puzzles**: under the puzzle and its
 clues, above How to play. Never in or over the grid, never a popup, never on the
 solved screen. Crossword+ members see **no ads and no sponsor cards** (the page
 adds `cw-member` to `<html>`, which hides `.cw-ad` and every `[data-partner]` slot),
-and while ads are on, the Crossword+ perks gain a fourth tile, **No ads**. Each slot
-is labelled **Ad** with a **Remove ads with Crossword+** link.
+and their browser never loads the ad script: a signed-in browser waits for the
+account server to say whether it's a member before anything loads. Each slot is
+labelled **Ad**, with a **Remove ads with Crossword+** link under it (it opens the
+usual Crossword+ panel). While ads are on, the Crossword+ perks gain a fourth tile,
+**No ads**; while they're off, that tile isn't shown.
 Code: `scripts/crossword/ads.js`, the `<aside data-ad-slot>` in
 `tools/crossword/index.html`, `.cw-ad` in `styles/crossword.css`.
 
-**Off by default.** Nothing shows until `AD` in `ads.js` has a network, publisher ID
-and slot ID. To see the empty slots and the No ads tile without turning anything on,
+**Off by default.** Nothing loads until `ADSENSE_CLIENT` (publisher ID,
+`ca-pub-` + 16 digits) and `ADSENSE_SLOT` (the ad unit's ID) are set at the top of
+`ads.js`. To see the empty slot and the No ads tile without turning anything on,
 open the page with `?ads=preview` (works on staging too).
 
-**Turning it on** (after the network approves jareddesu.com):
+**Turning it on:**
 
-1. Fill in `AD.network`, `AD.client` and `AD.slot` in `ads.js`, and add the network's
-   tag inside `fill()` where the comment says (load its script only there, so members
-   and people with ads off never download it).
-2. Add `ads.txt` at the site root with the line the network gives you.
-3. **Privacy:** `privacy/index.html` says "No ads trackers, no cookies for tracking".
-   Google AdSense uses cookies, so that line has to change, and visitors in the EEA, the
-   UK and Switzerland need a Google-certified consent message (AdSense's own free
-   "Privacy & messaging" one works). Without it, those visitors only get limited ads.
-4. Keep the promises above: today's puzzles stay free with no account.
+1. Apply at adsense.google.com with `jareddesu.com`. AdSense gives you a publisher ID
+   and an `ads.txt` line.
+2. Paste the `ads.txt` line into `ads.txt` at the site root (replacing the comment's
+   placeholder) and merge, so it's live at `https://www.jareddesu.com/ads.txt`.
+3. In AdSense → Ads → By ad unit, make a **Display ad** (responsive). Put its ID in
+   `ADSENSE_SLOT` and the publisher ID in `ADSENSE_CLIENT`, bump `ads.js?v=` in
+   `app.js` and `plus.js`, and merge.
+4. Leave **Auto ads off** for the site in AdSense: auto ads place themselves (including
+   in-page popups and anchors), which breaks the rules above.
+5. **Consent (EEA, UK, Switzerland):** AdSense → Privacy & messaging → European
+   regulations → create and publish Google's certified consent message for
+   jareddesu.com. Google requires it there; without it those visitors only get
+   limited ads. You turn it on in AdSense; there's nothing to add to the site.
+6. Keep the promises above: today's puzzles stay free with no account.
+
+The privacy page (section 4, and the short version) already says free pages may show
+Google ads that use cookies, and that Crossword+ members see none.
 
 ## Where the emails go
 

@@ -546,9 +546,10 @@ html.cw-lock, html.cw-lock body { overflow: hidden; }
 
 /* Ads (scripts/crossword/ads.js): between puzzles only, labelled, never for Crossword+ members */
 .cw-ad { max-width: 728px; margin-inline: auto; }
-.cw-ad-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 6px; font-size: 12.5px; color: var(--muted); }
-.cw-ad-label { text-transform: uppercase; letter-spacing: .08em; font-weight: 700; }
-.cw-ad-remove { font-size: 12.5px; color: var(--plus-ink); }
-.cw-ad-space { min-height: 100px; display: grid; place-items: center; border: 1px dashed var(--rule-strong); border-radius: 6px; }
+.cw-ad-label { margin: 0 0 6px; font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; color: var(--muted); }
+.cw-ad-space { min-height: 100px; }
+.cw-ad-space:has(.cw-ad-preview) { display: grid; place-items: center; border: 1px dashed var(--rule-strong); border-radius: 6px; }
 .cw-ad-preview { margin: 0; padding: 12px; font-size: 13px; color: var(--muted); text-align: center; }
+.cw-ad-foot { margin: 6px 0 0; text-align: right; }
+.cw-ad-remove { font-size: 12.5px; color: var(--plus-ink); }
 html.cw-member .cw-ad, html.cw-member [data-partner] { display: none !important; }
