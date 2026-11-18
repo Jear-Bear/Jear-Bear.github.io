@@ -159,9 +159,9 @@ async function groupStreak(env, game, day) {
   return n;
 }
 
-async function totals(env, from, to, pending) {
-  const { results } = await env.DB.prepare('SELECT r.user_id, p.*, SUM(r.points) AS pts FROM game_results r JOIN board_profiles p ON p.user_id = r.user_id AND p.opt_in = 1 WHERE r.day BETWEEN ? AND ? GROUP BY r.user_id')
-    .bind(from, to).all();
+async function totals(env, from, to, pending, games) {
+  const { results } = await env.DB.prepare(`SELECT r.user_id, p.*, SUM(r.points) AS pts FROM game_results r JOIN board_profiles p ON p.user_id = r.user_id AND p.opt_in = 1 WHERE r.day BETWEEN ? AND ? AND r.game IN (${games.map(() => '?').join(',')}) GROUP BY r.user_id`)
+    .bind(from, to, ...games).all();
   const map = new Map(results.map((r) => [r.user_id, { name: displayName(r), pts: r.pts || 0 }]));
   pending.forEach((b) => { const x = map.get(b.user_id); if (x) x.pts += b.bonus; });
   return [...map.values()].sort((a, b) => b.pts - a.pts || a.name.localeCompare(b.name));
@@ -196,17 +196,18 @@ function fit(embeds) {
   return list;
 }
 
-// The message for `day` (a Chicago date), or null when nobody played. bonuses: the podium
-// points to add once it's sent; cards: what the picture shows (board-image.js).
-export async function buildPost(env, day) {
-  const { results } = await env.DB.prepare('SELECT r.*, p.* FROM game_results r JOIN board_profiles p ON p.user_id = r.user_id AND p.opt_in = 1 WHERE r.day = ?').bind(day).all();
+// The message for `day` (a Chicago date) covering `games` (default: all of them), or null when
+// nobody played them. bonuses: the podium points to add once it's sent; cards: what the
+// picture shows (board-image.js).
+export async function buildPost(env, day, games = Object.keys(GAMES)) {
+  const { results } = await env.DB.prepare(`SELECT r.*, p.* FROM game_results r JOIN board_profiles p ON p.user_id = r.user_id AND p.opt_in = 1 WHERE r.day = ? AND r.game IN (${games.map(() => '?').join(',')})`).bind(day, ...games).all();
   if (!results.length) return null;
   const embeds = [];
   const cards = [];
   const streaks = [];
   let bonuses = [];
   const helpers = { day, esc, medal, fmtSeconds, displayName, avatarUrl, name: (r) => esc(displayName(r)), dayShort: shortDay(day) };
-  for (const entry of Object.values(GAMES)) {
+  for (const entry of Object.values(GAMES).filter((g) => games.includes(g.id))) {
     const rows = results.filter((r) => r.game === entry.id);
     if (!rows.length) continue;
     const ranked = rankGame(entry, rows);
@@ -221,12 +222,12 @@ export async function buildPost(env, day) {
   const posting = addDays(day, 1);
   // Mondays: last week's points (Mon–Sun, the day being posted is that Sunday)
   if (new Date(`${posting}T12:00:00Z`).getUTCDay() === 1) {
-    const top = (await totals(env, addDays(day, -6), day, bonuses)).slice(0, 10);
+    const top = (await totals(env, addDays(day, -6), day, bonuses, games)).slice(0, 10);
     if (top.length) embeds.push({ title: 'Last week’s points', color: 0xc9a227, description: top.map((x, i) => `${medal(i)} ${esc(x.name)}: ${x.pts}`).join('\n') });
   }
   // The 1st: last month's season winners
   if (posting.endsWith('-01')) {
-    const top = (await totals(env, `${day.slice(0, 7)}-01`, day, bonuses)).slice(0, 3);
+    const top = (await totals(env, `${day.slice(0, 7)}-01`, day, bonuses, games)).slice(0, 3);
     if (top.length) embeds.push({ title: `Season winners · ${monthLabel(day)}`, color: 0xc9a227, description: top.map((x, i) => `${medal(i)} ${esc(x.name)}: ${x.pts} points`).join('\n') });
   }
   return {
@@ -255,24 +256,27 @@ export async function postImage(post) {
   }
 }
 
-// GET /api/board/preview?day=…[&format=png]: the message as it would be sent, or its picture
-// (nothing is sent or saved)
-export async function previewPost(env, dayParam, format) {
+// GET /api/board/preview?day=…[&game=crossword|wordle][&format=png]: the message as it would be
+// sent, or its picture (nothing is sent or saved). game: just that game's post; leave it out
+// for the post as it goes out with the current webhooks (the first one when there are two).
+export async function previewPost(env, dayParam, format, game) {
   const day = /^\d{4}-\d{2}-\d{2}$/.test(dayParam || '') ? dayParam : addDays(chicagoDate(), -1);
-  const post = await buildPost(env, day);
+  const games = Object.prototype.hasOwnProperty.call(GAMES, game) ? [game] : routes(env)[0].games;
+  const post = await buildPost(env, day, games);
   if (format === 'png') {
     const png = await postImage(post);
     if (!png) return new Response(JSON.stringify({ error: post ? 'Couldn’t draw the picture' : 'Nobody played that day' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
     return new Response(png, { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'no-store' } });
   }
-  const sent = await env.DB.prepare("SELECT posted_at FROM discord_posts WHERE day = ? AND kind = 'daily'").bind(day).first();
-  return { day, posted_at: sent ? sent.posted_at : null, message: post ? post.message : null, bonuses: post ? post.bonuses.length : 0, picture: post && post.cards.length ? `add &format=png to see it` : null };
+  const route = routes(env).find((r) => r.games.includes(games[0])) || routes(env)[0];
+  const sent = await env.DB.prepare('SELECT posted_at FROM discord_posts WHERE day = ? AND kind = ?').bind(day, route.kind).first();
+  return { day, games, posted_at: sent ? sent.posted_at : null, message: post ? post.message : null, bonuses: post ? post.bonuses.length : 0, picture: post && post.cards.length ? `add &format=png to see it` : null };
 }
 
 // The picture goes on by editing the post (Discord lets a webhook edit its own messages), so
 // the text is out before the picture is drawn: if drawing fails, or the run is stopped for
 // using too much CPU, the post is already there and the next cron run tries the picture again.
-async function attachPicture(env, hook, day, messageId, post) {
+async function attachPicture(env, { hook, kind }, day, messageId, post) {
   const png = await postImage(post);
   if (!png) return false;
   const form = new FormData();
@@ -284,45 +288,62 @@ async function attachPicture(env, hook, day, messageId, post) {
   form.append('files[0]', new Blob([png], { type: 'image/png' }), 'results.png');
   const res = await fetch(`${hook}/messages/${messageId}`, { method: 'PATCH', body: form });
   if (!res.ok) { console.error('Adding the picture failed', res.status, (await res.text().catch(() => '')).slice(0, 300)); return false; }
-  await env.DB.prepare("UPDATE discord_posts SET picture_at = ? WHERE day = ? AND kind = 'daily'").bind(new Date().toISOString(), day).run();
+  await env.DB.prepare('UPDATE discord_posts SET picture_at = ? WHERE day = ? AND kind = ?').bind(new Date().toISOString(), day, kind).run();
   return true;
+}
+
+// Where each game's post goes. DISCORD_CROSSWORD_WEBHOOK gets every game, unless
+// DISCORD_WORDLE_WEBHOOK is set: then Kana Wordle has its own post in that channel.
+// kind: the post's row in discord_posts ('daily' as before, 'daily-wordle' for the Wordle one).
+const hookOk = (env, url) => Boolean(url) && (WEBHOOK.test(url) || (env.ALLOW_LOCALHOST === 'true' && /^http:\/\/localhost:\d+\//.test(url)));
+export function routes(env) {
+  const all = Object.keys(GAMES);
+  if (!hookOk(env, env.DISCORD_WORDLE_WEBHOOK)) return [{ kind: 'daily', hook: env.DISCORD_CROSSWORD_WEBHOOK, games: all }];
+  return [
+    { kind: 'daily', hook: env.DISCORD_CROSSWORD_WEBHOOK, games: all.filter((g) => g !== 'wordle') },
+    { kind: 'daily-wordle', hook: env.DISCORD_WORDLE_WEBHOOK, games: ['wordle'] },
+  ];
 }
 
 // The cron (14:05 and 15:05 UTC, so one of them is 9:05 in Chicago whatever the season).
 // Posts yesterday's results when Chicago's time has reached DISCORD_POST_HOUR:MINUTE (default
-// 9:05) and it hasn't been posted yet, then adds the picture. The later run retries a failed
-// post, or a picture that didn't make it.
+// 9:05) and they haven't been posted yet, one post per channel (routes), then adds the
+// pictures. Every post's text goes out before any picture is drawn. The later run retries a
+// failed post, or a picture that didn't make it.
 export async function dailyPost(env, when = Date.now()) {
-  const hook = env.DISCORD_CROSSWORD_WEBHOOK;
-  if (!hook) return { skipped: 'no webhook' };
-  if (!WEBHOOK.test(hook) && !(env.ALLOW_LOCALHOST === 'true' && /^http:\/\/localhost:\d+\//.test(hook))) { console.error('DISCORD_CROSSWORD_WEBHOOK isn’t a Discord webhook URL'); return { skipped: 'bad webhook' }; }
   const p = chicagoParts(new Date(when));
   const now = Number(p.hour) * 60 + Number(p.minute);
   const target = (Number(env.DISCORD_POST_HOUR ?? 9) || 0) * 60 + (Number(env.DISCORD_POST_MINUTE ?? 5) || 0);
   if (now < target || now >= target + 120) return { skipped: 'not time' };
   const day = addDays(`${p.year}-${p.month}-${p.day}`, -1);
-  const done = await env.DB.prepare("SELECT message_id, picture_at FROM discord_posts WHERE day = ? AND kind = 'daily'").bind(day).first();
-  if (done) {
-    if (done.message_id && !done.picture_at) {
-      const built = await buildPost(env, day);
-      if (built) await attachPicture(env, hook, day, done.message_id, built);
-      return { ok: true, day, retried: 'picture' };
+  const pictures = [];
+  const out = [];
+  for (const route of routes(env)) {
+    if (!route.hook) { out.push({ kind: route.kind, skipped: 'no webhook' }); continue; }
+    if (!hookOk(env, route.hook)) { console.error(`The ${route.kind} webhook isn’t a Discord webhook URL`); out.push({ kind: route.kind, skipped: 'bad webhook' }); continue; }
+    const done = await env.DB.prepare('SELECT message_id, picture_at FROM discord_posts WHERE day = ? AND kind = ?').bind(day, route.kind).first();
+    if (done) {
+      if (done.message_id && !done.picture_at) pictures.push({ route, messageId: done.message_id, post: null });
+      out.push({ kind: route.kind, skipped: 'posted' });
+      continue;
     }
-    return { skipped: 'posted' };
+    const post = await buildPost(env, day, route.games);
+    if (!post) { out.push({ kind: route.kind, skipped: 'nobody played' }); continue; }
+    const res = await fetch(`${route.hook}?wait=true`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(post.message) });
+    if (!res.ok) {
+      console.error('Discord post failed', route.kind, res.status, (await res.text().catch(() => '')).slice(0, 300));
+      out.push({ kind: route.kind, error: res.status });
+      continue;
+    }
+    const sent = await res.json().catch(() => ({}));
+    const messageId = /^\d{5,25}$/.test(String(sent.id || '')) ? String(sent.id) : null;
+    await env.DB.batch([
+      env.DB.prepare('INSERT OR IGNORE INTO discord_posts (day, kind, posted_at, message_id) VALUES (?, ?, ?, ?)').bind(day, route.kind, new Date().toISOString(), messageId),
+      ...post.bonuses.map((x) => env.DB.prepare('UPDATE game_results SET points = points + ? WHERE game = ? AND puzzle_id = ? AND user_id = ?').bind(x.bonus, x.game, x.puzzle_id, x.user_id)),
+    ]);
+    if (messageId) pictures.push({ route, messageId, post });
+    out.push({ kind: route.kind, ok: true });
   }
-  const post = await buildPost(env, day);
-  if (!post) return { skipped: 'nobody played' };
-  const res = await fetch(`${hook}?wait=true`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(post.message) });
-  if (!res.ok) {
-    console.error('Discord post failed', res.status, (await res.text().catch(() => '')).slice(0, 300));
-    return { error: res.status };
-  }
-  const sent = await res.json().catch(() => ({}));
-  const messageId = /^\d{5,25}$/.test(String(sent.id || '')) ? String(sent.id) : null;
-  await env.DB.batch([
-    env.DB.prepare("INSERT OR IGNORE INTO discord_posts (day, kind, posted_at, message_id) VALUES (?, 'daily', ?, ?)").bind(day, new Date().toISOString(), messageId),
-    ...post.bonuses.map((x) => env.DB.prepare('UPDATE game_results SET points = points + ? WHERE game = ? AND puzzle_id = ? AND user_id = ?').bind(x.bonus, x.game, x.puzzle_id, x.user_id)),
-  ]);
-  if (messageId) await attachPicture(env, hook, day, messageId, post);
-  return { ok: true, day };
+  for (const x of pictures) await attachPicture(env, x.route, day, x.messageId, x.post || await buildPost(env, day, x.route.games));
+  return { day, posts: out };
 }

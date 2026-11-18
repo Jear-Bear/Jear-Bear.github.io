@@ -1,5 +1,5 @@
 // discord.js — Discord account linking and sign-in (OAuth2, scope "identify" only), and the
-// Kana Wordle Discord Activity's sign-in and channel results. docs/discord-activity.md.
+// Discord Activity's sign-in and channel results (Kana Wordle and the Daily Kana Crossword). docs/discord-activity.md.
 //
 //   GET  /public/board/discord/config                  → { clientId } (null while it isn't set up)
 //   POST /public/board/discord/start  { mode, redirect, back }  → { url } to send the person to
@@ -8,7 +8,7 @@
 //   POST /public/board/discord/finish { code, state }  → { mode, back, token?, user?, discord }
 //   POST /public/board/discord/unlink                   clears the Discord data at once
 //   POST /public/board/activity/token   { code }        the Activity's sign-in (Embedded App SDK)
-//   POST /public/board/activity/finish  { channelId, puzzleId, … }  a daily finished in the Activity
+//   POST /public/board/activity/finish  { channelId, game, puzzleId, … }  a daily finished in the Activity
 //   POST /public/board/activity/channel { channelId, day, ids }      who in the channel finished
 //   POST /public/board/activity/forget                  deletes this Discord account's Activity results
 //
@@ -27,6 +27,9 @@ import { needUser, sessionUser, limit, issue, publicUser, sha256, randomToken } 
 import { hmacHex, text } from './public.js';
 import { addDays } from '../../../scripts/crossword/streak.js';
 import wordle from './board-wordle.js';
+import crossword from './board-crossword.js';
+
+const ACTIVITY_GAMES = { wordle, crossword };        // the games the Activity plays
 
 const API = 'https://discord.com/api/v10';
 const STATE_TTL = 600;                  // seconds
@@ -181,17 +184,19 @@ export async function activityToken(request, env) {
 const channelOf = (b) => { const c = String(b.channelId || ''); if (!SNOWFLAKE.test(c)) throw new HttpError(400, 'Not in a channel'); return c; };
 const purge = (env) => env.DB.prepare('DELETE FROM activity_finishes WHERE day < ?').bind(addDays(new Date().toISOString().slice(0, 10), -2));
 
-// A daily finished in the Activity: checked exactly like a leaderboard result (board-wordle.js)
+// A daily finished in the Activity (game: 'wordle', the default, or 'crossword'): checked
+// exactly like a leaderboard result (board-wordle.js, board-crossword.js)
 export async function activityFinish(request, env) {
   const discordId = await activityUser(request, env);
   await limit(request, env, 'discord-finish-act', 120);
   const b = await readBody(request);
   const channel = channelOf(b);
-  const r = await wordle.check(b, env);
+  const game = b.game === 'crossword' ? 'crossword' : 'wordle';
+  const r = await ACTIVITY_GAMES[game].check(b, env);
   await env.DB.batch([
     purge(env),
-    env.DB.prepare('INSERT OR IGNORE INTO activity_finishes (channel_id, puzzle_id, discord_id, day, guesses, hints, won, pattern, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
-      .bind(channel, r.puzzleId, discordId, r.day, r.guesses, r.hints, r.won, r.pattern, new Date().toISOString()),
+    env.DB.prepare('INSERT OR IGNORE INTO activity_finishes (channel_id, puzzle_id, discord_id, day, game, guesses, hints, won, pattern, seconds, revealed, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+      .bind(channel, r.puzzleId, discordId, r.day, game, r.guesses ?? 0, r.hints ?? 0, r.won, r.pattern ?? null, r.seconds ?? null, r.revealed ?? null, new Date().toISOString()),
   ]);
   return { ok: true };
 }
@@ -207,15 +212,15 @@ export async function activityChannel(request, env) {
   const day = /^\d{4}-\d{2}-\d{2}$/.test(String(b.day || '')) ? b.day : null;
   if (!day) throw new HttpError(400, 'Bad day');
   const ids = (Array.isArray(b.ids) ? b.ids : []).map(String).filter((x) => SNOWFLAKE.test(x)).slice(0, 50);
-  const here = await env.DB.prepare('SELECT discord_id, puzzle_id, guesses, hints, won, pattern FROM activity_finishes WHERE channel_id = ? AND day = ?').bind(channel, day).all();
+  const here = await env.DB.prepare('SELECT discord_id, game, puzzle_id, guesses, hints, won, pattern, seconds, revealed FROM activity_finishes WHERE channel_id = ? AND day = ?').bind(channel, day).all();
   let site = { results: [] };
   if (ids.length) {
-    site = await env.DB.prepare(`SELECT p.discord_id, r.puzzle_id, r.guesses, r.hints, r.won, r.pattern FROM game_results r JOIN board_profiles p ON p.user_id = r.user_id AND p.opt_in = 1
-      WHERE r.game = 'wordle' AND r.day = ? AND p.discord_id IN (${ids.map(() => '?').join(',')})`).bind(day, ...ids).all();
+    site = await env.DB.prepare(`SELECT p.discord_id, r.game, r.puzzle_id, r.guesses, r.hints, r.won, r.pattern, r.seconds, r.revealed FROM game_results r JOIN board_profiles p ON p.user_id = r.user_id AND p.opt_in = 1
+      WHERE r.game IN ('wordle', 'crossword') AND r.day = ? AND p.discord_id IN (${ids.map(() => '?').join(',')})`).bind(day, ...ids).all();
   }
   const seen = new Set();
   const finishes = [...here.results, ...site.results].filter((r) => { const k = `${r.discord_id}:${r.puzzle_id}`; if (seen.has(k)) return false; seen.add(k); return true; })
-    .map((r) => ({ id: r.discord_id, puzzleId: r.puzzle_id, guesses: r.guesses, hints: r.hints, won: Boolean(r.won), pattern: r.pattern ? r.pattern.split('|') : null }));
+    .map((r) => ({ id: r.discord_id, game: r.game || 'wordle', puzzleId: r.puzzle_id, guesses: r.guesses, hints: r.hints, won: Boolean(r.won), pattern: r.pattern ? r.pattern.split('|') : null, seconds: r.seconds ?? null, revealed: r.revealed ?? null }));
   return { finishes };
 }
 

@@ -1,8 +1,9 @@
-# Discord: account linking and the Kana Wordle Activity
+# Discord: account linking and the Activity
 
 Players can link a Discord account to their site account. Linked players show up with their
 Discord name and avatar on the leaderboard, can sign in with Discord, and can play Kana
-Wordle inside Discord as an **Activity** (launched from a voice channel's 🚀 button).
+Wordle and the Daily Kana Crossword inside Discord as an **Activity** (launched from a voice
+channel's 🚀 button; a Discord app has one Activity, so it opens on a game picker).
 
 | Where | What |
 |---|---|
@@ -12,7 +13,9 @@ Wordle inside Discord as an **Activity** (launched from a voice channel's 🚀 b
 | `scripts/games/board.js` | Settings → **Discord account** (Link / Unlink) |
 | `scripts/games/signin.js` | **Continue with Discord** in the sign-in popup |
 | `discord/index.html` | where Discord sends people back (the OAuth2 redirect) |
-| `activity/wordle/index.html`, `scripts/activity/wordle.js` | the Activity |
+| `activity/index.html`, `scripts/activity/pick.js` | the Activity's game picker |
+| `activity/wordle/`, `activity/crossword/`, `scripts/activity/wordle.js`, `crossword.js` | each game's Activity page |
+| `scripts/activity/activity.js` | what they share: Discord sign-in, the channel list, the link note |
 | `scripts/activity/discord-sdk.js` | Discord's Embedded App SDK 2.5.0 (MIT), bundled |
 
 ## How it works
@@ -40,11 +43,13 @@ Wordle inside Discord as an **Activity** (launched from a voice channel's 🚀 b
 
 ### The Activity
 
-Discord loads `activity/wordle/` in its own frame at `https://<client id>.discordsays.com`.
-Every request goes through Discord's proxy, using the **URL Mappings** below:
+Discord loads `activity/` (the game picker) in its own frame at
+`https://<client id>.discordsays.com`, and the picker opens `wordle/` or `crossword/` beside
+it, keeping Discord's query (`frame_id`…), which the SDK needs. Every request goes through
+Discord's proxy, using the **URL Mappings** below:
 
-- The page's `<base href="/.proxy/site/tools/wordle/">` makes the game's own relative paths
-  (scripts, styles, word lists) load through `/site`.
+- Each game page's `<base href="/.proxy/site/tools/<game>/">` makes the game's own relative
+  paths (scripts, styles, word lists, puzzles) load through `/site`.
 - `patchUrlMappings` sends the Worker calls through `/api`.
 - The Worker allows that origin (`index.js` `allowedOrigin`).
 
@@ -63,7 +68,11 @@ What happens when it opens:
    Names and avatars come from the SDK (`getInstanceConnectedParticipants`). "Today" is
    each player's local date. Rows are deleted after two days, and "Remove my results from
    this channel" deletes them at once.
-5. **Nothing else is inside:**
+5. **The crossword in the Activity** plays today's and yesterday's puzzles (kana and kanji,
+   mini and daily, every level). There's no My deck, no older days and no Crossword+ there:
+   `scripts/crossword/app.js` checks `window.jdActivity` and leaves all of that out, with the
+   ads and the funnel counts.
+6. **Nothing else is inside:**
    - no ads, analytics, web fonts or sponsor cards
    - no Crossword+ upgrade prompts, checkout links, sign-in popup or invite links
    - no scripts from anywhere else
@@ -88,7 +97,7 @@ What happens when it opens:
 
    | Prefix | Target |
    |---|---|
-   | `/` (root) | `www.jareddesu.com/activity/wordle` |
+   | `/` (root) | `www.jareddesu.com/activity` |
    | `/site` | `www.jareddesu.com` |
    | `/api` | `sponsor-crm.jared-65b.workers.dev` |
 
@@ -145,6 +154,10 @@ only the Activity.
   players get their account's saved dailies from the Worker.
 - A daily is sent to the channel when it's finished. Games finished on the site before
   opening the Activity show only for linked players who have the leaderboard on.
+- Each game starts at once; Discord sign-in runs alongside it, and each step has a time
+  limit, so a stuck step never holds up the game. The status line says which one failed.
+- Through Discord's proxy the Activity's requests are same-origin, so browsers send no
+  `Origin` on GETs. The Worker's game routes accept those (index.js `sameSite`).
 - Discord shows its own consent screen the first time someone authorizes. `prompt: 'none'`
   skips it after that.
 
@@ -152,7 +165,8 @@ only the Activity.
 
 There's no Discord frame locally. `scripts/activity/discord-sdk.js` can be swapped for a
 stub in a Playwright route, and a small server can stand in for Discord's proxy:
-`/.proxy/site/*` → the repo, `/.proxy/api/*` → `wrangler dev`. Set `DISCORD_API_BASE` in
+`/` → `activity/`, `/.proxy/site/*` → the repo, `/.proxy/api/*` → `wrangler dev` (pass the
+browser's headers through as they are, so a missing `Origin` stays missing). Set `DISCORD_API_BASE` in
 `.dev.vars` to a stub of `oauth2/token` and `users/@me`.
 
 ## Updating the SDK
@@ -164,4 +178,4 @@ npx esbuild entry.mjs --bundle --format=esm --minify --target=es2020 --outfile=s
 ```
 
 Keep its MIT license next to it (`discord-sdk.LICENSE.md`), and bump `?v=` in
-`scripts/activity/wordle.js`.
+`scripts/activity/activity.js`.

@@ -16,3 +16,16 @@
 .act-muted { color: var(--muted); font-size: 13px; }
 /* No links out to the Discord server from inside Discord */
 html[data-surface="activity"] .board-about a { display: none; }
+/* Back to the game picker (activity/index.html) */
+.act-top { margin: 0; }
+.act-games { font-size: 13px; color: var(--muted); text-decoration: none; }
+.act-games:hover { color: var(--ink); }
+/* The game picker */
+.act-pick { padding-top: 32px; max-width: 520px; display: grid; gap: 14px; }
+.act-pick-title { margin: 0 0 6px; font-size: 22px; }
+.act-pick-title span { font-size: 15px; color: var(--muted); margin-left: 6px; }
+.act-pick-card { display: grid; gap: 4px; padding: 16px 18px; border: 1px solid var(--border); border-radius: 10px; color: var(--ink); text-decoration: none; }
+.act-pick-card:hover, .act-pick-card:focus-visible { border-color: var(--ink); }
+.act-pick-card strong { font-size: 18px; }
+.act-pick-card span { font-size: 14px; color: var(--muted); }
+.act-pick-ja { font-size: 13px !important; letter-spacing: .1em; }

@@ -15,12 +15,13 @@
   <base href="/.proxy/site/tools/wordle/">
   <link rel="stylesheet" href="../../styles/base.css?v=4">
   <link rel="stylesheet" href="../../styles/wordle.css?v=10">
-  <link rel="stylesheet" href="../../styles/activity.css?v=1">
+  <link rel="stylesheet" href="../../styles/activity.css?v=2">
 </head>
 <body data-page="wordle">
   <main id="main">
     <div class="container wd act">
       <p class="act-outside" id="act-outside">Kana Wordle runs here as a Discord Activity: open it from a voice channel in Discord. To play in your browser, go to <a href="https://www.jareddesu.com/tools/wordle/">jareddesu.com/tools/wordle</a>.</p>
+      <p class="act-top"><a class="act-games" id="act-games" hidden>← Games</a></p>
       <p class="act-status" id="act-status" role="status" aria-live="polite"></p>
       <div class="wd-bar" role="toolbar" aria-label="Game options" data-t-aria="bar">
         <div class="wd-seg" role="radiogroup" aria-label="Mode" data-t-aria="modeGroup" id="mode-seg">
@@ -94,6 +95,6 @@
   <div class="wd-toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 
-  <script type="module" src="../../scripts/activity/wordle.js?v=3"></script>
+  <script type="module" src="../../scripts/activity/wordle.js?v=4"></script>
 </body>
 </html>

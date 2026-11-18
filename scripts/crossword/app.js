@@ -27,6 +27,13 @@ import { dailyStreak, addDays } from './streak.js?v=1';
 import { mountBoardSettings, boardInvite, sendResult } from '../games/board.js?v=3';
 
 const $ = (id) => document.getElementById(id);
+// Set by the Discord Activity's page before it loads this one (scripts/activity/crossword.js):
+// { name, finished(result) }. Inside it, only the daily puzzles: no Crossword+ (no deck, no
+// past days beyond yesterday, no plans or nudges), no ads, no funnel counts. Null on the website.
+const ACTIVITY = window.jdActivity || null;
+// The Activity has no My deck: this stands in for deck.js's controller
+const NO_DECK = { show() {}, relabel() {}, openSignIn() {}, tryWeek: async () => false, showPlus() {}, message() {}, current: () => null };
+const trackSite = (e) => { if (!ACTIVITY) track(e); };
 // replaceChildren() would print null/false as text
 const fill = (el, ...kids) => el.replaceChildren(...kids.filter((k) => k != null && k !== false));
 const KEY = 'jareddesu.crossword.v1';
@@ -226,8 +233,9 @@ async function init() {
   date = asked && pastOrToday.includes(asked) ? asked : (pastOrToday[pastOrToday.length - 1] || null);
   t.apply();
   setMeta();
-  track('visit');
-  deck = mountDeck({ root: $('deck'), play: (p) => { settings.mode = 'deck'; save(); openPuzzle(p); $('play').scrollIntoView({ block: 'start', behavior: 'smooth' }); } });
+  trackSite('visit');
+  if (ACTIVITY && settings.mode === 'deck') settings.mode = 'kana';
+  deck = ACTIVITY ? NO_DECK : mountDeck({ root: $('deck'), play: (p) => { settings.mode = 'deck'; save(); openPuzzle(p); $('play').scrollIntoView({ block: 'start', behavior: 'smooth' }); } });
   // Signed in: progress, stats and deck puzzles follow the account between devices (sync.js)
   initSync({
     get: () => ({ progress: store.progress, stats: store.stats }),
@@ -248,6 +256,7 @@ async function init() {
   // detail.week: "Try it free for a week": start it (signing in first if need be) right
   // here, so a locked past day just opens; deck.tryWeek says if it couldn't (then: the plans)
   document.addEventListener('crossword:plus', async (e) => {
+    if (ACTIVITY) return;
     if (e.detail && e.detail.signIn) { deck.openSignIn(); return; }      // a popup, on whatever tab they're on
     if (e.detail && e.detail.week && await deck.tryWeek()) return;
     $('done').hidden = true;
@@ -300,7 +309,7 @@ async function openDay() {
   if (!date) { showEmpty(t('empty.soon')); return; }
   // Older days are for Crossword+ members. Today's and yesterday's are free: a day's puzzles
   // count for the streak for 48 hours, until midnight the next day (streak.js)
-  if (date < addDays(localDate(), -1) && !isMember()) { day = null; showLocked(); return; }
+  if (date < addDays(localDate(), -1) && (ACTIVITY || !isMember())) { day = null; showLocked(); return; }
   const want = date;
   day = null;
   let d;
@@ -319,14 +328,14 @@ const rich = (s) => String(s).split(/(<b>.*?<\/b>)/).filter(Boolean).map((x) => 
 
 function showLocked() {
   stopClock();
-  track('offer');
+  trackSite('offer');
   renderBar();
   $('play').hidden = true;
   $('words-sec').hidden = true;
   $('empty').hidden = false;
   fill($('empty'), h('span', { class: 'cw-locked' }, h('span', { class: 'cw-plus-badge' }, '🔒 ', t('plusName')), h('span', { class: 'cw-locked-msg' }, rich(t('locked')))), h('span', { class: 'cw-locked-actions' },
-    h('button', { type: 'button', class: 'btn', onclick: () => { const today = dates.filter((d) => d <= localDate()).pop(); if (today) { date = today; history.replaceState(null, '', location.pathname); openDay(); } } }, t('toToday')),
-    plusCta()));
+    h('button', { type: 'button', class: 'btn', onclick: () => { const today = dates.filter((d) => d <= localDate()).pop(); if (today) { date = today; history.replaceState(null, '', location.pathname + (ACTIVITY ? location.search : '')); openDay(); } } }, t('toToday')),
+    ACTIVITY ? null : plusCta()));
 }
 
 function showEmpty(msg) {
@@ -433,7 +442,7 @@ function renderBar() {
     $('theme-ja').lang = ja ? 'en' : 'ja';
   }
   const i = dates.indexOf(date);
-  $('date-prev').disabled = i <= 0;
+  $('date-prev').disabled = i <= 0 || (ACTIVITY && dates[i - 1] < addDays(today, -1));     // the Activity: today and yesterday
   $('date-next').disabled = i < 0 || i >= dates.length - 1 || dates[i + 1] > today;
 }
 
@@ -446,10 +455,11 @@ function wireControls() {
     if (settings.mode !== 'deck' && !day && date) openDay(); else openPuzzle();
   }));
   $('level').addEventListener('change', (e) => { settings.level = e.target.value; save(); openPuzzle(); });
-  const go = (d) => { date = d; history.replaceState(null, '', d === localDate() ? location.pathname : `?date=${d}`); openDay(); };
+  // Inside the Activity the address keeps Discord's query (frame_id…), so the day isn't put in it
+  const go = (d) => { date = d; if (!ACTIVITY) history.replaceState(null, '', d === localDate() ? location.pathname : `?date=${d}`); openDay(); };
   $('date-prev').addEventListener('click', () => { const i = dates.indexOf(date); if (i > 0) go(dates[i - 1]); });
   $('date-next').addEventListener('click', () => { const i = dates.indexOf(date); if (i < dates.length - 1) go(dates[i + 1]); });
-  $('date-label').addEventListener('click', () => openDates(go));
+  $('date-label').addEventListener('click', () => { if (!ACTIVITY) openDates(go); });
   $('timer').addEventListener('click', () => { if (st && !st.done) pause(); });
   $('resume').addEventListener('click', resume);
   $('clue-prev').addEventListener('click', () => nextEntry(-1));
@@ -543,8 +553,7 @@ function relabel() {
   setMeta();
   renderAccount();
   buildKeys();
-  mountPlusSection();
-  mountAds();
+  if (!ACTIVITY) { mountPlusSection(); mountAds(); }
   if (drawBoard) drawBoard();
   deck.relabel();
   if (!pz) { if (date) renderBar(); return; }
@@ -561,6 +570,7 @@ let canSignIn = false;
 plusInfo().then((i) => { canSignIn = Boolean(i && (i.google || i.email)); renderAccount(); }).catch(() => {});
 function renderAccount() {
   const bar = $('account-bar');
+  if (ACTIVITY) { bar.hidden = false; fill(bar, h('span', { class: 'cw-acct-email' }, ACTIVITY.name)); return; }
   const u = currentUser();
   if (!u && !canSignIn) { bar.hidden = true; return; }
   bar.hidden = false;
@@ -989,7 +999,7 @@ function checkSolved() {
   if (!open.every((x) => val(x.r, x.c) === x.answer)) { toast(t('toast.off')); return; }
   st.done = true;
   st.solvedAt = Date.now();
-  track('solve');
+  trackSite('solve');
   stopClock();
   const assisted = Object.keys(st.revealed).length > 0;
   recordStats(assisted);
@@ -1003,13 +1013,16 @@ function checkSolved() {
 
 // The Discord leaderboard: a finished daily goes to it once, while the account has it on
 // (scripts/games/board.js). Only inside the puzzle's 48 hours, the same as the streak.
+// Inside the Discord Activity it also goes to the voice channel's list (ACTIVITY.finished).
 function reportBoard() {
   const m = /^(\d{4}-\d{2}-\d{2})-/.exec(pz.id);
-  if (pz.deck || !m || st.board || !signedIn()) return;
+  if (pz.deck || !m) return;
   if (localDate(new Date(st.solvedAt)) > addDays(m[1], 1)) return;
+  const result = { game: 'crossword', puzzleId: pz.id, seconds: Math.round(st.time), revealed: Object.keys(st.revealed).length, checked: Object.keys(st.fixed || {}).length };
+  if (ACTIVITY) ACTIVITY.finished(result);
+  if (st.board || !signedIn()) return;
   const done = st;
-  sendResult({ game: 'crossword', puzzleId: pz.id, seconds: Math.round(st.time), revealed: Object.keys(st.revealed).length, checked: Object.keys(st.fixed || {}).length })
-    .then((r) => { if (r && r.ok) { done.board = 1; save(); } });
+  sendResult(result).then((r) => { if (r && r.ok) { done.board = 1; save(); } });
 }
 
 function applyTimer() { $('timer').classList.toggle('is-hidden', !settings.showTimer); }
@@ -1100,7 +1113,7 @@ function celebrate(assisted) {
     !pz.deck && date === localDate() ? h('p', { class: 'cw-next', id: 'cw-next' }, t('nextIn', { time: untilMidnight() })) : null,
     !pz.deck && /^\d{4}-\d{2}-\d{2}-/.test(pz.id) ? (() => { const ds = dailyStreak(store.progress); return ds.current ? h('p', { class: 'cw-done-streak' }, ds.current === 1 ? t('doneStreak1') : t('doneStreak', { n: ds.current })) : null; })() : null);
   // One quiet line offering an account or Crossword+; see plus.js for when it shows
-  fill($('done-plus'), plusEligible() ? plusNudge() : null,
+  fill($('done-plus'), !ACTIVITY && plusEligible() ? plusNudge() : null,
     !pz.deck && /^\d{4}-\d{2}-\d{2}-/.test(pz.id) ? boardInvite({ open: openBoardSettings, cls: { line: 'cw-done-nudge', link: 'btn-link cw-nudge-go' } }) : null);
   clearInterval(nextTimer);
   nextTimer = setInterval(() => { const el = $('cw-next'); if (!el || $('done').hidden) { clearInterval(nextTimer); return; } el.textContent = t('nextIn', { time: untilMidnight() }); }, 1000);
@@ -1171,6 +1184,5 @@ function toast(msg) {
   toastTimer = setTimeout(() => { t.hidden = true; }, 2600);
 }
 
-mountPlusSection();
-mountAds();
+if (!ACTIVITY) { mountPlusSection(); mountAds(); }
 init();

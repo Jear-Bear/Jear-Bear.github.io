@@ -41,7 +41,7 @@
 //   /public/board/profile|result      the Discord leaderboard: opt-in and results (board.js)
 //   /public/board/discord/*, activity/*  Discord linking and the Kana Wordle Activity (discord.js)
 //   /public/tool/load|save          another game's progress synced between devices (Kana Wordle; plussync.js)
-//   GET  /api/board/preview?day=…[&format=png]   the day's Discord post (or its picture), built but not sent
+//   GET  /api/board/preview?day=…[&game=…][&format=png]   the day's Discord post (or its picture), built but not sent
 //
 // A daily cron refreshes the uploads (capturing 30-day views) and the history; two more
 // (14:05 and 15:05 UTC) send the leaderboard's daily Discord post at 9:05 Chicago time.
@@ -204,7 +204,7 @@ async function route(request, env, url) {
   if (a === 'income' && !b && m === 'PUT') return putIncome(db, await readJson(request));
   if (a === 'traffic' && !b && m === 'GET') return loadTraffic(env, db, { days: url.searchParams.get('days'), to: url.searchParams.get('to') });
   if (a === 'traffic' && b === 'refresh' && !c && m === 'POST') return pullTraffic(env, db);
-  if (a === 'board' && b === 'preview' && !c && m === 'GET') return previewPost(env, url.searchParams.get('day'), url.searchParams.get('format'));
+  if (a === 'board' && b === 'preview' && !c && m === 'GET') return previewPost(env, url.searchParams.get('day'), url.searchParams.get('format'), url.searchParams.get('game'));
   if (a === 'sponsor-cards' && !b && m === 'GET') return sponsorCards(db, { months: url.searchParams.get('months') });
   if (a === 'rate-rules' && b && (c === 'accept' || c === 'dismiss') && !d && m === 'POST') {
     const settings = await settingsFor(db);
