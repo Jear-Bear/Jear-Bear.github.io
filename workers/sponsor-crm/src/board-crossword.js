@@ -65,18 +65,50 @@ export default {
   compare: (a, b) => (a.revealed > 0) - (b.revealed > 0) || a.seconds - b.seconds || String(a.solved_at).localeCompare(String(b.solved_at)),
   podium: [3, 2, 1],
 
-  // Two embeds: kana and kanji, one line per puzzle that had finishers
-  embeds({ day, byPuzzle, esc, medal, fmtSeconds }) {
+  streakName: 'crossword',
+
+  // Two embeds, kana and kanji, one field per puzzle with finishers: the top three with medals
+  // and times (✨ no reveals), then "+N more finished". The day's fastest solve gets 👑.
+  embeds({ day, byPuzzle, medal, fmtSeconds, name }) {
+    const crown = fastest(byPuzzle);
     const section = (kanji, title, color) => {
-      const lines = [];
-      LEVELS.forEach((level) => ['mini', 'daily'].forEach((size) => {
-        const list = byPuzzle.get(`${day}-${kanji ? 'kanji-' : ''}${level}-${size}`);
-        if (!list || !list.length) return;
-        const top = list.slice(0, 3).map((r, i) => `${medal(i)} ${esc(r.nickname)} ${fmtSeconds(r.seconds)}${r.revealed ? '' : ' ✨'}`).join('  ');
-        lines.push(`**${LEVEL[level]} ${size}:** ${top}${list.length > 3 ? `  · ${list.length} solved` : ''}`);
-      }));
-      return lines.length ? { title, color, description: lines.join('\n'), footer: { text: '✨ no reveals' } } : null;
+      const fields = [];
+      eachPuzzle(day, kanji, byPuzzle, (label, list) => {
+        const top = list.slice(0, 3).map((r, i) => `${medal(i)} ${name(r)} ${fmtSeconds(r.seconds)}${r.revealed ? '' : ' ✨'}${r === crown ? ' 👑' : ''}`).join('  ');
+        fields.push({ name: label, value: `${top}${list.length > 3 ? `\n+${list.length - 3} more finished` : ''}` });
+      });
+      return fields.length ? { title, color, fields, footer: { text: '✨ no reveals · 👑 fastest of the day' } } : null;
     };
     return [section(false, 'Crossword · kana', 0x4c6cb3), section(true, 'Crossword · kanji', 0x42602d)].filter(Boolean);
   },
+
+  // The picture: a card each for kana and kanji, a row of tiles per puzzle
+  cards({ day, byPuzzle, fmtSeconds, displayName, avatarUrl, dayShort }) {
+    const crown = fastest(byPuzzle);
+    const card = (kanji, title) => {
+      const sections = [];
+      eachPuzzle(day, kanji, byPuzzle, (label, list) => sections.push({
+        label,
+        tiles: list.map((r) => ({ kind: 'crossword', name: displayName(r), avatarUrl: avatarUrl(r), time: fmtSeconds(r.seconds), clean: !r.revealed, crown: r === crown })),
+      }));
+      return sections.length ? { title: `${title}, ${dayShort}`, sections } : null;
+    };
+    return [card(false, 'Kana Crossword'), card(true, 'Kanji Crossword')].filter(Boolean);
+  },
 };
+
+// Each puzzle of a mode that had finishers, in level and size order
+function eachPuzzle(day, kanji, byPuzzle, fn) {
+  LEVELS.forEach((level) => ['mini', 'daily'].forEach((size) => {
+    const list = byPuzzle.get(`${day}-${kanji ? 'kanji-' : ''}${level}-${size}`);
+    if (list && list.length) fn(`${LEVEL[level]} ${size}`, list);
+  }));
+}
+// The day's fastest solve across every puzzle (clean solves first, like the ranking)
+function fastest(byPuzzle) {
+  let best = null;
+  byPuzzle.forEach((list) => list.forEach((r) => {
+    if (!best || (r.revealed > 0) - (best.revealed > 0) < 0 || ((r.revealed > 0) === (best.revealed > 0) && r.seconds < best.seconds)) best = r;
+  }));
+  return best;
+}

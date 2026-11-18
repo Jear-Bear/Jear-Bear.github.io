@@ -60,7 +60,7 @@ export async function sha256(s) {
   const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
   return [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
-const randomToken = () => b64url(crypto.getRandomValues(new Uint8Array(32)));
+export const randomToken = () => b64url(crypto.getRandomValues(new Uint8Array(32)));
 
 async function readBody(request) {
   try { return JSON.parse((await request.text()).slice(0, 8000)) || {}; } catch { return {}; }
@@ -77,7 +77,7 @@ export async function limit(request, env, name, max) {
 // --- sessions -----------------------------------------------------------------------------------
 async function sign(env, data) { return hmacHex(env, `plus-session:${data}`); }
 
-async function issue(env, u) {
+export async function issue(env, u) {
   const exp = Math.floor(Date.now() / 1000) + SESSION_DAYS * 86400;
   const data = `${u.id}.${exp}.${u.session_ver || 1}`;
   await env.DB.prepare('UPDATE plus_users SET last_login = ? WHERE id = ?').bind(new Date().toISOString(), u.id).run();
@@ -423,6 +423,8 @@ export async function deletePlus(db, id) {
     db.prepare('DELETE FROM tool_saves WHERE user_id = ?').bind(id),
     db.prepare('DELETE FROM plus_deck_uses WHERE user_id = ?').bind(id),
     db.prepare('DELETE FROM game_results WHERE user_id = ?').bind(id),
+    // Its linked Discord account's Activity results, then the profile (with the Discord data)
+    db.prepare('DELETE FROM activity_finishes WHERE discord_id IN (SELECT discord_id FROM board_profiles WHERE user_id = ? AND discord_id IS NOT NULL)').bind(id),
     db.prepare('DELETE FROM board_profiles WHERE user_id = ?').bind(id),
     db.prepare('DELETE FROM plus_logins WHERE email = ?').bind(u.email),
     db.prepare('DELETE FROM plus_users WHERE id = ?').bind(id),

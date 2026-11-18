@@ -6,6 +6,14 @@
 // defaults are the crossword's, so it looks the same there as it always has.
 
 import { info, googleButton, sendEmailLink } from '../crossword/account.js?v=8';
+import { translator } from './i18n.js?v=1';
+import { discordConfig, startDiscord } from './discord.js?v=1';
+
+// Signing in with Discord: only an account that has Discord linked already (Settings)
+const dt = translator({
+  en: { discord: 'Continue with Discord', discordNote: 'Works once Discord is linked to your account in Settings.' },
+  ja: { discord: 'Discordで続ける', discordNote: '設定でDiscordを連携したアカウントで使えます。' },
+});
 
 const CLS = {
   overlay: 'cw-overlay cw-signin-pop', sheet: 'cw-sheet cw-signin-sheet', x: 'cw-pop-x', title: 'cw-sheet-title',
@@ -60,7 +68,8 @@ export async function openSignIn({ t, title, top = [], sentKey = 'sent', page = 
   return open;
 }
 
-// Google and the email link. ready(): once it's on the page (Google's button sizes itself to it)
+// Google, Discord (when it's set up) and the email link. ready(): once it's on the page (Google's
+// button sizes itself to it)
 function signInForm({ t, cfg, say, sentKey, page, c }) {
   const useGoogle = cfg && cfg.google && googleOk;
   if (!cfg || (!useGoogle && !cfg.email)) return { nodes: [h('p', { class: c.muted }, t('noSignIn'))], ready() {} };
@@ -75,10 +84,21 @@ function signInForm({ t, cfg, say, sentKey, page, c }) {
     send.disabled = false;
   } }, t('sendLink'));
   email.addEventListener('keydown', (e) => { if (e.key === 'Enter') send.click(); });
+  const discord = h('div', { class: 'gm-discord', hidden: true });
+  discordConfig().then((d) => {
+    if (!d.clientId) return;
+    const b = h('button', { type: 'button', class: `${c.button} gm-discord-btn`, onclick: async () => {
+      b.disabled = true;
+      try { await startDiscord('signin'); } catch (e) { b.disabled = false; say(e.message || t('failed'), true); }
+    } }, dt('discord'));
+    discord.append(b, h('p', { class: c.muted }, dt('discordNote')));
+    discord.hidden = false;
+  });
   return {
     nodes: [
       h('p', { class: c.muted }, t('signInWhy')),
       useGoogle ? g : null,
+      discord,
       or,
       cfg.email ? h('div', { class: c.row }, email, send) : null,
       legalLine(t, 'agreeSignIn', c.legal)],

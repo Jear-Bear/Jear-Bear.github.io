@@ -11,7 +11,7 @@
 // Mixed is every level of the v2 lists together (it isn't stored separately).
 
 export const START = '2026-10-01';
-export const V2_FROM = '2026-11-19';
+export const V2_FROM = '2026-11-20';
 export const LEVELS = ['beginner', 'intermediate', 'advanced'];
 
 // The word list a day uses ('mixed' only exists in v2; practice games use v2)

@@ -10,6 +10,7 @@ import { loadCalendar, createItem } from './calendar.js';
 import { listUploads } from './youtube.js';
 import { loadInsights } from './stats.js';
 import { loadTraffic } from './traffic.js';
+import { sponsorCards } from './growth.js';
 import { summarize } from '../../../scripts/manage/traffic.js';
 import { allInsights } from '../../../scripts/manage/insights.js';
 import { listDrafts, closeDraft } from './drafts.js';
@@ -104,10 +105,10 @@ export function createServer(env) {
     });
   });
 
-  tool('get_site_traffic', 'Website traffic for jareddesu.com from Cloudflare Web Analytics (cookieless; aggregated page views and visits, UTC days). Returns the chosen period and the same-length period before it: totals and % change, daily views, the trend (views/day change per week), busiest weekday, top pages (with section and change), site sections, referrers in plain words (YouTube, Google, Reddit…), rising pages, new referrers, countries, devices, browsers and OS, plus your past traffic reports. A null change means there was no data in the earlier period. Use these numbers as given.', {
+  tool('get_site_traffic', 'Website traffic for jareddesu.com from Cloudflare Web Analytics (cookieless; aggregated page views and visits, UTC days). Returns the chosen period and the same-length period before it: totals and % change, daily views, the trend (views/day change per week), busiest weekday, top pages (with section and change), site sections, referrers in plain words (YouTube, Google, Reddit…), rising pages, new referrers, countries, devices, browsers and OS, plus the sponsor cards on the site by month (views, clicks and click-through rate per place) and your past traffic reports. A null change means there was no data in the earlier period. Use these numbers as given.', {
     days: z.number().int().min(7).max(180).optional(),
   }, READ, async ({ days = 7 }) => {
-    const [data, extra] = await Promise.all([loadTraffic(env, db, { days }), loadInsights(db)]);
+    const [data, extra, cards] = await Promise.all([loadTraffic(env, db, { days }), loadInsights(db), sponsorCards(db, { months: 3 })]);
     const x = summarize(data);
     const top = (list, n = 10) => list.slice(0, n).map((r) => ({ name: r.name || r.key, path: r.name ? r.key : undefined, section: r.section, views: r.views, visits: r.visits, share: Math.round(r.share * 1000) / 10, change_pct: r.change == null ? null : Math.round(r.change * 100), is_new: r.isNew }));
     return {
@@ -128,6 +129,8 @@ export function createServer(env) {
       pages_growing_faster_than_site: top(x.rising, 5), new_referrers: top(x.newReferrers, 8),
       countries: top(x.country), devices: top(x.device, 5), browsers: top(x.browser, 6), os: top(x.os, 6),
       site_pages: ['/', '/about/', '/blog/', '/contact/', '/projects/', '/sponsorships/', '/tools/', '/tools/kana/', '/tools/kanji/', '/tools/nandoku/', '/tools/pitch/', '/tools/jis/'],
+      // Sponsor cards (scripts/partner.js): views = at least half on screen for a second; ctr = clicks / views, in %
+      sponsor_cards: cards.months.map((m) => ({ month: m.month, total: m.total, places: m.places })),
       past_traffic_reports: extra.insights.filter((i) => i.kind === 'traffic').slice(0, 3).map((i) => ({ week_of: i.week_of, text: i.text })),
     };
   });

@@ -1,10 +1,13 @@
 // board-wordle.js — Kana Wordle's entry in the leaderboard registry (board.js).
 //
-// Result: { game: 'wordle', puzzleId, guesses, hints, won, word }
+// Result: { game: 'wordle', puzzleId, guesses, hints, won, word, pattern }
 //   puzzleId  wordle-{date}-{level}-{len}: one of the eight dailies (mixed, beginner, intermediate,
 //             advanced × 4 or 5 kana)
 //   word      the last guess; for a win it must be that day's answer, picked with the page's
 //             own code (scripts/wordle/daily.js) from the published word list. A loss used all 8.
+//   pattern   each guess's colors for the post's picture, e.g. ['apaa', 'cccc'] ('c' right spot,
+//             'p' elsewhere, 'n' one dakuten off, 'a' not in it). Colors only, never the kana.
+//             Optional, so a page from before it was added still counts.
 // Points: a win 10, plus 8 minus the guesses, +5 with no hints, streak +1 a day up to +5
 // (days with a daily won); a loss 2 for playing. Ranked: won first, fewest guesses, fewest
 // hints, earliest. No podium bonus.
@@ -55,7 +58,16 @@ export default {
       const answer = dailyAnswer(poolFor(await answers(env, listFile(len, day, level)), level), level, len, day);
       if (!answer || String(b.word || '') !== answer.a) throw new HttpError(400, 'That isn’t the word');
     }
-    return { puzzleId, day, guesses, hints, won: b.won ? 1 : 0 };
+    let pattern = null;
+    if (b.pattern != null) {
+      const rows = Array.isArray(b.pattern) ? b.pattern.map(String) : [];
+      const len = Number(lenS);
+      const full = 'c'.repeat(len);
+      const ok = rows.length === guesses && rows.every((x, i) => /^[cpna]+$/.test(x) && x.length === len && (x === full) === (b.won && i === guesses - 1));
+      if (!ok) throw new HttpError(400, 'Bad result');
+      pattern = rows.join('|');
+    }
+    return { puzzleId, day, guesses, hints, won: b.won ? 1 : 0, pattern };
   },
 
   points: (r, streak) => (r.won ? 10 + (TRIES - r.guesses) + (r.hints ? 0 : 5) + Math.min(5, streak) : 2),
@@ -63,19 +75,38 @@ export default {
   compare: (a, b) => (b.won - a.won) || a.guesses - b.guesses || a.hints - b.hints || String(a.solved_at).localeCompare(String(b.solved_at)),
   podium: null,
 
-  // One embed, one line per level and length with players
-  embeds({ day, byPuzzle, esc, medal }) {
-    const lines = [];
-    LEVELS.forEach((level) => [4, 5].forEach((len) => {
-      const list = byPuzzle.get(`wordle-${day}-${level}-${len}`);
-      if (!list || !list.length) return;
-      const won = list.filter((r) => r.won);
-      const missed = list.length - won.length;
-      const top = won.slice(0, 3).map((r, i) => `${medal(i)} ${esc(r.nickname)} ${r.guesses}/${TRIES}${r.hints ? '' : ' ✨'}`).join('  ');
-      if (!won.length) { lines.push(`**${LEVEL[level]} ${len}:** nobody got it (${missed} played)`); return; }
-      const rest = [won.length > 3 ? `${won.length} got it` : '', missed ? `${missed} didn’t get it` : ''].filter(Boolean).join(', ');
-      lines.push(`**${LEVEL[level]} ${len}:** ${top}${rest ? `  · ${rest}` : ''}`);
+  streakName: 'Wordle',
+
+  // One embed, a field per daily (level and length) with players, like the Wordle app's group
+  // summary: grouped by score, best first (👑), losses last as X/8; 💡 used a hint
+  embeds({ day, byPuzzle, name }) {
+    const fields = [];
+    eachDaily(day, byPuzzle, (label, list) => {
+      const groups = new Map();
+      list.forEach((r) => { const k = r.won ? `${r.guesses}/${TRIES}` : `X/${TRIES}`; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(`${name(r)}${r.hints ? ' 💡' : ''}`); });
+      const lines = [...groups].map(([score, names], i) => `${i === 0 && !score.startsWith('X') ? '👑 ' : ''}**${score}:** ${names.join(', ')}`);
+      fields.push({ name: label, value: lines.join('\n'), inline: true });
+    });
+    return fields.length ? [{ title: 'Kana Wordle', color: 0x5d8a3a, fields, footer: { text: '💡 used a hint' } }] : [];
+  },
+
+  // The picture: one card, a row of tiles per daily, each with the player's colored squares
+  cards({ day, byPuzzle, displayName, avatarUrl, dayShort }) {
+    const sections = [];
+    eachDaily(day, byPuzzle, (label, list) => sections.push({
+      label,
+      tiles: list.map((r) => ({
+        kind: 'wordle', name: displayName(r), avatarUrl: avatarUrl(r), crown: r.rank === 0 && Boolean(r.won),
+        score: r.won ? `${r.guesses}/${TRIES}` : `X/${TRIES}`, pattern: r.pattern ? String(r.pattern).split('|') : [],
+      })),
     }));
-    return lines.length ? [{ title: 'Wordle', color: 0x5d8a3a, description: lines.join('\n'), footer: { text: '✨ no hints' } }] : [];
+    return sections.length ? [{ title: `Kana Wordle, ${dayShort}`, sections }] : [];
   },
 };
+
+function eachDaily(day, byPuzzle, fn) {
+  LEVELS.forEach((level) => [4, 5].forEach((len) => {
+    const list = byPuzzle.get(`wordle-${day}-${level}-${len}`);
+    if (list && list.length) fn(`${LEVEL[level]} · ${len} kana`, list);
+  }));
+}

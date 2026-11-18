@@ -651,3 +651,7 @@ body.is-dragging-upload .crm-videos-planned .crm-row.is-video:not(.is-head) { ou
 /* Crossword+ waitlist (Traffic tab) */
 .crm-waitlist { list-style: none; margin: 8px 0; padding: 0; max-height: 240px; overflow-y: auto; font-size: 13px; }
 .crm-waitlist li { padding: 4px 0; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
+
+/* Traffic → Sponsor card: views, clicks and click-through per place, by month */
+.crm-cards td:nth-child(n+3), .crm-cards th:nth-child(n+3) { text-align: right; font-variant-numeric: tabular-nums; }
+.crm-cards tr.crm-cards-total td { border-bottom: 2px solid var(--rule); }

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-surface="activity">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Kana Wordle</title>
+  <!--
+    Kana Wordle as a Discord Activity (scripts/activity/wordle.js, docs/discord-activity.md).
+    Discord serves this page through its proxy, so everything below loads through the URL
+    Mappings: <base> points the game's relative paths at /.proxy/site (www.jareddesu.com).
+    Only the game: no ads, analytics, web fonts, sponsor cards, checkout or upgrade prompts,
+    and no scripts from anywhere else (Discord's SDK is bundled in scripts/activity/).
+  -->
+  <base href="/.proxy/site/tools/wordle/">
+  <link rel="stylesheet" href="../../styles/base.css?v=4">
+  <link rel="stylesheet" href="../../styles/wordle.css?v=10">
+  <link rel="stylesheet" href="../../styles/activity.css?v=1">
+</head>
+<body data-page="wordle">
+  <main id="main">
+    <div class="container wd act">
+      <p class="act-outside" id="act-outside">Kana Wordle runs here as a Discord Activity: open it from a voice channel in Discord. To play in your browser, go to <a href="https://www.jareddesu.com/tools/wordle/">jareddesu.com/tools/wordle</a>.</p>
+      <p class="act-status" id="act-status" role="status" aria-live="polite"></p>
+      <div class="wd-bar" role="toolbar" aria-label="Game options" data-t-aria="bar">
+        <div class="wd-seg" role="radiogroup" aria-label="Mode" data-t-aria="modeGroup" id="mode-seg">
+          <button type="button" role="radio" data-mode="daily" data-t="mode.daily">Daily</button>
+          <button type="button" role="radio" data-mode="practice" data-t="mode.practice">Practice</button>
+        </div>
+        <div class="wd-seg" role="radiogroup" aria-label="Word length" data-t-aria="lenGroup" id="len-seg">
+          <button type="button" role="radio" data-len="4" data-t="len4">4 kana</button>
+          <button type="button" role="radio" data-len="5" data-t="len5">5 kana</button>
+        </div>
+        <label class="wd-select-wrap">
+          <span class="wd-label" data-t="level">Level</span>
+          <select id="level" class="wd-select">
+            <option value="mixed" data-t="opt.mixed">Mixed · N5 to N1</option>
+            <option value="beginner" data-t="opt.beginner">Beginner · N5–N4</option>
+            <option value="intermediate" data-t="opt.intermediate">Intermediate · N3–N2</option>
+            <option value="advanced" data-t="opt.advanced">Advanced · N1+</option>
+          </select>
+        </label>
+        <div class="wd-bar-end">
+          <span class="wd-acct" id="account-bar" hidden></span>
+          <button type="button" class="wd-icon" id="btn-stats" aria-label="Statistics" data-t-aria="statistics">統</button>
+          <button type="button" class="wd-icon" id="btn-settings" aria-label="Settings" data-t-aria="settings">⚙</button>
+        </div>
+      </div>
+
+      <div class="wd-game">
+        <p class="wd-title" id="title"></p>
+        <div class="wd-hints" id="hints" aria-live="polite"></div>
+        <div class="wd-board" id="board" role="grid" aria-label="Guesses" data-t-aria="board"></div>
+        <div class="wd-keys" id="keys" aria-label="Kana keyboard" data-t-aria="keys"></div>
+        <input class="wd-ime" id="ime" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Type your guess (romaji or kana)" data-t-aria="ime">
+      </div>
+
+
+      <section class="act-channel" id="act-channel" aria-live="polite"></section>
+      <p class="act-note" id="act-note"></p>
+    </div>
+  </main>
+
+  <div class="wd-overlay" id="result" hidden>
+    <div class="wd-sheet" role="dialog" aria-modal="true" aria-labelledby="result-title">
+      <button type="button" class="wd-close" id="result-close" aria-label="Close" data-t-aria="close">×</button>
+      <p class="eyebrow" id="result-eyebrow"></p>
+      <h2 class="wd-sheet-title" id="result-title"></h2>
+      <div id="result-body"></div>
+      <div class="wd-sheet-actions" id="result-actions"></div>
+    </div>
+  </div>
+  <div class="wd-overlay" id="settings" hidden>
+    <div class="wd-sheet" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <button type="button" class="wd-close" id="settings-close" aria-label="Close" data-t-aria="close">×</button>
+      <h2 class="wd-sheet-title" id="settings-title" data-t="set.title">Settings</h2>
+      <div class="wd-set-row">
+        <span class="wd-label" data-t="set.lang">Language</span>
+        <div class="wd-seg" role="radiogroup" aria-label="Language" data-t-aria="set.lang" data-lang-seg>
+          <button type="button" role="radio" data-lang="en">English</button>
+          <button type="button" role="radio" data-lang="ja" lang="ja">日本語</button>
+        </div>
+      </div>
+      <label class="wd-toggle"><input type="checkbox" id="opt-hard"> <span><strong data-t="set.hard">Hard mode</strong> <span data-t="set.hard.d">Green and yellow kana must be used in later guesses.</span></span></label>
+      <label class="wd-toggle"><input type="checkbox" id="opt-any"> <span><strong data-t="set.any">Accept any kana</strong> <span data-t="set.any.d">Guesses don't have to be dictionary words.</span></span></label>
+      <label class="wd-toggle"><input type="checkbox" id="opt-notheme"> <span><strong data-t="set.notheme">Hide the theme</strong> <span data-t="set.notheme.d">for a harder game.</span></span></label>
+      <label class="wd-toggle"><input type="checkbox" id="opt-nohints"> <span><strong data-t="set.nohints">Hide the hint buttons</strong> <span data-t="set.nohints.d">so you can't tap one by accident.</span></span></label>
+      <label class="wd-toggle"><input type="checkbox" id="opt-meaning"> <span><strong data-t="set.meaning">Show the meaning</strong> <span data-t="set.meaning.d">of the answer when the game ends.</span></span></label>
+      <label class="wd-toggle"><input type="checkbox" id="opt-romaji"> <span><strong data-t="set.romaji">Show romaji</strong> <span data-t="set.romaji.d">under the kana keys.</span></span></label>
+      <!-- The Discord leaderboard (scripts/games/board.js): signed-in players only -->
+      <section class="wd-set-board" id="board-set" hidden></section>
+    </div>
+  </div>
+  <div class="wd-toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+
+  <script type="module" src="../../scripts/activity/wordle.js?v=2"></script>
+</body>
+</html>

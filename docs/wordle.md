@@ -16,13 +16,13 @@ always agree on the day's word.
 There are two sets of lists, and `daily.js` picks one by date:
 
 - **v1** (`data/wordle/words-{4,5}.json`, built by `build.mjs`): the first lists, used for
-  every daily before `V2_FROM` (Nov 19, 2026). Frozen: never rebuild or edit them, or past
+  every daily before `V2_FROM` (Nov 20, 2026). Frozen: never rebuild or edit them, or past
   dailies (and players' past results) would change.
 - **v2** (`data/wordle/v2/words-{4,5}.json`, built by `build-v2.mjs`): every daily from
   `V2_FROM` on, every Mixed daily, and all practice games. Each level and length has its own
   shuffle (seed `v2:<level>:<length>`), counted from `V2_FROM`.
 
-If this goes live later than Nov 18, move `V2_FROM` to the day after it does, so no
+`V2_FROM` is set to a day that hadn’t started anywhere when this went live, so no
 day's word changes while people are playing it.
 
 Sources (credited on the page):

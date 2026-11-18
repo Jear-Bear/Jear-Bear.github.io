@@ -292,6 +292,29 @@ function funnelSection(f) {
     h('p', { class: 'crm-method' }, 'Counts only, nothing about who: the page sends visit, solve, offer and plan at most once per browser per day; the rest come from sign-ins and Stripe. After the offer it splits: signing in (and the free week), or picking a plan, then signing in, then the payment form. The gap between “Picked a plan” and “Opened checkout” is people lost at sign-in. The biggest drop is the one to work on. Steps added later (free week, picked a plan) count from the day they were added.'));
 }
 
+// Sponsor cards on the site (scripts/partner.js): views, clicks and click-through rate by
+// month, per place and in total. A view is a card at least half on screen for a second.
+const CARD_PLACES = {
+  crossword: 'Crossword page', 'crossword-solved': 'Crossword solved screen', wordle: 'Wordle page', 'wordle-solved': 'Wordle result',
+  tools: 'Tools list', guide: 'Guide pages', 'guide-card': 'Guide cards',
+};
+const monthName = (m) => new Date(`${m}-15T12:00:00Z`).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+const ctrText = (r) => (r.ctr == null ? '—' : `${r.ctr.toFixed(1)}%`);
+function sponsorCardSection(c) {
+  if (!c) return null;
+  if (c.error) return section('Sponsor card', h('p', { class: 'crm-note is-error' }, `Couldn’t load the sponsor card numbers: ${c.error}`));
+  const slugs = new Set(c.months.flatMap((m) => m.places.map((p) => p.slug)));
+  const place = (p) => `${CARD_PLACES[p.via] || p.via}${slugs.size > 1 ? ` · ${p.slug}` : ''}`;
+  return section('Sponsor card',
+    c.months.length ? h('div', { class: 'crm-table-wrap' }, h('table', { class: 'crm-table is-compact crm-cards' },
+      h('thead', {}, h('tr', {}, h('th', {}, 'Month'), h('th', {}, 'Place'), h('th', {}, 'Views'), h('th', {}, 'Clicks'), h('th', {}, 'Click-through'))),
+      h('tbody', {}, c.months.flatMap((m) => [
+        ...m.places.map((p, i) => h('tr', {}, h('td', {}, i ? '' : monthName(m.month)), h('td', {}, place(p)), h('td', {}, num.format(p.views)), h('td', {}, num.format(p.clicks)), h('td', {}, ctrText(p)))),
+        h('tr', { class: 'crm-cards-total' }, h('td', {}, m.places.length ? '' : monthName(m.month)), h('td', {}, h('strong', {}, 'Total')), h('td', {}, h('strong', {}, num.format(m.total.views))), h('td', {}, h('strong', {}, num.format(m.total.clicks))), h('td', {}, h('strong', {}, ctrText(m.total)))),
+      ])))) : h('p', { class: 'crm-muted' }, 'No views counted yet. They start once the page change is live.'),
+    h('p', { class: 'crm-method' }, 'A view is a sponsor card at least half on screen for a second, counted once per card per page load (never a Crossword+ member’s). Clicks are clicks on those cards. Click-through = clicks ÷ views. Counts only, nothing about who. Views only count from when they were added (Nov 2026): months before that show clicks with no views, and that first month’s rate runs high.'));
+}
+
 function membersSection(m, reload) {
   if (!m) return null;
   if (m.error) return section('Crossword+ members', h('p', { class: 'crm-note is-error' }, `Couldn’t load Crossword+: ${m.error}`));
@@ -369,6 +392,7 @@ export function trafficView(root) {
   let waitlist = null;
   let members = null;
   let funnelData = null;
+  let cards = null;
   let error = null;
   const loadMembers = async (all = true) => {
     members = await request('GET', 'plus').catch((err) => ({ error: err.message }));
@@ -380,6 +404,7 @@ export function trafficView(root) {
       data = d; insights = ins.insights || []; waitlist = wl; error = null;
       if (wl && !wl.error) wl.bonus = await request('GET', 'crossword-bonus').catch((err) => ({ error: err.message }));
       funnelData = await request('GET', `plus/funnel?days=${range}`).catch((err) => ({ error: err.message }));
+      cards = await request('GET', 'sponsor-cards?months=12').catch((err) => ({ error: err.message }));
     } catch (err) { error = err; }
     render();
   };
@@ -440,6 +465,7 @@ export function trafficView(root) {
         section(DIM_LABELS.device, x.device.length ? shareBar(x.device.slice(0, 4)) : h('p', { class: 'crm-muted' }, 'No data yet.'),
           h('h3', { class: 'crm-subhead' }, DIM_LABELS.browser), barList(x.browser, { limit: 5 }),
           h('h3', { class: 'crm-subhead' }, DIM_LABELS.os), barList(x.os, { limit: 5 }))),
+      sponsorCardSection(cards),
       waitlistSection(waitlist),
       funnelSection(funnelData),
       membersSection(members, loadMembers),

@@ -12,7 +12,10 @@
   "dependencies": {
     "@cloudflare/workers-oauth-provider": "^1.1.0",
     "@modelcontextprotocol/server": "^2.0.0",
+    "@resvg/resvg-wasm": "^2.6.2",
     "agents": "^0.24.0",
+    "satori": "^0.12.2",
+    "yoga-wasm-web": "^0.3.3",
     "zod": "^4.6.5"
   }
 }
