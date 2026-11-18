@@ -17,6 +17,12 @@ DISCORD_CLIENT_ID = "1572702904320659506"
 DISCORD_POST_HOUR = "9"      # the leaderboard's daily Discord post, America/Chicago time (board.js)
 DISCORD_POST_MINUTE = "5"
 
+# The fonts for the daily post's picture (board-image.js) come in as ArrayBuffers
+[[rules]]
+type = "Data"
+globs = ["**/*.ttf"]
+fallthrough = true
+
 [[d1_databases]]
 binding = "DB"
 database_name = "sponsor-crm"
