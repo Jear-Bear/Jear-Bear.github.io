@@ -24,7 +24,7 @@ import { info, refresh, currentUser, onAccount, signedIn, checkout, portal, bonu
 import { schedulePush } from './sync.js?v=6';
 import { plusPerks, plusPrice, plusBadge, supportLine, nudge, weekOffered } from './plus.js?v=23';
 import { openBrowse } from './browse.js?v=2';
-import { openSignIn as openSharedSignIn, closeSignIn, legalLine as sharedLegalLine } from '../games/signin.js?v=1';
+import { openSignIn as openSharedSignIn, closeSignIn, legalLine as sharedLegalLine } from '../games/signin.js?v=2';
 
 const PENDING = 'jareddesu.crossword.pendingPlan';   // a plan picked before signing in ('week': the free week)
 const WEEK_SEEN = 'jareddesu.crossword.week';         // which free-week messages each account has seen here

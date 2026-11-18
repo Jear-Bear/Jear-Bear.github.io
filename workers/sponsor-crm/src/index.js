@@ -37,6 +37,7 @@
 //   /public/plus/checkout|sync|portal, POST /public/stripe/webhook    payments (stripe.js)
 //   /public/plus/deck-use|load|save  the free deck puzzle per account, progress synced between devices (plussync.js)
 //   /public/board/profile|result      the Discord leaderboard: opt-in and results (board.js)
+//   /public/board/discord/*, activity/*  Discord linking and the Kana Wordle Activity (discord.js)
 //   /public/tool/load|save          another game's progress synced between devices (Kana Wordle; plussync.js)
 //   GET  /api/board/preview?day=…[&format=png]   the day's Discord post (or its picture), built but not sent
 //
@@ -74,6 +75,7 @@ import { plusInfo, plusCheckout, plusSync, plusPortal, stripeWebhook, stripeSetu
 import { publicKey, bonusBacklog, openSealed } from './sealed.js';
 import { pullTraffic, loadTraffic, trafficConfigured } from './traffic.js';
 import { getProfile, putProfile, postResult, previewPost, dailyPost } from './board.js';
+import { route as discordRoute, activityOrigin } from './discord.js';
 
 const TYPES = {
   companies: 'companies', contacts: 'contacts', deals: 'deals', payments: 'payments',
@@ -87,6 +89,7 @@ function allowedOrigin(env, origin) {
   const list = String(env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean);
   if (list.includes(origin)) return origin;
   if (env.ALLOW_LOCALHOST === 'true' && LOCAL_ORIGIN.test(origin)) return origin;
+  if (origin === activityOrigin(env)) return origin;       // the Discord Activity, through Discord's proxy
   return null;
 }
 
@@ -361,6 +364,8 @@ const app = {
         if (what === 'profile' && m === 'GET') return json(await getProfile(request, env), 200, origin);
         if (what === 'profile' && m === 'POST') return json(await putProfile(request, env), 200, origin);
         if (what === 'result' && m === 'POST') return json(await postResult(request, env), 200, origin);
+        const out = await discordRoute(what, request, env, origin);       // Discord linking and the Activity (discord.js)
+        if (out) return json(out, 200, origin);
         return json({ error: 'Not found' }, 404, origin);
       } catch (err) {
         if (err instanceof HttpError) return json({ error: err.message }, err.status, origin);

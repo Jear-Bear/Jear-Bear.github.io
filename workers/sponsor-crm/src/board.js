@@ -2,7 +2,7 @@
 // results post a day to a Discord channel webhook. It never pings anyone (a separate bot
 // does the daily role ping) and it isn't a bot: it only sends a webhook message.
 //
-//   GET  /public/board/profile                     → { opt_in, nickname } for the signed-in account
+//   GET  /public/board/profile                     → { opt_in, nickname, discord } for the signed-in account
 //   POST /public/board/profile { opt_in, nickname }  turning it off deletes their results
 //   POST /public/board/result  { game, puzzleId, … } a finished game (opted-in accounts only)
 //   GET  /api/board/preview?day=YYYY-MM-DD           the post for a day, built but not sent (desk login)
@@ -21,6 +21,7 @@ import { dailyStreak, addDays } from '../../../scripts/crossword/streak.js';
 import crossword from './board-crossword.js';
 import wordle from './board-wordle.js';
 import { renderResults } from './board-image.js';
+import { discordOf } from './discord.js';
 
 // The order is the order of their sections in the daily post
 export const GAMES = { crossword, wordle };
@@ -45,10 +46,13 @@ export function cleanNickname(v) {
 }
 
 // --- the signed-in account's profile ------------------------------------------------------
+// discord: the linked Discord account ({ id, username, avatar }) or null (discord.js)
+const PROFILE = 'SELECT nickname, opt_in, discord_id, discord_username, discord_avatar FROM board_profiles WHERE user_id = ?';
+const profileOut = (r) => ({ opt_in: Boolean(r && r.opt_in), nickname: r ? r.nickname || null : null, discord: discordOf(r) });
+
 export async function getProfile(request, env) {
   const u = await needUser(request, env);
-  const r = await env.DB.prepare('SELECT nickname, opt_in FROM board_profiles WHERE user_id = ?').bind(u.id).first();
-  return { opt_in: Boolean(r && r.opt_in), nickname: r ? r.nickname : null };
+  return profileOut(await env.DB.prepare(PROFILE).bind(u.id).first());
 }
 
 export async function putProfile(request, env) {
@@ -64,14 +68,15 @@ export async function putProfile(request, env) {
     ]);
     return getProfileFor(env, u.id);
   }
-  const nickname = cleanNickname(b.nickname);
+  // With Discord linked, the Discord name shows instead, so a nickname is optional
+  const had = await env.DB.prepare('SELECT discord_id FROM board_profiles WHERE user_id = ?').bind(u.id).first();
+  const nickname = had && had.discord_id && !text(b.nickname, 60) ? '' : cleanNickname(b.nickname);
   await env.DB.prepare('INSERT INTO board_profiles (user_id, nickname, opt_in, updated_at) VALUES (?, ?, 1, ?) ON CONFLICT(user_id) DO UPDATE SET nickname = excluded.nickname, opt_in = 1, updated_at = excluded.updated_at')
     .bind(u.id, nickname, at).run();
   return getProfileFor(env, u.id);
 }
 async function getProfileFor(env, id) {
-  const r = await env.DB.prepare('SELECT nickname, opt_in FROM board_profiles WHERE user_id = ?').bind(id).first();
-  return { ok: true, opt_in: Boolean(r && r.opt_in), nickname: r ? r.nickname : null };
+  return { ok: true, ...profileOut(await env.DB.prepare(PROFILE).bind(id).first()) };
 }
 
 // --- results ----------------------------------------------------------------------------------
@@ -118,10 +123,10 @@ export const esc = (s) => String(s).replace(/[\\*_~`|>#[\]()<@:]/g, (c) => `\\${
 export const fmtSeconds = (s) => { s = Math.max(0, Math.round(s || 0)); const m = Math.floor(s / 60); return m >= 60 ? `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}` : `${m}:${String(s % 60).padStart(2, '0')}`; };
 export const medal = (i) => MEDALS[i] || `${i + 1}.`;
 
-// Who a player is in the post and the picture: their Discord name and avatar when their
-// account has Discord linked (the discord_* columns on board_profiles), else their nickname
-// and an initial circle
-export const displayName = (r) => String(r.discord_global_name || r.discord_username || r.nickname || '?');
+// Who a player is in the post and the picture: their Discord username and avatar when their
+// account has Discord linked (the discord_* columns on board_profiles, discord.js), else their
+// nickname and an initial circle
+export const displayName = (r) => String((r.discord_id && r.discord_username) || r.nickname || '?');
 export function avatarUrl(r) {
   if (!r.discord_id || !r.discord_avatar || !/^\d{5,25}$/.test(r.discord_id) || !/^(a_)?[0-9a-f]{20,40}$/.test(r.discord_avatar)) return null;
   return `https://cdn.discordapp.com/avatars/${r.discord_id}/${r.discord_avatar}.png?size=64`;
