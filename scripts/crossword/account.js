@@ -64,7 +64,8 @@ export async function refresh() {
   return user;
 }
 
-export const sendEmailLink = (email) => call('login/email', { email });
+// page: where the link brings them back ('crossword', the default, or 'wordle')
+export const sendEmailLink = (email, page) => call('login/email', { email, page });
 // The free week (no card, once per account): { ok, user }; ok is false if it can't start
 export async function startWeek() {
   const r = await call('week');
@@ -140,6 +141,9 @@ export const putSave = (data) => call('save', { data });
 export const archiveDay = (date) => call('day', { date });
 // The Discord leaderboard (scripts/games/board.js): same account, its own endpoints
 export const boardCall = (path, body, method = 'POST') => call(path, body, { method, base: `${ROOT}/board` });
+// Another game's progress synced between devices (Kana Wordle: scripts/wordle/sync.js)
+export const toolLoad = (game) => call('load', { game }, { base: `${ROOT}/tool` });
+export const toolSave = (game, data) => call('save', { game, data }, { base: `${ROOT}/tool` });
 
 // The Crossword+ funnel in the Sponsor desk: a count of visit / solve / offer / plan, at most once
 // per step per browser per day. Just the step's name is sent: nothing about the person.

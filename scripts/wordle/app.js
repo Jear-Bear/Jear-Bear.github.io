@@ -2,19 +2,25 @@
 //
 // Guess a hidden hiragana word (4 or 5 kana) in 8 tries. Daily words are the
 // same for everyone: a fixed shuffle of each level's answer list, indexed by
-// the day. Practice picks at random. Progress and stats stay in this browser.
+// the day. Practice picks at random. Progress and stats stay in this browser; signed in
+// (optional, the crossword's account), the dailies and stats follow you (sync.js), and you
+// can join the Discord leaderboard (scripts/games/board.js).
 
 import { toHiragana } from '../kanji/romaji.js?v=1';
 import { gridKana, cycleDakuten, romaji } from '../crossword/kana.js?v=1';
 import { translator, setLang } from '../games/i18n.js?v=1';
+import { decodeAnswers, dayNumber, dailyAnswer } from './daily.js?v=1';
+import { handleReturn, refresh, currentUser, signedIn, onAccount, logout, isMember, info as accountInfo } from '../crossword/account.js?v=8';
+import { openSignIn, closeSignIn } from '../games/signin.js?v=1';
+import { mountBoardSettings, boardInvite, sendResult } from '../games/board.js?v=2';
+import { initSync, schedulePush, flush } from './sync.js?v=1';
 
 const $ = (id) => document.getElementById(id);
 // replaceChildren() would print null/false as text
 const fill = (el, ...kids) => el.replaceChildren(...kids.filter((k) => k != null && k !== false));
 const KEY = 'jareddesu.wordle.v1';
-// Daily #1. Launched on Oct 1 local time, so that's #1 (an earlier START of Oct 2
-// clamped Oct 1 to #1 too, and Oct 1 and 2 got the same word).
-const START = '2026-10-01';
+// Daily #1 is Oct 1, 2026 (START in daily.js). Launched on Oct 1 local time, so that's #1 (an
+// earlier START of Oct 2 clamped Oct 1 to #1 too, and Oct 1 and 2 got the same word).
 const TRIES = 8;
 
 // ---------------------------------------------------------------- interface text
@@ -47,6 +53,13 @@ const t = translator({
     short: 'Not enough kana', notWord: 'Not in the word list',
     'meta.title': 'Japanese Wordle: Free Daily Kana Wordle (JLPT N5 to N1) · Jared P.',
     'meta.desc': 'Japanese Wordle in hiragana, free every day. Guess the hidden 4- or 5-kana word in 8 tries at JLPT N5–N4, N3–N2 or N1 level, with a theme and hints, plus unlimited practice. Type in romaji, no account needed.',
+    // Signing in (optional; the same account as the crossword: scripts/games/signin.js)
+    'acct.signIn': 'Sign in', 'acct.out': 'Sign out', 'acct.as': 'Signed in as {email}', signInTitle: 'Sign in',
+    signInWhy: 'Signing in keeps your daily words and stats on all your devices, and lets you join the Discord leaderboard. It’s the same account as the crossword. The game never needs one.',
+    emailLabel: 'Your email', sendLink: 'Email me a sign-in link', sending: 'Sending…', sent: 'Check your inbox for a sign-in link (it works for 20 minutes). It can take a minute; check spam too.',
+    or: 'or', noSignIn: 'Sign-in isn’t set up yet.', failed: 'Something went wrong. Please try again.',
+    agreeSignIn: 'Signing in means you agree to the', lTerms: 'Terms', lPrivacy: 'Privacy policy', lRefunds: 'Refunds',
+    signedInMsg: 'You’re signed in.',
     imeKanji: 'Only kana count. Press Enter instead of converting to kanji.', newDay: 'A new day, a new word.',
     hardSquare: 'Square {n} must be {ch}', hardContain: 'Guess must contain {ch}', hardLate: 'Change hard mode before your first guess.',
     played: 'Played', winPct: 'Win %', cleanPct: 'No-hint win %', streak: 'Streak',
@@ -84,6 +97,12 @@ const t = translator({
     short: 'かなが足りません', notWord: '単語リストにありません',
     'meta.title': '日本語Wordle：無料で毎日遊べるかなWordle（JLPT N5〜N1）· Jared P.',
     'meta.desc': 'ひらがなで遊ぶ日本語版Wordle。4文字・5文字の単語を8回以内に当てよう。JLPT N5〜N4・N3〜N2・N1の3レベル、テーマとヒント付き、練習モードは何回でも。ローマ字で入力でき、アカウントは不要です。',
+    'acct.signIn': 'ログイン', 'acct.out': 'ログアウト', 'acct.as': '{email} でログイン中', signInTitle: 'ログイン',
+    signInWhy: 'ログインすると、デイリーの単語と成績がどの端末でも続き、Discordのランキングにも参加できます。クロスワードと同じアカウントです。ゲーム自体はログイン不要です。',
+    emailLabel: 'メールアドレス', sendLink: 'ログインリンクをメールで送る', sending: '送信中…', sent: 'ログインリンクを送りました（20分間有効）。届くまで少しかかることがあります。迷惑メールも確認してください。',
+    or: 'または', noSignIn: 'ログインはまだ準備中です。', failed: 'うまくいきませんでした。もう一度お試しください。',
+    agreeSignIn: 'ログインすると、次に同意したことになります：', lTerms: '利用規約', lPrivacy: 'プライバシーポリシー', lRefunds: '返金について',
+    signedInMsg: 'ログインしました。',
     imeKanji: 'かなだけ入力できます。漢字に変換せず、そのまま確定してください。', newDay: '日付が変わりました。新しい単語です。',
     hardSquare: '{n}マス目は「{ch}」にしてください', hardContain: '「{ch}」を使ってください', hardLate: 'ハードモードは最初の回答の前に切り替えてください。',
     played: 'プレイ', winPct: '勝率', cleanPct: 'ノーヒント勝率', streak: '連勝',
@@ -115,7 +134,7 @@ function load() {
   try { return { settings: {}, games: {}, stats: {}, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { return { settings: {}, games: {}, stats: {} }; }
 }
 const store = load();
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch { /* private mode */ } };
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch { /* private mode */ } schedulePush(); };
 const settings = store.settings;
 settings.mode = settings.mode || 'daily';
 settings.len = settings.len || 4;
@@ -141,26 +160,12 @@ async function words(len) {
   const res = await fetch(`../../data/wordle/words-${len}.json?v=3`);
   if (!res.ok) throw new Error(`words-${len}.json: ${res.status}`);
   const d = await res.json();
-  const bin = atob(d.answers.split('').reverse().join(''));
-  const answers = JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0))));
-  lists[len] = { valid: new Set(d.valid), answers };
+  lists[len] = { valid: new Set(d.valid), answers: decodeAnswers(d.answers) };
   return lists[len];
 }
 
-// Seeded shuffle so the daily order is fixed and never repeats until the list runs out
-function rng(seed) {
-  let a = 2166136261;
-  for (const ch of seed) a = Math.imul(a ^ ch.charCodeAt(0), 16777619);
-  return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
-}
-function shuffled(list, seed) {
-  const r = rng(seed);
-  const out = list.slice();
-  for (let i = out.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [out[i], out[j]] = [out[j], out[i]]; }
-  return out;
-}
+// The daily word: a seeded shuffle, so the order is fixed and never repeats until the list runs out (daily.js)
 const localDate = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-const dayNumber = (date) => Math.round((Date.parse(`${date}T12:00:00Z`) - Date.parse(`${START}T12:00:00Z`)) / 86400000) + 1;
 
 // ---------------------------------------------------------------- scoring
 function score(guess, answer) {
@@ -198,7 +203,7 @@ async function start({ fresh = false } = {}) {
     const today = localDate();
     const day = Math.max(1, dayNumber(today));
     const key = `daily:${today}:${settings.level}:${settings.len}`;
-    const answer = shuffled(pool, `${settings.level}:${settings.len}`)[(day - 1) % pool.length];
+    const answer = dailyAnswer(pool, settings.level, settings.len, today);
     game = store.games[key] && store.games[key].answer === answer.a ? store.games[key] : (store.games[key] = { key, answer: answer.a, guesses: [], done: false, won: false, mode: 'daily', day });
     pruneOld();
   } else {
@@ -370,6 +375,7 @@ function submit() {
   else if (game.guesses.length >= TRIES) game.done = true;
   if (game.done) recordStats();
   save();
+  if (game.done) reportBoard();
   renderBoard();
   flipLast();
   renderKeys();
@@ -510,7 +516,8 @@ function showResult({ statsOnly = false } = {}) {
         h('p', { class: 'wd-answer-reading', lang: 'ja' }, info.r, h('span', { class: 'wd-muted' }, ` · ${romaji(info.r)}`)),
         info.m && settings.meaning ? h('p', { class: 'wd-answer-meaning', lang: 'en' }, info.m) : null),
       game.mode === 'daily' ? statsBlock() : null,
-      game.mode === 'daily' ? h('p', { class: 'wd-next', id: 'next-in' }) : null);
+      game.mode === 'daily' ? h('p', { class: 'wd-next', id: 'next-in' }) : null,
+      game.mode === 'daily' ? boardInvite({ open: openBoardSettings, cls: { line: 'wd-invite', link: 'btn-link' } }) : null);
     actions.append(h('button', { type: 'button', class: 'btn btn-primary', onclick: share }, t('copy')));
     if (game.mode === 'practice') actions.append(h('button', { type: 'button', class: 'btn-link', onclick: () => start({ fresh: true }) }, t('nextWord')));
     else actions.append(h('button', { type: 'button', class: 'btn-link', onclick: () => { settings.mode = 'practice'; save(); start(); } }, t('keepPlaying')));
@@ -532,6 +539,22 @@ function tickCountdown() {
   };
   run();
   countdown = setInterval(run, 1000);
+}
+
+// The Discord leaderboard: a finished daily goes to it once, while the account has it on.
+// Practice games never count.
+function reportBoard() {
+  if (game.mode !== 'daily' || game.board || !signedIn()) return;
+  const [, date, level, len] = game.key.split(':');
+  const done = game;
+  sendResult({ game: 'wordle', puzzleId: `wordle-${date}-${level}-${len}`, guesses: game.guesses.length, hints: game.usedHints ?? game.hints ?? 0, won: Boolean(game.won), word: game.guesses[game.guesses.length - 1] })
+    .then((r) => { if (r && r.ok) { done.board = 1; save(); } });
+}
+// From the result's invite: Settings, at the leaderboard section
+function openBoardSettings() {
+  closeOverlays();
+  $('settings').hidden = false;
+  setTimeout(() => $('board-set').scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 60);
 }
 
 function share() {
@@ -604,6 +627,8 @@ document.querySelectorAll('[data-lang-seg] button').forEach((b) => b.addEventLis
   setLang(b.dataset.lang);
   t.apply();
   setMeta();
+  renderAccount();
+  if (drawBoard) drawBoard();
   if (!game) return;
   renderTitle();
   renderHints();
@@ -628,6 +653,52 @@ function setMeta() {
   if (d) d.setAttribute('content', t('meta.desc'));
 }
 
+// ---------------------------------------------------------------- account (optional)
+// Sign in / the account in the bar. Same account and session as the crossword.
+let canSignIn = false;
+accountInfo().then((i) => { canSignIn = Boolean(i && (i.google || i.email)); renderAccount(); }).catch(() => {});
+const signInNow = () => openSignIn({
+  t, title: t('signInTitle'), page: 'wordle',
+  cls: { overlay: 'wd-overlay wd-signin-pop', sheet: 'wd-sheet wd-signin-sheet', x: 'wd-close', title: 'wd-sheet-title', status: 'wd-signin-status', muted: 'wd-muted', google: 'wd-google', or: 'wd-muted wd-or', row: 'wd-signin-row', legal: 'wd-muted wd-legal', mount: 'body' },
+});
+function renderAccount() {
+  const bar = $('account-bar');
+  const u = currentUser();
+  if (!u && !signedIn() && !canSignIn) { bar.hidden = true; return; }
+  bar.hidden = false;
+  if (!signedIn()) { fill(bar, h('button', { type: 'button', class: 'btn wd-acct-in', onclick: signInNow }, t('acct.signIn'))); return; }
+  const email = (u && u.email) || '';
+  fill(bar, email ? h('span', { class: 'wd-acct-email', title: t('acct.as', { email }) }, email) : null,
+    h('button', { type: 'button', class: 'btn-link', onclick: async () => { await flush(); await logout(); renderAccount(); } }, t('acct.out')));
+}
+// Crossword+ members see no sponsor cards here either (html.cw-member hides [data-partner])
+onAccount(() => { if (signedIn()) closeSignIn(); document.documentElement.classList.toggle('cw-member', isMember()); renderAccount(); });
+
+// The dailies and stats follow a signed-in player between devices (sync.js)
+initSync({
+  get: () => ({ games: store.games, stats: store.stats }),
+  set: ({ games, stats }) => {
+    const before = game && game.mode === 'daily' ? JSON.stringify(store.games[game.key] && store.games[game.key].guesses) : null;
+    const practice = Object.fromEntries(Object.entries(store.games).filter(([k]) => !k.startsWith('daily:')));
+    store.games = { ...practice, ...games };
+    store.stats = stats;
+    try { localStorage.setItem(KEY, JSON.stringify(store)); } catch { /* private mode */ }
+    if (!game || game.mode !== 'daily') return;
+    const now = store.games[game.key];
+    // The daily on screen changed on another device (or went with the account): show it.
+    // Otherwise keep playing the same object, so the next guess lands in the store.
+    if (!now || JSON.stringify(now.guesses) !== before) { start(); return; }
+    store.games[game.key] = Object.assign(game, now, { info: game.info });
+    try { localStorage.setItem(KEY, JSON.stringify(store)); } catch { /* private mode */ }
+  },
+});
+
+// Settings → Discord leaderboard (signed-in players only)
+const drawBoard = mountBoardSettings($('board-set'), { head: 'wd-set-head', toggle: 'wd-toggle', button: 'btn' });
+
 t.apply();
 setMeta();
+renderAccount();
 start();
+// Back from an email sign-in link (?login=…), or check the session
+handleReturn().then((back) => { if (back && back.kind === 'signedIn') toast(t('signedInMsg')); else if (back && back.kind === 'error') toast(back.message); else if (!back) refresh(); });

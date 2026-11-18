@@ -19,8 +19,10 @@ import { needUser, limit } from './plus.js';
 import { text } from './public.js';
 import { dailyStreak, addDays } from '../../../scripts/crossword/streak.js';
 import crossword from './board-crossword.js';
+import wordle from './board-wordle.js';
 
-export const GAMES = { crossword };
+// The order is the order of their sections in the daily post
+export const GAMES = { crossword, wordle };
 
 const TZ = 'America/Chicago';
 const MEDALS = ['🥇', '🥈', '🥉'];

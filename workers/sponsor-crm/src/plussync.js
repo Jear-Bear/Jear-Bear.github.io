@@ -2,6 +2,8 @@
 //   POST /public/plus/deck-use  { peek }       the free My deck puzzle: one per account, ever
 //   POST /public/plus/load                     this account's saved progress
 //   POST /public/plus/save      { data }       replace it (the page merges before saving)
+//   POST /public/tool/load      { game }       another game's saved progress (Kana Wordle)
+//   POST /public/tool/save      { game, data } replace it, like plus/save (table tool_saves)
 // The page builds deck puzzles itself, so this is a fair-use check (no more resetting the
 // count in a private window), not a lock: it's tied to the email instead of the browser.
 
@@ -45,5 +47,32 @@ export async function putSave(request, env) {
   if (data.length > MAX_SAVE) throw new HttpError(413, 'That’s too much to save. Try deleting some deck puzzles.');
   const at = new Date().toISOString();
   await env.DB.prepare('INSERT INTO plus_saves (user_id, data, updated_at) VALUES (?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at').bind(u.id, data, at).run();
+  return { ok: true, updated_at: at };
+}
+
+// The other games (tool_saves): same account, same size cap, one row per game
+const TOOLS = new Set(['wordle']);
+async function toolBody(request) {
+  const b = await body(request, MAX_SAVE);
+  if (!TOOLS.has(b.game)) throw new HttpError(400, 'Unknown game');
+  return b;
+}
+
+export async function loadTool(request, env) {
+  const u = await needUser(request, env);
+  const b = await toolBody(request);
+  const r = await env.DB.prepare('SELECT data, updated_at FROM tool_saves WHERE user_id = ? AND game = ?').bind(u.id, b.game).first();
+  if (!r) return { data: null };
+  try { return { data: JSON.parse(r.data), updated_at: r.updated_at }; } catch { return { data: null }; }
+}
+
+export async function putTool(request, env) {
+  const u = await needUser(request, env);
+  const b = await toolBody(request);
+  if (!b.data || typeof b.data !== 'object' || Array.isArray(b.data)) throw new HttpError(400, 'Nothing to save');
+  const data = JSON.stringify(b.data);
+  if (data.length > MAX_SAVE) throw new HttpError(413, 'That’s too much to save.');
+  const at = new Date().toISOString();
+  await env.DB.prepare('INSERT INTO tool_saves (user_id, game, data, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(user_id, game) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at').bind(u.id, b.game, data, at).run();
   return { ok: true, updated_at: at };
 }

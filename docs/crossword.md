@@ -141,7 +141,9 @@ it to `GAMES` in `board.js`:
 
 On the page, `scripts/games/board.js` has the Settings section (`mountBoardSettings`), the
 invite (`boardInvite`) and `sendResult({ game, puzzleId, … })`.
-Code: `workers/sponsor-crm/src/board.js`, `board-crossword.js`, migration `0022_board.sql`.
+Kana Wordle is the second game (`board-wordle.js`, docs/wordle.md); its embed comes after the
+crossword's.
+Code: `workers/sponsor-crm/src/board.js`, `board-crossword.js`, `board-wordle.js`, migration `0022_board.sql`.
 
 ## Search and link previews
 

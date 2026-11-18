@@ -20,10 +20,11 @@
 
 import { lang } from '../games/i18n.js?v=1';
 import { gridKana, toHira } from './kana.js?v=1';
-import { info, refresh, currentUser, onAccount, signedIn, sendEmailLink, googleButton, checkout, portal, bonusPuzzle, deckUse, deckKey, accountId, track, startWeek } from './account.js?v=7';
-import { schedulePush } from './sync.js?v=5';
-import { plusPerks, plusPrice, plusBadge, supportLine, nudge, weekOffered } from './plus.js?v=22';
+import { info, refresh, currentUser, onAccount, signedIn, checkout, portal, bonusPuzzle, deckUse, deckKey, accountId, track, startWeek } from './account.js?v=8';
+import { schedulePush } from './sync.js?v=6';
+import { plusPerks, plusPrice, plusBadge, supportLine, nudge, weekOffered } from './plus.js?v=23';
 import { openBrowse } from './browse.js?v=2';
+import { openSignIn as openSharedSignIn, closeSignIn, legalLine as sharedLegalLine } from '../games/signin.js?v=1';
 
 const PENDING = 'jareddesu.crossword.pendingPlan';   // a plan picked before signing in ('week': the free week)
 const WEEK_SEEN = 'jareddesu.crossword.week';         // which free-week messages each account has seen here
@@ -405,7 +406,6 @@ export function mountDeck({ root, play }) {
   let cfg = null;               // account.info()
   let bonus = null;             // the bonus puzzle list
   let loaded = false;
-  let googleOk = true;          // false once Google's script fails (blocked, offline): then just email
 
   const state = () => read();
   const member = () => Boolean(currentUser() && currentUser().member);
@@ -415,7 +415,6 @@ export function mountDeck({ root, play }) {
   // or another device doesn't reset it); signing in is free. Members make as many as they
   // like. who: the account the count is for (signing in as someone else asks again).
   let free = { who: null, left: null };
-  let signInPop = null;         // the sign-in popup, while it's open
   const freeLeft = () => (free.who && free.who === accountId() && free.left != null ? free.left : null);
   async function peekFree() {
     if (!signedIn() || member()) return;
@@ -430,29 +429,21 @@ export function mountDeck({ root, play }) {
   // plan 'week': "Start your free week": "1 Sign in, 2 Your free week starts".
   async function openSignIn({ plan = null } = {}) {
     if (!cfg) cfg = await info();
-    if (signInPop) signInPop.close();
     if (plan) setPending(plan); else clearPending();
     const week = plan === 'week';
-    const msg = h('p', { class: 'cw-deck-status', role: 'status', 'aria-live': 'polite' });
-    const say = (text, error = false) => { msg.textContent = text; msg.classList.toggle('is-error', error); };
-    const form = signInForm(say, plan);
     const price = plan && !week && cfg.prices ? t(plan === 'year' ? 'perYear' : 'perMonth', { price: cfg.prices[plan] }) : '';
     const days = trialDays();
-    const overlay = h('div', { class: 'cw-overlay cw-signin-pop' });
-    const close = () => { overlay.remove(); signInPop = null; document.removeEventListener('keydown', esc); };
-    const esc = (e) => { if (e.key === 'Escape') close(); };
-    overlay.append(h('div', { class: 'cw-sheet cw-signin-sheet', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'cw-signin-title' },
-      h('button', { type: 'button', class: 'cw-pop-x', 'aria-label': t('close'), onclick: close }, '×'),
-      plan ? h('div', {}, plusBadge()) : null,
-      h('h2', { class: 'cw-sheet-title', id: 'cw-signin-title' }, t(week ? 'weekPopTitle' : plan ? 'getPlus' : 'signInTitle')),
-      week ? h('ol', { class: 'cw-pop-steps' }, h('li', { class: 'is-now' }, t('weekPop1')), h('li', {}, t('weekPop2')))
-        : plan ? h('ol', { class: 'cw-pop-steps' }, h('li', { class: 'is-now' }, t('popStep1')), h('li', {}, days ? t('popStep2t', { days, price }) : t('popStep2', { price }))) : null,
-      form.nodes, msg));
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
-    document.addEventListener('keydown', esc);
-    (document.querySelector('.cw') || document.body).append(overlay);
-    signInPop = { close };
-    form.ready();
+    // The popup itself (Google, the email link) is shared with Kana Wordle: scripts/games/signin.js
+    await openSharedSignIn({
+      t,
+      title: t(week ? 'weekPopTitle' : plan ? 'getPlus' : 'signInTitle'),
+      top: [
+        plan ? h('div', {}, plusBadge()) : null,
+        week ? h('ol', { class: 'cw-pop-steps' }, h('li', { class: 'is-now' }, t('weekPop1')), h('li', {}, t('weekPop2')))
+          : plan ? h('ol', { class: 'cw-pop-steps' }, h('li', { class: 'is-now' }, t('popStep1')), h('li', {}, days ? t('popStep2t', { days, price }) : t('popStep2', { price }))) : null,
+      ],
+      sentKey: week ? 'sentWeek' : plan ? 'sentPlan' : 'sent',
+    });
   }
   // Pay for a plan: Stripe's form in a popup; closing it without paying says so
   async function startCheckout(plan) {
@@ -464,7 +455,7 @@ export function mountDeck({ root, play }) {
   const fmtDay = (iso) => (iso ? new Date(iso).toLocaleDateString(lang() === 'ja' ? 'ja-JP' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '');
   onAccount(() => {
     if (signedIn()) {
-      if (signInPop) signInPop.close();
+      closeSignIn();
       const plan = pendingPlan();
       if (plan && currentUser()) {
         clearPending();
@@ -551,39 +542,7 @@ export function mountDeck({ root, play }) {
   }
 
   // "By subscribing you agree to the Terms…" with the three policy pages
-  const legalLine = (k) => h('p', { class: 'cw-deck-muted cw-legal' }, t(k), ' ',
-    h('a', { href: '../../terms/' }, t('lTerms')), ' · ', h('a', { href: '../../privacy/' }, t('lPrivacy')), ' · ', h('a', { href: '../../refunds/' }, t('lRefunds')));
-
-  // Google and the email link, for the sign-in popup. say: its message line.
-  // ready(): once it's on the page (Google's button sizes itself to it)
-  function signInForm(say, plan) {
-    const useGoogle = cfg && cfg.google && googleOk;
-    if (!cfg || (!useGoogle && !cfg.email)) return { nodes: [h('p', { class: 'cw-deck-muted' }, t('noSignIn'))], ready() {} };
-    const g = h('div', { class: 'cw-google' });
-    const or = useGoogle && cfg.email ? h('p', { class: 'cw-deck-or' }, t('or')) : null;
-    const email = h('input', { type: 'email', autocomplete: 'email', inputmode: 'email', placeholder: t('emailLabel'), 'aria-label': t('emailLabel'), maxlength: '254' });
-    const send = h('button', { type: 'button', class: 'btn', onclick: async () => {
-      const v = email.value.trim();
-      if (!v) { email.focus(); return; }
-      send.disabled = true; say(t('sending'));
-      try { await sendEmailLink(v); say(t(plan === 'week' ? 'sentWeek' : plan ? 'sentPlan' : 'sent')); } catch (e) { say(e.message || t('failed'), true); }
-      send.disabled = false;
-    } }, t('sendLink'));
-    email.addEventListener('keydown', (e) => { if (e.key === 'Enter') send.click(); });
-    return {
-      nodes: [
-        h('p', { class: 'cw-deck-muted' }, t('signInWhy')),
-        useGoogle ? g : null,
-        or,
-        cfg.email ? h('div', { class: 'cw-deck-row' }, email, send) : null,
-        legalLine('agreeSignIn')],
-      ready() {
-        // A failed load just leaves the email link
-        if (useGoogle) googleButton(g, { onError: (e) => { if (/load/i.test(e.message || '')) { googleOk = false; g.remove(); if (or) or.remove(); } else say(e.message || t('failed'), true); } });
-        if (!useGoogle) setTimeout(() => email.focus(), 50);
-      },
-    };
-  }
+  const legalLine = (k) => sharedLegalLine(t, k);
 
   // Members: their status and Manage subscription, top right of the box
   const onWeek = (u) => Boolean(u && u.freeWeek && !u.paid && !u.granted);
