@@ -66,6 +66,85 @@ devices.
   Crossword+). Their files aren't sealed yet anyway: a day is sealed once it's past
   everywhere (see crossword-plus.md).
 
+## Discord leaderboard
+
+An opt-in leaderboard: each morning one message in a Discord channel lists the day's
+finishers per puzzle. It only posts results; the daily role ping is a separate bot
+(Sapphire), so this never pings anyone (`allowed_mentions: { parse: [] }`) and isn't a bot.
+
+**Who's on it.** Signed-in players only, and only after they turn it on: Settings →
+**Discord leaderboard** (a switch and a nickname, 2–20 letters, numbers, spaces, dots,
+dashes or apostrophes; no @, links, mentions or Discord markdown). The nickname and the
+switch belong to the account, so they cover every game. Turning it off deletes their
+results. While it's off, the solved screen shows one line inviting them, at most once per
+account per browser. Signed-out players see nothing new, and the daily puzzles stay free
+with no account.
+
+**What's sent.** When an opted-in player finishes a daily (kana or kanji, inside its 48
+hours, the streak's rule), the page sends it once: `POST /public/board/result`
+`{ game: 'crossword', puzzleId, seconds, revealed, checked }`. The Worker checks the
+puzzle is a real published one (sealed days are opened with its key), that it's still
+inside the 48 hours, and that the time isn't impossibly fast (8 s for a mini, 25 s for a
+daily). The first result per puzzle counts. Deleting the account in the Sponsor desk also
+deletes its profile and results.
+
+**Points.**
+
+| | Points |
+|---|---|
+| Finish a mini / a daily | 10 / 15 |
+| No revealed squares | +5 |
+| Streak | +1 per day of the current streak, up to +5 |
+| Fastest three on a puzzle | +3 / +2 / +1, added when the daily post goes out |
+
+The fastest are ranked with clean solves (no reveals) ahead of ones with reveals, then by
+time, then by who finished first. A season is a calendar month, totalled across every game.
+
+**The post.** At 9:05 Chicago time it posts yesterday's (Chicago date) results:
+
+```
+Daily results for Wed, Nov 18: 12 players, 31 solves
+[Crossword · kana]   Beginner mini: 🥇 name 2:36 ✨  🥈 …  🥉 …   (✨ = no reveals)
+[Crossword · kanji]  …
+```
+
+Puzzles nobody finished are left out, and a day nobody played gets no post. Mondays add
+**Last week's points** (top 10, Monday to Sunday), and the 1st adds **Season winners**
+(last month's top 3).
+Each post is recorded in `discord_posts`, so it's never sent twice. If Discord answers with
+an error, it's logged and not recorded, and the next cron run an hour later tries again.
+
+**Turning it on.** In Discord: Server Settings → Integrations → Webhooks → New Webhook,
+pick the results channel, Copy Webhook URL. In GitHub: add it as the secret
+`DISCORD_CROSSWORD_WEBHOOK`, then run **Sponsor CRM deploy**. Without the secret nothing is
+posted (results are still collected).
+
+**Changing the time.** `DISCORD_POST_HOUR` and `DISCORD_POST_MINUTE` in
+`workers/sponsor-crm/wrangler.toml` (America/Chicago). The Worker only wakes at 14:05 and
+15:05 UTC (`[triggers]`), which is 8:05/9:05 Chicago in winter and 9:05/10:05 in summer, and
+posts on the first run at or after the set time (up to two hours after). For a time outside
+that, change those two crons as well (Cloudflare's free plan allows 5 cron triggers).
+
+**Checking a post first.** `GET /api/board/preview?day=YYYY-MM-DD` on the Worker, with the
+Sponsor desk's sign-in token, returns the message JSON exactly as it would be sent (nothing
+is sent or saved). Without `day`, it's yesterday in Chicago.
+
+**Adding a game.** Make `workers/sponsor-crm/src/board-<game>.js` exporting one entry and add
+it to `GAMES` in `board.js`:
+
+- `id`: the game's name in `game_results` (e.g. `wordle`)
+- `check(body, env)`: validate a result, return `{ puzzleId, day, seconds?, guesses?, hints?, revealed?, checked?, won }` or throw an `HttpError(400, …)`
+- `points(row, streak)`: the points at insert time (`streak`: the current daily streak in that game)
+- `compare(a, b)`: ranks a puzzle's finishers; `podium`: bonus points for the top places, or `null`
+- `embeds({ day, byPuzzle, esc, medal, fmtSeconds })`: the post's embeds for that game
+- `streakWonOnly`: count only won games toward the streak
+
+On the page, `scripts/games/board.js` has the Settings section (`mountBoardSettings`), the
+invite (`boardInvite`) and `sendResult({ game, puzzleId, … })`.
+Kana Wordle is the second game (`board-wordle.js`, docs/wordle.md); its embed comes after the
+crossword's.
+Code: `workers/sponsor-crm/src/board.js`, `board-crossword.js`, `board-wordle.js`, migration `0022_board.sql`.
+
 ## Search and link previews
 
 The page's `<title>` and description are written for search ("Free Daily Japanese

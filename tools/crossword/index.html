@@ -34,7 +34,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Klee+One:wght@600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="../../styles/base.css?v=4">
-  <link rel="stylesheet" href="../../styles/crossword.css?v=25">
+  <link rel="stylesheet" href="../../styles/crossword.css?v=26">
   <link rel="stylesheet" href="../../styles/partner.css?v=4">
   <!-- Cloudflare Web Analytics (cookieless) -->
   <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "3695702820084def96340374a4acd5dc"}'></script>
@@ -285,6 +285,8 @@
           <label class="cw-toggle"><input type="checkbox" id="opt-nextClue"> <span><strong data-t="set.nextClue">At the end of a word, go to the next clue</strong> <span data-t="set.nextClue.d">(when not jumping back).</span></span></label>
         </section>
       </div>
+      <!-- The Discord leaderboard (scripts/games/board.js): signed-in players only -->
+      <section class="cw-set-board" id="board-set" hidden></section>
     </div>
   </div>
   <div class="cw-toast" id="toast" role="status" aria-live="polite" hidden></div>
@@ -322,7 +324,7 @@
   </footer>
 
   <script src="../../scripts/site.js?v=3"></script>
-  <script type="module" src="../../scripts/crossword/app.js?v=35"></script>
+  <script type="module" src="../../scripts/crossword/app.js?v=37"></script>
   <script src="../../scripts/partner.js?v=6"></script>
 </body>
 </html>

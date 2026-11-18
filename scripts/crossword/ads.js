@@ -15,7 +15,7 @@
 // Turning it on (after AdSense has approved the site): see docs/crossword-plus.md, "Ads".
 
 import { lang } from '../games/i18n.js?v=1';
-import { isMember, onAccount, signedIn } from './account.js?v=6';
+import { isMember, onAccount, signedIn } from './account.js?v=8';
 
 // Google AdSense. Neither is a secret (both end up in the page anyway).
 export const ADSENSE_CLIENT = 'ca-pub-4446275728713316';   // your publisher ID: 'ca-pub-' and 16 digits

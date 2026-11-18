@@ -344,6 +344,9 @@ the account; the deck is imported again after signing back in). Someone who play
 without signing in keeps their progress, and it joins the first account they sign
 in with.
 
+Kana Wordle uses the same account and session (signing in on either page signs you in on
+both); its dailies and stats sync the same way, in `tool_saves` (docs/wordle.md).
+
 ## Accounts and payments (built)
 
 **Signing in** (only for Crossword+; the daily puzzles never need it). An

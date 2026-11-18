@@ -16,14 +16,15 @@
 import { toHiragana } from '../kanji/romaji.js?v=1';
 import { gridKana, cycleDakuten, romaji } from './kana.js?v=1';
 import { translator, lang, setLang, dateLocale } from '../games/i18n.js?v=1';
-import { plusEligible, plusNudge, mountPlusSection, plusCta } from './plus.js?v=21';
-import { mountAds } from './ads.js?v=3';
-import { mountDeck } from './deck.js?v=20';
+import { plusEligible, plusNudge, mountPlusSection, plusCta } from './plus.js?v=23';
+import { mountAds } from './ads.js?v=5';
+import { mountDeck } from './deck.js?v=22';
 import { openBrowse } from './browse.js?v=2';
-import { initSync, schedulePush, flush } from './sync.js?v=4';
-import { handleReturn, refresh, isMember, onAccount, archiveDay, currentUser, signedIn, logout, track, info as plusInfo } from './account.js?v=6';
+import { initSync, schedulePush, flush } from './sync.js?v=6';
+import { handleReturn, refresh, isMember, onAccount, archiveDay, currentUser, signedIn, logout, track, info as plusInfo } from './account.js?v=8';
 import { rng } from './construct.mjs?v=1';
 import { dailyStreak, addDays } from './streak.js?v=1';
+import { mountBoardSettings, boardInvite, sendResult } from '../games/board.js?v=2';
 
 const $ = (id) => document.getElementById(id);
 // replaceChildren() would print null/false as text
@@ -524,7 +525,9 @@ function wireSettings() {
   });
   applyAssist();
   applyTimer();
+  drawBoard = mountBoardSettings($('board-set'), { head: 'cw-set-head', toggle: 'cw-toggle', button: 'btn' });
 }
+let drawBoard = null;
 function applyAssist() { $('play').classList.toggle('no-assist', Boolean(settings.noassist)); }
 
 // Language switch: redraw everything that has text in it (progress is untouched)
@@ -542,6 +545,7 @@ function relabel() {
   buildKeys();
   mountPlusSection();
   mountAds();
+  if (drawBoard) drawBoard();
   deck.relabel();
   if (!pz) { if (date) renderBar(); return; }
   renderBar();
@@ -994,6 +998,18 @@ function checkSolved() {
   renderWords();
   renderStats();
   celebrate(assisted);
+  reportBoard();
+}
+
+// The Discord leaderboard: a finished daily goes to it once, while the account has it on
+// (scripts/games/board.js). Only inside the puzzle's 48 hours, the same as the streak.
+function reportBoard() {
+  const m = /^(\d{4}-\d{2}-\d{2})-/.exec(pz.id);
+  if (pz.deck || !m || st.board || !signedIn()) return;
+  if (localDate(new Date(st.solvedAt)) > addDays(m[1], 1)) return;
+  const done = st;
+  sendResult({ game: 'crossword', puzzleId: pz.id, seconds: Math.round(st.time), revealed: Object.keys(st.revealed).length, checked: Object.keys(st.fixed || {}).length })
+    .then((r) => { if (r && r.ok) { done.board = 1; save(); } });
 }
 
 function applyTimer() { $('timer').classList.toggle('is-hidden', !settings.showTimer); }
@@ -1084,7 +1100,8 @@ function celebrate(assisted) {
     !pz.deck && date === localDate() ? h('p', { class: 'cw-next', id: 'cw-next' }, t('nextIn', { time: untilMidnight() })) : null,
     !pz.deck && /^\d{4}-\d{2}-\d{2}-/.test(pz.id) ? (() => { const ds = dailyStreak(store.progress); return ds.current ? h('p', { class: 'cw-done-streak' }, ds.current === 1 ? t('doneStreak1') : t('doneStreak', { n: ds.current })) : null; })() : null);
   // One quiet line offering an account or Crossword+; see plus.js for when it shows
-  fill($('done-plus'), plusEligible() ? plusNudge() : null);
+  fill($('done-plus'), plusEligible() ? plusNudge() : null,
+    !pz.deck && /^\d{4}-\d{2}-\d{2}-/.test(pz.id) ? boardInvite({ open: openBoardSettings, cls: { line: 'cw-done-nudge', link: 'btn-link cw-nudge-go' } }) : null);
   clearInterval(nextTimer);
   nextTimer = setInterval(() => { const el = $('cw-next'); if (!el || $('done').hidden) { clearInterval(nextTimer); return; } el.textContent = t('nextIn', { time: untilMidnight() }); }, 1000);
   $('done').hidden = false;
@@ -1094,6 +1111,13 @@ function celebrate(assisted) {
 // The result as a small grid of squares, like Wordle's: how it went, never the answers.
 // 🟩 right first time, 🟧 right after Check marked it wrong, 🟨 revealed, ⬛ black square
 // (⬜ for the empty squares of kanji and deck puzzles, which have no black squares).
+// From the solved screen's invite: Settings, at the leaderboard section
+function openBoardSettings() {
+  $('done').hidden = true;
+  $('btn-settings').click();
+  setTimeout(() => $('board-set').scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 60);
+}
+
 function shareText() {
   const free = pz.mode === 'kanji' || pz.deck;
   const rows = [];
