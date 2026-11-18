@@ -547,8 +547,11 @@ html.cw-lock, html.cw-lock body { overflow: hidden; }
 /* Ads (scripts/crossword/ads.js): between puzzles only, labelled, never for Crossword+ members */
 .cw-ad { max-width: 728px; margin-inline: auto; }
 .cw-ad-label { margin: 0 0 6px; font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; color: var(--muted); }
-.cw-ad-space { min-height: 100px; }
-.cw-ad-space:has(.cw-ad-preview) { display: grid; place-items: center; border: 1px dashed var(--rule-strong); border-radius: 6px; }
+.cw-ad-space:has(.cw-ad-preview) { min-height: 100px; display: grid; place-items: center; border: 1px dashed var(--rule-strong); border-radius: 6px; }
+/* At most a medium rectangle (300×250) tall, on phones and computers alike */
+.cw-ad-unit { width: 100%; height: 250px; }
+/* No ad to show (AdSense marks the unit "unfilled"): hide the whole slot, label and link too */
+.cw-ad:has(ins[data-ad-status="unfilled"]) { display: none; }
 .cw-ad-preview { margin: 0; padding: 12px; font-size: 13px; color: var(--muted); text-align: center; }
 .cw-ad-foot { margin: 6px 0 0; text-align: right; }
 .cw-ad-remove { font-size: 12.5px; color: var(--plus-ink); }
