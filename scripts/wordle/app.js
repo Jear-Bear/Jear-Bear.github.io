@@ -547,7 +547,9 @@ function reportBoard() {
   if (game.mode !== 'daily' || game.board || !signedIn()) return;
   const [, date, level, len] = game.key.split(':');
   const done = game;
-  sendResult({ game: 'wordle', puzzleId: `wordle-${date}-${level}-${len}`, guesses: game.guesses.length, hints: game.usedHints ?? game.hints ?? 0, won: Boolean(game.won), word: game.guesses[game.guesses.length - 1] })
+  // pattern: each guess's colors for the post's picture (c right spot, p elsewhere, n one dakuten off, a not in it); no kana
+  const pattern = game.guesses.map((g) => score(g, game.answer).map((m) => ({ correct: 'c', present: 'p', close: 'n', absent: 'a' })[m]).join(''));
+  sendResult({ game: 'wordle', puzzleId: `wordle-${date}-${level}-${len}`, guesses: game.guesses.length, hints: game.usedHints ?? game.hints ?? 0, won: Boolean(game.won), word: game.guesses[game.guesses.length - 1], pattern })
     .then((r) => { if (r && r.ok) { done.board = 1; save(); } });
 }
 // From the result's invite: Settings, at the leaderboard section

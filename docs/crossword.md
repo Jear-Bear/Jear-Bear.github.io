@@ -100,19 +100,47 @@ deletes its profile and results.
 The fastest are ranked with clean solves (no reveals) ahead of ones with reveals, then by
 time, then by who finished first. A season is a calendar month, totalled across every game.
 
-**The post.** At 9:05 Chicago time it posts yesterday's (Chicago date) results:
+**The post.** At 9:05 Chicago time it posts yesterday's (Chicago date) results, laid out
+like the Wordle app's group summary:
 
 ```
-Daily results for Wed, Nov 18: 12 players, 31 solves
-[Crossword · kana]   Beginner mini: 🥇 name 2:36 ✨  🥈 …  🥉 …   (✨ = no reveals)
-[Crossword · kanji]  …
+**Your group is on a 22 day crossword streak! 🔥**
+**Your group is on a 5 day Wordle streak! 🔥**
+Daily results for Wed, Nov 18 · 12 players, 31 solves
+[Crossword · kana]  Beginner mini: 🥇 name 2:36 ✨ 👑  🥈 name 3:10  🥉 name 3:42
+                    +4 more finished
+[Kana Wordle]       Beginner · 4 kana:  👑 2/8: name, name · 3/8: name · X/8: name
+[picture]
 ```
+
+- **Group streak:** one per game, days in a row (up to the day posted) with at least one
+  result from someone on the leaderboard.
+- **Crossword:** per puzzle, the top three with medals and times (✨ no reveals), then
+  "+N more finished". The day's fastest solve gets 👑.
+- **Kana Wordle:** a block per daily (level and length), players grouped by score, best first
+  (👑), losses last as X/8; 💡 used a hint. (Kana Wordle allows 8 guesses, so it's /8.)
+- **The picture** (`board-image.js`): a dark card per game ("Kana Wordle, Nov 17"), a tile
+  per player per puzzle, 8 to a row: their Discord avatar if their account has Discord
+  linked, otherwise a circle with their initial in a color picked from their name; the name;
+  for Wordle their colored squares (never the kana: results only store each guess's colors,
+  `game_results.pattern`), for the crossword their time and ★ for no reveals. Drawn with
+  satori 0.12 and resvg (both WebAssembly) and a Noto Sans JP subset (`assets/`, SIL Open
+  Font License, `assets/OFL.txt`); kanji in a name are fetched from Google Fonts for just
+  those characters. About 190 KB for 18 players.
+- **Order of sending:** the text goes out first, then the picture is attached by editing that
+  message. If the picture can't be drawn or attached, the post stays as text and the next cron
+  run (an hour later) tries the picture again.
+- **Cloudflare's free plan:** a cron run gets 10 ms of CPU, and drawing the picture takes
+  far more (roughly half a second locally). Cloudflare allows occasional overruns, but if the
+  run is stopped the post stays text-only (that's why the text goes first). Workers Paid
+  ($5/month) allows 30 seconds a run and makes the picture reliable.
 
 Puzzles nobody finished are left out, and a day nobody played gets no post. Mondays add
 **Last week's points** (top 10, Monday to Sunday), and the 1st adds **Season winners**
 (last month's top 3).
-Each post is recorded in `discord_posts`, so it's never sent twice. If Discord answers with
-an error, it's logged and not recorded, and the next cron run an hour later tries again.
+Each post is recorded in `discord_posts` (with Discord's message ID, and when its picture was
+added), so it's never sent twice. If Discord answers with an error, it's logged and not
+recorded, and the next cron run an hour later tries again.
 
 **Turning it on.** In Discord: Server Settings → Integrations → Webhooks → New Webhook,
 pick the results channel, Copy Webhook URL. In GitHub: add it as the secret
@@ -127,7 +155,7 @@ that, change those two crons as well (Cloudflare's free plan allows 5 cron trigg
 
 **Checking a post first.** `GET /api/board/preview?day=YYYY-MM-DD` on the Worker, with the
 Sponsor desk's sign-in token, returns the message JSON exactly as it would be sent (nothing
-is sent or saved). Without `day`, it's yesterday in Chicago.
+is sent or saved). Without `day`, it's yesterday in Chicago. Add `&format=png` for the picture.
 
 **Adding a game.** Make `workers/sponsor-crm/src/board-<game>.js` exporting one entry and add
 it to `GAMES` in `board.js`:
@@ -136,7 +164,9 @@ it to `GAMES` in `board.js`:
 - `check(body, env)`: validate a result, return `{ puzzleId, day, seconds?, guesses?, hints?, revealed?, checked?, won }` or throw an `HttpError(400, …)`
 - `points(row, streak)`: the points at insert time (`streak`: the current daily streak in that game)
 - `compare(a, b)`: ranks a puzzle's finishers; `podium`: bonus points for the top places, or `null`
-- `embeds({ day, byPuzzle, esc, medal, fmtSeconds })`: the post's embeds for that game
+- `embeds({ day, byPuzzle, name, medal, fmtSeconds })`: the post's embeds for that game (`name(r)`: the player's name, escaped)
+- `cards({ day, byPuzzle, displayName, avatarUrl, dayShort })`: its cards in the picture
+- `streakName`: the game in the group-streak line
 - `streakWonOnly`: count only won games toward the streak
 
 On the page, `scripts/games/board.js` has the Settings section (`mountBoardSettings`), the
