@@ -45,6 +45,8 @@ const t = translator({
     tileEmpty: 'empty', 'mark.correct': 'correct', 'mark.present': 'present', 'mark.close': 'close', 'mark.absent': 'absent',
     'key.daku': 'Add dakuten or handakuten', 'key.del': 'Delete', enter: 'Enter',
     short: 'Not enough kana', notWord: 'Not in the word list',
+    'meta.title': 'Japanese Wordle: Free Daily Kana Wordle (JLPT N5 to N1) · Jared P.',
+    'meta.desc': 'Japanese Wordle in hiragana, free every day. Guess the hidden 4- or 5-kana word in 8 tries at JLPT N5–N4, N3–N2 or N1 level, with a theme and hints, plus unlimited practice. Type in romaji, no account needed.',
     imeKanji: 'Only kana count. Press Enter instead of converting to kanji.', newDay: 'A new day, a new word.',
     hardSquare: 'Square {n} must be {ch}', hardContain: 'Guess must contain {ch}', hardLate: 'Change hard mode before your first guess.',
     played: 'Played', winPct: 'Win %', cleanPct: 'No-hint win %', streak: 'Streak',
@@ -80,6 +82,8 @@ const t = translator({
     tileEmpty: '空き', 'mark.correct': '正解', 'mark.present': '別の位置', 'mark.close': '濁点違い', 'mark.absent': 'なし',
     'key.daku': '濁点・半濁点をつける', 'key.del': '消す', enter: '決定',
     short: 'かなが足りません', notWord: '単語リストにありません',
+    'meta.title': '日本語Wordle：無料で毎日遊べるかなWordle（JLPT N5〜N1）· Jared P.',
+    'meta.desc': 'ひらがなで遊ぶ日本語版Wordle。4文字・5文字の単語を8回以内に当てよう。JLPT N5〜N4・N3〜N2・N1の3レベル、テーマとヒント付き、練習モードは何回でも。ローマ字で入力でき、アカウントは不要です。',
     imeKanji: 'かなだけ入力できます。漢字に変換せず、そのまま確定してください。', newDay: '日付が変わりました。新しい単語です。',
     hardSquare: '{n}マス目は「{ch}」にしてください', hardContain: '「{ch}」を使ってください', hardLate: 'ハードモードは最初の回答の前に切り替えてください。',
     played: 'プレイ', winPct: '勝率', cleanPct: 'ノーヒント勝率', streak: '連勝',
@@ -599,6 +603,7 @@ $('board').addEventListener('click', () => { if (!window.matchMedia('(pointer: c
 document.querySelectorAll('[data-lang-seg] button').forEach((b) => b.addEventListener('click', () => {
   setLang(b.dataset.lang);
   t.apply();
+  setMeta();
   if (!game) return;
   renderTitle();
   renderHints();
@@ -616,5 +621,13 @@ setInterval(() => {
   if (settings.mode === 'daily' && game && (game.done || !game.guesses.length)) { start(); toast(t('newDay')); }
 }, 30000);
 
+// The tab title and description follow the page language (search engines read the English in the HTML)
+function setMeta() {
+  document.title = t('meta.title');
+  const d = document.querySelector('meta[name="description"]');
+  if (d) d.setAttribute('content', t('meta.desc'));
+}
+
 t.apply();
+setMeta();
 start();
