@@ -28,7 +28,7 @@ import { mountBoardSettings, boardInvite, sendResult } from '../games/board.js?v
 
 const $ = (id) => document.getElementById(id);
 // Set by the Discord Activity's page before it loads this one (scripts/activity/crossword.js):
-// { name, finished(result) }. Inside it, only the daily puzzles: no Crossword+ (no deck, no
+// { name, mode, finished(result) }. Inside it, only the daily puzzles in that mode: no Crossword+ (no deck, no
 // past days beyond yesterday, no plans or nudges), no ads, no funnel counts. Null on the website.
 const ACTIVITY = window.jdActivity || null;
 // The Activity has no My deck: this stands in for deck.js's controller
@@ -234,7 +234,8 @@ async function init() {
   t.apply();
   setMeta();
   trackSite('visit');
-  if (ACTIVITY && settings.mode === 'deck') settings.mode = 'kana';
+  // Each crossword Activity is one mode (Kana Crossword, Kanji Crossword), and never My deck
+  if (ACTIVITY) settings.mode = ACTIVITY.mode || (settings.mode === 'deck' ? 'kana' : settings.mode);
   deck = ACTIVITY ? NO_DECK : mountDeck({ root: $('deck'), play: (p) => { settings.mode = 'deck'; save(); openPuzzle(p); $('play').scrollIntoView({ block: 'start', behavior: 'smooth' }); } });
   // Signed in: progress, stats and deck puzzles follow the account between devices (sync.js)
   initSync({

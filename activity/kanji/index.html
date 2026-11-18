@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-surface="activity">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Kanji Crossword</title>
+  <!--
+    The Daily Kana Crossword in kanji mode as its own Discord Activity (scripts/activity/kanji.js,
+    docs/discord-activity.md). Discord serves this page through its proxy, so everything below
+    loads through the URL Mappings: <base> points the game's relative paths at /.proxy/site
+    (www.jareddesu.com). Only the daily puzzles: no ads, analytics, web fonts, sponsor cards,
+    Crossword+, checkout or upgrade prompts, and no scripts from anywhere else.
+  -->
+  <base href="/.proxy/site/tools/crossword/">
+  <link rel="stylesheet" href="../../styles/base.css?v=4">
+  <link rel="stylesheet" href="../../styles/crossword.css?v=27">
+  <link rel="stylesheet" href="../../styles/activity.css?v=3">
+</head>
+<body data-page="crossword">
+  <main id="main">
+    <div class="container cw act">
+      <p class="act-outside" id="act-outside">The Kanji Crossword runs here as a Discord Activity: open it from a voice channel in Discord. To play in your browser, go to <a href="https://www.jareddesu.com/tools/crossword/">jareddesu.com/tools/crossword</a>.</p>
+      <p class="act-status" id="act-status" role="status" aria-live="polite"></p>
+      <div class="cw-top">
+      <div class="cw-top-end">
+        <div class="cw-account" id="account-bar" hidden></div>
+        <button type="button" class="cw-icon cw-gear" id="btn-settings" aria-label="Settings" data-t-aria="settings" aria-haspopup="dialog">⚙</button>
+      </div>
+      </div>
+
+      <div class="cw-bar" role="toolbar" aria-label="Puzzle options" data-t-aria="bar">
+        <div class="cw-seg" role="radiogroup" aria-label="Size" data-t-aria="sizeGroup" id="size-seg">
+          <button type="button" role="radio" data-size="mini"><span data-t="size.mini">Mini</span> <span class="cw-seg-sub">5×5</span></button>
+          <button type="button" role="radio" data-size="daily"><span data-t="size.daily">Daily</span> <span class="cw-seg-sub">9×9</span></button>
+        </div>
+        <label class="cw-select-wrap" id="level-wrap">
+          <span class="cw-label" data-t="level">Level</span>
+          <select id="level" class="cw-select">
+            <option value="beginner" data-t="opt.beginner">Beginner · N5–N4</option>
+            <option value="intermediate" data-t="opt.intermediate">Intermediate · N3–N2</option>
+            <option value="advanced" data-t="opt.advanced">Advanced · N1+</option>
+            <option value="mixed" data-t="opt.mixed">Mixed · all levels, Japanese clues</option>
+          </select>
+        </label>
+        <div class="cw-date" id="date-nav">
+          <button type="button" class="cw-icon" id="date-prev" aria-label="Previous puzzle" data-t-aria="prev">‹</button>
+          <button type="button" class="cw-date-btn" id="date-label" aria-haspopup="dialog" title="Past puzzles: calendar or list">Today</button>
+          <button type="button" class="cw-icon" id="date-next" aria-label="Next puzzle" data-t-aria="next">›</button>
+        </div>
+      </div>
+
+      <section class="cw-deck" id="deck" hidden></section>
+
+      <p class="cw-streak" id="streak" hidden></p>
+      <p class="cw-theme" id="theme" hidden><span class="cw-theme-k" id="theme-k">Today’s theme</span><strong class="cw-theme-name" id="theme-name"></strong><span class="cw-theme-ja" id="theme-ja" lang="ja"></span></p>
+
+      <div class="cw-play" id="play">
+        <div class="cw-board-col">
+          <div class="cw-tools">
+            <button type="button" class="cw-timer" id="timer" aria-label="Pause" data-t-aria="pause">0:00</button>
+            <div class="cw-menus" id="assist">
+              <details class="cw-menu" id="menu-check"><summary data-t="check">Check</summary>
+                <div class="cw-menu-list"><button type="button" data-check="cell" data-t="square">Square</button><button type="button" data-check="word" data-t="word">Word</button><button type="button" data-check="puzzle" data-t="puzzle">Puzzle</button><label class="cw-auto"><input type="checkbox" id="autocheck"> <span data-t="autocheck">Autocheck</span></label></div>
+              </details>
+              <details class="cw-menu" id="menu-reveal"><summary data-t="reveal">Reveal</summary>
+                <div class="cw-menu-list"><button type="button" data-reveal="cell" data-t="square">Square</button><button type="button" data-reveal="word" data-t="word">Word</button><button type="button" data-reveal="puzzle" data-t="puzzle">Puzzle</button><button type="button" data-reveal="clear" class="cw-danger" data-t="clear">Clear puzzle</button></div>
+              </details>
+            </div>
+          </div>
+          <div class="cw-board-wrap">
+            <div class="cw-grid" id="grid" role="grid" aria-label="Crossword grid" data-t-aria="grid"></div>
+            <div class="cw-paused" id="paused" hidden><p data-t="paused">Paused</p><button type="button" class="btn btn-primary" id="resume" data-t="resume">Resume</button></div>
+          </div>
+          <div class="cw-clue-bar" id="clue-bar">
+            <button type="button" class="cw-icon" id="clue-prev" aria-label="Previous clue" data-t-aria="prevClue">‹</button>
+            <button type="button" class="cw-clue-text" id="clue-text" aria-live="polite"></button>
+            <button type="button" class="cw-icon" id="clue-next" aria-label="Next clue" data-t-aria="nextClue">›</button>
+          </div>
+          <div class="cw-keys" id="keys" aria-label="Kana keyboard" data-t-aria="keys"></div>
+          <input class="cw-ime" id="ime" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Type answers (romaji or kana)" data-t-aria="ime">
+        </div>
+        <div class="cw-clues" id="clues">
+          <section class="cw-clue-list"><h2><span data-ui-only="en">Across </span><span lang="ja">ヨコのカギ</span></h2><ol id="clues-across"></ol></section>
+          <section class="cw-clue-list"><h2><span data-ui-only="en">Down </span><span lang="ja">タテのカギ</span></h2><ol id="clues-down"></ol></section>
+        </div>
+      </div>
+      <p class="cw-empty" id="empty" hidden></p>
+
+      <section class="sec cw-section" id="words-sec" hidden>
+        <p class="sec-mark"><span class="sec-num" lang="ja">語</span><span class="sec-label">Words in this puzzle / <span lang="ja"><ruby>単語<rt>たんご</rt></ruby></span></span></p>
+        <div id="words"></div>
+      </section>
+
+      <section class="act-channel" id="act-channel" aria-live="polite"></section>
+      <p class="act-note" id="act-note"></p>
+      <p class="cw-stats" id="stats" hidden></p>
+      <section id="plus-sec" hidden></section>
+    </div>
+  </main>
+
+  <div class="cw-overlay" id="done" hidden>
+    <div class="cw-sheet cw-done-sheet" role="dialog" aria-modal="true" aria-labelledby="done-title">
+      <p class="eyebrow" data-t="solved">solved</p>
+      <h2 class="cw-sheet-title" id="done-title" lang="ja">お見事！</h2>
+      <div id="done-body"></div>
+      <div id="done-plus"></div>
+      <div class="cw-sheet-actions">
+        <button type="button" class="btn btn-primary" id="done-share" data-t="shareBtn">Share</button>
+        <button type="button" class="btn" id="done-copy" data-t="share">Copy result</button>
+        <button type="button" class="btn-link" id="done-close" data-t="doneClose">Keep looking</button>
+      </div>
+    </div>
+  </div>
+  <div class="cw-overlay" id="settings" hidden>
+    <div class="cw-sheet cw-settings" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <div class="cw-set-top">
+        <h2 class="cw-sheet-title" id="settings-title" data-t="set.title">Settings</h2>
+        <div class="cw-seg" role="radiogroup" aria-label="Language" data-t-aria="set.lang" data-lang-seg>
+          <button type="button" role="radio" data-lang="en">English</button>
+          <button type="button" role="radio" data-lang="ja" lang="ja">日本語</button>
+        </div>
+        <button type="button" class="cw-set-x" id="settings-close" aria-label="Close" data-t-aria="close">×</button>
+      </div>
+      <div class="cw-set-grid">
+        <section class="cw-set-col">
+          <h3 class="cw-set-head" data-t="set.display">Display</h3>
+          <label class="cw-toggle"><input type="checkbox" id="opt-romaji"> <span><strong data-t="set.romaji">Show romaji</strong> <span data-t="set.romaji.d">under the kana keys.</span></span></label>
+          <label class="cw-toggle"><input type="checkbox" id="opt-noassist"> <span><strong data-t="set.assist">Hide Check and Reveal</strong> <span data-t="set.assist.d">for a solve with no help.</span></span></label>
+          <label class="cw-toggle"><input type="checkbox" id="opt-words"> <span><strong data-t="set.words">Show answers and meanings</strong> <span data-t="set.words.d">under the puzzle after you solve it.</span></span></label>
+          <label class="cw-toggle"><input type="checkbox" id="opt-showTimer"> <span><strong data-t="set.timer">Show the timer</strong> <span data-t="set.timer.d">(it keeps counting either way).</span></span></label>
+        </section>
+        <section class="cw-set-col">
+          <h3 class="cw-set-head" data-t="set.clues">Clues</h3>
+          <fieldset class="cw-set-radio">
+        <legend data-t="set.clueLang">Clue language</legend>
+        <label><input type="radio" name="opt-clueLang" value="auto"> <span data-t="set.clueLang.auto">Auto (English; Japanese for Mixed)</span></label>
+        <label><input type="radio" name="opt-clueLang" value="en"> <span data-t="set.clueLang.en">English</span></label>
+        <label><input type="radio" name="opt-clueLang" value="ja"> <span data-t="set.clueLang.ja">Japanese</span></label>
+      </fieldset>
+          <fieldset class="cw-set-radio">
+        <legend data-t="set.clueStyle">Clue style</legend>
+        <label><input type="radio" name="opt-clueStyle" value="fun"> <span data-t="set.clueStyle.fun">Fun hints, like a real crossword</span></label>
+        <label><input type="radio" name="opt-clueStyle" value="def"> <span data-t="set.clueStyle.def">Plain definitions</span></label>
+      </fieldset>
+          <label class="cw-toggle"><input type="checkbox" id="opt-readings"> <span><strong data-t="set.readings">Show readings in kanji clues</strong> <span data-t="set.readings.d">an easier kanji puzzle (Mixed always shows them).</span></span></label>
+        </section>
+        <section class="cw-set-col">
+          <h3 class="cw-set-head" data-t="set.typing">Typing</h3>
+          <fieldset class="cw-set-radio">
+        <legend data-t="set.arrows">After an arrow key changes direction</legend>
+        <label><input type="radio" name="opt-arrowMove" value="0"> <span data-t="set.arrows.stay">Stay in the same square</span></label>
+        <label><input type="radio" name="opt-arrowMove" value="1"> <span data-t="set.arrows.move">Move in the arrow’s direction</span></label>
+      </fieldset>
+          <fieldset class="cw-set-radio">
+        <legend data-t="set.space">The spacebar should</legend>
+        <label><input type="radio" name="opt-spaceClear" value="0"> <span data-t="set.space.toggle">Switch between Across and Down</span></label>
+        <label><input type="radio" name="opt-spaceClear" value="1"> <span data-t="set.space.clear">Clear the square and move on</span></label>
+      </fieldset>
+          <label class="cw-toggle"><input type="checkbox" id="opt-backInto"> <span><strong data-t="set.backInto">Backspace into the previous word</strong> <span data-t="set.backInto.d">from the first square of a word.</span></span></label>
+          <label class="cw-toggle"><input type="checkbox" id="opt-skipFilled"> <span><strong data-t="set.skip">Skip over filled squares</strong> <span data-t="set.skip.d">inside a word.</span></span></label>
+          <label class="cw-toggle"><input type="checkbox" id="opt-jumpBack"> <span><strong data-t="set.jumpBack">At the end of a word, jump back</strong> <span data-t="set.jumpBack.d">to its first empty square.</span></span></label>
+          <label class="cw-toggle"><input type="checkbox" id="opt-nextClue"> <span><strong data-t="set.nextClue">At the end of a word, go to the next clue</strong> <span data-t="set.nextClue.d">(when not jumping back).</span></span></label>
+        </section>
+      </div>
+      <!-- The Discord leaderboard (scripts/games/board.js): signed-in players only -->
+      <section class="cw-set-board" id="board-set" hidden></section>
+    </div>
+  </div>
+  <div class="cw-toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+
+  <script type="module" src="../../scripts/activity/kanji.js?v=1"></script>
+</body>
+</html>

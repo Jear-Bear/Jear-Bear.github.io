@@ -18,6 +18,10 @@ DISCORD_POST_MINUTE = "5"
 # Discord sign-in and the Kana Wordle Activity (discord.js): the Discord app's client ID (public).
 # Empty: off. Needs the DISCORD_CLIENT_SECRET secret too. docs/discord-activity.md
 DISCORD_CLIENT_ID = "1572702904320659506"
+# The crossword Activities: one Discord app each (public IDs), each with its own secret
+# (DISCORD_KANA_CROSSWORD_CLIENT_SECRET, DISCORD_KANJI_CROSSWORD_CLIENT_SECRET). discord.js apps()
+DISCORD_KANA_CROSSWORD_CLIENT_ID = "1572762074424148198"
+DISCORD_KANJI_CROSSWORD_CLIENT_ID = "1572762280435650791"
 
 # The fonts for the daily post's picture (board-image.js) come in as ArrayBuffers
 [[rules]]

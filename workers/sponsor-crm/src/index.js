@@ -77,7 +77,7 @@ import { plusInfo, plusCheckout, plusSync, plusPortal, stripeWebhook, stripeSetu
 import { publicKey, bonusBacklog, openSealed } from './sealed.js';
 import { pullTraffic, loadTraffic, trafficConfigured } from './traffic.js';
 import { getProfile, putProfile, postResult, previewPost, dailyPost } from './board.js';
-import { route as discordRoute, activityOrigin } from './discord.js';
+import { route as discordRoute, activityOrigins } from './discord.js';
 
 const TYPES = {
   companies: 'companies', contacts: 'contacts', deals: 'deals', payments: 'payments',
@@ -91,7 +91,7 @@ function allowedOrigin(env, origin) {
   const list = String(env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean);
   if (list.includes(origin)) return origin;
   if (env.ALLOW_LOCALHOST === 'true' && LOCAL_ORIGIN.test(origin)) return origin;
-  if (origin === activityOrigin(env)) return origin;       // the Discord Activity, through Discord's proxy
+  if (activityOrigins(env).includes(origin)) return origin;       // a Discord Activity, through Discord's proxy
   return null;
 }
 

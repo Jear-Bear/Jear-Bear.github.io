@@ -53,6 +53,8 @@ jobs:
       DISCORD_CROSSWORD_WEBHOOK: ${{ secrets.DISCORD_CROSSWORD_WEBHOOK }}   # optional: the leaderboard's daily results post (a Discord channel webhook URL)
       DISCORD_WORDLE_WEBHOOK: ${{ secrets.DISCORD_WORDLE_WEBHOOK }}         # optional: Kana Wordle's own results post, in its own channel (else it's in the crossword one)
       DISCORD_CLIENT_SECRET: ${{ secrets.DISCORD_CLIENT_SECRET }}           # optional: Discord sign-in and the Wordle Activity (with DISCORD_CLIENT_ID in wrangler.toml)
+      DISCORD_KANA_CROSSWORD_CLIENT_SECRET: ${{ secrets.DISCORD_KANA_CROSSWORD_CLIENT_SECRET }}     # optional: the Kana Crossword Activity's Discord app
+      DISCORD_KANJI_CROSSWORD_CLIENT_SECRET: ${{ secrets.DISCORD_KANJI_CROSSWORD_CLIENT_SECRET }}   # optional: the Kanji Crossword Activity's Discord app
     steps:
       - name: Check out
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -105,7 +107,7 @@ jobs:
           printf '%s' "$CRM_SESSION_KEY" | npx wrangler secret put CRM_SESSION_KEY
           if [ -n "$YT_API_KEY" ]; then printf '%s' "$YT_API_KEY" | npx wrangler secret put YT_API_KEY; fi
           if [ -n "$CRM_INGEST_KEY" ]; then printf '%s' "$CRM_INGEST_KEY" | npx wrangler secret put CRM_INGEST_KEY; fi
-          for name in STRIPE_SECRET_KEY STRIPE_PUBLISHABLE_KEY RESEND_API_KEY GOOGLE_CLIENT_ID LOGIN_EMAIL_FROM STRIPE_AUTOMATIC_TAX DISCORD_CROSSWORD_WEBHOOK DISCORD_WORDLE_WEBHOOK DISCORD_CLIENT_SECRET; do
+          for name in STRIPE_SECRET_KEY STRIPE_PUBLISHABLE_KEY RESEND_API_KEY GOOGLE_CLIENT_ID LOGIN_EMAIL_FROM STRIPE_AUTOMATIC_TAX DISCORD_CROSSWORD_WEBHOOK DISCORD_WORDLE_WEBHOOK DISCORD_CLIENT_SECRET DISCORD_KANA_CROSSWORD_CLIENT_SECRET DISCORD_KANJI_CROSSWORD_CLIENT_SECRET; do
             if [ -n "${!name}" ]; then printf '%s' "${!name}" | npx wrangler secret put "$name"; fi
           done
           if [ -n "$CF_ANALYTICS_TOKEN" ]; then

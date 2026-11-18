@@ -15,19 +15,14 @@
   <base href="/.proxy/site/tools/crossword/">
   <link rel="stylesheet" href="../../styles/base.css?v=4">
   <link rel="stylesheet" href="../../styles/crossword.css?v=27">
-  <link rel="stylesheet" href="../../styles/activity.css?v=2">
+  <link rel="stylesheet" href="../../styles/activity.css?v=3">
 </head>
 <body data-page="crossword">
   <main id="main">
     <div class="container cw act">
       <p class="act-outside" id="act-outside">The Daily Kana Crossword runs here as a Discord Activity: open it from a voice channel in Discord. To play in your browser, go to <a href="https://www.jareddesu.com/tools/crossword/">jareddesu.com/tools/crossword</a>.</p>
-      <p class="act-top"><a class="act-games" id="act-games" hidden>← Games</a></p>
       <p class="act-status" id="act-status" role="status" aria-live="polite"></p>
       <div class="cw-top">
-      <div class="cw-seg cw-modes" role="radiogroup" aria-label="Mode" data-t-aria="modeGroup" id="mode-seg">
-        <button type="button" role="radio" data-mode="kana"><span lang="ja">かな</span> <span class="cw-seg-sub" data-ui-only="en">Kana</span></button>
-        <button type="button" role="radio" data-mode="kanji"><span lang="ja">漢字</span> <span class="cw-seg-sub" data-ui-only="en">Kanji</span></button>
-      </div>
       <div class="cw-top-end">
         <div class="cw-account" id="account-bar" hidden></div>
         <button type="button" class="cw-icon cw-gear" id="btn-settings" aria-label="Settings" data-t-aria="settings" aria-haspopup="dialog">⚙</button>
@@ -175,6 +170,6 @@
   <div class="cw-toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 
-  <script type="module" src="../../scripts/activity/crossword.js?v=1"></script>
+  <script type="module" src="../../scripts/activity/crossword.js?v=2"></script>
 </body>
 </html>

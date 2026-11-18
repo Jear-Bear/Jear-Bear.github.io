@@ -1,5 +1,5 @@
-// crossword.js — the Daily Kana Crossword as a Discord Activity (activity/crossword/). The
-// shared part is activity.js; docs/discord-activity.md.
-import { startActivity } from './activity.js?v=1';
+// crossword.js — the Kana Crossword Activity (activity/crossword/): the Daily Kana Crossword in
+// kana. The shared part is activity.js; docs/discord-activity.md.
+import { startActivity } from './activity.js?v=2';
 
-startActivity({ game: 'crossword', load: () => import('../crossword/app.js?v=39') });
+startActivity({ game: 'crossword', mode: 'kana', load: () => import('../crossword/app.js?v=39') });

@@ -1,10 +1,11 @@
-// activity.js — what the Discord Activity's games share (activity/wordle/, activity/crossword/;
-// docs/discord-activity.md): Discord sign-in, the channel's "Today in this channel" list and
-// the note on linking. Each game's page script calls startActivity() with its game.
+// activity.js — what the Discord Activities share (activity/wordle/, activity/crossword/,
+// activity/kanji/; docs/discord-activity.md): Discord sign-in, the channel's "Today in this
+// channel" list and the note on linking. Each game's page script calls startActivity().
 //
-// Discord loads the Activity in its own frame, at https://<client id>.discordsays.com, and every
-// request goes through Discord's proxy (the URL Mappings in the Developer Portal):
-//   /            → www.jareddesu.com/activity           (the game picker, activity/index.html)
+// Each Activity is its own Discord app (Kana Wordle, Kana Crossword, Kanji Crossword). Discord
+// loads it in its own frame, at https://<that app's client id>.discordsays.com, and every
+// request goes through Discord's proxy (each app's URL Mappings in the Developer Portal):
+//   /            → www.jareddesu.com/activity/<game>    (the game's page)
 //   /site        → www.jareddesu.com                    (the games' scripts, styles and data)
 //   /api         → sponsor-crm.jared-65b.workers.dev     (sign-in, results)
 // Each game's page has <base href="/.proxy/site/tools/<game>/">, so the game's own relative
@@ -109,7 +110,7 @@ function drawChannel() {
 // --- sign-in -----------------------------------------------------------------------------------
 async function signIn(clientId) {
   const { code } = await sdk.commands.authorize({ client_id: clientId, response_type: 'code', state: '', prompt: 'none', scope: ['identify'] });
-  const r = await call('activity/token', { code });
+  const r = await call('activity/token', { code, clientId });
   await sdk.commands.authenticate({ access_token: r.access_token });
   activityToken = r.activity;
   me = { id: r.discord.id, username: r.discord.username, avatar: r.discord.avatar };
@@ -141,6 +142,7 @@ const say = (text) => { const el = $('act-status'); if (el) el.textContent = tex
 const pending = [];
 const activity = {
   name: 'Discord',
+  mode: null,
   finished(result) {
     if (!activityToken || !sdk || !sdk.channelId) { pending.push(result); return; }
     call('activity/finish', { ...result, game, channelId: sdk.channelId }).then(loadFinishes).catch(() => {});
@@ -150,11 +152,14 @@ const activity = {
 async function connect() {
   say('Connecting to Discord…');
   const cfg = await within(15000, fetch(`${API}/discord/config`).then((r) => r.json()), 'Reaching the server');
-  if (!cfg.clientId) { say('Discord sign-in isn’t set up yet: your results stay on this device.'); return; }
-  sdk = new DiscordSDK(cfg.clientId);
+  // This Activity's app: the client ID is the first part of Discord's address for it
+  const host = /^(\d{5,25})\.discordsays\.com$/.exec(location.hostname);
+  const clientId = host ? host[1] : cfg.clientId;
+  if (!clientId || !(cfg.activities || [cfg.clientId]).includes(clientId)) { say('Discord sign-in isn’t set up for this Activity yet: your results stay on this device.'); return; }
+  sdk = new DiscordSDK(clientId);
   await within(15000, sdk.ready(), 'Discord');
   say('Signing in with Discord…');
-  const r = await within(120000, signIn(cfg.clientId), 'Discord sign-in');
+  const r = await within(120000, signIn(clientId), 'Discord sign-in');
   say('');
   activity.name = nameOf(me);
   // A linked account: the game picks up its session (sync, leaderboard) through account.js
@@ -170,16 +175,15 @@ async function connect() {
   setInterval(loadFinishes, 30000);
 }
 
-// game: 'wordle' or 'crossword'; load: imports the game's own app.js (after jdActivity is set)
-export async function startActivity({ game: which, load }) {
+// game: 'wordle' or 'crossword'; mode: the crossword's ('kana' or 'kanji'); load: imports the
+// game's own app.js (after jdActivity is set)
+export async function startActivity({ game: which, mode = null, load }) {
   game = which;
+  activity.mode = mode;
   const inDiscord = new URLSearchParams(location.search).has('frame_id');
   if (!inDiscord) return;        // the page outside Discord just says to open it there
   $('act-outside').hidden = true;
   document.documentElement.dataset.surface = 'activity';
-  // Back to the game picker (the Activity's root), keeping Discord's query for the SDK
-  const games = $('act-games');
-  if (games) { games.href = `/${location.search}`; games.hidden = false; }
   patchUrlMappings([{ prefix: '/.proxy/api', target: WORKER }]);
   // The SDK's fetch resolves relative URLs against the frame's root, not <base>: resolve
   // them first, so the game's own fetches (../../data/…) keep going through /site

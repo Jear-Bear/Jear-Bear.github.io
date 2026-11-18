@@ -2,8 +2,18 @@
 
 Players can link a Discord account to their site account. Linked players show up with their
 Discord name and avatar on the leaderboard, can sign in with Discord, and can play Kana
-Wordle and the Daily Kana Crossword inside Discord as an **Activity** (launched from a voice
-channel's 🚀 button; a Discord app has one Activity, so it opens on a game picker).
+Wordle and the daily crossword inside Discord as **Activities** (launched from a voice
+channel's 🚀 button). A Discord app has one Activity, so there are three apps:
+
+| Discord app | Client ID | Opens | Secret (GitHub) |
+|---|---|---|---|
+| Kana Wordle | `1572702904320659506` (`DISCORD_CLIENT_ID`) | `activity/wordle/` | `DISCORD_CLIENT_SECRET` |
+| Kana Crossword | `1572762074424148198` (`DISCORD_KANA_CROSSWORD_CLIENT_ID`) | `activity/crossword/`, kana mode | `DISCORD_KANA_CROSSWORD_CLIENT_SECRET` |
+| Kanji Crossword | `1572762280435650791` (`DISCORD_KANJI_CROSSWORD_CLIENT_ID`) | `activity/kanji/`, kanji mode | `DISCORD_KANJI_CROSSWORD_CLIENT_SECRET` |
+
+The IDs are in `wrangler.toml`. Kana Wordle's app is also the one the website links accounts
+and signs in with. A Discord account has the same ID in every app, so one link covers all
+three. An Activity works once its app's secret is set (discord.js `apps`).
 
 | Where | What |
 |---|---|
@@ -13,8 +23,7 @@ channel's 🚀 button; a Discord app has one Activity, so it opens on a game pic
 | `scripts/games/board.js` | Settings → **Discord account** (Link / Unlink) |
 | `scripts/games/signin.js` | **Continue with Discord** in the sign-in popup |
 | `discord/index.html` | where Discord sends people back (the OAuth2 redirect) |
-| `activity/index.html`, `scripts/activity/pick.js` | the Activity's game picker |
-| `activity/wordle/`, `activity/crossword/`, `scripts/activity/wordle.js`, `crossword.js` | each game's Activity page |
+| `activity/wordle/`, `activity/crossword/`, `activity/kanji/`, `scripts/activity/wordle.js`, `crossword.js`, `kanji.js` | each Activity's page |
 | `scripts/activity/activity.js` | what they share: Discord sign-in, the channel list, the link note |
 | `scripts/activity/discord-sdk.js` | Discord's Embedded App SDK 2.5.0 (MIT), bundled |
 
@@ -43,10 +52,10 @@ channel's 🚀 button; a Discord app has one Activity, so it opens on a game pic
 
 ### The Activity
 
-Discord loads `activity/` (the game picker) in its own frame at
-`https://<client id>.discordsays.com`, and the picker opens `wordle/` or `crossword/` beside
-it, keeping Discord's query (`frame_id`…), which the SDK needs. Every request goes through
-Discord's proxy, using the **URL Mappings** below:
+Discord loads each Activity's page in its own frame at `https://<its client id>.discordsays.com`
+(the page reads its client ID from that address and sends it with its sign-in code, so the
+Worker uses that app's secret). Every request goes through Discord's proxy, using the
+**URL Mappings** below:
 
 - Each game page's `<base href="/.proxy/site/tools/<game>/">` makes the game's own relative
   paths (scripts, styles, word lists, puzzles) load through `/site`.
@@ -68,8 +77,8 @@ What happens when it opens:
    Names and avatars come from the SDK (`getInstanceConnectedParticipants`). "Today" is
    each player's local date. Rows are deleted after two days, and "Remove my results from
    this channel" deletes them at once.
-5. **The crossword in the Activity** plays today's and yesterday's puzzles (kana and kanji,
-   mini and daily, every level). There's no My deck, no older days and no Crossword+ there:
+5. **The crossword Activities** play today's and yesterday's puzzles (mini and daily, every
+   level), Kana Crossword in kana and Kanji Crossword in kanji. There's no My deck, no older days and no Crossword+ there:
    `scripts/crossword/app.js` checks `window.jdActivity` and leaves all of that out, with the
    ads and the funnel counts.
 6. **Nothing else is inside:**
@@ -93,13 +102,15 @@ What happens when it opens:
    `https://jareddesu.com/discord/`. Add `https://staging.jareddesu.com/discord/` and
    `http://localhost:8765/discord/` if you test there.
 4. **Installation:** turn on **User Install** (and Guild Install if you want it on the server).
-5. **Activities → URL Mappings:**
+5. **Activities → URL Mappings** (each app; only the root differs):
 
    | Prefix | Target |
    |---|---|
-   | `/` (root) | `www.jareddesu.com/activity` |
+   | `/` (root) | Kana Wordle: `www.jareddesu.com/activity/wordle` · Kana Crossword: `www.jareddesu.com/activity/crossword` · Kanji Crossword: `www.jareddesu.com/activity/kanji` |
    | `/site` | `www.jareddesu.com` |
    | `/api` | `sponsor-crm.jared-65b.workers.dev` |
+
+   The crossword apps don't need OAuth2 redirects (only the website's sign-in uses them).
 
 6. **Activities → Settings:** **Enable Activities**. This creates the default Entry Point
    command ("Launch"). Pick the supported platforms (web, desktop, iOS, Android).

@@ -1,13 +1,13 @@
 // discord.js — Discord account linking and sign-in (OAuth2, scope "identify" only), and the
 // Discord Activity's sign-in and channel results (Kana Wordle and the Daily Kana Crossword). docs/discord-activity.md.
 //
-//   GET  /public/board/discord/config                  → { clientId } (null while it isn't set up)
+//   GET  /public/board/discord/config                  → { clientId, activities } (null / [] while not set up)
 //   POST /public/board/discord/start  { mode, redirect, back }  → { url } to send the person to
 //        mode 'link' (signed in: link Discord to this account) or 'signin' (an account that has
 //        Discord linked already). redirect: this site's /discord/ page, which Discord returns to.
 //   POST /public/board/discord/finish { code, state }  → { mode, back, token?, user?, discord }
 //   POST /public/board/discord/unlink                   clears the Discord data at once
-//   POST /public/board/activity/token   { code }        the Activity's sign-in (Embedded App SDK)
+//   POST /public/board/activity/token   { code, clientId }  an Activity's sign-in (Embedded App SDK)
 //   POST /public/board/activity/finish  { channelId, game, puzzleId, … }  a daily finished in the Activity
 //   POST /public/board/activity/channel { channelId, day, ids }      who in the channel finished
 //   POST /public/board/activity/forget                  deletes this Discord account's Activity results
@@ -39,8 +39,19 @@ const AVATAR = /^(a_)?[0-9a-f]{20,40}$/;
 
 const api = (env) => env.DISCORD_API_BASE || API;       // override: local tests only
 export const discordOn = (env) => Boolean(env.DISCORD_CLIENT_ID && env.DISCORD_CLIENT_SECRET);
-// The Activity runs at https://<client id>.discordsays.com (Discord's proxy)
-export const activityOrigin = (env) => (env.DISCORD_CLIENT_ID && SNOWFLAKE.test(env.DISCORD_CLIENT_ID) ? `https://${env.DISCORD_CLIENT_ID}.discordsays.com` : null);
+// The Discord apps, one Activity each. The first (DISCORD_CLIENT_ID, Kana Wordle) is also the
+// one the website links accounts and signs in with. A Discord account's ID is the same in
+// every app, so one link covers them all. An app counts once both its ID and secret are set.
+export function apps(env) {
+  return [
+    { id: env.DISCORD_CLIENT_ID, secret: env.DISCORD_CLIENT_SECRET, activity: 'wordle' },
+    { id: env.DISCORD_KANA_CROSSWORD_CLIENT_ID, secret: env.DISCORD_KANA_CROSSWORD_CLIENT_SECRET, activity: 'crossword' },
+    { id: env.DISCORD_KANJI_CROSSWORD_CLIENT_ID, secret: env.DISCORD_KANJI_CROSSWORD_CLIENT_SECRET, activity: 'kanji' },
+  ].filter((a) => a.id && SNOWFLAKE.test(String(a.id)) && a.secret);
+}
+const mainApp = (env) => ({ id: env.DISCORD_CLIENT_ID, secret: env.DISCORD_CLIENT_SECRET });
+// Each Activity runs at https://<its client id>.discordsays.com (Discord's proxy)
+export const activityOrigins = (env) => apps(env).map((a) => `https://${a.id}.discordsays.com`);
 
 async function readBody(request) {
   try { return JSON.parse((await request.text()).slice(0, 8000)) || {}; } catch { return {}; }
@@ -50,9 +61,9 @@ function needOn(env) { if (!discordOn(env)) throw new HttpError(503, 'Discord si
 // --- Discord's API ---------------------------------------------------------------------------
 // A code from Discord → the person's { id, username, avatar }. The access token goes back to
 // the Activity (the SDK needs it) but is never stored here.
-async function exchange(env, code, redirectUri) {
+async function exchange(env, code, redirectUri, app = mainApp(env)) {
   if (!/^[\w-]{10,100}$/.test(code)) throw new HttpError(400, 'Bad Discord code');
-  const form = new URLSearchParams({ client_id: env.DISCORD_CLIENT_ID, client_secret: env.DISCORD_CLIENT_SECRET, grant_type: 'authorization_code', code });
+  const form = new URLSearchParams({ client_id: app.id, client_secret: app.secret, grant_type: 'authorization_code', code });
   if (redirectUri) form.set('redirect_uri', redirectUri);
   const res = await fetch(`${api(env)}/oauth2/token`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: form });
   const tok = await res.json().catch(() => ({}));
@@ -86,7 +97,8 @@ async function link(env, userId, d) {
 }
 
 // --- the website: link, sign in, unlink -----------------------------------------------------------
-export function config(env) { return { clientId: discordOn(env) ? env.DISCORD_CLIENT_ID : null }; }
+// clientId: the website's app (linking, sign-in); activities: every Activity's client ID that's set up
+export function config(env) { return { clientId: discordOn(env) ? env.DISCORD_CLIENT_ID : null, activities: apps(env).map((a) => a.id) }; }
 
 // redirect must be this site's own /discord/ page (the origin the request came from)
 export async function start(request, env, origin) {
@@ -164,11 +176,13 @@ async function activityUser(request, env) {
 
 // The SDK's authorize() code → { access_token (for the SDK's authenticate()), activity token,
 // discord, account (the linked site account's session, or null) }
+// clientId: which app's Activity it is (its code only works with that app's secret)
 export async function activityToken(request, env) {
-  needOn(env);
   await limit(request, env, 'discord-activity', 60);
   const b = await readBody(request);
-  const { accessToken, user: d } = await exchange(env, text(b.code, 200), null);
+  const app = apps(env).find((a) => a.id === String(b.clientId || env.DISCORD_CLIENT_ID));
+  if (!app) throw new HttpError(503, 'This Activity isn’t set up yet');
+  const { accessToken, user: d } = await exchange(env, text(b.code, 200), null, app);
   const exp = Math.floor(Date.now() / 1000) + ACTIVITY_TTL;
   const data = `act.${d.id}.${exp}`;
   const u = await linkedBy(env, d.id);
