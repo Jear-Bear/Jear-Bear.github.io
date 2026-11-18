@@ -168,3 +168,29 @@ html[data-ui="ja"] [data-ui-only="en"], html:not([data-ui="ja"]) [data-ui-only="
 .wd-set-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 0 12px; border-bottom: 1px solid var(--border); }
 .wd-toggle strong { color: var(--ink); font-weight: 600; }
 .wd-tile.is-preview { color: var(--page-ink); text-decoration: underline dotted; text-underline-offset: 0.12em; }
+
+/* The account in the bar, and signing in (scripts/games/signin.js, the crossword's account) */
+.wd-acct { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+.wd-acct-email { max-width: 16ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wd-acct .btn { min-height: 36px; padding: 0 14px; font-size: 13.5px; }
+.wd-signin-sheet p { margin: 0; font-size: 14px; line-height: 1.7; color: var(--ink-soft); }
+.wd-signin-sheet .wd-muted { font-size: 13px; color: var(--muted); }
+.wd-signin-sheet .wd-or { text-align: center; }
+.wd-signin-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.wd-signin-row input[type="email"] { font: 15px var(--font-gothic); padding: 8px 10px; min-height: 42px; border: 1px solid var(--border-strong); background: var(--paper); color: var(--ink); flex: 1 1 200px; min-width: 0; }
+.wd-signin-status { min-height: 1.2em; font-size: 13px; }
+.wd-signin-status.is-error { color: #b3261e; }
+.wd-legal a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+
+/* The Discord leaderboard in Settings, and its invite under a finished daily (scripts/games/board.js) */
+.wd-set-board { margin-top: 6px; }
+.wd-set-head { margin: 10px 0 4px; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.wd-set-board .board-about, .wd-set-board .board-note { margin: 0 0 6px; font-size: 13.5px; line-height: 1.7; color: var(--ink-soft); }
+.wd-set-board .board-about a { color: var(--page-ink, var(--ink)); font-weight: 600; }
+.wd-set-board .board-nick { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; margin: 10px 0 6px; }
+.wd-set-board .board-nick label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); flex: 1 1 180px; }
+.wd-set-board .board-nick-input { font: inherit; font-size: 15px; padding: 8px 10px; border: 1px solid var(--border-strong); border-radius: 4px; background: var(--paper); color: var(--ink); min-width: 0; }
+.wd-set-board .board-status { min-height: 1.4em; margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+.wd-invite { margin: 4px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--ink-soft); }
+/* Crossword+ members: no sponsor cards (the same promise as the crossword page) */
+html.cw-member [data-partner] { display: none !important; }

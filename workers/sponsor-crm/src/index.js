@@ -37,6 +37,7 @@
 //   /public/plus/checkout|sync|portal, POST /public/stripe/webhook    payments (stripe.js)
 //   /public/plus/deck-use|load|save  the free deck puzzle per account, progress synced between devices (plussync.js)
 //   /public/board/profile|result      the Discord leaderboard: opt-in and results (board.js)
+//   /public/tool/load|save          another game's progress synced between devices (Kana Wordle; plussync.js)
 //   GET  /api/board/preview?day=…   the day's Discord post, built but not sent
 //
 // A daily cron refreshes the uploads (capturing 30-day views) and the history; two more
@@ -68,7 +69,7 @@ import { listDrafts, requestDraft, closeDraft } from './drafts.js';
 import { availability, inquiry } from './public.js';
 import { joinWaitlist, leaveWaitlist, listWaitlist } from './waitlist.js';
 import { loginGoogle, loginEmail, loginVerify, me as plusMe, logout as plusLogout, startWeek, dayArchive, bonusPuzzle, listPlus, grantPlus, updatePlus, deletePlus, trackEvent, funnelReport } from './plus.js';
-import { deckUse, loadSave, putSave } from './plussync.js';
+import { deckUse, loadSave, putSave, loadTool, putTool } from './plussync.js';
 import { plusInfo, plusCheckout, plusSync, plusPortal, stripeWebhook, stripeSetup, stripeStatus, stripeResync } from './stripe.js';
 import { publicKey, bonusBacklog, openSealed } from './sealed.js';
 import { pullTraffic, loadTraffic, trafficConfigured } from './traffic.js';
@@ -336,6 +337,16 @@ const app = {
         if (!routes[what]) return json({ error: 'Not found' }, 404, origin);
         return json(await routes[what](), 200, origin);
       } catch (err) {
+        if (err instanceof HttpError) return json({ error: err.message }, err.status, origin);
+        console.error(err);
+        return json({ error: 'Something went wrong' }, 500, origin);
+      }
+    }
+    if (url.pathname === '/public/tool/load' || url.pathname === '/public/tool/save') {
+      if (!origin) return json({ error: 'Origin not allowed' }, 403);
+      if (!configured(env)) return json({ error: 'Not configured' }, 503, origin);
+      if (request.method !== 'POST') return json({ error: 'Not found' }, 404, origin);
+      try { return json(await (url.pathname.endsWith('/load') ? loadTool : putTool)(request, env), 200, origin); } catch (err) {
         if (err instanceof HttpError) return json({ error: err.message }, err.status, origin);
         console.error(err);
         return json({ error: 'Something went wrong' }, 500, origin);

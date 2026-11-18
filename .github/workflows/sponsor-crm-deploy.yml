@@ -16,6 +16,7 @@ on:
       - 'scripts/manage/traffic.js'
       - 'scripts/manage/pitching.js'
       - 'scripts/crossword/streak.js'
+      - 'scripts/wordle/daily.js'
       - '.github/workflows/sponsor-crm-deploy.yml'
   workflow_dispatch:
 

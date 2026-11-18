@@ -7,7 +7,7 @@
 // Settings section looks like the rest of its Settings.
 
 import { translator } from './i18n.js?v=1';
-import { signedIn, onAccount, accountId, boardCall } from '../crossword/account.js?v=7';
+import { signedIn, onAccount, accountId, boardCall } from '../crossword/account.js?v=8';
 
 const DISCORD = 'https://discord.gg/SqeuUd39sJ';
 const INVITED = 'jareddesu.board.invited';      // accounts this browser has shown the invite to

@@ -293,15 +293,17 @@ export async function loginEmail(request, env, origin) {
   const token = randomToken();
   await env.DB.prepare('DELETE FROM plus_logins WHERE expires_at < ?').bind(now).run();
   await env.DB.prepare('INSERT INTO plus_logins (token_hash, email, expires_at) VALUES (?, ?, ?)').bind(await sha256(token), email, now + LOGIN_MINUTES * 60).run();
-  const link = `${siteFor(origin)}/tools/crossword/?login=${token}`;
+  // Back to the page they signed in from (one account and session for both games)
+  const wordle = body.page === 'wordle';
+  const link = `${siteFor(origin)}/tools/${wordle ? 'wordle' : 'crossword'}/?login=${token}`;
   const ja = body.lang === 'ja';
   const sent = await sendEmail(env, {
     to: email,
-    subject: ja ? 'クロスワード＋のログインリンク' : 'Your Crossword+ sign-in link',
+    subject: wordle ? (ja ? 'かなWordleのログインリンク' : 'Your Kana Wordle sign-in link') : ja ? 'クロスワード＋のログインリンク' : 'Your Crossword+ sign-in link',
     text: ja
       ? `下のリンクを開くとログインできます（${LOGIN_MINUTES}分間有効）。\n\n${link}\n\n心当たりがなければ、このメールは無視してください。`
       : `Open this link to sign in (it works for ${LOGIN_MINUTES} minutes):\n\n${link}\n\nIf you didn’t ask for this, you can ignore this email.`,
-    html: `<p>${ja ? `下のボタンでログインできます（${LOGIN_MINUTES}分間有効）。` : `Sign in to Crossword+ with this button (it works for ${LOGIN_MINUTES} minutes):`}</p>
+    html: `<p>${ja ? `下のボタンでログインできます（${LOGIN_MINUTES}分間有効）。` : `Sign in${wordle ? '' : ' to Crossword+'} with this button (it works for ${LOGIN_MINUTES} minutes):`}</p>
 <p><a href="${link}" style="display:inline-block;padding:10px 18px;background:#1f1c18;color:#fff;text-decoration:none;border-radius:4px">${ja ? 'ログイン' : 'Sign in'}</a></p>
 <p style="color:#6b6358;font-size:13px">${ja ? '心当たりがなければ、このメールは無視してください。' : 'If you didn’t ask for this, you can ignore this email.'}</p>`,
   });
@@ -408,7 +410,7 @@ export async function updatePlus(db, id, body) {
   return { ok: true };
 }
 
-// Deleting an account: it, its saved progress, its free-puzzle count, its leaderboard
+// Deleting an account: it, its saved progress (every game), its free-puzzle count, its leaderboard
 // profile and results, and any open sign-in links. Not while it has a live Stripe
 // subscription (cancel that in Stripe first, or it would keep charging an account that's gone).
 export async function deletePlus(db, id) {
@@ -418,6 +420,7 @@ export async function deletePlus(db, id) {
   if (u.stripe_subscription && ACTIVE.has(u.status)) throw new HttpError(409, 'This account has a live subscription. Cancel it in Stripe first, then delete the account.');
   await db.batch([
     db.prepare('DELETE FROM plus_saves WHERE user_id = ?').bind(id),
+    db.prepare('DELETE FROM tool_saves WHERE user_id = ?').bind(id),
     db.prepare('DELETE FROM plus_deck_uses WHERE user_id = ?').bind(id),
     db.prepare('DELETE FROM game_results WHERE user_id = ?').bind(id),
     db.prepare('DELETE FROM board_profiles WHERE user_id = ?').bind(id),
