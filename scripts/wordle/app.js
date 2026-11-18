@@ -9,7 +9,7 @@
 import { toHiragana } from '../kanji/romaji.js?v=1';
 import { gridKana, cycleDakuten, romaji } from '../crossword/kana.js?v=1';
 import { translator, setLang } from '../games/i18n.js?v=1';
-import { decodeAnswers, dayNumber, dailyAnswer } from './daily.js?v=1';
+import { decodeAnswers, dayNumber, dailyAnswer, listFile, poolFor, validSet } from './daily.js?v=2';
 import { handleReturn, refresh, currentUser, signedIn, onAccount, logout, isMember, info as accountInfo } from '../crossword/account.js?v=8';
 import { openSignIn, closeSignIn } from '../games/signin.js?v=1';
 import { mountBoardSettings, boardInvite, sendResult } from '../games/board.js?v=2';
@@ -36,8 +36,9 @@ const THEMES_JA = {
 };
 const t = translator({
   en: {
-    'level.beginner': 'Beginner', 'level.intermediate': 'Intermediate', 'level.advanced': 'Advanced',
-    'opt.beginner': 'Beginner · N5–N4', 'opt.intermediate': 'Intermediate · N3–N2', 'opt.advanced': 'Advanced · N1+',
+    'level.beginner': 'Beginner', 'level.intermediate': 'Intermediate', 'level.advanced': 'Advanced', 'level.mixed': 'Mixed',
+    'opt.beginner': 'Beginner · N5–N4', 'opt.intermediate': 'Intermediate · N3–N2', 'opt.advanced': 'Advanced · N1+', 'opt.mixed': 'Mixed · N5 to N1',
+    jlpt: 'JLPT {j}', jlptNone: 'A common word (not on the JLPT lists)',
     bar: 'Game options', modeGroup: 'Mode', lenGroup: 'Word length', 'mode.daily': 'Daily', 'mode.practice': 'Practice',
     len4: '4 kana', len5: '5 kana', level: 'Level', statistics: 'Statistics', settings: 'Settings', close: 'Close',
     board: 'Guesses', keys: 'Kana keyboard', ime: 'Type your guess (romaji or kana)',
@@ -80,8 +81,9 @@ const t = translator({
     'set.romaji': 'Show romaji', 'set.romaji.d': 'under the kana keys.',
   },
   ja: {
-    'level.beginner': '初級', 'level.intermediate': '中級', 'level.advanced': '上級',
-    'opt.beginner': '初級 · N5–N4', 'opt.intermediate': '中級 · N3–N2', 'opt.advanced': '上級 · N1+',
+    'level.beginner': '初級', 'level.intermediate': '中級', 'level.advanced': '上級', 'level.mixed': 'ミックス',
+    'opt.beginner': '初級 · N5–N4', 'opt.intermediate': '中級 · N3–N2', 'opt.advanced': '上級 · N1+', 'opt.mixed': 'ミックス · N5〜N1',
+    jlpt: 'JLPT {j}', jlptNone: 'よく使う言葉（JLPTの単語リスト外）',
     bar: 'ゲームの設定', modeGroup: 'モード', lenGroup: '文字数', 'mode.daily': 'デイリー', 'mode.practice': '練習',
     len4: '4文字', len5: '5文字', level: 'レベル', statistics: '記録', settings: '設定', close: '閉じる',
     board: '回答', keys: 'かなキーボード', ime: '回答を入力（ローマ字・かな）',
@@ -138,7 +140,8 @@ const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } c
 const settings = store.settings;
 settings.mode = settings.mode || 'daily';
 settings.len = settings.len || 4;
-settings.level = settings.level || 'beginner';
+// New players start on Mixed (every level); a saved level is kept
+settings.level = settings.level || 'mixed';
 if (settings.meaning == null) settings.meaning = true;
 
 function h(tag, attrs, ...kids) {
@@ -155,13 +158,14 @@ function h(tag, attrs, ...kids) {
 
 // ---------------------------------------------------------------- words
 const lists = {};
-async function words(len) {
-  if (lists[len]) return lists[len];
-  const res = await fetch(`../../data/wordle/words-${len}.json?v=3`);
-  if (!res.ok) throw new Error(`words-${len}.json: ${res.status}`);
+// The day's word list (daily.js listFile: the first lists before V2_FROM, the wider v2 lists after)
+async function words(len, file) {
+  if (lists[file]) return lists[file];
+  const res = await fetch(`../../data/wordle/${file}?v=4`);
+  if (!res.ok) throw new Error(`${file}: ${res.status}`);
   const d = await res.json();
-  lists[len] = { valid: new Set(d.valid), answers: decodeAnswers(d.answers) };
-  return lists[len];
+  lists[file] = { valid: validSet(d.valid, len), answers: decodeAnswers(d.answers) };
+  return lists[file];
 }
 
 // The daily word: a seeded shuffle, so the order is fixed and never repeats until the list runs out (daily.js)
@@ -197,8 +201,9 @@ let data = null;
 async function start({ fresh = false } = {}) {
   closeOverlays();
   renderBar();
-  try { data = await words(settings.len); } catch { $('title').textContent = t('loadFail'); return; }
-  const pool = data.answers[settings.level];
+  const file = listFile(settings.len, settings.mode === 'daily' ? localDate() : null, settings.level);
+  try { data = await words(settings.len, file); } catch { $('title').textContent = t('loadFail'); return; }
+  const pool = poolFor(data.answers, settings.level);
   if (settings.mode === 'daily') {
     const today = localDate();
     const day = Math.max(1, dayNumber(today));
@@ -508,13 +513,16 @@ function showResult({ statsOnly = false } = {}) {
     fill($('result-body'), statsBlock());
   } else {
     const used = game.usedHints ?? game.hints ?? 0;
+    const fromV2 = listFile(game.len, game.mode === 'daily' ? game.key.split(':')[1] : null, game.level).startsWith('v2/');
     $('result-eyebrow').textContent = (game.won ? t('solvedIn', { n: game.guesses.length, tries: TRIES }) : t('lost')) + t('usedHints', { n: used });
     $('result-title').textContent = game.won ? ['天才！', '見事！', 'すごい！', 'いいね！', 'よし！', 'ナイス！', 'ふう…', 'セーフ！'][game.guesses.length - 1] : 'ざんねん…';
     fill($('result-body'), 
       h('div', { class: 'wd-answer' },
         h('p', { class: 'wd-answer-word', lang: 'ja' }, info.w),
         h('p', { class: 'wd-answer-reading', lang: 'ja' }, info.r, h('span', { class: 'wd-muted' }, ` · ${romaji(info.r)}`)),
-        info.m && settings.meaning ? h('p', { class: 'wd-answer-meaning', lang: 'en' }, info.m) : null),
+        info.m && settings.meaning ? h('p', { class: 'wd-answer-meaning', lang: 'en' }, info.m) : null,
+        // Its JLPT level (the v2 lists know it; the first lists don't say)
+        fromV2 ? h('p', { class: 'wd-answer-jlpt' }, info.j ? t('jlpt', { j: info.j }) : t('jlptNone')) : null),
       game.mode === 'daily' ? statsBlock() : null,
       game.mode === 'daily' ? h('p', { class: 'wd-next', id: 'next-in' }) : null,
       game.mode === 'daily' ? boardInvite({ open: openBoardSettings, cls: { line: 'wd-invite', link: 'btn-link' } }) : null);

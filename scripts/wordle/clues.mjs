@@ -12,38 +12,26 @@
 //           the answer, its kanji, or (for loanwords) the English word it comes from.
 // The dictionary meaning still shows once the game is over.
 //
-// apply re-encodes data/wordle/words-*.json without changing the order of the answers
-// (the daily word is picked by position), so no JMdict download is needed. Answers
+// apply re-encodes data/wordle/words-*.json and v2/words-*.json without changing the order of
+// the answers (the daily word is picked by position), so no JMdict download is needed. todo
+// picks each day's word with daily.js, so it covers Mixed and the v2 lists too. Answers
 // without an entry keep the automatic theme (build.mjs) and the meaning as the hint.
 // clues.json itself is kept out of the site (_config.yml), since it lists the answers.
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { decodeAnswers, dailyAnswer, listFile, poolFor, LEVELS } from './daily.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const CLUES = path.join(ROOT, 'data/wordle/clues.json');
-const START = '2026-10-01';                         // same as app.js
-const LEVELS = ['beginner', 'intermediate', 'advanced'];
-const file = (L) => path.join(ROOT, `data/wordle/words-${L}.json`);
+// Both sets of lists (daily.js): the first ones (dailies before V2_FROM) and v2 (from then on)
+const FILES = [4, 5].flatMap((L) => [`words-${L}.json`, `v2/words-${L}.json`].map((f) => ({ L, f: path.join(ROOT, 'data/wordle', f) })));
 
-const decode = (s) => JSON.parse(Buffer.from(s.split('').reverse().join(''), 'base64').toString('utf8'));
+const decode = decodeAnswers;
 const encode = (v) => Buffer.from(JSON.stringify(v), 'utf8').toString('base64').split('').reverse().join('');
 const readClues = () => (fs.existsSync(CLUES) ? JSON.parse(fs.readFileSync(CLUES, 'utf8')) : {});
 
-// The daily pick, exactly as app.js does it
-function rng(seed) {
-  let a = 2166136261;
-  for (const ch of seed) a = Math.imul(a ^ ch.charCodeAt(0), 16777619);
-  return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
-}
-function shuffled(list, seed) {
-  const r = rng(seed);
-  const out = list.slice();
-  for (let i = out.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [out[i], out[j]] = [out[j], out[i]]; }
-  return out;
-}
-const dayNumber = (date) => Math.round((Date.parse(`${date}T12:00:00Z`) - Date.parse(`${START}T12:00:00Z`)) / 86400000) + 1;
 const addDays = (date, n) => new Date(Date.parse(`${date}T12:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
 
 // What a clue must not give away
@@ -79,14 +67,17 @@ if (cmd === 'todo') {
   const from = process.argv[4] || new Date().toISOString().slice(0, 10);
   const clues = readClues();
   const want = new Map();
+  const lists = new Map();
+  const answersIn = (L, date, level) => {
+    const f = path.join(ROOT, 'data/wordle', listFile(L, date, level));
+    if (!lists.has(f)) lists.set(f, decode(JSON.parse(fs.readFileSync(f, 'utf8')).answers));
+    return lists.get(f);
+  };
   for (const L of [4, 5]) {
-    const answers = decode(JSON.parse(fs.readFileSync(file(L), 'utf8')).answers);
-    for (const level of LEVELS) {
-      const pool = answers[level];
-      const order = shuffled(pool, `${level}:${L}`);
+    for (const level of [...LEVELS, 'mixed']) {
       for (let d = 0; d < days; d++) {
         const date = addDays(from, d);
-        const w = order[(Math.max(1, dayNumber(date)) - 1) % pool.length];
+        const w = dailyAnswer(poolFor(answersIn(L, date, level), level), level, L, date);
         if (clues[w.a] && !problems(w, clues[w.a]).length) continue;
         const x = want.get(w.a) || { a: w.a, w: w.w, r: w.r, m: w.m, theme: w.t, dates: [] };
         x.dates.push(`${date} ${level} ${L}`);
@@ -101,10 +92,11 @@ if (cmd === 'todo') {
   const clues = readClues();
   let bad = 0;
   const used = new Set();
-  for (const L of [4, 5]) {
-    const f = JSON.parse(fs.readFileSync(file(L), 'utf8'));
+  for (const { L, f: name } of FILES) {
+    if (!fs.existsSync(name)) continue;
+    const f = JSON.parse(fs.readFileSync(name, 'utf8'));
     const answers = decode(f.answers);
-    for (const level of LEVELS) {
+    for (const level of Object.keys(answers)) {
       answers[level] = answers[level].map((w) => {
         // Start from the automatic theme (kept as "auto" so a later apply can go back to it)
         const base = { ...w, t: w.auto || w.t };
@@ -118,7 +110,7 @@ if (cmd === 'todo') {
       });
     }
     f.answers = encode(answers);
-    fs.writeFileSync(file(L), `${JSON.stringify(f)}\n`);
+    fs.writeFileSync(name, `${JSON.stringify(f)}\n`);
   }
   const unused = Object.keys(clues).filter((k) => !used.has(k));
   if (unused.length) console.error(`Not an answer (ignored): ${unused.join(' ')}`);

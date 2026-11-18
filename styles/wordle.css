@@ -194,3 +194,4 @@ html[data-ui="ja"] [data-ui-only="en"], html:not([data-ui="ja"]) [data-ui-only="
 .wd-invite { margin: 4px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--ink-soft); }
 /* Crossword+ members: no sponsor cards (the same promise as the crossword page) */
 html.cw-member [data-partner] { display: none !important; }
+.wd-answer-jlpt { margin: 2px 0 0; font-size: 13px; color: var(--muted); }

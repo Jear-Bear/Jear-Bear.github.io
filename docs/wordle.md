@@ -1,7 +1,7 @@
 # Kana Wordle
 
-`tools/wordle/` · `scripts/wordle/app.js` · word lists in `data/wordle/words-4.json`
-and `words-5.json` (answers lightly encoded so they don't show in view-source).
+`tools/wordle/` · `scripts/wordle/app.js` · word lists in `data/wordle/` (v1 and v2, below)
+(answers lightly encoded so they don't show in view-source).
 
 ## Daily word
 
@@ -10,6 +10,58 @@ next one in that shuffle (#1 was Oct 1, 2026). Practice picks at random.
 Never reorder the answers: that changes every day's word. The pick is in
 `scripts/wordle/daily.js`, shared with the sponsor Worker's leaderboard check, so both
 always agree on the day's word.
+
+### Word lists (v1 and v2)
+
+There are two sets of lists, and `daily.js` picks one by date:
+
+- **v1** (`data/wordle/words-{4,5}.json`, built by `build.mjs`): the first lists, used for
+  every daily before `V2_FROM` (Nov 19, 2026). Frozen: never rebuild or edit them, or past
+  dailies (and players' past results) would change.
+- **v2** (`data/wordle/v2/words-{4,5}.json`, built by `build-v2.mjs`): every daily from
+  `V2_FROM` on, every Mixed daily, and all practice games. Each level and length has its own
+  shuffle (seed `v2:<level>:<length>`), counted from `V2_FROM`.
+
+If this goes live later than Nov 18, move `V2_FROM` to the day after it does, so no
+day's word changes while people are playing it.
+
+Sources (credited on the page):
+- Answers: JLPT vocabulary from [open-anki-jlpt-decks](https://github.com/jamsinclair/open-anki-jlpt-decks)
+  (MIT; from Jonathan Waller's JLPT lists, CC BY), at its own level, plus common words from
+  [JMdict](https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project) (EDRDG,
+  CC BY-SA 4.0) levelled by JMdict's frequency bands.
+- Only nouns, verbs and adjectives of exactly 4 or 5 kana. Never proper nouns, vulgar,
+  derogatory, sensitive, slang, archaic, obsolete, rare, dialect or specialist words,
+  irregular kana, を or ゔ, anything on `data/crossword/blocklist.json`, or (as answers)
+  words about war, violence, crime or death.
+- Accepted guesses: every JMdict reading of the right length, plus the answers.
+
+| v2 | 4 kana | 5 kana |
+|---|---|---|
+| Beginner (N5, N4, then common words) | 400 | 369 |
+| Intermediate (N3, N2, common words) | 1,254 | 730 |
+| Advanced (N1, less common words) | 1,105 | 730 |
+| Mixed (all three) | 2,759 | 1,829 |
+| Accepted guesses | 38,902 | 35,306 |
+
+(v1 had 343 / 123 beginner, 1,335 / 429 intermediate, 1,152 / 440 advanced answers and
+10,497 / 5,488 guesses, so five-kana beginner repeated about three times a year.) Every v2
+list goes at least a year without a repeat.
+
+To rebuild v2 (only before it's live, since it reorders answers):
+
+```sh
+curl -O http://ftp.edrdg.org/pub/Nihongo/JMdict_e.gz
+node scripts/wordle/build-v2.mjs JMdict_e.gz
+node scripts/wordle/clues.mjs apply       # puts the hand-written themes and clues back
+```
+
+### Mixed
+
+**Mixed** (the default for new players) draws from all levels, N5 to N1, with its own 4-
+and 5-kana dailies. The answer's JLPT level shows after the game ("JLPT N3", or "a common word (not on
+the JLPT lists)"). Players who already picked a level keep it. Mixed counts on the Discord
+leaderboard like any level (`wordle-<date>-mixed-<length>`).
 
 ## Themes and clues
 
@@ -36,7 +88,7 @@ node scripts/wordle/clues.mjs apply       # check clues.json and merge it into t
 ```
 
 `apply` refuses entries that give the word away (and says why). Answers without
-an entry keep the automatic theme (`build.mjs`) and show the meaning as the hint;
+an entry keep the automatic theme (`themes.mjs`) and show the meaning as the hint;
 that's most practice words for now. The nightly crossword routine keeps the next
 60 days of dailies covered (docs/crossword.md).
 
