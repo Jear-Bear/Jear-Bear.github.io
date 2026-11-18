@@ -285,6 +285,10 @@ const app = {
       return handleAuthorize(request, env);
     }
     const origin = allowedOrigin(env, request.headers.get('Origin'));
+    // No Origin header: a same-site request (browsers leave it off GETs to their own site), like
+    // the Discord Activity's calls, which Discord's proxy serves from the Activity's own origin.
+    // Pages on other sites can't send one without it, so the games' routes accept these too.
+    const sameSite = !request.headers.get('Origin') && (request.method === 'GET' || request.headers.get('Sec-Fetch-Site') === 'same-origin');
 
     if (request.method === 'OPTIONS') {
       if (!origin) return new Response(null, { status: 403 });
@@ -316,7 +320,7 @@ const app = {
       return leaveWaitlist(env, url);
     }
     if (url.pathname.startsWith('/public/plus/')) {
-      if (!origin) return json({ error: 'Origin not allowed' }, 403);
+      if (!origin && !sameSite) return json({ error: 'Origin not allowed' }, 403);
       if (!configured(env)) return json({ error: 'Not configured' }, 503, origin);
       const what = url.pathname.slice('/public/plus/'.length);
       const m = request.method;
@@ -349,7 +353,7 @@ const app = {
       }
     }
     if (url.pathname === '/public/tool/load' || url.pathname === '/public/tool/save') {
-      if (!origin) return json({ error: 'Origin not allowed' }, 403);
+      if (!origin && !sameSite) return json({ error: 'Origin not allowed' }, 403);
       if (!configured(env)) return json({ error: 'Not configured' }, 503, origin);
       if (request.method !== 'POST') return json({ error: 'Not found' }, 404, origin);
       try { return json(await (url.pathname.endsWith('/load') ? loadTool : putTool)(request, env), 200, origin); } catch (err) {
@@ -359,7 +363,7 @@ const app = {
       }
     }
     if (url.pathname.startsWith('/public/board/')) {
-      if (!origin) return json({ error: 'Origin not allowed' }, 403);
+      if (!origin && !sameSite) return json({ error: 'Origin not allowed' }, 403);
       if (!configured(env)) return json({ error: 'Not configured' }, 503, origin);
       const what = url.pathname.slice('/public/board/'.length);
       const m = request.method;
