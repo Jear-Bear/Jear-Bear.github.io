@@ -202,6 +202,23 @@ is skipped. To stop it, delete the secret.
   That tracked link must exist in the Sponsor desk (same short name), or the
   clicks aren't counted. To change sponsors, edit `SPONSOR` in partner.js;
   set it to `null` to hide every slot.
+- **Sponsor card views and click-through rate** (for quoting to sponsors): a
+  card counts one **view** when it's at least half on screen for one second, once
+  per card per page load (`IntersectionObserver` in partner.js, then a beacon to
+  `POST /public/view`). Hidden slots never count (the solved-screen line only once
+  that screen is open), and neither do Crossword+ members: the page skips them, and
+  if the visitor is signed in the beacon carries their session token so the Worker
+  can leave a member out (the token is only checked, never stored). Like clicks: a
+  number per tracked link, place and day (`partner_views`, migration 0024); no
+  cookies, IPs or user agents are kept, bots are skipped, there's an hourly limit
+  per (hashed) IP, and only stored links and the seven card places above count.
+  **Traffic → Sponsor card** shows the last 12 months: views, clicks and
+  click-through rate (clicks ÷ views, one decimal) per place, and the month's
+  total. Clicks here are the cards' own (the card places), so `?via=` links in
+  video descriptions don't skew the rate. Views count from Nov 2026, so the first
+  month's rate runs high (its clicks started earlier). The same numbers (last 3
+  months) are in the Sponsor desk connector's `get_site_traffic` as `sponsor_cards`.
+  API: `GET /api/sponsor-cards?months=12`.
 - **jareddesu.com/lesson** (`lesson/index.html`): the short link to say in
   Shorts. It counts the visit under `ohanasi` with place `lesson` (or
   `?via=…`, e.g. `jareddesu.com/lesson?via=yt-tried-it`) and goes straight to
