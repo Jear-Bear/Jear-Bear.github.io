@@ -12,6 +12,11 @@
  * Worker, which adds one to that day's count for the place it came from
  * (no cookies, IPs or user agents are kept). See docs/sponsor-crm-setup.md.
  *
+ * Views, for a click-through rate: a filled card at least half on screen for one
+ * second counts once per card per page load (POST /public/view). Never a hidden
+ * slot, and never a Crossword+ member's (html.cw-member here; the Worker also checks
+ * the session, if there is one, and skips members).
+ *
  * Keep the copy matched to what the link lands on (now: a free 1-on-1 lesson),
  * so people find what the card promised.
  *
@@ -51,17 +56,46 @@
     },
   };
   var COUNT = 'https://sponsor-crm.jared-65b.workers.dev/public/click';
+  var VIEW = 'https://sponsor-crm.jared-65b.workers.dev/public/view';
+  var SESSION = 'jareddesu.crossword.account';     // the games' sign-in (scripts/crossword/account.js)
   var RE_VIA = /^[a-z0-9](?:[a-z0-9-]{0,22}[a-z0-9])?$/;
 
   // --- counting -------------------------------------------------------------------
+  function beacon(url, data) {
+    var body = JSON.stringify(data);
+    try {   // text/plain: no CORS preflight, and the beacon survives the page unloading
+      if (navigator.sendBeacon && navigator.sendBeacon(url, new Blob([body], { type: 'text/plain' }))) return;
+    } catch (e) { /* fall through */ }
+    try { fetch(url, { method: 'POST', body: body, keepalive: true, mode: 'cors', credentials: 'omit', headers: { 'Content-Type': 'text/plain' } }).catch(function () {}); } catch (e) { /* ignore */ }
+  }
   function ping(slug, via) {
     via = String(via || 'site').toLowerCase();
     if (!RE_VIA.test(via)) via = 'site';
-    var body = JSON.stringify({ slug: slug, via: via });
-    try {   // text/plain: no CORS preflight, and the beacon survives the page unloading
-      if (navigator.sendBeacon && navigator.sendBeacon(COUNT, new Blob([body], { type: 'text/plain' }))) return;
-    } catch (e) { /* fall through */ }
-    try { fetch(COUNT, { method: 'POST', body: body, keepalive: true, mode: 'cors', credentials: 'omit', headers: { 'Content-Type': 'text/plain' } }).catch(function () {}); } catch (e) { /* ignore */ }
+    beacon(COUNT, { slug: slug, via: via });
+  }
+
+  // --- views ----------------------------------------------------------------------
+  var member = function () { return document.documentElement.classList.contains('cw-member'); };
+  var session = function () { try { return (JSON.parse(localStorage.getItem(SESSION) || '{}').token) || null; } catch (e) { return null; } };
+  var seen = typeof IntersectionObserver === 'function' ? new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      var slot = e.target;
+      if (slot.dataset.viewed) return;
+      if (e.isIntersecting && e.intersectionRatio >= 0.5) {
+        if (!slot.viewTimer) slot.viewTimer = setTimeout(function () { slot.viewTimer = null; countView(slot); }, 1000);
+      } else if (slot.viewTimer) { clearTimeout(slot.viewTimer); slot.viewTimer = null; }
+    });
+  }, { threshold: [0, 0.5, 1] }) : null;
+  function countView(slot) {
+    if (!SPONSOR || slot.dataset.viewed || slot.hidden || member() || !slot.firstChild) return;
+    var box = slot.getBoundingClientRect();
+    if (!box.width || !box.height || getComputedStyle(slot).visibility === 'hidden') return;
+    slot.dataset.viewed = '1';
+    seen.unobserve(slot);
+    var data = { slug: SPONSOR.slug, via: String(slot.dataset.via || 'site').toLowerCase() };
+    var t = session();
+    if (t) data.t = t;          // so the Worker can leave out a member's view
+    beacon(VIEW, data);
   }
   function onClick(e) {
     if (e.type === 'auxclick' && e.button !== 1) return;   // middle-click opens it too
@@ -135,7 +169,7 @@
     document.querySelectorAll('[data-partner]').forEach(function (slot) {
       if (!SPONSOR) { slot.hidden = true; return; }
       var fn = RENDER[slot.dataset.partner];
-      if (fn) { fn(slot, text(), slot.dataset.via || 'site'); slot.hidden = false; }
+      if (fn) { fn(slot, text(), slot.dataset.via || 'site'); slot.hidden = false; if (seen && !slot.dataset.viewed) seen.observe(slot); }
     });
   }
 
