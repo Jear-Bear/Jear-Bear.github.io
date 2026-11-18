@@ -16,6 +16,9 @@ PUBLIC_ORIGIN = "https://sponsor-crm.jared-65b.workers.dev"
 DISCORD_CLIENT_ID = "1572702904320659506"
 DISCORD_POST_HOUR = "9"      # the leaderboard's daily Discord post, America/Chicago time (board.js)
 DISCORD_POST_MINUTE = "5"
+# Discord sign-in and the Kana Wordle Activity (discord.js): the Discord app's client ID (public).
+# Empty: off. Needs the DISCORD_CLIENT_SECRET secret too. docs/discord-activity.md
+DISCORD_CLIENT_ID = "1572702904320659506"
 
 # The fonts for the daily post's picture (board-image.js) come in as ArrayBuffers
 [[rules]]

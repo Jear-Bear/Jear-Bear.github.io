@@ -1,0 +1,18 @@
+/* Kana Wordle as a Discord Activity (activity/wordle/, scripts/activity/wordle.js): the game
+   page without the site around it, sized for Discord's frame, always dark like Discord */
+.act { padding-top: 12px; padding-bottom: 24px; }
+.act-outside { margin: 48px 0; font-size: 16px; line-height: 1.7; }
+.act-status:empty, .act-note:empty, .act-channel:empty { display: none; }
+.act-status, .act-note { margin: 8px 0; font-size: 13px; line-height: 1.6; color: var(--muted); }
+.act-channel { margin: 18px 0 6px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; }
+.act-head { margin: 0 0 8px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.act-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.act-person { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; }
+.act-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--border); }
+.act-name { font-weight: 600; }
+.act-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+.act-chip { padding: 2px 8px; border-radius: 999px; font-size: 12.5px; background: #3a3a3c; color: #fff; }
+.act-chip.is-won { background: #538d4e; }
+.act-muted { color: var(--muted); font-size: 13px; }
+/* No links out to the Discord server from inside Discord */
+html[data-surface="activity"] .board-about a { display: none; }

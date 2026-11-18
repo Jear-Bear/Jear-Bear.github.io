@@ -11,8 +11,8 @@ import { gridKana, cycleDakuten, romaji } from '../crossword/kana.js?v=1';
 import { translator, setLang } from '../games/i18n.js?v=1';
 import { decodeAnswers, dayNumber, dailyAnswer } from './daily.js?v=1';
 import { handleReturn, refresh, currentUser, signedIn, onAccount, logout, isMember, info as accountInfo } from '../crossword/account.js?v=8';
-import { openSignIn, closeSignIn } from '../games/signin.js?v=1';
-import { mountBoardSettings, boardInvite, sendResult } from '../games/board.js?v=2';
+import { openSignIn, closeSignIn } from '../games/signin.js?v=2';
+import { mountBoardSettings, boardInvite, sendResult } from '../games/board.js?v=3';
 import { initSync, schedulePush, flush } from './sync.js?v=1';
 
 const $ = (id) => document.getElementById(id);
@@ -152,6 +152,10 @@ function h(tag, attrs, ...kids) {
   kids.flat().forEach((c) => { if (c != null && c !== '') n.append(c instanceof Node ? c : document.createTextNode(String(c))); });
   return n;
 }
+
+// Set by the Discord Activity's page before it loads this one (scripts/activity/wordle.js):
+// { name, finished(result) }. Null on the website.
+const ACTIVITY = window.jdActivity || null;
 
 // ---------------------------------------------------------------- words
 const lists = {};
@@ -542,15 +546,18 @@ function tickCountdown() {
 }
 
 // The Discord leaderboard: a finished daily goes to it once, while the account has it on.
-// Practice games never count.
+// Practice games never count. Inside the Discord Activity (activity/wordle/), it also goes
+// to the voice channel's list of who finished today (ACTIVITY.finished).
 function reportBoard() {
-  if (game.mode !== 'daily' || game.board || !signedIn()) return;
+  if (game.mode !== 'daily') return;
   const [, date, level, len] = game.key.split(':');
   const done = game;
   // pattern: each guess's colors for the post's picture (c right spot, p elsewhere, n one dakuten off, a not in it); no kana
   const pattern = game.guesses.map((g) => score(g, game.answer).map((m) => ({ correct: 'c', present: 'p', close: 'n', absent: 'a' })[m]).join(''));
-  sendResult({ game: 'wordle', puzzleId: `wordle-${date}-${level}-${len}`, guesses: game.guesses.length, hints: game.usedHints ?? game.hints ?? 0, won: Boolean(game.won), word: game.guesses[game.guesses.length - 1], pattern })
-    .then((r) => { if (r && r.ok) { done.board = 1; save(); } });
+  const result = { game: 'wordle', puzzleId: `wordle-${date}-${level}-${len}`, guesses: game.guesses.length, hints: game.usedHints ?? game.hints ?? 0, won: Boolean(game.won), word: game.guesses[game.guesses.length - 1], pattern };
+  if (ACTIVITY) ACTIVITY.finished(result);
+  if (game.board || !signedIn()) return;
+  sendResult(result).then((r) => { if (r && r.ok) { done.board = 1; save(); } });
 }
 // From the result's invite: Settings, at the leaderboard section
 function openBoardSettings() {
@@ -656,7 +663,9 @@ function setMeta() {
 }
 
 // ---------------------------------------------------------------- account (optional)
-// Sign in / the account in the bar. Same account and session as the crossword.
+// Sign in / the account in the bar. Same account and session as the crossword. Inside the
+// Discord Activity the player is signed in by Discord (scripts/activity/wordle.js): the bar
+// shows their Discord name, with no sign-in or sign-out there.
 let canSignIn = false;
 accountInfo().then((i) => { canSignIn = Boolean(i && (i.google || i.email)); renderAccount(); }).catch(() => {});
 const signInNow = () => openSignIn({
@@ -665,6 +674,7 @@ const signInNow = () => openSignIn({
 });
 function renderAccount() {
   const bar = $('account-bar');
+  if (ACTIVITY) { bar.hidden = false; fill(bar, h('span', { class: 'wd-acct-email' }, ACTIVITY.name)); return; }
   const u = currentUser();
   if (!u && !signedIn() && !canSignIn) { bar.hidden = true; return; }
   bar.hidden = false;
