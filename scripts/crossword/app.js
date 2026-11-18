@@ -68,6 +68,8 @@ const t = translator({
     withReveals: ' · with reveals',
     listed: 'Every answer, with its kanji and meaning, is listed under the puzzle.',
     nextIn: 'Next puzzle in {time} (your midnight)',
+    'meta.title': 'Free Daily Japanese Crossword (Kana and Kanji, JLPT N5 to N1) · Jared P.',
+    'meta.desc': 'A free Japanese crossword every day. Kana mode: English clues, hiragana answers. Kanji mode: write the word in kanji. A mini and a 9×9 daily at JLPT N5–N4, N3–N2 or N1 level, plus a mixed puzzle with Japanese clues. Type in romaji, no account needed.',
     solved: 'solved', share: 'Copy result', shareBtn: 'Share', doneClose: 'Keep looking', pastTitle: 'Past puzzles', close: 'Close',
     'th.word': 'Word', 'th.reading': 'Reading', 'th.meaning': 'Meaning', 'th.clue': 'Clue',
     shareHead: ({ mode, size, level, date }) => `Japanese Crossword · ${mode ? `${mode} · ` : ''}${level} ${size} · ${date}`,
@@ -123,6 +125,8 @@ const t = translator({
     withReveals: ' · 答えを見て',
     listed: '答えの漢字と意味は、パズルの下に並んでいます。',
     nextIn: '次のパズルまで {time}（あなたの時間で0時）',
+    'meta.title': '無料の日本語クロスワード（毎日更新・かなと漢字・JLPT N5〜N1）· Jared P.',
+    'meta.desc': '毎日新しい日本語クロスワードが無料で遊べます。かなモードは英語のカギでひらがなを、漢字モードは漢字で答えます。JLPT N5〜N4・N3〜N2・N1のミニと9×9のデイリー、日本語のカギの一般も。ローマ字で入力でき、アカウントは不要です。',
     solved: 'クリア', share: '結果をコピー', shareBtn: 'シェア', doneClose: '閉じる', pastTitle: '過去のパズル', close: '閉じる',
     'th.word': '単語', 'th.reading': '読み', 'th.meaning': '意味', 'th.clue': 'カギ',
     shareHead: ({ mode, size, level, date }) => `日本語クロスワード · ${mode ? `${mode} · ` : ''}${level} ${size} · ${date}`,
@@ -220,6 +224,7 @@ async function init() {
   // Future puzzles are published early (so every time zone gets one at its midnight) but stay hidden
   date = asked && pastOrToday.includes(asked) ? asked : (pastOrToday[pastOrToday.length - 1] || null);
   t.apply();
+  setMeta();
   track('visit');
   deck = mountDeck({ root: $('deck'), play: (p) => { settings.mode = 'deck'; save(); openPuzzle(p); $('play').scrollIntoView({ block: 'start', behavior: 'smooth' }); } });
   // Signed in: progress, stats and deck puzzles follow the account between devices (sync.js)
@@ -523,8 +528,16 @@ function wireSettings() {
 function applyAssist() { $('play').classList.toggle('no-assist', Boolean(settings.noassist)); }
 
 // Language switch: redraw everything that has text in it (progress is untouched)
+// The tab title and description follow the page language (search engines read the English in the HTML)
+function setMeta() {
+  document.title = t('meta.title');
+  const d = document.querySelector('meta[name="description"]');
+  if (d) d.setAttribute('content', t('meta.desc'));
+}
+
 function relabel() {
   t.apply();
+  setMeta();
   renderAccount();
   buildKeys();
   mountPlusSection();

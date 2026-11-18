@@ -66,6 +66,17 @@ devices.
   Crossword+). Their files aren't sealed yet anyway: a day is sealed once it's past
   everywhere (see crossword-plus.md).
 
+## Search and link previews
+
+The page's `<title>` and description are written for search ("Free Daily Japanese
+Crossword (Kana and Kanji, JLPT N5 to N1)"). When the page is in Japanese, `app.js`
+(`setMeta`, strings `meta.title` / `meta.desc`) swaps both to the Japanese version.
+Search engines read the English in the HTML, since the language is a setting, not a
+separate address. Links posted anywhere show `images/og/crossword.jpg` (1200×630) via
+the Open Graph and X tags, and a WebApplication JSON-LD block describes the game.
+`jareddesu.com/crossword` (the address printed on that image) is a short link that
+redirects to the page.
+
 ## Sharing a result
 
 The solved screen has **Share** (the phone's share sheet where there is one, otherwise
