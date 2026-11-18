@@ -67,8 +67,9 @@ These are on the crossword page in English and Japanese. Don't break them:
 
 - **Today's puzzles stay free:** kana and kanji, all four levels, both sizes,
   every check and reveal.
-- **No ads, no account, nothing to install** for the dailies (an account is
-  only for Crossword+).
+- **No account, nothing to install** for the dailies (an account is only for
+  Crossword+). (Until Nov 2026 this also said no ads; ads between puzzles are
+  now allowed for free players, see "Ads" below, and Crossword+ removes them.)
 - (Changed Oct 2026: past puzzles moved into Crossword+. The page used to
   say every daily stays free; it now says today's.)
 - **One email at launch.** No newsletter. Everyone can remove themselves anytime.
@@ -106,6 +107,33 @@ sponsor ad (orange, labelled **AD**).
 
 **Support:** `support@jareddesu.com` is on the page (How to play credits),
 in the Crossword+ boxes, and is the reply-to on every email the Worker sends.
+
+## Ads (built, off until an ad network approves the site)
+
+Free players can see one ad slot **between puzzles**: under the puzzle and its
+clues, above How to play. Never in or over the grid, never a popup, never on the
+solved screen. Crossword+ members see **no ads and no sponsor cards** (the page
+adds `cw-member` to `<html>`, which hides `.cw-ad` and every `[data-partner]` slot),
+and while ads are on, the Crossword+ perks gain a fourth tile, **No ads**. Each slot
+is labelled **Ad** with a **Remove ads with Crossword+** link.
+Code: `scripts/crossword/ads.js`, the `<aside data-ad-slot>` in
+`tools/crossword/index.html`, `.cw-ad` in `styles/crossword.css`.
+
+**Off by default.** Nothing shows until `AD` in `ads.js` has a network, publisher ID
+and slot ID. To see the empty slots and the No ads tile without turning anything on,
+open the page with `?ads=preview` (works on staging too).
+
+**Turning it on** (after the network approves jareddesu.com):
+
+1. Fill in `AD.network`, `AD.client` and `AD.slot` in `ads.js`, and add the network's
+   tag inside `fill()` where the comment says (load its script only there, so members
+   and people with ads off never download it).
+2. Add `ads.txt` at the site root with the line the network gives you.
+3. **Privacy:** `privacy/index.html` says "No ads trackers, no cookies for tracking".
+   Google AdSense uses cookies, so that line has to change, and visitors in the EEA, the
+   UK and Switzerland need a Google-certified consent message (AdSense's own free
+   "Privacy & messaging" one works). Without it, those visitors only get limited ads.
+4. Keep the promises above: today's puzzles stay free with no account.
 
 ## Where the emails go
 
