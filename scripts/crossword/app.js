@@ -68,9 +68,10 @@ const t = translator({
     withReveals: ' · with reveals',
     listed: 'Every answer, with its kanji and meaning, is listed under the puzzle.',
     nextIn: 'Next puzzle in {time} (your midnight)',
-    solved: 'solved', share: 'Copy result', doneClose: 'Keep looking', pastTitle: 'Past puzzles', close: 'Close',
+    solved: 'solved', share: 'Copy result', shareBtn: 'Share', doneClose: 'Keep looking', pastTitle: 'Past puzzles', close: 'Close',
     'th.word': 'Word', 'th.reading': 'Reading', 'th.meaning': 'Meaning', 'th.clue': 'Clue',
-    shareText: ({ mode, size, level, date, time, reveals }) => `Japanese Crossword · ${mode ? `${mode} · ` : ''}${size} · ${level} · ${date}\nSolved in ${time}${reveals ? ' (with reveals)' : ''} ✅`,
+    shareHead: ({ mode, size, level, date }) => `Japanese Crossword · ${mode ? `${mode} · ` : ''}${level} ${size} · ${date}`,
+    shareTime: '⏱️ {time}', shareStreak: '🔥 {n}',
     deckLine: ({ name }) => `From your deck: ${name}`,
     'set.title': 'Settings', 'set.lang': 'Language',
     'set.romaji': 'Show romaji', 'set.romaji.d': 'under the kana keys.',
@@ -122,9 +123,10 @@ const t = translator({
     withReveals: ' · 答えを見て',
     listed: '答えの漢字と意味は、パズルの下に並んでいます。',
     nextIn: '次のパズルまで {time}（あなたの時間で0時）',
-    solved: 'クリア', share: '結果をコピー', doneClose: '閉じる', pastTitle: '過去のパズル', close: '閉じる',
+    solved: 'クリア', share: '結果をコピー', shareBtn: 'シェア', doneClose: '閉じる', pastTitle: '過去のパズル', close: '閉じる',
     'th.word': '単語', 'th.reading': '読み', 'th.meaning': '意味', 'th.clue': 'カギ',
-    shareText: ({ mode, size, level, date, time, reveals }) => `日本語クロスワード · ${mode ? `${mode} · ` : ''}${size} · ${level} · ${date}\n${time}でクリア${reveals ? '（答えを見て）' : ''} ✅`,
+    shareHead: ({ mode, size, level, date }) => `日本語クロスワード · ${mode ? `${mode} · ` : ''}${level} ${size} · ${date}`,
+    shareTime: '⏱️ {time}', shareStreak: '🔥 {n}日',
     deckLine: ({ name }) => `マイデッキ：${name}`,
     'set.title': '設定', 'set.lang': '表示言語',
     'set.romaji': 'ローマ字を表示', 'set.romaji.d': '（かなキーの下に）',
@@ -364,7 +366,7 @@ function openPuzzle(deckPuzzle = null) {
   pz.tilePool = tilePool();
 
   st = store.progress[p.id] = store.progress[p.id] || { cells: {}, wrong: {}, revealed: {}, time: 0, done: false };
-  st.cells = st.cells || {}; st.wrong = st.wrong || {}; st.revealed = st.revealed || {};
+  st.cells = st.cells || {}; st.wrong = st.wrong || {}; st.revealed = st.revealed || {}; st.fixed = st.fixed || {};
   const first = pz.entries.find((e) => e.dir === 'across') || pz.entries[0];
   cur = { r: first.row, c: first.col, dir: first.dir };
   romajiTail = '';
@@ -453,7 +455,8 @@ function wireControls() {
   $('autocheck').addEventListener('change', (e) => { settings.autocheck = e.target.checked; save(); if (settings.autocheck) check('puzzle'); });
   document.addEventListener('click', (e) => document.querySelectorAll('.cw-menu[open]').forEach((d) => { if (!d.contains(e.target)) d.open = false; }));
   $('done-close').addEventListener('click', () => { $('done').hidden = true; });
-  $('done-share').addEventListener('click', share);
+  $('done-share').addEventListener('click', () => share(true));
+  $('done-copy').addEventListener('click', () => share(false));
   // Typing
   const ime = $('ime');
   ime.addEventListener('keydown', onKey);
@@ -794,7 +797,7 @@ function setCell(r, c, ch) {
   if (ch) st.cells[k] = ch; else delete st.cells[k];
   delete st.wrong[k];
   paintCell(cell(r, c));
-  if (settings.autocheck && ch && ch !== cell(r, c).answer) { st.wrong[k] = 1; paintCell(cell(r, c)); }
+  if (settings.autocheck && ch && ch !== cell(r, c).answer) { st.wrong[k] = 1; st.fixed[k] = 1; paintCell(cell(r, c)); }
   markFilledClues();
   save();
   checkSolved();
@@ -936,7 +939,7 @@ function check(what) {
   scope(what).forEach(([r, c]) => {
     const v = val(r, c);
     const k = `${r},${c}`;
-    if (v && v !== cell(r, c).answer) { st.wrong[k] = 1; wrong++; } else delete st.wrong[k];
+    if (v && v !== cell(r, c).answer) { st.wrong[k] = 1; st.fixed[k] = 1; wrong++; } else delete st.wrong[k];
     paintCell(cell(r, c));
   });
   st.checked = true;
@@ -1075,9 +1078,35 @@ function celebrate(assisted) {
   $('done-share').focus();
 }
 
-function share() {
-  const text = `${t('shareText', { mode: pz.deck ? t('mode.deck') : pz.mode === 'kanji' ? '漢字' : '', size: SIZE_NAME(pz.size), level: pz.deck ? pz.deck.name : LEVEL_NAME(pz.level), date: pz.deck ? fmtDate(localDate()) : fmtDate(date), time: fmtTime(st.time), reveals: Object.keys(st.revealed).length > 0 })}\nhttps://www.jareddesu.com/tools/crossword/`;
-  (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => toast(t('copied')), () => toast(text));
+// The result as a small grid of squares, like Wordle's: how it went, never the answers.
+// 🟩 right first time, 🟧 right after Check marked it wrong, 🟨 revealed, ⬛ black square
+// (⬜ for the empty squares of kanji and deck puzzles, which have no black squares).
+function shareText() {
+  const free = pz.mode === 'kanji' || pz.deck;
+  const rows = [];
+  for (let r = 0; r < pz.height; r++) {
+    let row = '';
+    for (let c = 0; c < pz.width; c++) {
+      const k = `${r},${c}`;
+      row += cell(r, c).black ? (free ? '⬜' : '⬛') : st.revealed[k] ? '🟨' : st.fixed[k] ? '🟧' : '🟩';
+    }
+    rows.push(row);
+  }
+  const ds = !pz.deck && /^\d{4}-\d{2}-\d{2}-/.test(pz.id) ? dailyStreak(store.progress) : null;
+  const head = t('shareHead', { mode: pz.deck ? t('mode.deck') : pz.mode === 'kanji' ? t('mode.kanji') : '', size: SIZE_NAME(pz.size), level: pz.deck ? pz.deck.name : LEVEL_NAME(pz.level), date: fmtDate(pz.deck ? localDate() : date) });
+  const stats = [t('shareTime', { time: fmtTime(st.time) }), ds && ds.current > 1 ? t('shareStreak', { n: ds.current }) : null].filter(Boolean).join('  ');
+  return `${head}\n${stats}\n${rows.join('\n')}\nhttps://www.jareddesu.com/tools/crossword/`;
+}
+
+// Share: the phone's share sheet where there is one, otherwise (and for Copy result) the clipboard
+function share(sheet) {
+  const text = shareText();
+  const copy = () => (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => toast(t('copied')), () => toast(text));
+  if (sheet && navigator.share) {
+    navigator.share({ text }).catch((e) => { if (!e || e.name !== 'AbortError') copy(); });
+    return;
+  }
+  copy();
 }
 
 function renderWords() {

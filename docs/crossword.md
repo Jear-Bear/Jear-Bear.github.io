@@ -66,6 +66,26 @@ devices.
   Crossword+). Their files aren't sealed yet anyway: a day is sealed once it's past
   everywhere (see crossword-plus.md).
 
+## Sharing a result
+
+The solved screen has **Share** (the phone's share sheet where there is one, otherwise
+it copies) and **Copy result**. Both give a small grid of emoji squares, like Wordle's,
+that shows how it went without giving away any answers:
+
+```
+Japanese Crossword · Beginner Mini · Wed, Nov 18, 2026
+⏱️ 2:36  🔥 3
+🟨🟩⬛🟩🟩
+🟩🟧🟩🟩⬛
+...
+https://www.jareddesu.com/tools/crossword/
+```
+
+🟩 right first time, 🟧 right after Check (or auto-check) marked it wrong, 🟨 revealed,
+⬛ black square (⬜ for the empty squares of kanji and deck puzzles). The streak shows
+from 2 days. Squares Check marked wrong are remembered in each puzzle's progress as
+`fixed`, so the 🟧 squares survive a reload and follow a signed-in account.
+
 ## Kanji mode
 
 Answers are words written entirely in kanji (2–4 characters) from the same

@@ -99,7 +99,7 @@ sponsor ad (orange, labelled **AD**).
 - **Hitting a limit** (the free deck puzzle used up, bonus puzzles): a purple
   box with what happened in bold, the perks and **See Crossword+**. Pressing
   **Make a puzzle** again scrolls to it and shakes it once.
-- **Solved screen (お見事):** a short version above the Copy result / Keep
+- **Solved screen (お見事):** a short version above the Share / Copy result / Keep
   looking buttons, on every solve. "Not for me" hides it for 30 days. It
   never covers the grid or interrupts a puzzle.
 - Code: `scripts/crossword/plus.js` (`plusPerks`, `supportLine`). The support
