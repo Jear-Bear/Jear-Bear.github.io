@@ -8,7 +8,8 @@
 
 import { lang } from '../games/i18n.js?v=1';
 
-const API = 'https://sponsor-crm.jared-65b.workers.dev/public/plus';
+const ROOT = 'https://sponsor-crm.jared-65b.workers.dev/public';
+const API = `${ROOT}/plus`;
 const STORE = 'jareddesu.crossword.account';
 const localDate = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
@@ -29,9 +30,9 @@ export const accountId = () => read().uid || null;
 export const deckKeyFor = (id) => `jareddesu.crossword.deck.${id}`;
 export const deckKey = () => (accountId() ? deckKeyFor(accountId()) : null);
 
-async function call(path, body = {}, { method = 'POST' } = {}) {
+async function call(path, body = {}, { method = 'POST', base = API } = {}) {
   const token = read().token;
-  const res = await fetch(`${API}/${path}`, {
+  const res = await fetch(`${base}/${path}`, {
     method,
     headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: method === 'GET' ? undefined : JSON.stringify({ day: localDate(), lang: lang(), ...body }),
@@ -137,6 +138,8 @@ export const deckUse = (peek = false) => call('deck-use', { peek });
 export const loadSave = () => call('load');
 export const putSave = (data) => call('save', { data });
 export const archiveDay = (date) => call('day', { date });
+// The Discord leaderboard (scripts/games/board.js): same account, its own endpoints
+export const boardCall = (path, body, method = 'POST') => call(path, body, { method, base: `${ROOT}/board` });
 
 // The Crossword+ funnel in the Sponsor desk: a count of visit / solve / offer / plan, at most once
 // per step per browser per day. Just the step's name is sent: nothing about the person.

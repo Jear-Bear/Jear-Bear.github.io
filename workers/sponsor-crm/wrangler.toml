@@ -13,6 +13,8 @@ ALLOWED_ORIGINS = "https://www.jareddesu.com,https://jareddesu.com,https://stagi
 ALLOW_LOCALHOST = "true"
 YT_CHANNEL_ID = "UCSIxTP9PCM2kcTszONRxZ1w"   # public channel ID
 PUBLIC_ORIGIN = "https://sponsor-crm.jared-65b.workers.dev"
+DISCORD_POST_HOUR = "9"      # the leaderboard's daily Discord post, America/Chicago time (board.js)
+DISCORD_POST_MINUTE = "5"
 
 [[d1_databases]]
 binding = "DB"
@@ -28,6 +30,8 @@ enabled = false
 binding = "OAUTH_KV"
 id = "00000000000000000000000000000000"   # replaced at deploy time
 
-# Daily at 13:40 UTC (after the stats Action): refresh uploads and channel history
+# Daily at 13:40 UTC (after the stats Action): refresh uploads and channel history.
+# 14:05 and 15:05 UTC: the leaderboard's Discord post. One of the two is 9:05 in Chicago
+# whatever the season; the post goes out on that one (and the later one retries).
 [triggers]
-crons = ["40 13 * * *"]
+crons = ["40 13 * * *", "5 14 * * *", "5 15 * * *"]

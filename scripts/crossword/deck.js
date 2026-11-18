@@ -20,9 +20,9 @@
 
 import { lang } from '../games/i18n.js?v=1';
 import { gridKana, toHira } from './kana.js?v=1';
-import { info, refresh, currentUser, onAccount, signedIn, sendEmailLink, googleButton, checkout, portal, bonusPuzzle, deckUse, deckKey, accountId, track, startWeek } from './account.js?v=6';
-import { schedulePush } from './sync.js?v=4';
-import { plusPerks, plusPrice, plusBadge, supportLine, nudge, weekOffered } from './plus.js?v=21';
+import { info, refresh, currentUser, onAccount, signedIn, sendEmailLink, googleButton, checkout, portal, bonusPuzzle, deckUse, deckKey, accountId, track, startWeek } from './account.js?v=7';
+import { schedulePush } from './sync.js?v=5';
+import { plusPerks, plusPrice, plusBadge, supportLine, nudge, weekOffered } from './plus.js?v=22';
 import { openBrowse } from './browse.js?v=2';
 
 const PENDING = 'jareddesu.crossword.pendingPlan';   // a plan picked before signing in ('week': the free week)

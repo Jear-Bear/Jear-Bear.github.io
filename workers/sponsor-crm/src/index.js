@@ -36,8 +36,11 @@
 //   /public/plus/…                  Crossword+ accounts (sign in with Google or an email link), the free week, past days, bonus puzzles (plus.js)
 //   /public/plus/checkout|sync|portal, POST /public/stripe/webhook    payments (stripe.js)
 //   /public/plus/deck-use|load|save  the free deck puzzle per account, progress synced between devices (plussync.js)
+//   /public/board/profile|result      the Discord leaderboard: opt-in and results (board.js)
+//   GET  /api/board/preview?day=…   the day's Discord post, built but not sent
 //
-// A daily cron refreshes the uploads (capturing 30-day views) and the history.
+// A daily cron refreshes the uploads (capturing 30-day views) and the history; two more
+// (14:05 and 15:05 UTC) send the leaderboard's daily Discord post at 9:05 Chicago time.
 //
 // Every route but /api/login and /api/health needs a Bearer session token.
 
@@ -69,6 +72,7 @@ import { deckUse, loadSave, putSave } from './plussync.js';
 import { plusInfo, plusCheckout, plusSync, plusPortal, stripeWebhook, stripeSetup, stripeStatus, stripeResync } from './stripe.js';
 import { publicKey, bonusBacklog, openSealed } from './sealed.js';
 import { pullTraffic, loadTraffic, trafficConfigured } from './traffic.js';
+import { getProfile, putProfile, postResult, previewPost, dailyPost } from './board.js';
 
 const TYPES = {
   companies: 'companies', contacts: 'contacts', deals: 'deals', payments: 'payments',
@@ -194,6 +198,7 @@ async function route(request, env, url) {
   if (a === 'income' && !b && m === 'PUT') return putIncome(db, await readJson(request));
   if (a === 'traffic' && !b && m === 'GET') return loadTraffic(env, db, { days: url.searchParams.get('days'), to: url.searchParams.get('to') });
   if (a === 'traffic' && b === 'refresh' && !c && m === 'POST') return pullTraffic(env, db);
+  if (a === 'board' && b === 'preview' && !c && m === 'GET') return previewPost(env, url.searchParams.get('day'));
   if (a === 'rate-rules' && b && (c === 'accept' || c === 'dismiss') && !d && m === 'POST') {
     const settings = await settingsFor(db);
     return decideRateRule(db, b, c === 'accept', await readJson(request), todayIn(settings.tz));
@@ -336,6 +341,22 @@ const app = {
         return json({ error: 'Something went wrong' }, 500, origin);
       }
     }
+    if (url.pathname.startsWith('/public/board/')) {
+      if (!origin) return json({ error: 'Origin not allowed' }, 403);
+      if (!configured(env)) return json({ error: 'Not configured' }, 503, origin);
+      const what = url.pathname.slice('/public/board/'.length);
+      const m = request.method;
+      try {
+        if (what === 'profile' && m === 'GET') return json(await getProfile(request, env), 200, origin);
+        if (what === 'profile' && m === 'POST') return json(await putProfile(request, env), 200, origin);
+        if (what === 'result' && m === 'POST') return json(await postResult(request, env), 200, origin);
+        return json({ error: 'Not found' }, 404, origin);
+      } catch (err) {
+        if (err instanceof HttpError) return json({ error: err.message }, err.status, origin);
+        console.error(err);
+        return json({ error: 'Something went wrong' }, 500, origin);
+      }
+    }
     if (url.pathname === '/public/click' && request.method === 'POST') {
       if (!origin) return json({ error: 'Origin not allowed' }, 403);
       if (!configured(env)) return json({ error: 'Not configured' }, 503, origin);
@@ -432,6 +453,11 @@ export default {
     return oauthProvider(env, new URL(request.url).origin).fetch(request, env, ctx);
   },
   scheduled(event, env, ctx) {
+    // The leaderboard's two crons post to Discord; everything else (the 13:40 one) is daily()
+    if (event.cron === '5 14 * * *' || event.cron === '5 15 * * *') {
+      if (configured(env)) ctx.waitUntil(dailyPost(env, event.scheduledTime).catch((err) => console.error('Discord post', err && err.message)));
+      return;
+    }
     ctx.waitUntil(daily(env));
   },
 };
