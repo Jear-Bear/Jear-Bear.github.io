@@ -14,7 +14,7 @@
 
 import { lang } from '../games/i18n.js?v=1';
 import { info, isMember, onAccount, currentUser, signedIn, track } from './account.js?v=6';
-import { adsOn } from './ads.js?v=1';
+import { adsOn } from './ads.js?v=2';
 
 const API = 'https://sponsor-crm.jared-65b.workers.dev';
 const KEY = 'jareddesu.crossword.plus';

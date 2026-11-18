@@ -18,8 +18,8 @@ import { lang } from '../games/i18n.js?v=1';
 import { isMember, onAccount, signedIn } from './account.js?v=6';
 
 // Google AdSense. Neither is a secret (both end up in the page anyway).
-export const ADSENSE_CLIENT = '';   // your publisher ID: 'ca-pub-' and 16 digits
-export const ADSENSE_SLOT = '';     // the ID of the display ad unit made for this slot (digits)
+export const ADSENSE_CLIENT = 'ca-pub-4446275728713316';   // your publisher ID: 'ca-pub-' and 16 digits
+export const ADSENSE_SLOT = '1311550305';   // the ID of the display ad unit made for this slot (digits)
 
 const SCRIPT = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js';
 const preview = (() => { try { return new URLSearchParams(location.search).get('ads') === 'preview'; } catch { return false; } })();

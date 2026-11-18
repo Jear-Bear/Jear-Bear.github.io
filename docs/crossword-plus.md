@@ -127,7 +127,7 @@ usual Crossword+ panel). While ads are on, the Crossword+ perks gain a fourth ti
 Code: `scripts/crossword/ads.js`, the `<aside data-ad-slot>` in
 `tools/crossword/index.html`, `.cw-ad` in `styles/crossword.css`.
 
-**Off by default.** Nothing loads until `ADSENSE_CLIENT` (publisher ID,
+**On since Nov 2026** (publisher pub-4446275728713316, ad unit 1311550305). Before that, nothing loaded until `ADSENSE_CLIENT` (publisher ID,
 `ca-pub-` + 16 digits) and `ADSENSE_SLOT` (the ad unit's ID) are set at the top of
 `ads.js`. To see the empty slot and the No ads tile without turning anything on,
 open the page with `?ads=preview` (works on staging too).
@@ -138,7 +138,7 @@ open the page with `?ads=preview` (works on staging too).
    and an `ads.txt` line.
 2. (Done Nov 2026.) Paste the `ads.txt` line into `ads.txt` at the site root (replacing the comment's
    placeholder) and merge, so it's live at `https://www.jareddesu.com/ads.txt`.
-3. In AdSense → Ads → By ad unit, make a **Display ad** (responsive). Put its ID in
+3. (Done Nov 2026: unit 1311550305.) In AdSense → Ads → By ad unit, make a **Display ad** (responsive). Put its ID in
    `ADSENSE_SLOT` and the publisher ID in `ADSENSE_CLIENT`, bump `ads.js?v=` in
    `app.js` and `plus.js`, and merge.
 4. Leave **Auto ads off** for the site in AdSense: auto ads place themselves (including
