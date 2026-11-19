@@ -110,7 +110,9 @@ What happens when it opens:
    | `/site` | `www.jareddesu.com` |
    | `/api` | `sponsor-crm.jared-65b.workers.dev` |
 
-   The crossword apps don't need OAuth2 redirects (only the website's sign-in uses them).
+   Every app needs at least one **OAuth2 → Redirects** entry, even though an Activity never
+   uses it: without one, Discord's `authorize()` fails with "Missing redirect_uri". Give the
+   crossword apps `https://www.jareddesu.com/discord/` too.
 
 6. **Activities → Settings:** **Enable Activities**. This creates the default Entry Point
    command ("Launch"). Pick the supported platforms (web, desktop, iOS, Android).
