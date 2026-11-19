@@ -10,7 +10,7 @@
 //   POST /public/board/activity/token   { code, clientId }  an Activity's sign-in (Embedded App SDK)
 //   POST /public/board/activity/finish  { channelId, game, puzzleId, … }  a daily finished in the Activity
 //   POST /public/board/activity/channel { channelId, day, ids }      who in the channel finished
-//   POST /public/board/activity/forget                  deletes this Discord account's Activity results
+//   POST /public/board/activity/forget                  deletes this Discord account's Activity results (and servers seen in)
 //
 // What's kept from Discord: the account's ID, username and avatar hash, on its leaderboard
 // profile (board_profiles), and nothing else; Discord's access token is never stored. One
@@ -28,6 +28,7 @@ import { hmacHex, text } from './public.js';
 import { addDays } from '../../../scripts/crossword/streak.js';
 import wordle from './board-wordle.js';
 import crossword from './board-crossword.js';
+import { seenInGuild } from './commands.js';
 
 const ACTIVITY_GAMES = { wordle, crossword };        // the games the Activity plays
 
@@ -155,7 +156,7 @@ export async function unlink(request, env) {
   const off = Boolean(p && p.opt_in && !p.nickname);
   const stmts = [env.DB.prepare(`UPDATE board_profiles SET discord_id = NULL, discord_username = NULL, discord_avatar = NULL${off ? ', opt_in = 0' : ''}, updated_at = ? WHERE user_id = ?`).bind(at, u.id)];
   if (off) stmts.push(env.DB.prepare('DELETE FROM game_results WHERE user_id = ?').bind(u.id));
-  if (p && p.discord_id) stmts.push(env.DB.prepare('DELETE FROM activity_finishes WHERE discord_id = ?').bind(p.discord_id));
+  if (p && p.discord_id) stmts.push(env.DB.prepare('DELETE FROM activity_finishes WHERE discord_id = ?').bind(p.discord_id), env.DB.prepare('DELETE FROM guild_players WHERE discord_id = ?').bind(p.discord_id));
   await env.DB.batch(stmts);
   return { ok: true, leaderboardOff: off };
 }
@@ -187,6 +188,8 @@ export async function activityToken(request, env) {
   const data = `act.${d.id}.${exp}`;
   const u = await linkedBy(env, d.id);
   if (u) await refreshLinked(env, d);
+  // Playing in a server: /leaderboard's "This server" counts them there (commands.js)
+  await seenInGuild(env, String(b.guildId || ''), d.id);
   return {
     access_token: accessToken,
     activity: `${data}.${await activitySign(env, data)}`,
@@ -240,7 +243,10 @@ export async function activityChannel(request, env) {
 
 export async function activityForget(request, env) {
   const discordId = await activityUser(request, env);
-  await env.DB.prepare('DELETE FROM activity_finishes WHERE discord_id = ?').bind(discordId).run();
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM activity_finishes WHERE discord_id = ?').bind(discordId),
+    env.DB.prepare('DELETE FROM guild_players WHERE discord_id = ?').bind(discordId),
+  ]);
   return { ok: true };
 }
 

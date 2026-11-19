@@ -114,3 +114,7 @@ jobs:
             printf '%s' "$CF_ANALYTICS_TOKEN" | npx wrangler secret put CF_ANALYTICS_TOKEN
             printf '%s' "$CLOUDFLARE_ACCOUNT_ID" | npx wrangler secret put CF_ACCOUNT_ID
           fi
+
+      # /leaderboard on each Activity's Discord app (src/commands.js); skips apps without a secret
+      - name: Register Discord commands
+        run: node scripts/register-commands.mjs

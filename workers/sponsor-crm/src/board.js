@@ -116,7 +116,7 @@ const chicagoParts = (d) => Object.fromEntries(new Intl.DateTimeFormat('en-US', 
   .formatToParts(d).map((p) => [p.type, p.value]));
 export const chicagoDate = (d = new Date()) => { const p = chicagoParts(d); return `${p.year}-${p.month}-${p.day}`; };
 const dayLabel = (day) => new Date(`${day}T12:00:00Z`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
-const shortDay = (day) => new Date(`${day}T12:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+export const shortDay = (day) => new Date(`${day}T12:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 const monthLabel = (day) => new Date(`${day}T12:00:00Z`).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 // Names are plain text: anything that reaches Discord is escaped, and nothing can ping
 export const esc = (s) => String(s).replace(/[\\*_~`|>#[\]()<@:]/g, (c) => `\\${c}`);
@@ -133,7 +133,7 @@ export function avatarUrl(r) {
 }
 
 // Each puzzle's finishers in the game's order, with rank (0 = first) and the podium bonus
-function rankGame(entry, rows) {
+export function rankGame(entry, rows) {
   const byPuzzle = new Map();
   rows.forEach((r) => { if (!byPuzzle.has(r.puzzle_id)) byPuzzle.set(r.puzzle_id, []); byPuzzle.get(r.puzzle_id).push(r); });
   const bonuses = [];

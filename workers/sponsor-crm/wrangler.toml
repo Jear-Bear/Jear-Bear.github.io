@@ -22,6 +22,11 @@ DISCORD_CLIENT_ID = "1572702904320659506"
 # (DISCORD_KANA_CROSSWORD_CLIENT_SECRET, DISCORD_KANJI_CROSSWORD_CLIENT_SECRET). discord.js apps()
 DISCORD_KANA_CROSSWORD_CLIENT_ID = "1572762074424148198"
 DISCORD_KANJI_CROSSWORD_CLIENT_ID = "1572762280435650791"
+# Each app's Public Key (General Information; public), for /leaderboard (commands.js checks
+# Discord's signature on every command with it). Empty: that app's /leaderboard is off.
+DISCORD_PUBLIC_KEY = ""
+DISCORD_KANA_CROSSWORD_PUBLIC_KEY = ""
+DISCORD_KANJI_CROSSWORD_PUBLIC_KEY = ""
 
 # The fonts for the daily post's picture (board-image.js) come in as ArrayBuffers
 [[rules]]

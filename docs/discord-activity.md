@@ -89,6 +89,35 @@ What happens when it opens:
    The only link out is "Open jareddesu.com", through Discord's `openExternalLink`,
    which asks the player first.
 
+## /leaderboard
+
+Each app has one slash command, `/leaderboard`, answered by the Worker
+(`src/commands.js`, `POST /discord/interactions`). No bot is involved: Discord sends the
+command to the Worker, and the reply appears in the channel where it was run.
+
+- **Options:**
+  - `scope`: **This server** (the default in a server) or **Everyone**.
+  - `period`: **Today** (Chicago's date, like the morning post), **Last 7 days** or **This month**.
+  - Today shows results the way the morning post lays them out. The other two show a points table (top 15).
+- **What each app covers:**
+  - Kana Wordle: Kana Wordle.
+  - Kana Crossword: the crossword's kana puzzles.
+  - Kanji Crossword: its kanji puzzles.
+- **Who appears:** only players who turned the leaderboard on, by their Discord name or
+  nickname, as plain text (`allowed_mentions: { parse: [] }`).
+  - **This server** means players seen in that server. Discord doesn't let an app without a
+    bot list a server's members, so a player counts there once they've played an Activity there
+    or run `/leaderboard` there (`guild_players`, migration 0028).
+  - Unlinking Discord, "Remove my results" in an Activity, or deleting the account removes
+    those rows.
+  - In a DM it's always everyone.
+- **Security:** every request is checked against the app's Ed25519 **Public Key**
+  (`DISCORD_PUBLIC_KEY`, `DISCORD_KANA_CROSSWORD_PUBLIC_KEY`, `DISCORD_KANJI_CROSSWORD_PUBLIC_KEY`
+  in `wrangler.toml`; public). With a key empty, that app's command is off.
+- **Registration:** the deploy registers the command on each app that has its secret
+  (`scripts/register-commands.mjs`: OAuth2 client credentials, `applications.commands.update`).
+  It creates or updates the command by name, so the Activity's **Launch** command is left alone.
+
 ## Setup (Developer Portal)
 
 1. <https://discord.com/developers/applications> → **New Application** (e.g. "Kana Wordle").
@@ -112,9 +141,13 @@ What happens when it opens:
 
    The crossword apps don't need OAuth2 redirects (only the website's sign-in uses them).
 
-6. **Activities → Settings:** **Enable Activities**. This creates the default Entry Point
+6. **General Information → Interactions Endpoint URL** (each app):
+   `https://sponsor-crm.jared-65b.workers.dev/discord/interactions`. Put the app's **Public
+   Key** (same page) in `wrangler.toml` first and deploy, since Discord checks the URL when you
+   save it.
+7. **Activities → Settings:** **Enable Activities**. This creates the default Entry Point
    command ("Launch"). Pick the supported platforms (web, desktop, iOS, Android).
-7. Merge, let the deploy run, then open a voice channel on the server → 🚀 **Activities** →
+8. Merge, let the deploy run, then open a voice channel on the server → 🚀 **Activities** →
    the app. While the app is unlisted (not in the App Directory), only you and the server
    where it's installed can launch it.
 
