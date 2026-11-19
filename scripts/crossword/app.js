@@ -24,7 +24,7 @@ import { initSync, schedulePush, flush } from './sync.js?v=6';
 import { handleReturn, refresh, isMember, onAccount, archiveDay, currentUser, signedIn, logout, track, info as plusInfo } from './account.js?v=8';
 import { rng } from './construct.mjs?v=1';
 import { dailyStreak, addDays } from './streak.js?v=1';
-import { mountBoardSettings, boardInvite, sendResult } from '../games/board.js?v=3';
+import { mountBoardSettings, boardInvite, sendResult } from '../games/board.js?v=4';
 
 const $ = (id) => document.getElementById(id);
 // Set by the Discord Activity's page before it loads this one (scripts/activity/crossword.js):

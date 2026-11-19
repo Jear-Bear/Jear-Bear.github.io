@@ -425,6 +425,7 @@ export async function deletePlus(db, id) {
     db.prepare('DELETE FROM game_results WHERE user_id = ?').bind(id),
     // Its linked Discord account's Activity results, then the profile (with the Discord data)
     db.prepare('DELETE FROM activity_finishes WHERE discord_id IN (SELECT discord_id FROM board_profiles WHERE user_id = ? AND discord_id IS NOT NULL)').bind(id),
+    db.prepare('DELETE FROM guild_players WHERE discord_id IN (SELECT discord_id FROM board_profiles WHERE user_id = ? AND discord_id IS NOT NULL)').bind(id),
     db.prepare('DELETE FROM board_profiles WHERE user_id = ?').bind(id),
     db.prepare('DELETE FROM plus_logins WHERE email = ?').bind(u.email),
     db.prepare('DELETE FROM plus_users WHERE id = ?').bind(id),

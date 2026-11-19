@@ -110,7 +110,7 @@ function drawChannel() {
 // --- sign-in -----------------------------------------------------------------------------------
 async function signIn(clientId) {
   const { code } = await sdk.commands.authorize({ client_id: clientId, response_type: 'code', state: '', prompt: 'none', scope: ['identify'] });
-  const r = await call('activity/token', { code, clientId });
+  const r = await call('activity/token', { code, clientId, guildId: sdk.guildId || null });
   await sdk.commands.authenticate({ access_token: r.access_token });
   activityToken = r.activity;
   me = { id: r.discord.id, username: r.discord.username, avatar: r.discord.avatar };

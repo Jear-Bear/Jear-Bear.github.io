@@ -17,8 +17,8 @@ const INVITED = 'jareddesu.board.invited';      // accounts this browser has sho
 const t = translator({
   en: {
     title: 'Discord leaderboard',
-    about: 'Put your daily results in the results post in Jared’s Discord each morning, under a nickname. Only the nickname and your results are shared.',
-    aboutLinked: 'Put your daily results in the results post in Jared’s Discord each morning, under your Discord name and avatar. Only those and your results are shared.',
+    about: 'Put your daily results in the results post in Jared’s Discord each morning, and in /leaderboard in any Discord server where these games are played, under a nickname. Only the nickname and your results are shared.',
+    aboutLinked: 'Put your daily results in the results post in Jared’s Discord each morning, and in /leaderboard in any Discord server where these games are played, under your Discord name and avatar. Only those and your results are shared.',
     toggle: 'Show my results', toggleSub: 'on the Discord leaderboard',
     nick: 'Nickname', nickHint: '2–20 letters or numbers', save: 'Save', saving: 'Saving…', saved: 'Saved.',
     off: 'Turning it off removes your results from the leaderboard.', join: 'Join the Discord',
@@ -31,8 +31,8 @@ const t = translator({
   },
   ja: {
     title: 'Discordのランキング',
-    about: '毎朝、JaredのDiscordに投稿される結果に、ニックネームで載ります。共有されるのはニックネームと結果だけです。',
-    aboutLinked: '毎朝、JaredのDiscordに投稿される結果に、Discordの名前とアイコンで載ります。共有されるのはそれと結果だけです。',
+    about: '毎朝JaredのDiscordに投稿される結果と、これらのゲームが遊ばれているDiscordサーバーの/leaderboardに、ニックネームで載ります。共有されるのはニックネームと結果だけです。',
+    aboutLinked: '毎朝JaredのDiscordに投稿される結果と、これらのゲームが遊ばれているDiscordサーバーの/leaderboardに、Discordの名前とアイコンで載ります。共有されるのはそれと結果だけです。',
     toggle: '自分の結果を載せる', toggleSub: 'Discordのランキングに',
     nick: 'ニックネーム', nickHint: '2〜20文字の文字や数字', save: '保存', saving: '保存中…', saved: '保存しました。',
     off: 'オフにすると、ランキングから結果が削除されます。', join: 'Discordに参加',
