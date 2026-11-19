@@ -1,14 +1,14 @@
 // discord.js — Discord account linking and sign-in (OAuth2, scope "identify" only), and the
-// Kana Wordle Discord Activity's sign-in and channel results. docs/discord-activity.md.
+// Discord Activity's sign-in and channel results (Kana Wordle and the Daily Kana Crossword). docs/discord-activity.md.
 //
-//   GET  /public/board/discord/config                  → { clientId } (null while it isn't set up)
+//   GET  /public/board/discord/config                  → { clientId, activities } (null / [] while not set up)
 //   POST /public/board/discord/start  { mode, redirect, back }  → { url } to send the person to
 //        mode 'link' (signed in: link Discord to this account) or 'signin' (an account that has
 //        Discord linked already). redirect: this site's /discord/ page, which Discord returns to.
 //   POST /public/board/discord/finish { code, state }  → { mode, back, token?, user?, discord }
 //   POST /public/board/discord/unlink                   clears the Discord data at once
-//   POST /public/board/activity/token   { code }        the Activity's sign-in (Embedded App SDK)
-//   POST /public/board/activity/finish  { channelId, puzzleId, … }  a daily finished in the Activity
+//   POST /public/board/activity/token   { code, clientId }  an Activity's sign-in (Embedded App SDK)
+//   POST /public/board/activity/finish  { channelId, game, puzzleId, … }  a daily finished in the Activity
 //   POST /public/board/activity/channel { channelId, day, ids }      who in the channel finished
 //   POST /public/board/activity/forget                  deletes this Discord account's Activity results
 //
@@ -27,6 +27,9 @@ import { needUser, sessionUser, limit, issue, publicUser, sha256, randomToken } 
 import { hmacHex, text } from './public.js';
 import { addDays } from '../../../scripts/crossword/streak.js';
 import wordle from './board-wordle.js';
+import crossword from './board-crossword.js';
+
+const ACTIVITY_GAMES = { wordle, crossword };        // the games the Activity plays
 
 const API = 'https://discord.com/api/v10';
 const STATE_TTL = 600;                  // seconds
@@ -36,8 +39,19 @@ const AVATAR = /^(a_)?[0-9a-f]{20,40}$/;
 
 const api = (env) => env.DISCORD_API_BASE || API;       // override: local tests only
 export const discordOn = (env) => Boolean(env.DISCORD_CLIENT_ID && env.DISCORD_CLIENT_SECRET);
-// The Activity runs at https://<client id>.discordsays.com (Discord's proxy)
-export const activityOrigin = (env) => (env.DISCORD_CLIENT_ID && SNOWFLAKE.test(env.DISCORD_CLIENT_ID) ? `https://${env.DISCORD_CLIENT_ID}.discordsays.com` : null);
+// The Discord apps, one Activity each. The first (DISCORD_CLIENT_ID, Kana Wordle) is also the
+// one the website links accounts and signs in with. A Discord account's ID is the same in
+// every app, so one link covers them all. An app counts once both its ID and secret are set.
+export function apps(env) {
+  return [
+    { id: env.DISCORD_CLIENT_ID, secret: env.DISCORD_CLIENT_SECRET, activity: 'wordle' },
+    { id: env.DISCORD_KANA_CROSSWORD_CLIENT_ID, secret: env.DISCORD_KANA_CROSSWORD_CLIENT_SECRET, activity: 'crossword' },
+    { id: env.DISCORD_KANJI_CROSSWORD_CLIENT_ID, secret: env.DISCORD_KANJI_CROSSWORD_CLIENT_SECRET, activity: 'kanji' },
+  ].filter((a) => a.id && SNOWFLAKE.test(String(a.id)) && a.secret);
+}
+const mainApp = (env) => ({ id: env.DISCORD_CLIENT_ID, secret: env.DISCORD_CLIENT_SECRET });
+// Each Activity runs at https://<its client id>.discordsays.com (Discord's proxy)
+export const activityOrigins = (env) => apps(env).map((a) => `https://${a.id}.discordsays.com`);
 
 async function readBody(request) {
   try { return JSON.parse((await request.text()).slice(0, 8000)) || {}; } catch { return {}; }
@@ -47,9 +61,9 @@ function needOn(env) { if (!discordOn(env)) throw new HttpError(503, 'Discord si
 // --- Discord's API ---------------------------------------------------------------------------
 // A code from Discord → the person's { id, username, avatar }. The access token goes back to
 // the Activity (the SDK needs it) but is never stored here.
-async function exchange(env, code, redirectUri) {
+async function exchange(env, code, redirectUri, app = mainApp(env)) {
   if (!/^[\w-]{10,100}$/.test(code)) throw new HttpError(400, 'Bad Discord code');
-  const form = new URLSearchParams({ client_id: env.DISCORD_CLIENT_ID, client_secret: env.DISCORD_CLIENT_SECRET, grant_type: 'authorization_code', code });
+  const form = new URLSearchParams({ client_id: app.id, client_secret: app.secret, grant_type: 'authorization_code', code });
   if (redirectUri) form.set('redirect_uri', redirectUri);
   const res = await fetch(`${api(env)}/oauth2/token`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: form });
   const tok = await res.json().catch(() => ({}));
@@ -83,7 +97,8 @@ async function link(env, userId, d) {
 }
 
 // --- the website: link, sign in, unlink -----------------------------------------------------------
-export function config(env) { return { clientId: discordOn(env) ? env.DISCORD_CLIENT_ID : null }; }
+// clientId: the website's app (linking, sign-in); activities: every Activity's client ID that's set up
+export function config(env) { return { clientId: discordOn(env) ? env.DISCORD_CLIENT_ID : null, activities: apps(env).map((a) => a.id) }; }
 
 // redirect must be this site's own /discord/ page (the origin the request came from)
 export async function start(request, env, origin) {
@@ -161,11 +176,13 @@ async function activityUser(request, env) {
 
 // The SDK's authorize() code → { access_token (for the SDK's authenticate()), activity token,
 // discord, account (the linked site account's session, or null) }
+// clientId: which app's Activity it is (its code only works with that app's secret)
 export async function activityToken(request, env) {
-  needOn(env);
   await limit(request, env, 'discord-activity', 60);
   const b = await readBody(request);
-  const { accessToken, user: d } = await exchange(env, text(b.code, 200), null);
+  const app = apps(env).find((a) => a.id === String(b.clientId || env.DISCORD_CLIENT_ID));
+  if (!app) throw new HttpError(503, 'This Activity isn’t set up yet');
+  const { accessToken, user: d } = await exchange(env, text(b.code, 200), null, app);
   const exp = Math.floor(Date.now() / 1000) + ACTIVITY_TTL;
   const data = `act.${d.id}.${exp}`;
   const u = await linkedBy(env, d.id);
@@ -181,17 +198,19 @@ export async function activityToken(request, env) {
 const channelOf = (b) => { const c = String(b.channelId || ''); if (!SNOWFLAKE.test(c)) throw new HttpError(400, 'Not in a channel'); return c; };
 const purge = (env) => env.DB.prepare('DELETE FROM activity_finishes WHERE day < ?').bind(addDays(new Date().toISOString().slice(0, 10), -2));
 
-// A daily finished in the Activity: checked exactly like a leaderboard result (board-wordle.js)
+// A daily finished in the Activity (game: 'wordle', the default, or 'crossword'): checked
+// exactly like a leaderboard result (board-wordle.js, board-crossword.js)
 export async function activityFinish(request, env) {
   const discordId = await activityUser(request, env);
   await limit(request, env, 'discord-finish-act', 120);
   const b = await readBody(request);
   const channel = channelOf(b);
-  const r = await wordle.check(b, env);
+  const game = b.game === 'crossword' ? 'crossword' : 'wordle';
+  const r = await ACTIVITY_GAMES[game].check(b, env);
   await env.DB.batch([
     purge(env),
-    env.DB.prepare('INSERT OR IGNORE INTO activity_finishes (channel_id, puzzle_id, discord_id, day, guesses, hints, won, pattern, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
-      .bind(channel, r.puzzleId, discordId, r.day, r.guesses, r.hints, r.won, r.pattern, new Date().toISOString()),
+    env.DB.prepare('INSERT OR IGNORE INTO activity_finishes (channel_id, puzzle_id, discord_id, day, game, guesses, hints, won, pattern, seconds, revealed, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+      .bind(channel, r.puzzleId, discordId, r.day, game, r.guesses ?? 0, r.hints ?? 0, r.won, r.pattern ?? null, r.seconds ?? null, r.revealed ?? null, new Date().toISOString()),
   ]);
   return { ok: true };
 }
@@ -207,15 +226,15 @@ export async function activityChannel(request, env) {
   const day = /^\d{4}-\d{2}-\d{2}$/.test(String(b.day || '')) ? b.day : null;
   if (!day) throw new HttpError(400, 'Bad day');
   const ids = (Array.isArray(b.ids) ? b.ids : []).map(String).filter((x) => SNOWFLAKE.test(x)).slice(0, 50);
-  const here = await env.DB.prepare('SELECT discord_id, puzzle_id, guesses, hints, won, pattern FROM activity_finishes WHERE channel_id = ? AND day = ?').bind(channel, day).all();
+  const here = await env.DB.prepare('SELECT discord_id, game, puzzle_id, guesses, hints, won, pattern, seconds, revealed FROM activity_finishes WHERE channel_id = ? AND day = ?').bind(channel, day).all();
   let site = { results: [] };
   if (ids.length) {
-    site = await env.DB.prepare(`SELECT p.discord_id, r.puzzle_id, r.guesses, r.hints, r.won, r.pattern FROM game_results r JOIN board_profiles p ON p.user_id = r.user_id AND p.opt_in = 1
-      WHERE r.game = 'wordle' AND r.day = ? AND p.discord_id IN (${ids.map(() => '?').join(',')})`).bind(day, ...ids).all();
+    site = await env.DB.prepare(`SELECT p.discord_id, r.game, r.puzzle_id, r.guesses, r.hints, r.won, r.pattern, r.seconds, r.revealed FROM game_results r JOIN board_profiles p ON p.user_id = r.user_id AND p.opt_in = 1
+      WHERE r.game IN ('wordle', 'crossword') AND r.day = ? AND p.discord_id IN (${ids.map(() => '?').join(',')})`).bind(day, ...ids).all();
   }
   const seen = new Set();
   const finishes = [...here.results, ...site.results].filter((r) => { const k = `${r.discord_id}:${r.puzzle_id}`; if (seen.has(k)) return false; seen.add(k); return true; })
-    .map((r) => ({ id: r.discord_id, puzzleId: r.puzzle_id, guesses: r.guesses, hints: r.hints, won: Boolean(r.won), pattern: r.pattern ? r.pattern.split('|') : null }));
+    .map((r) => ({ id: r.discord_id, game: r.game || 'wordle', puzzleId: r.puzzle_id, guesses: r.guesses, hints: r.hints, won: Boolean(r.won), pattern: r.pattern ? r.pattern.split('|') : null, seconds: r.seconds ?? null, revealed: r.revealed ?? null }));
   return { finishes };
 }
 

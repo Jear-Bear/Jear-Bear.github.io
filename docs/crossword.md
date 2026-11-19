@@ -147,13 +147,20 @@ pick the results channel, Copy Webhook URL. In GitHub: add it as the secret
 `DISCORD_CROSSWORD_WEBHOOK`, then run **Sponsor CRM deploy**. Without the secret nothing is
 posted (results are still collected).
 
+**A channel per game.** With only `DISCORD_CROSSWORD_WEBHOOK`, one post covers every game.
+Add the secret `DISCORD_WORDLE_WEBHOOK` (a webhook in the Wordle channel) and Kana Wordle gets
+its own post there, with its own weekly and monthly points; the crossword post then has only
+the crossword (board.js `routes`). Each is recorded in `discord_posts` (`daily`,
+`daily-wordle`) and retried on its own, and every post's text goes out before any picture is
+drawn.
+
 **Changing the time.** `DISCORD_POST_HOUR` and `DISCORD_POST_MINUTE` in
 `workers/sponsor-crm/wrangler.toml` (America/Chicago). The Worker only wakes at 14:05 and
 15:05 UTC (`[triggers]`), which is 8:05/9:05 Chicago in winter and 9:05/10:05 in summer, and
 posts on the first run at or after the set time (up to two hours after). For a time outside
 that, change those two crons as well (Cloudflare's free plan allows 5 cron triggers).
 
-**Checking a post first.** `GET /api/board/preview?day=YYYY-MM-DD` on the Worker, with the
+**Checking a post first.** `GET /api/board/preview?day=YYYY-MM-DD[&game=crossword|wordle]` on the Worker, with the
 Sponsor desk's sign-in token, returns the message JSON exactly as it would be sent (nothing
 is sent or saved). Without `day`, it's yesterday in Chicago. Add `&format=png` for the picture.
 
