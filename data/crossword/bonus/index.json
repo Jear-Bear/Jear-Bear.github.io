@@ -59,6 +59,20 @@
       "size": "daily",
       "theme": "At work",
       "made": "2026-11-16"
+    },
+    {
+      "id": "bonus-009",
+      "level": "beginner",
+      "size": "daily",
+      "theme": "Time",
+      "made": "2026-11-23"
+    },
+    {
+      "id": "bonus-010",
+      "level": "beginner",
+      "size": "daily",
+      "theme": "Time",
+      "made": "2026-11-23"
     }
   ],
   "about": "Crossword+ bonus puzzles. Each file is sealed (encrypted) for the sponsor Worker; this list has no clues or answers."
