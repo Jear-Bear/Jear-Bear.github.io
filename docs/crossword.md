@@ -147,6 +147,9 @@ pick the results channel, Copy Webhook URL. In GitHub: add it as the secret
 `DISCORD_CROSSWORD_WEBHOOK`, then run **Sponsor CRM deploy**. Without the secret nothing is
 posted (results are still collected).
 
+**Any time, any server.** `/leaderboard` in Discord shows the same results on demand, for this
+server or everyone (docs/discord-activity.md, "/leaderboard").
+
 **A channel per game.** With only `DISCORD_CROSSWORD_WEBHOOK`, one post covers every game.
 Add the secret `DISCORD_WORDLE_WEBHOOK` (a webhook in the Wordle channel) and Kana Wordle gets
 its own post there, with its own weekly and monthly points; the crossword post then has only

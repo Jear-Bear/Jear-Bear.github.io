@@ -12,7 +12,7 @@ import { translator, setLang } from '../games/i18n.js?v=1';
 import { decodeAnswers, dayNumber, dailyAnswer, listFile, poolFor, validSet } from './daily.js?v=3';
 import { handleReturn, refresh, currentUser, signedIn, onAccount, logout, isMember, info as accountInfo } from '../crossword/account.js?v=8';
 import { openSignIn, closeSignIn } from '../games/signin.js?v=2';
-import { mountBoardSettings, boardInvite, sendResult } from '../games/board.js?v=3';
+import { mountBoardSettings, boardInvite, sendResult } from '../games/board.js?v=4';
 import { initSync, schedulePush, flush } from './sync.js?v=1';
 
 const $ = (id) => document.getElementById(id);

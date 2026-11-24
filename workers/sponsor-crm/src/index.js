@@ -39,7 +39,8 @@
 //   /public/plus/checkout|sync|portal, POST /public/stripe/webhook    payments (stripe.js)
 //   /public/plus/deck-use|load|save  the free deck puzzle per account, progress synced between devices (plussync.js)
 //   /public/board/profile|result      the Discord leaderboard: opt-in and results (board.js)
-//   /public/board/discord/*, activity/*  Discord linking and the Kana Wordle Activity (discord.js)
+//   /public/board/discord/*, activity/*  Discord linking and the Activities (discord.js)
+//   POST /discord/interactions        /leaderboard in Discord (commands.js)
 //   /public/tool/load|save          another game's progress synced between devices (Kana Wordle; plussync.js)
 //   GET  /api/board/preview?day=…[&game=…][&format=png]   the day's Discord post (or its picture), built but not sent
 //
@@ -78,6 +79,7 @@ import { publicKey, bonusBacklog, openSealed } from './sealed.js';
 import { pullTraffic, loadTraffic, trafficConfigured } from './traffic.js';
 import { getProfile, putProfile, postResult, previewPost, dailyPost } from './board.js';
 import { route as discordRoute, activityOrigins } from './discord.js';
+import { interactions } from './commands.js';
 
 const TYPES = {
   companies: 'companies', contacts: 'contacts', deals: 'deals', payments: 'payments',
@@ -279,6 +281,11 @@ const app = {
     if (url.pathname === '/public/stripe/webhook' && request.method === 'POST') {
       if (!configured(env)) return new Response('Not configured', { status: 503 });
       return stripeWebhook(request, env);
+    }
+    // Discord's Interactions Endpoint URL for /leaderboard (commands.js; checks Discord's signature)
+    if (url.pathname === '/discord/interactions' && request.method === 'POST') {
+      if (!configured(env)) return new Response('Not configured', { status: 503 });
+      return interactions(request, env);
     }
     if (url.pathname === '/authorize') {
       if (!configured(env)) return new Response('Not configured', { status: 503 });
